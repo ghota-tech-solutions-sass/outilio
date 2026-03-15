@@ -194,6 +194,78 @@ const tools = [
     icon: "\u{1F382}",
     category: "Outils",
   },
+  {
+    title: "Calculateur pret auto",
+    description:
+      "Mensualites, cout total et tableau d'amortissement pour votre credit automobile.",
+    href: "/outils/calculateur-pret-auto",
+    icon: "\u{1F697}",
+    badge: "Nouveau",
+    category: "Finance",
+  },
+  {
+    title: "Consommation essence",
+    description:
+      "L/100km, cout par kilometre et estimation du budget carburant de vos trajets.",
+    href: "/outils/calculateur-consommation-essence",
+    icon: "\u{26FD}",
+    badge: "Nouveau",
+    category: "Auto",
+  },
+  {
+    title: "Calories brulees",
+    description:
+      "Estimez les calories depensees par activite : course, velo, natation, marche et plus.",
+    href: "/outils/calculateur-calories",
+    icon: "\u{1F525}",
+    badge: "Nouveau",
+    category: "Sante",
+  },
+  {
+    title: "Texte stylise Unicode",
+    description:
+      "Convertissez en gras, italique, barre, monospace, bulle. Copiez-collez partout.",
+    href: "/outils/generateur-texte-stylise",
+    icon: "\u{2728}",
+    badge: "Nouveau",
+    category: "Texte",
+  },
+  {
+    title: "Minuteur et chronometre",
+    description:
+      "Compte a rebours avec alarme sonore et chronometre avec tours. 100% en ligne.",
+    href: "/outils/minuteur",
+    icon: "\u{23F1}\uFE0F",
+    badge: "Nouveau",
+    category: "Outils",
+  },
+  {
+    title: "Calculateur de remise",
+    description:
+      "Prix apres reduction, montant economise. Cumulez plusieurs remises en cascade.",
+    href: "/outils/calculateur-remise",
+    icon: "\u{1F3F7}\uFE0F",
+    badge: "Nouveau",
+    category: "Shopping",
+  },
+  {
+    title: "Email professionnel",
+    description:
+      "Generez des emails pro : relance, remerciement, prise de contact, reunion, demission.",
+    href: "/outils/generateur-email-professionnel",
+    icon: "\u{1F4E7}",
+    badge: "Nouveau",
+    category: "Business",
+  },
+  {
+    title: "Convertisseur de devises",
+    description:
+      "EUR, USD, GBP, CHF, CAD, JPY, MAD, XOF. Conversion instantanee entre devises.",
+    href: "/outils/calculateur-taux-change",
+    icon: "\u{1F4B1}",
+    badge: "Nouveau",
+    category: "Finance",
+  },
 ];
 
 const FEATURES = [
@@ -280,7 +352,7 @@ export default function Home() {
             style={{ borderColor: "var(--border)" }}
           >
             {[
-              { value: "22", label: "Outils disponibles" },
+              { value: "30", label: "Outils disponibles" },
               { value: "0\u20AC", label: "Pour toujours" },
               { value: "0", label: "Donnees collectees" },
             ].map((stat, i) => (
