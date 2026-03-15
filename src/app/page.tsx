@@ -1,4 +1,4 @@
-import ToolCard from "@/components/ToolCard";
+import ToolSearchFilter from "@/components/ToolSearch";
 import PrivacyBanner from "@/components/PrivacyBanner";
 import type { Metadata } from "next";
 
@@ -504,32 +504,26 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Tools Grid */}
+      {/* Tools Grid with Search */}
       <section id="outils" className="border-t py-20" style={{ borderColor: "var(--border)" }}>
         <div className="mx-auto max-w-6xl px-5">
-          <div className="flex items-end justify-between">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: "var(--accent)" }}>
-                Collection
-              </p>
-              <h2
-                className="mt-2 text-3xl tracking-tight md:text-4xl"
-                style={{ fontFamily: "var(--font-display)" }}
-              >
-                Tous nos outils
-              </h2>
-            </div>
-            <p className="hidden text-sm md:block" style={{ color: "var(--muted)" }}>
-              {tools.length} outils disponibles
+          <div className="text-center">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: "var(--accent)" }}>
+              Collection
+            </p>
+            <h2
+              className="mt-2 text-3xl tracking-tight md:text-4xl"
+              style={{ fontFamily: "var(--font-display)" }}
+            >
+              Trouvez l&apos;outil qu&apos;il vous faut
+            </h2>
+            <p className="mx-auto mt-3 max-w-md text-sm" style={{ color: "var(--muted)" }}>
+              Recherchez par nom ou filtrez par categorie pour trouver instantanement l&apos;outil adapte.
             </p>
           </div>
 
-          <div className="mt-10 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {tools.map((tool, i) => (
-              <div key={tool.href} className={`animate-fade-up stagger-${i + 1}`}>
-                <ToolCard {...tool} />
-              </div>
-            ))}
+          <div className="mt-8">
+            <ToolSearchFilter tools={tools} />
           </div>
         </div>
       </section>
