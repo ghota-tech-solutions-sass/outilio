@@ -2,15 +2,7 @@
 
 import { useState, useMemo } from "react";
 import ToolCard from "./ToolCard";
-
-interface Tool {
-  title: string;
-  description: string;
-  href: string;
-  icon: string;
-  badge?: string;
-  category: string;
-}
+import type { Tool } from "@/data/tools";
 
 const CATEGORIES = [
   { id: "all", label: "Tous", icon: "\u{2728}" },

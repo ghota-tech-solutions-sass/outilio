@@ -3,6 +3,7 @@ import Script from "next/script";
 import { DM_Serif_Display, DM_Sans } from "next/font/google";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import ClientProviders from "@/components/ClientProviders";
 import "./globals.css";
 
 const GA_ID = "G-GPSSC5CMYK";
@@ -80,6 +81,7 @@ export default function RootLayout({
         <Header />
         <main className="min-h-screen">{children}</main>
         <Footer />
+        <ClientProviders />
       </body>
     </html>
   );

@@ -42,6 +42,24 @@ export default function Header() {
               {item.label}
             </Link>
           ))}
+          <button
+            onClick={() => window.dispatchEvent(new CustomEvent("open-command-palette"))}
+            className="ml-2 flex items-center gap-2 rounded-lg border px-3 py-1.5 text-[12px] font-medium transition-all hover:bg-[#0d4f3c]/5"
+            style={{ borderColor: "var(--border)", color: "var(--muted)" }}
+            aria-label="Rechercher (Ctrl+K)"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="11" cy="11" r="8"/>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+            <span className="hidden lg:inline">Rechercher</span>
+            <kbd
+              className="rounded border px-1.5 py-0.5 text-[10px] font-semibold"
+              style={{ borderColor: "var(--border)", background: "var(--surface-alt)" }}
+            >
+              Ctrl+K
+            </kbd>
+          </button>
         </nav>
 
         {/* Mobile menu button */}

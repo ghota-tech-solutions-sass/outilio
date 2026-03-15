@@ -317,26 +317,16 @@ export default function CommandPalette() {
       </div>
 
       {/* Inline styles for animations */}
-      <style jsx global>{`
+      <style dangerouslySetInnerHTML={{ __html: `
         @keyframes cmdPaletteFadeIn {
-          from {
-            opacity: 0;
-          }
-          to {
-            opacity: 1;
-          }
+          from { opacity: 0; }
+          to { opacity: 1; }
         }
         @keyframes cmdPaletteScaleIn {
-          from {
-            opacity: 0;
-            transform: scale(0.96) translateY(-8px);
-          }
-          to {
-            opacity: 1;
-            transform: scale(1) translateY(0);
-          }
+          from { opacity: 0; transform: scale(0.96) translateY(-8px); }
+          to { opacity: 1; transform: scale(1) translateY(0); }
         }
-      `}</style>
+      `}} />
     </div>
   );
 }
