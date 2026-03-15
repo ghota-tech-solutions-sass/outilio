@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://outilis.fr</loc><priority>1.0</priority><changefreq>weekly</changefreq></url>
+  <url><loc>https://outilis.fr/outils/calculateur-salaire</loc><priority>0.9</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://outilis.fr/outils/simulateur-impot</loc><priority>0.9</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://outilis.fr/outils/calculateur-pret-immobilier</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://outilis.fr/outils/freelance-vs-cdi</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://outilis.fr/outils/calculateur-tva</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://outilis.fr/outils/generateur-facture</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://outilis.fr/outils/calculateur-rentabilite-locative</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://outilis.fr/outils/calculateur-retraite</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://outilis.fr/outils/calculateur-pourcentage</loc><priority>0.7</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://outilis.fr/outils/calculateur-imc</loc><priority>0.7</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://outilis.fr/outils/generateur-qr-code</loc><priority>0.7</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://outilis.fr/outils/generateur-mot-de-passe</loc><priority>0.7</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://outilis.fr/outils/compteur-mots</loc><priority>0.7</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://outilis.fr/outils/convertisseur-json-csv</loc><priority>0.7</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://outilis.fr/outils/generateur-lorem-ipsum</loc><priority>0.6</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://outilis.fr/outils/generateur-mentions-legales</loc><priority>0.7</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://outilis.fr/outils/convertisseur-couleurs</loc><priority>0.7</priority><changefreq>monthly</changefreq></url>
+</urlset>
