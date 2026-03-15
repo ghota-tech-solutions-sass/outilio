@@ -40,6 +40,9 @@ export const metadata: Metadata = {
     type: "website",
     locale: "fr_FR",
     siteName: "Outilis.fr",
+    title: "Outilis.fr - 40+ outils en ligne gratuits",
+    description:
+      "Calculateurs, generateurs et convertisseurs gratuits. 100% dans votre navigateur.",
   },
 };
 

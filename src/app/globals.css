@@ -81,6 +81,42 @@ body::before {
 .stagger-6 { animation-delay: 0.3s; }
 .stagger-7 { animation-delay: 0.35s; }
 
+/* Floating animation for hero elements */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(13, 79, 60, 0.2); }
+  50% { box-shadow: 0 0 0 8px rgba(13, 79, 60, 0); }
+}
+
+.animate-float { animation: float 6s ease-in-out infinite; }
+.animate-shimmer {
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.4) 50%, transparent 100%);
+  background-size: 200% 100%;
+  animation: shimmer 2s ease-in-out infinite;
+}
+.animate-pulse-glow { animation: pulse-glow 2s ease-in-out infinite; }
+
+/* Trust badge styles */
+.trust-strip {
+  background: linear-gradient(135deg, var(--primary) 0%, #1a6b4f 100%);
+}
+
+/* Category pill active state */
+.category-pill-active {
+  background: var(--primary) !important;
+  color: white !important;
+  border-color: var(--primary) !important;
+}
+
 /* Focus styles */
 input:focus, select:focus, textarea:focus {
   outline: none;

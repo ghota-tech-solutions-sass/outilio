@@ -1,4 +1,5 @@
 import ToolCard from "@/components/ToolCard";
+import PrivacyBanner from "@/components/PrivacyBanner";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -530,6 +531,9 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* Privacy Banner */}
+      <PrivacyBanner />
 
       {/* CTA */}
       <section className="border-t py-20" style={{ borderColor: "var(--border)" }}>
