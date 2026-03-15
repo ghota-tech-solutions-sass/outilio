@@ -91,8 +91,8 @@ export default function Footer() {
           className="mt-16 flex flex-col items-center justify-between gap-4 border-t pt-8 text-xs sm:flex-row"
           style={{ borderColor: "var(--border)", color: "var(--muted)" }}
         >
-          <span>&copy; {new Date().getFullYear()} Outilis.fr</span>
-          <span>Fait avec soin en France</span>
+          <span>&copy; {new Date().getFullYear()} Outilis.fr &mdash; <Link href="/mentions-legales" className="underline underline-offset-2 hover:text-[var(--foreground)]">Mentions legales</Link></span>
+          <span>Fait avec soin en France par <a href="https://ghotatechsolutions.com" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-[var(--foreground)]">Ghota Tech Solutions</a></span>
         </div>
       </div>
     </footer>
