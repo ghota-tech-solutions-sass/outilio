@@ -67,6 +67,48 @@ const tools = [
     icon: "\u{1F504}",
     category: "Dev",
   },
+  {
+    title: "Calculateur de TVA",
+    description:
+      "HT vers TTC et inversement. Tous les taux francais : 20%, 10%, 5,5%, 2,1%.",
+    href: "/outils/calculateur-tva",
+    icon: "\u{1F4B1}",
+    badge: "Nouveau",
+    category: "Finance",
+  },
+  {
+    title: "Calculateur de pourcentage",
+    description:
+      "X% de Y, variation en %, part d'un total. Trois modes de calcul.",
+    href: "/outils/calculateur-pourcentage",
+    icon: "\u{1F4CA}",
+    category: "Maths",
+  },
+  {
+    title: "Calculateur IMC",
+    description:
+      "Indice de Masse Corporelle selon les normes OMS. Poids ideal inclus.",
+    href: "/outils/calculateur-imc",
+    icon: "\u{2696}\uFE0F",
+    category: "Sante",
+  },
+  {
+    title: "Generateur Lorem Ipsum",
+    description:
+      "Texte factice pour vos maquettes. Paragraphes, phrases ou mots.",
+    href: "/outils/generateur-lorem-ipsum",
+    icon: "\u{1F4D6}",
+    category: "Texte",
+  },
+  {
+    title: "Mentions legales",
+    description:
+      "Generez des mentions legales conformes RGPD pour votre site web.",
+    href: "/outils/generateur-mentions-legales",
+    icon: "\u{2696}\uFE0F",
+    badge: "Pro",
+    category: "Legal",
+  },
 ];
 
 const FEATURES = [
@@ -153,7 +195,7 @@ export default function Home() {
             style={{ borderColor: "var(--border)" }}
           >
             {[
-              { value: "7", label: "Outils disponibles" },
+              { value: "12", label: "Outils disponibles" },
               { value: "0\u20AC", label: "Pour toujours" },
               { value: "0", label: "Donnees collectees" },
             ].map((stat, i) => (

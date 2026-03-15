@@ -11,6 +11,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/outils/generateur-mot-de-passe",
     "/outils/compteur-mots",
     "/outils/convertisseur-json-csv",
+    "/outils/calculateur-tva",
+    "/outils/calculateur-pourcentage",
+    "/outils/calculateur-imc",
+    "/outils/generateur-lorem-ipsum",
+    "/outils/generateur-mentions-legales",
   ];
 
   return [
