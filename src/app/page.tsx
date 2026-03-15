@@ -151,6 +151,49 @@ const tools = [
     icon: "\u{1F3A8}",
     category: "Design",
   },
+  {
+    title: "Calculateur de dates",
+    description:
+      "Jours entre deux dates, ajout/soustraction de jours. Echeances et delais.",
+    href: "/outils/calculateur-date",
+    icon: "\u{1F4C5}",
+    badge: "Nouveau",
+    category: "Outils",
+  },
+  {
+    title: "Politique de confidentialite",
+    description:
+      "Generez une politique de confidentialite conforme RGPD pour votre site web.",
+    href: "/outils/generateur-politique-confidentialite",
+    icon: "\u{1F6E1}\uFE0F",
+    badge: "Pro",
+    category: "Legal",
+  },
+  {
+    title: "Calculateur heures de travail",
+    description:
+      "Heures travaillees, pauses, heures sup. et totaux hebdomadaires.",
+    href: "/outils/calculateur-heures-travail",
+    icon: "\u{23F0}",
+    category: "Travail",
+  },
+  {
+    title: "Convertisseur d'unites",
+    description:
+      "Longueur, poids, temperature, surface, volume. Conversion instantanee.",
+    href: "/outils/convertisseur-unites",
+    icon: "\u{1F4CF}",
+    badge: "Nouveau",
+    category: "Conversion",
+  },
+  {
+    title: "Calculateur d'age",
+    description:
+      "Age exact en annees/mois/jours. Decompte prochain anniversaire.",
+    href: "/outils/calculateur-age",
+    icon: "\u{1F382}",
+    category: "Outils",
+  },
 ];
 
 const FEATURES = [
@@ -237,7 +280,7 @@ export default function Home() {
             style={{ borderColor: "var(--border)" }}
           >
             {[
-              { value: "17", label: "Outils disponibles" },
+              { value: "22", label: "Outils disponibles" },
               { value: "0\u20AC", label: "Pour toujours" },
               { value: "0", label: "Donnees collectees" },
             ].map((stat, i) => (
