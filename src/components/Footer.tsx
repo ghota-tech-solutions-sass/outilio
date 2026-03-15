@@ -61,6 +61,7 @@ export default function Footer() {
               A propos
             </h4>
             <ul className="mt-4 space-y-2.5 text-sm" style={{ color: "var(--muted)" }}>
+              <li><Link href="/comment-ca-marche" className="transition-colors hover:underline underline-offset-4" style={{ color: "var(--foreground)" }}>Comment ca marche</Link></li>
               <li>100% gratuit</li>
               <li>Aucune donnee collectee</li>
               <li>
