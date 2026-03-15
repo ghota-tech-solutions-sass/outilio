@@ -41,4 +41,14 @@
   <url><loc>https://outilis.fr/outils/encodeur-base64</loc><priority>0.7</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://outilis.fr/outils/calculateur-inflation</loc><priority>0.7</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://outilis.fr/outils/generateur-robots-txt</loc><priority>0.7</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://outilis.fr/outils/calculateur-co2</loc><priority>0.7</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://outilis.fr/outils/generateur-avatar</loc><priority>0.7</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://outilis.fr/outils/calculateur-grossesse</loc><priority>0.7</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://outilis.fr/outils/convertisseur-numeration</loc><priority>0.7</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://outilis.fr/outils/calculateur-beton</loc><priority>0.7</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://outilis.fr/outils/generateur-signature-email</loc><priority>0.7</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://outilis.fr/outils/calculateur-alcoolemie</loc><priority>0.7</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://outilis.fr/outils/convertisseur-temperature</loc><priority>0.7</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://outilis.fr/outils/calculateur-pourboire</loc><priority>0.7</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://outilis.fr/outils/generateur-mdp-prononcable</loc><priority>0.7</priority><changefreq>monthly</changefreq></url>
 </urlset>

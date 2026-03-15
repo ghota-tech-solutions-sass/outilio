@@ -357,6 +357,96 @@ const tools = [
     badge: "Nouveau",
     category: "SEO",
   },
+  {
+    title: "Empreinte carbone CO2",
+    description:
+      "Estimez vos emissions CO2 : voiture, avion, train, energie. Equivalences et conseils.",
+    href: "/outils/calculateur-co2",
+    icon: "\u{1F331}",
+    badge: "Nouveau",
+    category: "Environnement",
+  },
+  {
+    title: "Generateur d'avatar",
+    description:
+      "Creez un avatar avec vos initiales. Cercle colore, styles varies. Telechargez en PNG.",
+    href: "/outils/generateur-avatar",
+    icon: "\u{1F464}",
+    badge: "Nouveau",
+    category: "Design",
+  },
+  {
+    title: "Calculateur grossesse",
+    description:
+      "Date prevue d'accouchement, semaine, trimestre et etapes cles de la grossesse.",
+    href: "/outils/calculateur-grossesse",
+    icon: "\u{1F930}",
+    badge: "Nouveau",
+    category: "Sante",
+  },
+  {
+    title: "Convertisseur numeration",
+    description:
+      "Decimal, binaire, octal, hexadecimal. Conversion bidirectionnelle instantanee.",
+    href: "/outils/convertisseur-numeration",
+    icon: "\u{1F522}",
+    badge: "Nouveau",
+    category: "Dev",
+  },
+  {
+    title: "Calculateur beton",
+    description:
+      "Volume en m3, nombre de sacs 25kg/35kg. Dalle, fondation, poteau. Pour vos travaux.",
+    href: "/outils/calculateur-beton",
+    icon: "\u{1F3D7}\uFE0F",
+    badge: "Nouveau",
+    category: "Construction",
+  },
+  {
+    title: "Signature email HTML",
+    description:
+      "Creez une signature email pro : nom, poste, reseaux sociaux. Copiez le HTML en un clic.",
+    href: "/outils/generateur-signature-email",
+    icon: "\u{270D}\uFE0F",
+    badge: "Nouveau",
+    category: "Business",
+  },
+  {
+    title: "Calculateur alcoolemie",
+    description:
+      "Taux d'alcoolemie estime, temps de retour a zero. Outil educatif base sur Widmark.",
+    href: "/outils/calculateur-alcoolemie",
+    icon: "\u{1F37B}",
+    badge: "Nouveau",
+    category: "Sante",
+  },
+  {
+    title: "Convertisseur temperature",
+    description:
+      "Celsius, Fahrenheit, Kelvin. Thermometre visuel et formules de conversion.",
+    href: "/outils/convertisseur-temperature",
+    icon: "\u{1F321}\uFE0F",
+    badge: "Nouveau",
+    category: "Conversion",
+  },
+  {
+    title: "Calculateur pourboire",
+    description:
+      "Pourboire ideal, partage de l'addition. Comparaison des taux et arrondi.",
+    href: "/outils/calculateur-pourboire",
+    icon: "\u{1F4B5}",
+    badge: "Nouveau",
+    category: "Restaurant",
+  },
+  {
+    title: "Mot de passe prononcable",
+    description:
+      "Mots de passe faciles a prononcer et retenir. Syllabes, force et options.",
+    href: "/outils/generateur-mdp-prononcable",
+    icon: "\u{1F5E3}\uFE0F",
+    badge: "Nouveau",
+    category: "Securite",
+  },
 ];
 
 const FEATURES = [
@@ -386,7 +476,7 @@ export default function Home() {
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
           </svg>
-          40+ outils gratuits &middot; Aucune donnee collectee &middot; 100% dans votre navigateur
+          50 outils gratuits &middot; Aucune donnee collectee &middot; 100% dans votre navigateur
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/>
           </svg>
@@ -415,7 +505,7 @@ export default function Home() {
                 <span className="relative inline-flex h-2 w-2 rounded-full" style={{ background: "var(--primary)" }} />
               </span>
               <span className="text-xs font-semibold" style={{ color: "var(--primary)" }}>
-                40 outils disponibles &mdash; Nouveau : Calculateur d&apos;epargne
+                50 outils disponibles &mdash; 10 nouveaux outils !
               </span>
             </div>
 
@@ -457,7 +547,7 @@ export default function Home() {
                 className="inline-flex items-center rounded-full border px-6 py-3.5 text-sm font-semibold transition-all hover:bg-[#0d4f3c]/5 hover:border-[#0d4f3c]/20"
                 style={{ borderColor: "var(--border)" }}
               >
-                Voir les 40 outils
+                Voir les 50 outils
               </a>
             </div>
 
@@ -482,7 +572,7 @@ export default function Home() {
             style={{ borderColor: "var(--border)" }}
           >
             {[
-              { value: "40+", label: "Outils gratuits", icon: "\u{2699}\uFE0F" },
+              { value: "50", label: "Outils gratuits", icon: "\u{2699}\uFE0F" },
               { value: "0\u20AC", label: "Pour toujours", icon: "\u{1F4B8}" },
               { value: "0", label: "Donnees collectees", icon: "\u{1F512}" },
             ].map((stat, i) => (
