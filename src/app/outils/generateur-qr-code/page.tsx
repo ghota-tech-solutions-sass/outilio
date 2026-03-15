@@ -7,7 +7,7 @@ import AdPlaceholder from "@/components/AdPlaceholder";
 // For production, you'd use the 'qrcode' npm package, but this works without deps
 
 export default function GenerateurQRCode() {
-  const [text, setText] = useState("https://outilio.fr");
+  const [text, setText] = useState("https://outilis.fr");
   const [size, setSize] = useState("256");
   const [color, setColor] = useState("#000000");
   const [bgColor, setBgColor] = useState("#ffffff");

@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 
-const BASE_URL = "https://outilio.fr";
+const BASE_URL = "https://outilis.fr";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const tools = [

@@ -21,7 +21,7 @@ export default function Footer() {
               className="text-3xl tracking-tight"
               style={{ fontFamily: "var(--font-display)", color: "var(--primary)" }}
             >
-              Outilio
+              Outilis
             </span>
             <p className="mt-4 max-w-xs text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
               Des outils en ligne penses pour simplifier votre quotidien.
@@ -72,7 +72,7 @@ export default function Footer() {
           className="mt-16 flex flex-col items-center justify-between gap-4 border-t pt-8 text-xs sm:flex-row"
           style={{ borderColor: "var(--border)", color: "var(--muted)" }}
         >
-          <span>&copy; {new Date().getFullYear()} Outilio.fr</span>
+          <span>&copy; {new Date().getFullYear()} Outilis.fr</span>
           <span>Fait avec soin en France</span>
         </div>
       </div>

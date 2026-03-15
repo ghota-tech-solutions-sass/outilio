@@ -2,7 +2,7 @@ import ToolCard from "@/components/ToolCard";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Outilio.fr - Outils en ligne gratuits pour le quotidien",
+  title: "Outilis.fr - Outils en ligne gratuits pour le quotidien",
   description:
     "Calculateur salaire net/brut, simulateur pret immobilier, generateur de factures, QR codes, mots de passe securises. 100% gratuit, sans inscription.",
 };

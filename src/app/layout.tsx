@@ -20,8 +20,8 @@ const bodyFont = DM_Sans({
 
 export const metadata: Metadata = {
   title: {
-    default: "Outilio.fr - Outils en ligne gratuits",
-    template: "%s | Outilio.fr",
+    default: "Outilis.fr - Outils en ligne gratuits",
+    template: "%s | Outilis.fr",
   },
   description:
     "Outils en ligne gratuits : calculateur salaire net/brut, simulateur pret immobilier, generateur de factures, QR codes, mots de passe et plus.",
@@ -36,7 +36,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "fr_FR",
-    siteName: "Outilio.fr",
+    siteName: "Outilis.fr",
   },
 };
 

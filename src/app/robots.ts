@@ -6,6 +6,6 @@ export default function robots(): MetadataRoute.Robots {
       userAgent: "*",
       allow: "/",
     },
-    sitemap: "https://outilio.fr/sitemap.xml",
+    sitemap: "https://outilis.fr/sitemap.xml",
   };
 }

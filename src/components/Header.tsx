@@ -23,7 +23,7 @@ export default function Header() {
             className="text-2xl tracking-tight"
             style={{ fontFamily: "var(--font-display)", color: "var(--primary)" }}
           >
-            Outilio
+            Outilis
           </span>
           <span className="text-xs font-medium tracking-widest uppercase" style={{ color: "var(--muted)" }}>
             .fr
