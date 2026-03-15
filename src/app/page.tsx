@@ -266,6 +266,96 @@ const tools = [
     badge: "Nouveau",
     category: "Finance",
   },
+  {
+    title: "Calculateur d'epargne",
+    description:
+      "Simulez la croissance de votre epargne avec les interets composes. Graphique de projection.",
+    href: "/outils/calculateur-epargne",
+    icon: "\u{1F4B0}",
+    badge: "Nouveau",
+    category: "Finance",
+  },
+  {
+    title: "Mot de passe WiFi",
+    description:
+      "Generez des mots de passe WiFi securises et lisibles. QR code pour partager facilement.",
+    href: "/outils/generateur-mot-de-passe-wifi",
+    icon: "\u{1F4F6}",
+    badge: "Nouveau",
+    category: "Securite",
+  },
+  {
+    title: "Calculateur de surface",
+    description:
+      "Rectangle, cercle, triangle, trapeze. Aire en m2 et conversion en autres unites.",
+    href: "/outils/calculateur-surface",
+    icon: "\u{1F4D0}",
+    badge: "Nouveau",
+    category: "Maths",
+  },
+  {
+    title: "Convertisseur de temps",
+    description:
+      "Secondes, minutes, heures, jours, semaines, mois, annees. Conversion bidirectionnelle.",
+    href: "/outils/convertisseur-temps",
+    icon: "\u{231A}",
+    badge: "Nouveau",
+    category: "Conversion",
+  },
+  {
+    title: "Calculateur vitesse",
+    description:
+      "Vitesse, distance, temps : entrez 2 valeurs, obtenez la 3e. Conversions km/h, m/s, mph.",
+    href: "/outils/calculateur-vitesse",
+    icon: "\u{1F3CE}\uFE0F",
+    badge: "Nouveau",
+    category: "Outils",
+  },
+  {
+    title: "Generateur de slug URL",
+    description:
+      "Transformez n'importe quel texte en slug SEO-friendly. Accents, espaces, caracteres speciaux.",
+    href: "/outils/generateur-slug",
+    icon: "\u{1F517}",
+    badge: "Nouveau",
+    category: "Dev",
+  },
+  {
+    title: "Calculateur de marge",
+    description:
+      "Marge commerciale, taux de marge, markup et benefice. Calcul direct et inverse.",
+    href: "/outils/calculateur-marge",
+    icon: "\u{1F4C8}",
+    badge: "Nouveau",
+    category: "Business",
+  },
+  {
+    title: "Encodeur Base64",
+    description:
+      "Encodez du texte en Base64 et decodez du Base64 en texte. Copie en un clic.",
+    href: "/outils/encodeur-base64",
+    icon: "\u{1F510}",
+    badge: "Nouveau",
+    category: "Dev",
+  },
+  {
+    title: "Calculateur d'inflation",
+    description:
+      "Pouvoir d'achat dans le temps. Donnees IPC francaises de 1970 a 2025.",
+    href: "/outils/calculateur-inflation",
+    icon: "\u{1F4C9}",
+    badge: "Nouveau",
+    category: "Finance",
+  },
+  {
+    title: "Generateur robots.txt",
+    description:
+      "Creez un fichier robots.txt valide. Presets, chemins bloques, sitemap. Pour le SEO.",
+    href: "/outils/generateur-robots-txt",
+    icon: "\u{1F916}",
+    badge: "Nouveau",
+    category: "SEO",
+  },
 ];
 
 const FEATURES = [
@@ -352,7 +442,7 @@ export default function Home() {
             style={{ borderColor: "var(--border)" }}
           >
             {[
-              { value: "30", label: "Outils disponibles" },
+              { value: "40", label: "Outils disponibles" },
               { value: "0\u20AC", label: "Pour toujours" },
               { value: "0", label: "Donnees collectees" },
             ].map((stat, i) => (

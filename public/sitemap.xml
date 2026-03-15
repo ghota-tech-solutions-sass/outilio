@@ -31,4 +31,14 @@
   <url><loc>https://outilis.fr/outils/calculateur-remise</loc><priority>0.7</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://outilis.fr/outils/generateur-email-professionnel</loc><priority>0.7</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://outilis.fr/outils/calculateur-taux-change</loc><priority>0.7</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://outilis.fr/outils/calculateur-epargne</loc><priority>0.7</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://outilis.fr/outils/generateur-mot-de-passe-wifi</loc><priority>0.7</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://outilis.fr/outils/calculateur-surface</loc><priority>0.7</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://outilis.fr/outils/convertisseur-temps</loc><priority>0.7</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://outilis.fr/outils/calculateur-vitesse</loc><priority>0.7</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://outilis.fr/outils/generateur-slug</loc><priority>0.7</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://outilis.fr/outils/calculateur-marge</loc><priority>0.7</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://outilis.fr/outils/encodeur-base64</loc><priority>0.7</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://outilis.fr/outils/calculateur-inflation</loc><priority>0.7</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://outilis.fr/outils/generateur-robots-txt</loc><priority>0.7</priority><changefreq>monthly</changefreq></url>
 </urlset>

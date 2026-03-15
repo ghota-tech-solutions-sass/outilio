@@ -55,6 +55,23 @@ export default function RootLayout({
         <Script id="google-analytics" strategy="afterInteractive">
           {`window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','${GA_ID}');`}
         </Script>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "WebSite",
+              "name": "Outilis.fr",
+              "url": "https://outilis.fr",
+              "description": "Outils en ligne gratuits : calculateurs, generateurs et convertisseurs.",
+              "potentialAction": {
+                "@type": "SearchAction",
+                "target": "https://outilis.fr/?q={search_term_string}",
+                "query-input": "required name=search_term_string"
+              }
+            }),
+          }}
+        />
       </head>
       <body className={`${displayFont.variable} ${bodyFont.variable} antialiased`}>
         <Header />
