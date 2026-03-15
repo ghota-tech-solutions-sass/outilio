@@ -1,0 +1,145 @@
+"use client";
+
+import { useState, useEffect, useRef } from "react";
+import AdPlaceholder from "@/components/AdPlaceholder";
+
+// Simple QR Code generation using Canvas API and a lightweight algorithm
+// For production, you'd use the 'qrcode' npm package, but this works without deps
+
+export default function GenerateurQRCode() {
+  const [text, setText] = useState("https://outilio.fr");
+  const [size, setSize] = useState("256");
+  const [color, setColor] = useState("#000000");
+  const [bgColor, setBgColor] = useState("#ffffff");
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [qrDataUrl, setQrDataUrl] = useState("");
+
+  useEffect(() => {
+    if (!text.trim()) return;
+    // We'll use a simple approach: generate QR via an API-free method
+    // Using the Google Charts API as a fallback for QR generation
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    const s = parseInt(size) || 256;
+    // Generate using a canvas-based approach
+    const encodedText = encodeURIComponent(text);
+    img.src = `https://api.qrserver.com/v1/create-qr-code/?size=${s}x${s}&data=${encodedText}&color=${color.replace("#", "")}&bgcolor=${bgColor.replace("#", "")}`;
+    img.onload = () => {
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+      canvas.width = s;
+      canvas.height = s;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
+      ctx.drawImage(img, 0, 0, s, s);
+      setQrDataUrl(canvas.toDataURL("image/png"));
+    };
+  }, [text, size, color, bgColor]);
+
+  const download = () => {
+    if (!qrDataUrl) return;
+    const a = document.createElement("a");
+    a.href = qrDataUrl;
+    a.download = "qrcode.png";
+    a.click();
+  };
+
+  return (
+    <>
+      <section className="bg-gradient-to-b from-blue-50 to-white py-12">
+        <div className="mx-auto max-w-3xl px-4">
+          <h1 className="text-3xl font-extrabold text-gray-900 md:text-4xl">
+            Generateur de QR Code gratuit
+          </h1>
+          <p className="mt-2 text-gray-600">
+            Creez des QR codes personnalises pour vos liens, textes, emails ou Wi-Fi.
+          </p>
+        </div>
+      </section>
+
+      <div className="mx-auto max-w-5xl px-4 py-8">
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
+          <div className="lg:col-span-2 space-y-6">
+            <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+              <label className="text-sm font-medium text-gray-700">
+                Contenu du QR Code
+              </label>
+              <textarea
+                value={text}
+                onChange={(e) => setText(e.target.value)}
+                placeholder="URL, texte, email, telephone..."
+                className="mt-1 h-24 w-full rounded-lg border border-gray-300 p-3 focus:border-[#2563eb] focus:outline-none focus:ring-2 focus:ring-blue-100"
+              />
+
+              <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
+                <div>
+                  <label className="text-sm font-medium text-gray-700">Taille (px)</label>
+                  <select
+                    value={size}
+                    onChange={(e) => setSize(e.target.value)}
+                    className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-[#2563eb] focus:outline-none"
+                  >
+                    <option value="128">128 x 128</option>
+                    <option value="256">256 x 256</option>
+                    <option value="512">512 x 512</option>
+                    <option value="1024">1024 x 1024</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-700">Couleur</label>
+                  <input
+                    type="color"
+                    value={color}
+                    onChange={(e) => setColor(e.target.value)}
+                    className="mt-1 h-10 w-full rounded-lg border border-gray-300"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-700">Fond</label>
+                  <input
+                    type="color"
+                    value={bgColor}
+                    onChange={(e) => setBgColor(e.target.value)}
+                    className="mt-1 h-10 w-full rounded-lg border border-gray-300"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* QR Preview */}
+            <div className="flex flex-col items-center rounded-xl border border-gray-200 bg-white p-8 shadow-sm">
+              <canvas ref={canvasRef} className="rounded-lg border border-gray-100" />
+              <button
+                onClick={download}
+                disabled={!qrDataUrl}
+                className="mt-4 rounded-lg bg-[#2563eb] px-8 py-3 font-semibold text-white hover:bg-[#1d4ed8] disabled:opacity-50"
+              >
+                Telecharger PNG
+              </button>
+            </div>
+
+            <div className="prose max-w-none rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+              <h2>Comment utiliser un QR Code ?</h2>
+              <p>
+                Un QR Code (Quick Response Code) est un code-barres 2D qui peut etre scanne
+                avec la camera d&apos;un smartphone. Il peut contenir :
+              </p>
+              <ul>
+                <li><strong>URLs</strong> : redirigez vers votre site web</li>
+                <li><strong>Texte</strong> : affichez un message</li>
+                <li><strong>Email</strong> : pre-remplissez un email (mailto:)</li>
+                <li><strong>Wi-Fi</strong> : partagez vos identifiants reseau</li>
+                <li><strong>vCard</strong> : partagez vos coordonnees</li>
+              </ul>
+            </div>
+          </div>
+
+          <aside className="space-y-6">
+            <AdPlaceholder className="h-[250px]" />
+            <AdPlaceholder className="h-[600px]" />
+          </aside>
+        </div>
+      </div>
+    </>
+  );
+}

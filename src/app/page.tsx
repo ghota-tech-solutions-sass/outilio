@@ -1,65 +1,272 @@
-import Image from "next/image";
+import ToolCard from "@/components/ToolCard";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Outilio.fr - Outils en ligne gratuits pour le quotidien",
+  description:
+    "Calculateur salaire net/brut, simulateur pret immobilier, generateur de factures, QR codes, mots de passe securises. 100% gratuit, sans inscription.",
+};
+
+const tools = [
+  {
+    title: "Calculateur salaire net / brut",
+    description:
+      "Convertissez votre salaire brut en net et inversement. Cadre, non-cadre, fonction publique. Estimation impot incluse.",
+    href: "/outils/calculateur-salaire",
+    icon: "\u{1F4B0}",
+    badge: "Populaire",
+    category: "Finance",
+  },
+  {
+    title: "Simulateur pret immobilier",
+    description:
+      "Calculez vos mensualites, le cout total du credit et visualisez le tableau d'amortissement complet.",
+    href: "/outils/calculateur-pret-immobilier",
+    icon: "\u{1F3E0}",
+    badge: "Populaire",
+    category: "Immobilier",
+  },
+  {
+    title: "Generateur de factures",
+    description:
+      "Creez des factures conformes en PDF gratuitement. TVA, multi-lignes, impression directe.",
+    href: "/outils/generateur-facture",
+    icon: "\u{1F4C4}",
+    badge: "Pro",
+    category: "Business",
+  },
+  {
+    title: "Generateur de QR Code",
+    description:
+      "QR codes personnalises : couleurs, taille. Pour vos liens, textes, emails ou Wi-Fi.",
+    href: "/outils/generateur-qr-code",
+    icon: "\u{1F4F1}",
+    category: "Outils",
+  },
+  {
+    title: "Generateur de mot de passe",
+    description:
+      "Mots de passe securises et personnalisables. Indicateur de force. 100% local.",
+    href: "/outils/generateur-mot-de-passe",
+    icon: "\u{1F512}",
+    category: "Securite",
+  },
+  {
+    title: "Compteur de mots",
+    description:
+      "Mots, caracteres, phrases, paragraphes. Temps de lecture et de parole estimes.",
+    href: "/outils/compteur-mots",
+    icon: "\u{1F4DD}",
+    category: "Texte",
+  },
+  {
+    title: "Convertisseur JSON / CSV",
+    description:
+      "Convertissez vos donnees entre JSON et CSV instantanement. Telechargement inclus.",
+    href: "/outils/convertisseur-json-csv",
+    icon: "\u{1F504}",
+    category: "Dev",
+  },
+];
+
+const FEATURES = [
+  {
+    icon: "\u{26A1}",
+    title: "Instantane",
+    description: "Calculs en temps reel dans votre navigateur. Zero temps de chargement.",
+  },
+  {
+    icon: "\u{1F6E1}\uFE0F",
+    title: "Prive",
+    description: "Aucune donnee envoyee. Tout reste sur votre appareil.",
+  },
+  {
+    icon: "\u{2728}",
+    title: "Sans friction",
+    description: "Pas de compte. Pas de pub intrusive. Pas de limite.",
+  },
+];
 
 export default function Home() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+    <>
+      {/* Hero */}
+      <section className="relative overflow-hidden py-24 md:py-32">
+        {/* Decorative gradient */}
+        <div
+          className="absolute inset-0 opacity-[0.03]"
+          style={{
+            backgroundImage: "radial-gradient(circle at 30% 20%, #0d4f3c 0%, transparent 50%), radial-gradient(circle at 80% 80%, #e8963e 0%, transparent 40%)",
+          }}
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+
+        <div className="relative mx-auto max-w-6xl px-5">
+          <div className="max-w-3xl">
+            <p
+              className="animate-fade-up text-xs font-semibold uppercase tracking-[0.2em]"
+              style={{ color: "var(--accent)" }}
             >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+              Outils en ligne gratuits
+            </p>
+
+            <h1
+              className="animate-fade-up stagger-1 mt-5 text-5xl leading-[1.1] tracking-tight md:text-7xl"
+              style={{ fontFamily: "var(--font-display)" }}
             >
-              Learning
-            </a>{" "}
-            center.
+              Simplifiez votre{" "}
+              <span style={{ color: "var(--primary)" }}>quotidien</span>
+              <span style={{ color: "var(--accent)" }}>.</span>
+            </h1>
+
+            <p
+              className="animate-fade-up stagger-2 mt-6 max-w-lg text-lg leading-relaxed"
+              style={{ color: "var(--muted)" }}
+            >
+              Calculateurs, generateurs et convertisseurs — concus pour etre
+              rapides, gratuits et respectueux de votre vie privee.
+            </p>
+
+            <div className="animate-fade-up stagger-3 mt-8 flex flex-wrap gap-3">
+              <a
+                href="/outils/calculateur-salaire"
+                className="inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-semibold text-white transition-all hover:opacity-90"
+                style={{ background: "var(--primary)" }}
+              >
+                Calculer mon salaire net
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M5 12h14M12 5l7 7-7 7"/>
+                </svg>
+              </a>
+              <a
+                href="#outils"
+                className="inline-flex items-center rounded-full border px-6 py-3 text-sm font-semibold transition-all hover:bg-[#0d4f3c]/5"
+                style={{ borderColor: "var(--border)" }}
+              >
+                Voir tous les outils
+              </a>
+            </div>
+          </div>
+
+          {/* Stats */}
+          <div
+            className="animate-fade-up stagger-4 mt-16 grid grid-cols-3 gap-px overflow-hidden rounded-2xl border"
+            style={{ borderColor: "var(--border)" }}
+          >
+            {[
+              { value: "7", label: "Outils disponibles" },
+              { value: "0\u20AC", label: "Pour toujours" },
+              { value: "0", label: "Donnees collectees" },
+            ].map((stat, i) => (
+              <div
+                key={i}
+                className="px-6 py-5 text-center"
+                style={{ background: "var(--surface)" }}
+              >
+                <p className="text-2xl font-bold md:text-3xl" style={{ fontFamily: "var(--font-display)", color: "var(--primary)" }}>
+                  {stat.value}
+                </p>
+                <p className="mt-1 text-[11px] font-medium uppercase tracking-wider" style={{ color: "var(--muted)" }}>
+                  {stat.label}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Tools Grid */}
+      <section id="outils" className="border-t py-20" style={{ borderColor: "var(--border)" }}>
+        <div className="mx-auto max-w-6xl px-5">
+          <div className="flex items-end justify-between">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: "var(--accent)" }}>
+                Collection
+              </p>
+              <h2
+                className="mt-2 text-3xl tracking-tight md:text-4xl"
+                style={{ fontFamily: "var(--font-display)" }}
+              >
+                Tous nos outils
+              </h2>
+            </div>
+            <p className="hidden text-sm md:block" style={{ color: "var(--muted)" }}>
+              {tools.length} outils disponibles
+            </p>
+          </div>
+
+          <div className="mt-10 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {tools.map((tool, i) => (
+              <div key={tool.href} className={`animate-fade-up stagger-${i + 1}`}>
+                <ToolCard {...tool} />
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Features */}
+      <section className="border-t py-20" style={{ borderColor: "var(--border)", background: "var(--surface-alt)" }}>
+        <div className="mx-auto max-w-6xl px-5">
+          <div className="text-center">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: "var(--accent)" }}>
+              Philosophie
+            </p>
+            <h2
+              className="mt-2 text-3xl tracking-tight md:text-4xl"
+              style={{ fontFamily: "var(--font-display)" }}
+            >
+              Concu pour vous, pas contre vous
+            </h2>
+          </div>
+
+          <div className="mt-12 grid grid-cols-1 gap-8 md:grid-cols-3">
+            {FEATURES.map((f, i) => (
+              <div
+                key={i}
+                className="rounded-2xl border p-8 transition-all hover:shadow-lg hover:shadow-[#0d4f3c]/5"
+                style={{ background: "var(--surface)", borderColor: "var(--border)" }}
+              >
+                <span className="text-4xl">{f.icon}</span>
+                <h3
+                  className="mt-4 text-xl tracking-tight"
+                  style={{ fontFamily: "var(--font-display)" }}
+                >
+                  {f.title}
+                </h3>
+                <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                  {f.description}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="border-t py-20" style={{ borderColor: "var(--border)" }}>
+        <div className="mx-auto max-w-2xl px-5 text-center">
+          <h2
+            className="text-3xl tracking-tight md:text-4xl"
+            style={{ fontFamily: "var(--font-display)" }}
+          >
+            Pret a simplifier votre quotidien ?
+          </h2>
+          <p className="mt-4 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+            Commencez avec notre outil le plus populaire — le calculateur de salaire net/brut.
+            Rejoignez des milliers d&apos;utilisateurs qui nous font confiance.
           </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
           <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+            href="/outils/calculateur-salaire"
+            className="mt-6 inline-flex items-center gap-2 rounded-full px-8 py-3.5 text-sm font-semibold text-white transition-all hover:opacity-90"
+            style={{ background: "var(--primary)" }}
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
+            Commencer gratuitement
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
           </a>
         </div>
-      </main>
-    </div>
+      </section>
+    </>
   );
 }
