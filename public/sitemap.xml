@@ -51,4 +51,9 @@
   <url><loc>https://outilis.fr/outils/convertisseur-temperature</loc><priority>0.7</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://outilis.fr/outils/calculateur-pourboire</loc><priority>0.7</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://outilis.fr/outils/generateur-mdp-prononcable</loc><priority>0.7</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://outilis.fr/outils/comparateur-texte</loc><priority>0.7</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://outilis.fr/outils/optimiseur-json</loc><priority>0.7</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://outilis.fr/outils/convertisseur-px-rem</loc><priority>0.7</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://outilis.fr/outils/generateur-gradient</loc><priority>0.7</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://outilis.fr/outils/generateur-regex</loc><priority>0.7</priority><changefreq>monthly</changefreq></url>
 </urlset>

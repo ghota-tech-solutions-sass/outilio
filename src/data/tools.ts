@@ -446,4 +446,49 @@ export const tools: Tool[] = [
     badge: "Nouveau",
     category: "Securite",
   },
+  {
+    title: "Comparateur de texte",
+    description:
+      "Comparez deux textes et visualisez les differences ligne par ligne. Ajouts en vert, suppressions en rouge.",
+    href: "/outils/comparateur-texte",
+    icon: "\u{1F50D}",
+    badge: "Nouveau",
+    category: "Dev",
+  },
+  {
+    title: "Optimiseur JSON",
+    description:
+      "Formatez, validez, minifiez et triez du JSON. Coloration syntaxique et statistiques.",
+    href: "/outils/optimiseur-json",
+    icon: "\u{1F4CB}",
+    badge: "Nouveau",
+    category: "Dev",
+  },
+  {
+    title: "Convertisseur PX / REM",
+    description:
+      "Convertissez pixels en rem et inversement. Tableau de correspondance. Pour le responsive.",
+    href: "/outils/convertisseur-px-rem",
+    icon: "\u{1F4D0}",
+    badge: "Nouveau",
+    category: "Dev",
+  },
+  {
+    title: "Generateur de gradient",
+    description:
+      "Creez des degrades CSS : lineaire, radial, couleurs, angle. Apercu et code CSS pret a copier.",
+    href: "/outils/generateur-gradient",
+    icon: "\u{1F308}",
+    badge: "Nouveau",
+    category: "Design",
+  },
+  {
+    title: "Testeur de Regex",
+    description:
+      "Testez vos expressions regulieres en temps reel. Groupes, drapeaux, bibliotheque de patterns.",
+    href: "/outils/generateur-regex",
+    icon: "\u{1F9EA}",
+    badge: "Nouveau",
+    category: "Dev",
+  },
 ];

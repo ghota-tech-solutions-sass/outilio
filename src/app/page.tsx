@@ -36,7 +36,7 @@ export default function Home() {
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
           </svg>
-          50 outils gratuits &middot; Aucune donnee collectee &middot; 100% dans votre navigateur
+          55 outils gratuits &middot; Aucune donnee collectee &middot; 100% dans votre navigateur
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/>
           </svg>
@@ -65,7 +65,7 @@ export default function Home() {
                 <span className="relative inline-flex h-2 w-2 rounded-full" style={{ background: "var(--primary)" }} />
               </span>
               <span className="text-xs font-semibold" style={{ color: "var(--primary)" }}>
-                50 outils disponibles &mdash; 10 nouveaux outils !
+                55 outils disponibles &mdash; 15 nouveaux outils !
               </span>
             </div>
 
@@ -107,7 +107,7 @@ export default function Home() {
                 className="inline-flex items-center rounded-full border px-6 py-3.5 text-sm font-semibold transition-all hover:bg-[#0d4f3c]/5 hover:border-[#0d4f3c]/20"
                 style={{ borderColor: "var(--border)" }}
               >
-                Voir les 50 outils
+                Voir les 55 outils
               </a>
             </div>
 
@@ -132,7 +132,7 @@ export default function Home() {
             style={{ borderColor: "var(--border)" }}
           >
             {[
-              { value: "50", label: "Outils gratuits", icon: "\u{2699}\uFE0F" },
+              { value: "55", label: "Outils gratuits", icon: "\u{2699}\uFE0F" },
               { value: "0\u20AC", label: "Pour toujours", icon: "\u{1F4B8}" },
               { value: "0", label: "Donnees collectees", icon: "\u{1F512}" },
             ].map((stat, i) => (
