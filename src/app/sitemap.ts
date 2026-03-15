@@ -16,6 +16,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/outils/calculateur-imc",
     "/outils/generateur-lorem-ipsum",
     "/outils/generateur-mentions-legales",
+    "/outils/simulateur-impot",
+    "/outils/freelance-vs-cdi",
+    "/outils/calculateur-rentabilite-locative",
+    "/outils/calculateur-retraite",
+    "/outils/convertisseur-couleurs",
   ];
 
   return [

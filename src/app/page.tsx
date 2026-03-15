@@ -109,6 +109,48 @@ const tools = [
     badge: "Pro",
     category: "Legal",
   },
+  {
+    title: "Simulateur impot sur le revenu",
+    description:
+      "Bareme 2024, quotient familial, taux marginal. Detail par tranche d'imposition.",
+    href: "/outils/simulateur-impot",
+    icon: "\u{1F4CB}",
+    badge: "Populaire",
+    category: "Finance",
+  },
+  {
+    title: "Freelance vs CDI",
+    description:
+      "Comparez revenus nets : TJM, charges, impots. Micro, EURL, SASU vs salarie.",
+    href: "/outils/freelance-vs-cdi",
+    icon: "\u{1F4BC}",
+    badge: "Nouveau",
+    category: "Carriere",
+  },
+  {
+    title: "Rentabilite locative",
+    description:
+      "Rendement brut/net, cashflow, effort d'epargne. Simulateur investissement immobilier.",
+    href: "/outils/calculateur-rentabilite-locative",
+    icon: "\u{1F3D8}\uFE0F",
+    category: "Immobilier",
+  },
+  {
+    title: "Age depart retraite",
+    description:
+      "Reforme 2023 : age legal, trimestres requis selon votre annee de naissance.",
+    href: "/outils/calculateur-retraite",
+    icon: "\u{1F9D3}",
+    category: "Retraite",
+  },
+  {
+    title: "Convertisseur couleurs",
+    description:
+      "HEX, RGB, HSL. Color picker, sliders, copie en un clic. Pour designers et devs.",
+    href: "/outils/convertisseur-couleurs",
+    icon: "\u{1F3A8}",
+    category: "Design",
+  },
 ];
 
 const FEATURES = [
@@ -195,7 +237,7 @@ export default function Home() {
             style={{ borderColor: "var(--border)" }}
           >
             {[
-              { value: "12", label: "Outils disponibles" },
+              { value: "17", label: "Outils disponibles" },
               { value: "0\u20AC", label: "Pour toujours" },
               { value: "0", label: "Donnees collectees" },
             ].map((stat, i) => (
