@@ -9,7 +9,8 @@ interface VideoInfo { name: string; size: number; type: string; duration: number
 type EffectType = "trim" | "resize" | "speed" | "rotate" | "mute";
 type QuickAction = "gif" | "capture";
 
-interface TrimCfg { start: number; end: number }
+interface CutZone { id: string; start: number; end: number }
+interface TrimCfg { start: number; end: number; cuts: CutZone[] }
 interface ResizeCfg { w: number; h: number; label: string }
 interface SpeedCfg { value: number; label: string }
 interface RotateCfg { filter: string; label: string }
@@ -23,7 +24,7 @@ interface PipelineEffect { id: string; type: EffectType; config: EffectCfg }
 /* ═══════════════════════════ PRESETS ═══════════════════════════ */
 
 const EFX: Record<EffectType, { label: string; icon: string; color: string }> = {
-  trim:   { label: "Couper",   icon: "✂️",  color: "#0d4f3c" },
+  trim:   { label: "Couper",   icon: "✂️",  color: "#22c55e" },
   resize: { label: "Taille",   icon: "📐",  color: "#6366f1" },
   speed:  { label: "Vitesse",  icon: "⚡",  color: "#e8963e" },
   rotate: { label: "Rotation", icon: "🔄",  color: "#ec4899" },
@@ -58,35 +59,80 @@ function fmtTimeFine(s: number) {
 
 /* ═══════════════════════ FFMPEG CMD BUILDER ═══════════════════════ */
 
-function buildArgs(pipeline: PipelineEffect[], fmt: "mp4" | "webm", quality: number): string[] {
-  const args: string[] = [], vf: string[] = [], af: string[] = [];
-  let muted = false;
+/** Compute "keep" segments from trim config (start/end range + cut zones to remove) */
+function getKeepSegments(cfg: TrimCfg): { start: number; end: number }[] {
+  const sortedCuts = [...cfg.cuts].sort((a, b) => a.start - b.start);
+  const keeps: { start: number; end: number }[] = [];
+  let cursor = cfg.start;
+  for (const cut of sortedCuts) {
+    if (cut.start > cursor) keeps.push({ start: cursor, end: Math.min(cut.start, cfg.end) });
+    cursor = Math.max(cursor, cut.end);
+  }
+  if (cursor < cfg.end) keeps.push({ start: cursor, end: cfg.end });
+  return keeps.filter((k) => k.end - k.start > 0.1);
+}
 
-  const trim = pipeline.find((e) => e.type === "trim");
-  if (trim) { const c = trim.config as TrimCfg; args.push("-ss", c.start.toFixed(2), "-to", c.end.toFixed(2)); }
+function buildArgs(pipeline: PipelineEffect[], fmt: "mp4" | "webm", quality: number, duration: number): string[] {
+  let muted = false;
+  const extraVf: string[] = [], extraAf: string[] = [];
 
   for (const e of pipeline) {
-    if (e.type === "resize") { const c = e.config as ResizeCfg; vf.push(`scale=${c.w}:${c.h}:force_original_aspect_ratio=decrease,pad=${c.w}:${c.h}:(ow-iw)/2:(oh-ih)/2`); }
-    if (e.type === "rotate") { vf.push((e.config as RotateCfg).filter); }
+    if (e.type === "resize") { const c = e.config as ResizeCfg; extraVf.push(`scale=${c.w}:${c.h}:force_original_aspect_ratio=decrease,pad=${c.w}:${c.h}:(ow-iw)/2:(oh-ih)/2`); }
+    if (e.type === "rotate") { extraVf.push((e.config as RotateCfg).filter); }
     if (e.type === "speed") {
       const s = (e.config as SpeedCfg).value;
-      vf.push(`setpts=${(1 / s).toFixed(4)}*PTS`);
+      extraVf.push(`setpts=${(1 / s).toFixed(4)}*PTS`);
       let r = s;
-      while (r > 2) { af.push("atempo=2.0"); r /= 2; }
-      while (r < 0.5) { af.push("atempo=0.5"); r /= 0.5; }
-      if (Math.abs(r - 1) > 0.001) af.push(`atempo=${r.toFixed(4)}`);
+      while (r > 2) { extraAf.push("atempo=2.0"); r /= 2; }
+      while (r < 0.5) { extraAf.push("atempo=0.5"); r /= 0.5; }
+      if (Math.abs(r - 1) > 0.001) extraAf.push(`atempo=${r.toFixed(4)}`);
     }
     if (e.type === "mute") muted = true;
   }
 
-  const needsEnc = vf.length > 0;
-  if (vf.length) args.push("-vf", vf.join(","));
+  const trim = pipeline.find((e) => e.type === "trim");
+  const trimCfg = trim ? trim.config as TrimCfg : null;
+
+  // Multi-cut: use filter_complex with trim+concat
+  if (trimCfg && trimCfg.cuts.length > 0) {
+    const keeps = getKeepSegments(trimCfg);
+    if (keeps.length === 0) return ["-t", "0"]; // nothing to keep
+
+    const n = keeps.length;
+    const vParts: string[] = [], aParts: string[] = [], vLabels: string[] = [], aLabels: string[] = [];
+    for (let i = 0; i < n; i++) {
+      const k = keeps[i];
+      const vExtra = extraVf.length ? "," + extraVf.join(",") : "";
+      const aExtra = extraAf.length ? "," + extraAf.join(",") : "";
+      vParts.push(`[0:v]trim=${k.start.toFixed(2)}:${k.end.toFixed(2)},setpts=PTS-STARTPTS${vExtra}[v${i}]`);
+      if (!muted) aParts.push(`[0:a]atrim=${k.start.toFixed(2)}:${k.end.toFixed(2)},asetpts=PTS-STARTPTS${aExtra}[a${i}]`);
+      vLabels.push(`[v${i}]`);
+      aLabels.push(`[a${i}]`);
+    }
+    let fc = vParts.join(";") + ";" + vLabels.join("") + `concat=n=${n}:v=1:a=0[outv]`;
+    if (!muted && aParts.length) fc += ";" + aParts.join(";") + ";" + aLabels.join("") + `concat=n=${n}:v=0:a=1[outa]`;
+
+    const args = ["-filter_complex", fc, "-map", "[outv]"];
+    if (!muted && aParts.length) args.push("-map", "[outa]");
+    else if (muted) args.push("-an");
+
+    if (fmt === "mp4") { args.push("-c:v", "libx264", "-crf", String(quality), "-preset", "fast"); if (!muted) args.push("-c:a", "aac"); }
+    else { args.push("-c:v", "libvpx-vp9", "-crf", String(quality), "-b:v", "0"); if (!muted) args.push("-c:a", "libvorbis"); }
+    return args;
+  }
+
+  // Simple trim (no cuts) or no trim
+  const args: string[] = [];
+  if (trimCfg) args.push("-ss", trimCfg.start.toFixed(2), "-to", trimCfg.end.toFixed(2));
+
+  const needsEnc = extraVf.length > 0;
+  if (extraVf.length) args.push("-vf", extraVf.join(","));
   if (muted) args.push("-an");
-  else if (af.length) args.push("-af", af.join(","));
+  else if (extraAf.length) args.push("-af", extraAf.join(","));
 
   if (needsEnc) {
-    if (fmt === "mp4") { args.push("-c:v", "libx264", "-crf", String(quality), "-preset", "fast"); if (!muted && !af.length) args.push("-c:a", "aac"); }
-    else { args.push("-c:v", "libvpx-vp9", "-crf", String(quality), "-b:v", "0"); if (!muted && !af.length) args.push("-c:a", "libvorbis"); }
+    if (fmt === "mp4") { args.push("-c:v", "libx264", "-crf", String(quality), "-preset", "fast"); if (!muted && !extraAf.length) args.push("-c:a", "aac"); }
+    else { args.push("-c:v", "libvpx-vp9", "-crf", String(quality), "-b:v", "0"); if (!muted && !extraAf.length) args.push("-c:a", "libvorbis"); }
   } else { args.push("-c:v", "copy"); if (!muted) args.push("-c:a", "copy"); }
   return args;
 }
@@ -135,10 +181,21 @@ export default function EditeurVideo() {
     const t = pipeline.find((e) => e.type === "trim");
     return t ? (t.config as TrimCfg) : null;
   }, [pipeline]);
-  const needsEnc = useMemo(() => pipeline.some((e) => ["resize", "speed", "rotate"].includes(e.type)), [pipeline]);
+  const needsEnc = useMemo(() => {
+    if (pipeline.some((e) => ["resize", "speed", "rotate"].includes(e.type))) return true;
+    if (trimCfg && trimCfg.cuts.length > 0) return true; // multi-cut requires re-encoding for concat
+    return false;
+  }, [pipeline, trimCfg]);
   const estDuration = useMemo(() => {
     if (!video) return 0;
-    let d = trimCfg ? trimCfg.end - trimCfg.start : video.duration;
+    let d: number;
+    if (trimCfg) {
+      if (trimCfg.cuts.length > 0) {
+        d = getKeepSegments(trimCfg).reduce((sum, k) => sum + (k.end - k.start), 0);
+      } else {
+        d = trimCfg.end - trimCfg.start;
+      }
+    } else { d = video.duration; }
     const sp = pipeline.find((e) => e.type === "speed");
     if (sp) d /= (sp.config as SpeedCfg).value;
     return d;
@@ -232,7 +289,7 @@ export default function EditeurVideo() {
   const addEffect = (type: EffectType) => {
     if (hasType(type)) return;
     let config: EffectCfg;
-    if (type === "trim") config = { start: 0, end: video?.duration ?? 10 } as TrimCfg;
+    if (type === "trim") config = { start: 0, end: video?.duration ?? 10, cuts: [] } as TrimCfg;
     else if (type === "resize") config = RESIZE_P[1];
     else if (type === "speed") config = SPEED_P[3];
     else if (type === "rotate") config = ROTATE_P[0];
@@ -293,7 +350,7 @@ export default function EditeurVideo() {
   /* ─── Handlers ─── */
   const handleExport = () => {
     if (!video || !pipeline.length) return;
-    const args = buildArgs(pipeline, exportFmt, exportQ);
+    const args = buildArgs(pipeline, exportFmt, exportQ, video.duration);
     execFFmpeg(args, `output.${exportFmt}`, exportFmt === "mp4" ? "video/mp4" : "video/webm", exportFmt);
   };
   const handleGif = () => { if (!video) return; execFFmpeg(["-ss", gifStart.toFixed(2), "-t", gifDur.toFixed(2), "-vf", `fps=${gifFps},scale=480:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse`, "-loop", "0"], "output.gif", "image/gif", "gif"); };
@@ -309,13 +366,60 @@ export default function EditeurVideo() {
 
   /* ── Effect config renderer ── */
   const renderConfig = () => {
-    if (selEffect?.type === "trim") { const c = selEffect.config as TrimCfg; return (
+    if (selEffect?.type === "trim") { const c = selEffect.config as TrimCfg;
+      const addCut = () => {
+        const mid = (c.start + c.end) / 2;
+        const cutLen = Math.min(1, (c.end - c.start) * 0.15);
+        updateCfg(selEffect.id, { ...c, cuts: [...c.cuts, { id: uid(), start: mid - cutLen, end: mid + cutLen }] });
+      };
+      const removeCut = (cutId: string) => {
+        updateCfg(selEffect.id, { ...c, cuts: c.cuts.filter((x) => x.id !== cutId) });
+      };
+      const updateCut = (cutId: string, field: "start" | "end", val: number) => {
+        updateCfg(selEffect.id, { ...c, cuts: c.cuts.map((x) => x.id === cutId ? { ...x, [field]: val } : x) });
+      };
+      const keeps = getKeepSegments(c);
+      return (
       <div className="space-y-4">
+        {/* Range */}
         <div className="grid grid-cols-2 gap-4">
           <div><label className="text-[10px] uppercase tracking-wider" style={{ color: dk.text }}>Debut</label><input type="range" min={0} max={video!.duration} step={0.1} value={c.start} onChange={(e) => { const v = Math.min(+e.target.value, c.end - 0.5); updateCfg(selEffect.id, { ...c, start: v }); if (videoRef.current) videoRef.current.currentTime = v; }} className="mt-2 w-full accent-[#4ade80]" /><p className="mt-1 text-center font-mono text-xs" style={{ color: dk.accent }}>{fmtTimeFine(c.start)}</p></div>
           <div><label className="text-[10px] uppercase tracking-wider" style={{ color: dk.text }}>Fin</label><input type="range" min={0} max={video!.duration} step={0.1} value={c.end} onChange={(e) => { const v = Math.max(+e.target.value, c.start + 0.5); updateCfg(selEffect.id, { ...c, end: v }); if (videoRef.current) videoRef.current.currentTime = v; }} className="mt-2 w-full accent-[#4ade80]" /><p className="mt-1 text-center font-mono text-xs" style={{ color: dk.accent }}>{fmtTimeFine(c.end)}</p></div>
         </div>
-        <div className="rounded-lg px-3 py-2 text-center text-xs font-semibold" style={{ background: "rgba(74,222,128,0.08)", color: dk.accent }}>Duree : {fmtTime(c.end - c.start)}</div>
+        {/* Cut zones */}
+        <div>
+          <div className="flex items-center justify-between">
+            <label className="text-[10px] uppercase tracking-wider" style={{ color: dk.text }}>Zones a supprimer ({c.cuts.length})</label>
+            <button onClick={addCut} className="rounded px-2 py-0.5 text-[10px] font-bold transition-all hover:scale-105" style={{ background: "#ef444420", color: "#ef4444" }}>+ Couper ici</button>
+          </div>
+          {c.cuts.length > 0 && (
+            <div className="mt-2 space-y-2">
+              {c.cuts.map((cut, i) => (
+                <div key={cut.id} className="flex items-center gap-2 rounded-lg p-2" style={{ background: "#ef444410" }}>
+                  <span className="text-[10px] font-bold" style={{ color: "#ef4444" }}>#{i + 1}</span>
+                  <div className="flex-1 space-y-1">
+                    <div className="flex items-center gap-2">
+                      <span className="w-8 text-[9px]" style={{ color: dk.text }}>De</span>
+                      <input type="range" min={c.start} max={c.end} step={0.1} value={cut.start} onChange={(e) => { updateCut(cut.id, "start", Math.min(+e.target.value, cut.end - 0.3)); if (videoRef.current) videoRef.current.currentTime = +e.target.value; }} className="flex-1 accent-[#ef4444]" />
+                      <span className="w-12 text-right font-mono text-[10px]" style={{ color: "#ef4444" }}>{fmtTimeFine(cut.start)}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="w-8 text-[9px]" style={{ color: dk.text }}>A</span>
+                      <input type="range" min={c.start} max={c.end} step={0.1} value={cut.end} onChange={(e) => { updateCut(cut.id, "end", Math.max(+e.target.value, cut.start + 0.3)); if (videoRef.current) videoRef.current.currentTime = +e.target.value; }} className="flex-1 accent-[#ef4444]" />
+                      <span className="w-12 text-right font-mono text-[10px]" style={{ color: "#ef4444" }}>{fmtTimeFine(cut.end)}</span>
+                    </div>
+                  </div>
+                  <button onClick={() => removeCut(cut.id)} className="text-[10px] opacity-50 hover:opacity-100" style={{ color: "#ef4444" }}>✕</button>
+                </div>
+              ))}
+            </div>
+          )}
+          {c.cuts.length === 0 && <p className="mt-2 text-[10px]" style={{ color: dk.text }}>Aucune zone coupee. Cliquez &quot;+ Couper ici&quot; pour supprimer des parties.</p>}
+        </div>
+        {/* Summary */}
+        <div className="rounded-lg px-3 py-2 text-center text-xs font-semibold" style={{ background: "rgba(74,222,128,0.08)", color: dk.accent }}>
+          {keeps.length} segment{keeps.length > 1 ? "s" : ""} conserve{keeps.length > 1 ? "s" : ""} — {fmtTime(keeps.reduce((s, k) => s + k.end - k.start, 0))}
+        </div>
       </div>
     ); }
     if (selEffect?.type === "resize") { const c = selEffect.config as ResizeCfg; return (
@@ -485,6 +589,20 @@ export default function EditeurVideo() {
                 <div className="absolute inset-y-0 right-0" style={{ width: `${100 - pctOf(trimCfg.end)}%`, background: "rgba(0,0,0,0.55)", borderLeft: `2px solid ${dk.accent}` }} />
                 <div className="absolute inset-y-0 z-10 w-4 cursor-col-resize" style={{ left: `calc(${pctOf(trimCfg.start)}% - 8px)` }} onMouseDown={(e) => handleTimelineMouseDown(e, "trimL")}><div className="mx-auto mt-1 h-4 w-1 rounded-full" style={{ background: dk.accent }} /></div>
                 <div className="absolute inset-y-0 z-10 w-4 cursor-col-resize" style={{ left: `calc(${pctOf(trimCfg.end)}% - 8px)` }} onMouseDown={(e) => handleTimelineMouseDown(e, "trimR")}><div className="mx-auto mt-1 h-4 w-1 rounded-full" style={{ background: dk.accent }} /></div>
+                {/* Cut zones (red) */}
+                {trimCfg.cuts.map((cut) => (
+                  <div key={cut.id} className="absolute inset-y-0 z-5" style={{
+                    left: `${pctOf(cut.start)}%`,
+                    width: `${pctOf(cut.end) - pctOf(cut.start)}%`,
+                    background: "rgba(239,68,68,0.25)",
+                    borderLeft: "2px solid #ef4444",
+                    borderRight: "2px solid #ef4444",
+                  }}>
+                    <div className="flex h-full items-center justify-center">
+                      <span className="text-[8px] font-bold" style={{ color: "rgba(239,68,68,0.7)" }}>CUT</span>
+                    </div>
+                  </div>
+                ))}
               </>}
               {/* Video track bar */}
               <div className="absolute bottom-0 left-0 right-0 h-7 rounded-b-lg" style={{ background: "linear-gradient(90deg, rgba(74,222,128,0.1), rgba(74,222,128,0.05))" }}>
