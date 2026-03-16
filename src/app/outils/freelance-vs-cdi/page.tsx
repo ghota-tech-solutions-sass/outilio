@@ -177,9 +177,9 @@ export default function FreelanceVsCDI() {
 
             {/* Comparison */}
             <div className="grid grid-cols-2 gap-4">
-              <CompareCard label="CDI" subtitle="Net/mois apres impot" value={`${fmt(cdi.netMensuelApresImpot)} \u20AC`}
+              <CompareCard label="CDI" subtitle="Net/mois apres impot" value={`${fmt(cdi.netMensuelApresImpot)} €`}
                 winner={cdi.netMensuelApresImpot >= freelance.netMensuelApresImpot} color="var(--primary)" />
-              <CompareCard label="Freelance" subtitle="Net/mois apres impot" value={`${fmt(freelance.netMensuelApresImpot)} \u20AC`}
+              <CompareCard label="Freelance" subtitle="Net/mois apres impot" value={`${fmt(freelance.netMensuelApresImpot)} €`}
                 winner={freelance.netMensuelApresImpot > cdi.netMensuelApresImpot} color="var(--accent)" />
             </div>
 
@@ -202,20 +202,20 @@ export default function FreelanceVsCDI() {
             {/* Detail tables */}
             <div className="grid grid-cols-2 gap-4">
               <DetailTable title="CDI" color="var(--primary)" rows={[
-                ["Brut annuel", `${fmt(cdi.brutAnnuel)} \u20AC`],
-                ["Charges (~22%)", `- ${fmt(cdi.brutAnnuel - cdi.netAvantImpot)} \u20AC`],
-                ["Net avant impot", `${fmt(cdi.netAvantImpot)} \u20AC`],
-                ["Impot", `- ${fmt(cdi.impotAnnuel)} \u20AC`],
-                ["Net apres impot", `${fmt(cdi.netApresImpot)} \u20AC`],
-                ["Cout employeur", `${fmt(cdi.coutEmployeur)} \u20AC`],
+                ["Brut annuel", `${fmt(cdi.brutAnnuel)} €`],
+                ["Charges (~22%)", `- ${fmt(cdi.brutAnnuel - cdi.netAvantImpot)} €`],
+                ["Net avant impot", `${fmt(cdi.netAvantImpot)} €`],
+                ["Impot", `- ${fmt(cdi.impotAnnuel)} €`],
+                ["Net apres impot", `${fmt(cdi.netApresImpot)} €`],
+                ["Cout employeur", `${fmt(cdi.coutEmployeur)} €`],
               ]} />
               <DetailTable title="Freelance" color="var(--accent)" rows={[
-                ["CA annuel", `${fmt(freelance.ca)} \u20AC`],
-                ["Charges", `- ${fmt(freelance.charges)} \u20AC`],
-                ["Frais pro", `- ${fmt(freelance.fraisPro)} \u20AC`],
-                ["Imposable", `${fmt(freelance.revenuImposable)} \u20AC`],
-                ["Impot", `- ${fmt(freelance.impotAnnuel)} \u20AC`],
-                ["Net apres impot", `${fmt(freelance.netApresImpot)} \u20AC`],
+                ["CA annuel", `${fmt(freelance.ca)} €`],
+                ["Charges", `- ${fmt(freelance.charges)} €`],
+                ["Frais pro", `- ${fmt(freelance.fraisPro)} €`],
+                ["Imposable", `${fmt(freelance.revenuImposable)} €`],
+                ["Impot", `- ${fmt(freelance.impotAnnuel)} €`],
+                ["Net apres impot", `${fmt(freelance.netApresImpot)} €`],
               ]} />
             </div>
 

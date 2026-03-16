@@ -156,11 +156,11 @@ export default function CalculateurSalaire() {
                 Resultats
               </h2>
               <div className="mt-5 space-y-1">
-                <Row label="Salaire brut mensuel" value={`${fmt(brut)} \u20AC`} />
-                <Row label="Cotisations salariales" value={`- ${fmt(charges)} \u20AC`} sub />
-                <Row label="Salaire net avant impot" value={`${fmt(net)} \u20AC`} highlight />
-                <Row label="Impot sur le revenu (estimation)" value={`- ${fmt(monthlyTax)} \u20AC`} sub />
-                <Row label="Salaire net apres impot" value={`${fmt(netApresImpot)} \u20AC`} highlight primary />
+                <Row label="Salaire brut mensuel" value={`${fmt(brut)} €`} />
+                <Row label="Cotisations salariales" value={`- ${fmt(charges)} €`} sub />
+                <Row label="Salaire net avant impot" value={`${fmt(net)} €`} highlight />
+                <Row label="Impot sur le revenu (estimation)" value={`- ${fmt(monthlyTax)} €`} sub />
+                <Row label="Salaire net apres impot" value={`${fmt(netApresImpot)} €`} highlight primary />
               </div>
 
               <div className="mt-6 rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>

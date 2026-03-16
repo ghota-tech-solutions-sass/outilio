@@ -106,9 +106,9 @@ export default function CalculateurTVA() {
 
             {/* Results */}
             <div className="grid grid-cols-3 gap-4">
-              <ResultCard label="Montant HT" value={`${fmt(ht)} \u20AC`} />
-              <ResultCard label="TVA ({rate}%)" value={`${fmt(tva)} \u20AC`} accent />
-              <ResultCard label="Montant TTC" value={`${fmt(ttc)} \u20AC`} primary />
+              <ResultCard label="Montant HT" value={`${fmt(ht)} €`} />
+              <ResultCard label="TVA ({rate}%)" value={`${fmt(tva)} €`} accent />
+              <ResultCard label="Montant TTC" value={`${fmt(ttc)} €`} primary />
             </div>
 
             <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>

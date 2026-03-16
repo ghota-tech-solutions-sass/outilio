@@ -64,8 +64,8 @@ export default function CalculateurPret() {
           <div className="lg:col-span-2 space-y-6">
             <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <Field label="Prix du bien (\u20AC)" value={capital} onChange={setCapital} />
-                <Field label="Apport personnel (\u20AC)" value={apport} onChange={setApport} />
+                <Field label="Prix du bien (€)" value={capital} onChange={setCapital} />
+                <Field label="Apport personnel (€)" value={apport} onChange={setApport} />
                 <Field label="Taux d'interet (%)" value={taux} onChange={setTaux} step="0.1" />
                 <Field label="Duree (annees)" value={duree} onChange={setDuree} />
               </div>
@@ -74,9 +74,9 @@ export default function CalculateurPret() {
             {result && (
               <>
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                  <StatCard label="Mensualite" value={`${fmt(result.mensualite)} \u20AC`} primary />
-                  <StatCard label="Cout total du credit" value={`${fmt(result.interetsTotal)} \u20AC`} />
-                  <StatCard label="Montant emprunte" value={`${fmt(result.emprunt)} \u20AC`} />
+                  <StatCard label="Mensualite" value={`${fmt(result.mensualite)} €`} primary />
+                  <StatCard label="Cout total du credit" value={`${fmt(result.interetsTotal)} €`} />
+                  <StatCard label="Montant emprunte" value={`${fmt(result.emprunt)} €`} />
                 </div>
 
                 <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">

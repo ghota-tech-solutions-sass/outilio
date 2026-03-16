@@ -68,9 +68,9 @@ export default function CalculateurRentabilite() {
             <div className="rounded-2xl border p-6" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
               <h2 className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--accent)" }}>Acquisition</h2>
               <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
-                <Field label="Prix d'achat (\u20AC)" value={prixAchat} onChange={setPrixAchat} />
+                <Field label="Prix d'achat (€)" value={prixAchat} onChange={setPrixAchat} />
                 <Field label="Frais notaire (%)" value={fraisNotaire} onChange={setFraisNotaire} />
-                <Field label="Travaux (\u20AC)" value={travaux} onChange={setTravaux} />
+                <Field label="Travaux (€)" value={travaux} onChange={setTravaux} />
               </div>
             </div>
 
@@ -78,11 +78,11 @@ export default function CalculateurRentabilite() {
             <div className="rounded-2xl border p-6" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
               <h2 className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--accent)" }}>Revenus & charges</h2>
               <div className="mt-4 grid grid-cols-2 gap-3">
-                <Field label="Loyer mensuel (\u20AC)" value={loyerMensuel} onChange={setLoyerMensuel} />
+                <Field label="Loyer mensuel (€)" value={loyerMensuel} onChange={setLoyerMensuel} />
                 <Field label="Vacance locative (%)" value={vacanceLocative} onChange={setVacanceLocative} />
-                <Field label="Charges annuelles (\u20AC)" value={chargesAn} onChange={setChargesAn} />
-                <Field label="Taxe fonciere (\u20AC)" value={taxeFonciere} onChange={setTaxeFonciere} />
-                <Field label="Assurance PNO (\u20AC/an)" value={assurancePNO} onChange={setAssurancePNO} />
+                <Field label="Charges annuelles (€)" value={chargesAn} onChange={setChargesAn} />
+                <Field label="Taxe fonciere (€)" value={taxeFonciere} onChange={setTaxeFonciere} />
+                <Field label="Assurance PNO (€/an)" value={assurancePNO} onChange={setAssurancePNO} />
               </div>
             </div>
 
@@ -90,7 +90,7 @@ export default function CalculateurRentabilite() {
             <div className="rounded-2xl border p-6" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
               <h2 className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--accent)" }}>Financement</h2>
               <div className="mt-4 grid grid-cols-3 gap-3">
-                <Field label="Apport (\u20AC)" value={apport} onChange={setApport} />
+                <Field label="Apport (€)" value={apport} onChange={setApport} />
                 <Field label="Taux credit (%)" value={tauxCredit} onChange={setTauxCredit} />
                 <Field label="Duree (annees)" value={dureeCredit} onChange={setDureeCredit} />
               </div>
@@ -102,23 +102,23 @@ export default function CalculateurRentabilite() {
                 color={result.rentaBrute >= 7 ? "var(--primary)" : result.rentaBrute >= 5 ? "var(--accent)" : "#dc2626"} />
               <StatCard label="Renta. nette" value={`${fmtPct(result.rentaNette)}%`}
                 color={result.rentaNette >= 5 ? "var(--primary)" : result.rentaNette >= 3 ? "var(--accent)" : "#dc2626"} />
-              <StatCard label="Cashflow/mois" value={`${fmt(result.cashflowMensuel)} \u20AC`}
+              <StatCard label="Cashflow/mois" value={`${fmt(result.cashflowMensuel)} €`}
                 color={result.cashflowMensuel >= 0 ? "var(--primary)" : "#dc2626"} />
-              <StatCard label="Mensualite credit" value={`${fmt(result.mensualiteCredit)} \u20AC`} color="var(--foreground)" />
+              <StatCard label="Mensualite credit" value={`${fmt(result.mensualiteCredit)} €`} color="var(--foreground)" />
             </div>
 
             {/* Summary */}
             <div className="rounded-2xl border p-6" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
               <h2 className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--accent)" }}>Bilan annuel</h2>
               <div className="mt-4 space-y-2 text-sm">
-                <Row label="Cout total acquisition" value={`${fmt(result.coutTotal)} \u20AC`} />
-                <Row label="Loyers annuels bruts" value={`${fmt(result.loyerAn)} \u20AC`} />
-                <Row label="Loyers effectifs (apres vacance)" value={`${fmt(result.loyerEffectif)} \u20AC`} />
-                <Row label="Charges & taxes annuelles" value={`- ${fmt(result.depensesAn)} \u20AC`} />
-                <Row label="Credit annuel" value={`- ${fmt(result.mensualiteCredit * 12)} \u20AC`} />
-                <Row label="Cashflow annuel" value={`${fmt(result.cashflowMensuel * 12)} \u20AC`} highlight primary={result.cashflowMensuel >= 0} />
+                <Row label="Cout total acquisition" value={`${fmt(result.coutTotal)} €`} />
+                <Row label="Loyers annuels bruts" value={`${fmt(result.loyerAn)} €`} />
+                <Row label="Loyers effectifs (apres vacance)" value={`${fmt(result.loyerEffectif)} €`} />
+                <Row label="Charges & taxes annuelles" value={`- ${fmt(result.depensesAn)} €`} />
+                <Row label="Credit annuel" value={`- ${fmt(result.mensualiteCredit * 12)} €`} />
+                <Row label="Cashflow annuel" value={`${fmt(result.cashflowMensuel * 12)} €`} highlight primary={result.cashflowMensuel >= 0} />
                 {result.effortEpargne > 0 && (
-                  <Row label="Effort d'epargne mensuel" value={`${fmt(result.effortEpargne)} \u20AC`} warning />
+                  <Row label="Effort d'epargne mensuel" value={`${fmt(result.effortEpargne)} €`} warning />
                 )}
               </div>
             </div>

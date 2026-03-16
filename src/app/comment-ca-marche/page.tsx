@@ -4,7 +4,7 @@ const STEPS = [
   {
     num: "01",
     title: "Vous ouvrez un outil",
-    description: "Choisissez parmi nos 50+ outils gratuits. La page se charge instantanement depuis le CDN mondial de GitHub.",
+    description: "Choisissez parmi nos outils gratuits. La page se charge instantanement depuis le CDN mondial de GitHub.",
     icon: "\u{1F310}",
     detail: "Les pages sont pre-generees en HTML statique. Aucun serveur n'est sollicite pour generer le contenu.",
   },
@@ -202,7 +202,7 @@ export default function CommentCaMarche() {
             className="mt-6 inline-flex items-center gap-2 rounded-full bg-white px-8 py-3.5 text-sm font-semibold transition-all hover:scale-[1.02]"
             style={{ color: "var(--primary)" }}
           >
-            Decouvrir les 50+ outils
+            Decouvrir tous les outils
           </a>
         </div>
       </section>

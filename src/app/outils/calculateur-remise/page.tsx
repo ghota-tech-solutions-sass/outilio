@@ -50,7 +50,7 @@ export default function CalculateurRemise() {
         label = `-${val}%`;
       } else {
         reduction = Math.min(val, currentPrice);
-        label = `-${val.toFixed(2)} \u20AC`;
+        label = `-${val.toFixed(2)} €`;
       }
 
       currentPrice -= reduction;
@@ -191,12 +191,12 @@ export default function CalculateurRemise() {
               <h3 className="text-sm font-semibold" style={{ fontFamily: "var(--font-display)" }}>Raccourcis remises</h3>
               <div className="mt-3 space-y-2">
                 {[
-                  { pct: "10%", sur100: "90 \u20AC" },
-                  { pct: "20%", sur100: "80 \u20AC" },
-                  { pct: "25%", sur100: "75 \u20AC" },
-                  { pct: "30%", sur100: "70 \u20AC" },
-                  { pct: "50%", sur100: "50 \u20AC" },
-                  { pct: "70%", sur100: "30 \u20AC" },
+                  { pct: "10%", sur100: "90 €" },
+                  { pct: "20%", sur100: "80 €" },
+                  { pct: "25%", sur100: "75 €" },
+                  { pct: "30%", sur100: "70 €" },
+                  { pct: "50%", sur100: "50 €" },
+                  { pct: "70%", sur100: "30 €" },
                 ].map((r) => (
                   <div key={r.pct} className="flex items-center justify-between rounded-xl px-3 py-2" style={{ background: "var(--surface-alt)" }}>
                     <span className="text-xs font-semibold">{r.pct}</span>

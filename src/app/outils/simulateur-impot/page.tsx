@@ -22,7 +22,7 @@ function simulerImpot(revenuNet: number, parts: number) {
     const imp = base * t.rate;
     impotParPart += imp;
     if (base > 0) {
-      details.push({ tranche: `${t.min.toLocaleString("fr-FR")} - ${t.max === Infinity ? "+" : t.max.toLocaleString("fr-FR")} \u20AC`, taux: t.rate, base, impot: imp });
+      details.push({ tranche: `${t.min.toLocaleString("fr-FR")} - ${t.max === Infinity ? "+" : t.max.toLocaleString("fr-FR")} €`, taux: t.rate, base, impot: imp });
     }
   }
 
@@ -98,8 +98,8 @@ export default function SimulateurImpot() {
 
             {/* Big results */}
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-              <StatBox label="Impot total" value={`${fmt(result.impotTotal)} \u20AC`} primary />
-              <StatBox label="Par mois" value={`${fmt(result.impotTotal / 12)} \u20AC`} />
+              <StatBox label="Impot total" value={`${fmt(result.impotTotal)} €`} primary />
+              <StatBox label="Par mois" value={`${fmt(result.impotTotal / 12)} €`} />
               <StatBox label="Taux moyen" value={`${fmtPct(result.tauxMoyen)}%`} />
               <StatBox label="Taux marginal" value={`${(result.tauxMarginal * 100).toFixed(0)}%`} accent />
             </div>

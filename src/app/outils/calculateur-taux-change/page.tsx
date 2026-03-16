@@ -12,7 +12,7 @@ interface Currency {
 }
 
 const CURRENCIES: Currency[] = [
-  { code: "EUR", name: "Euro", symbol: "\u20AC", flag: "\u{1F1EA}\u{1F1FA}", rateToEUR: 1 },
+  { code: "EUR", name: "Euro", symbol: "€", flag: "\u{1F1EA}\u{1F1FA}", rateToEUR: 1 },
   { code: "USD", name: "Dollar americain", symbol: "$", flag: "\u{1F1FA}\u{1F1F8}", rateToEUR: 1.085 },
   { code: "GBP", name: "Livre sterling", symbol: "\u00A3", flag: "\u{1F1EC}\u{1F1E7}", rateToEUR: 0.855 },
   { code: "CHF", name: "Franc suisse", symbol: "CHF", flag: "\u{1F1E8}\u{1F1ED}", rateToEUR: 0.945 },

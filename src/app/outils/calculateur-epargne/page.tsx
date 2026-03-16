@@ -182,7 +182,7 @@ export default function CalculateurEpargne() {
                   { nom: "Livret A", taux: "3,0%" },
                   { nom: "LDDS", taux: "3,0%" },
                   { nom: "LEP", taux: "4,0%" },
-                  { nom: "Assurance-vie fonds \u20AC", taux: "2,5%" },
+                  { nom: "Assurance-vie fonds €", taux: "2,5%" },
                   { nom: "PEA (actions)", taux: "7-8%" },
                   { nom: "SCPI", taux: "4-5%" },
                 ].map((p) => (
