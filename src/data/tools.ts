@@ -521,7 +521,7 @@ export const tools: Tool[] = [
   {
     title: "Editeur photo",
     description:
-      "Retouchez vos photos : luminosite, contraste, saturation, flou, sepia, niveaux de gris. Presets et export PNG.",
+      "Retouche avancee : courbes, calques, 15 filtres VSCO, histogramme, auto-enhance, before/after. Export PNG haute qualite.",
     href: "/outils/editeur-photo",
     icon: "\u{1F3A8}",
     badge: "Nouveau",

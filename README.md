@@ -106,7 +106,7 @@
 | [Compresseur d'image](https://outilis.fr/outils/compresseur-image) | Reduisez la taille de vos images JPEG/WebP. Curseur de qualite, comparaison avant/apres, ratio de compression. |
 | [Redimensionneur d'image](https://outilis.fr/outils/redimensionneur-image) | Changez les dimensions de vos images en pixels ou pourcentage. Ratio d'aspect verrouillable, apercu en direct. |
 | [Convertisseur format image](https://outilis.fr/outils/convertisseur-image) | Convertissez entre PNG, JPEG, WebP et BMP. Comparaison des tailles avant/apres conversion. |
-| [Editeur photo](https://outilis.fr/outils/editeur-photo) | Retouchez vos photos : luminosite, contraste, saturation, flou, sepia, niveaux de gris. Presets et export PNG. |
+| [Editeur photo](https://outilis.fr/outils/editeur-photo) | Retouche avancee : courbes, calques, 15 filtres VSCO, histogramme, auto-enhance, before/after. Export PNG haute qualite. |
 
 ### Securite (3)
 
