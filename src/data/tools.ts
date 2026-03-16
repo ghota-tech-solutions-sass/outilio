@@ -563,4 +563,130 @@ export const tools: Tool[] = [
     badge: "Nouveau",
     category: "Audio",
   },
+  {
+    title: "Frais de notaire",
+    description:
+      "Estimez les frais de notaire pour votre achat immobilier. Ancien, neuf, 101 departements. Detail complet.",
+    href: "/outils/calculateur-frais-notaire",
+    icon: "\u{1F3E0}",
+    badge: "Nouveau",
+    category: "Immobilier",
+  },
+  {
+    title: "Simulateur auto-entrepreneur",
+    description:
+      "Cotisations, IR, CFE, revenu net. Taux 2025-2026 par activite. ACRE et versement liberatoire.",
+    href: "/outils/simulateur-auto-entrepreneur",
+    icon: "\u{1F4BC}",
+    badge: "Nouveau",
+    category: "Business",
+  },
+  {
+    title: "Frais kilometriques",
+    description:
+      "Bareme fiscal officiel. Voiture, moto, cyclomoteur. Majoration vehicule electrique +20%.",
+    href: "/outils/calculateur-frais-kilometriques",
+    icon: "\u{1F697}",
+    badge: "Nouveau",
+    category: "Auto",
+  },
+  {
+    title: "Generateur de CV",
+    description:
+      "Creez votre CV en ligne. 2 templates (classique, moderne), preview live, export PDF gratuit.",
+    href: "/outils/generateur-cv",
+    icon: "\u{1F4C4}",
+    badge: "Nouveau",
+    category: "Business",
+  },
+  {
+    title: "Convertisseur tailles vetements",
+    description:
+      "Correspondance EU, US, UK. Vetements et chaussures, homme et femme. Tableau complet.",
+    href: "/outils/convertisseur-tailles",
+    icon: "\u{1F455}",
+    badge: "Nouveau",
+    category: "Conversion",
+  },
+  {
+    title: "Test vitesse de frappe",
+    description:
+      "Mesurez votre vitesse de frappe en WPM. Textes francais, precision, 30s/60s/120s.",
+    href: "/outils/testeur-vitesse-frappe",
+    icon: "\u{2328}\uFE0F",
+    badge: "Nouveau",
+    category: "Outils",
+  },
+  {
+    title: "Scanner QR Code",
+    description:
+      "Scannez un QR code via camera ou image. Detection automatique, historique des scans.",
+    href: "/outils/scanner-qr-code",
+    icon: "\u{1F4F7}",
+    badge: "Nouveau",
+    category: "Outils",
+  },
+  {
+    title: "Simulateur APL",
+    description:
+      "Estimez votre aide au logement. Zones 1/2/3, loyer, revenus, composition du foyer.",
+    href: "/outils/simulateur-apl",
+    icon: "\u{1F3E0}",
+    badge: "Nouveau",
+    category: "Finance",
+  },
+  {
+    title: "Calculateur DPE",
+    description:
+      "Estimez la classe energetique de votre logement. Jauge A-G, emissions CO2, cout annuel.",
+    href: "/outils/calculateur-dpe",
+    icon: "\u{1F3E0}",
+    badge: "Nouveau",
+    category: "Immobilier",
+  },
+  {
+    title: "Editeur Markdown",
+    description:
+      "Editez du Markdown avec preview temps reel. Toolbar, raccourcis clavier, export HTML et .md.",
+    href: "/outils/editeur-markdown",
+    icon: "\u{1F4DD}",
+    badge: "Nouveau",
+    category: "Dev",
+  },
+  {
+    title: "Convertisseur audio",
+    description:
+      "Convertissez vos fichiers audio : MP3, WAV, OGG, AAC. Bitrate configurable. 100% local.",
+    href: "/outils/convertisseur-audio",
+    icon: "\u{1F3B5}",
+    badge: "Nouveau",
+    category: "Audio",
+  },
+  {
+    title: "Calculateur de peinture",
+    description:
+      "Surface murs, ouvertures, couches, rendement. Litres et pots necessaires pour votre piece.",
+    href: "/outils/calculateur-peinture",
+    icon: "\u{1F3A8}",
+    badge: "Nouveau",
+    category: "Construction",
+  },
+  {
+    title: "Rachat de credit",
+    description:
+      "Comparez vos credits actuels vs un rachat unique. Economie mensuelle, cout total, verdict.",
+    href: "/outils/calculateur-rachat-credit",
+    icon: "\u{1F4B3}",
+    badge: "Nouveau",
+    category: "Finance",
+  },
+  {
+    title: "Timer Pomodoro",
+    description:
+      "Methode Pomodoro : 25min travail, 5min pause. Timer circulaire, notifications, statistiques.",
+    href: "/outils/pomodoro",
+    icon: "\u{1F345}",
+    badge: "Nouveau",
+    category: "Outils",
+  },
 ];
