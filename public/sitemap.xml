@@ -56,4 +56,12 @@
   <url><loc>https://outilis.fr/outils/convertisseur-px-rem</loc><priority>0.7</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://outilis.fr/outils/generateur-gradient</loc><priority>0.7</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://outilis.fr/outils/generateur-regex</loc><priority>0.7</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://outilis.fr/outils/compresseur-image</loc><priority>0.7</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://outilis.fr/outils/redimensionneur-image</loc><priority>0.7</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://outilis.fr/outils/convertisseur-image</loc><priority>0.7</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://outilis.fr/outils/editeur-photo</loc><priority>0.7</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://outilis.fr/outils/fusionneur-pdf</loc><priority>0.7</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://outilis.fr/outils/pdf-vers-texte</loc><priority>0.7</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://outilis.fr/outils/compresseur-video</loc><priority>0.7</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://outilis.fr/outils/extracteur-audio</loc><priority>0.7</priority><changefreq>monthly</changefreq></url>
 </urlset>

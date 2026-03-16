@@ -491,4 +491,76 @@ export const tools: Tool[] = [
     badge: "Nouveau",
     category: "Dev",
   },
+  {
+    title: "Compresseur d'image",
+    description:
+      "Reduisez la taille de vos images JPEG/WebP. Curseur de qualite, comparaison avant/apres, ratio de compression.",
+    href: "/outils/compresseur-image",
+    icon: "\u{1F5DC}\uFE0F",
+    badge: "Nouveau",
+    category: "Image",
+  },
+  {
+    title: "Redimensionneur d'image",
+    description:
+      "Changez les dimensions de vos images en pixels ou pourcentage. Ratio d'aspect verrouillable, apercu en direct.",
+    href: "/outils/redimensionneur-image",
+    icon: "\u{1F4D0}",
+    badge: "Nouveau",
+    category: "Image",
+  },
+  {
+    title: "Convertisseur format image",
+    description:
+      "Convertissez entre PNG, JPEG, WebP et BMP. Comparaison des tailles avant/apres conversion.",
+    href: "/outils/convertisseur-image",
+    icon: "\u{1F504}",
+    badge: "Nouveau",
+    category: "Image",
+  },
+  {
+    title: "Editeur photo",
+    description:
+      "Retouchez vos photos : luminosite, contraste, saturation, flou, sepia, niveaux de gris. Presets et export PNG.",
+    href: "/outils/editeur-photo",
+    icon: "\u{1F3A8}",
+    badge: "Nouveau",
+    category: "Image",
+  },
+  {
+    title: "Fusionneur PDF",
+    description:
+      "Fusionnez plusieurs fichiers PDF en un seul document. Glissez-deposez, reordonnez par drag & drop.",
+    href: "/outils/fusionneur-pdf",
+    icon: "\u{1F4C4}",
+    badge: "Nouveau",
+    category: "PDF",
+  },
+  {
+    title: "PDF vers Texte",
+    description:
+      "Analysez vos PDF : metadonnees, pages, dimensions. Extrayez et telechargez des pages individuelles.",
+    href: "/outils/pdf-vers-texte",
+    icon: "\u{1F4D1}",
+    badge: "Nouveau",
+    category: "PDF",
+  },
+  {
+    title: "Compresseur Video",
+    description:
+      "Compressez vos videos dans le navigateur. 3 niveaux de qualite, barre de progression, telechargement.",
+    href: "/outils/compresseur-video",
+    icon: "\u{1F3AC}",
+    badge: "Nouveau",
+    category: "Video",
+  },
+  {
+    title: "Extracteur Audio",
+    description:
+      "Extrayez la piste audio de vos videos. Forme d'onde, telechargement WebM. 100% local.",
+    href: "/outils/extracteur-audio",
+    icon: "\u{1F3B5}",
+    badge: "Nouveau",
+    category: "Audio",
+  },
 ];
