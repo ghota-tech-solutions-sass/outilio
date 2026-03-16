@@ -221,6 +221,10 @@ export default function EditeurPhoto() {
   const [aiError, setAiError] = useState("");
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const aiCacheRef = useRef<Map<string, any>>(new Map());
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const renderRef = useRef<any>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const pushHistoryRef = useRef<any>(null);
 
   /* ---------- history ---------- */
   const [history, setHistory] = useState<HistoryState[]>([]);
@@ -838,6 +842,146 @@ export default function EditeurPhoto() {
     return () => window.removeEventListener("keydown", handler);
   }, [undo, redo]);
 
+  /* ═══════════════════ AI FEATURES (must be before any early return) ═══════════════════ */
+  renderRef.current = render;
+  pushHistoryRef.current = pushHistory;
+
+  const loadTransformersTop = useCallback(async () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if ((window as any).__transformers) return (window as any).__transformers;
+    setAiProgress("Chargement de Transformers.js...");
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const mod = await (new Function('return import("https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.4.0/dist/transformers.min.js")'))() as any;
+    mod.env.allowLocalModels = false;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (window as any).__transformers = mod;
+    return mod;
+  }, []);
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const getAIPipelineTop = useCallback(async (task: string, model: string, opts?: any) => {
+    const key = `${task}:${model}`;
+    if (aiCacheRef.current.has(key)) return aiCacheRef.current.get(key);
+    const tf = await loadTransformersTop();
+    setAiProgress("Telechargement du modele (premiere fois)...");
+    const pipe = await tf.pipeline(task, model, opts);
+    aiCacheRef.current.set(key, pipe);
+    return pipe;
+  }, [loadTransformersTop]);
+
+  const getCanvasDataURLTop = useCallback(() => {
+    const canvas = mainCanvasRef.current;
+    if (!canvas) return null;
+    return canvas.toDataURL("image/png");
+  }, []);
+
+  const [depthIntensity, setDepthIntensity] = useState(50);
+  const [depthMode, setDepthMode] = useState<"preview" | "bokeh">("bokeh");
+
+  const aiRemoveBackground = useCallback(async () => {
+    if (!imgRef.current) return;
+    setAiLoading(true); setAiError("");
+    try {
+      const segmenter = await getAIPipelineTop("background-removal", "Xenova/modnet");
+      setAiProgress("Suppression de l'arriere-plan...");
+      const dataURL = getCanvasDataURLTop();
+      if (!dataURL) throw new Error("Impossible de lire le canvas");
+      const result = await segmenter(dataURL);
+      const resultCanvas = result.toCanvas();
+      const newImg = new Image();
+      await new Promise<void>((resolve, reject) => {
+        newImg.onload = () => resolve();
+        newImg.onerror = () => reject(new Error("Erreur chargement resultat"));
+        newImg.src = resultCanvas.toDataURL("image/png");
+      });
+      pushHistoryRef.current();
+      imgRef.current = newImg;
+      renderRef.current();
+    } catch (e) {
+      console.error("AI BG removal error:", e);
+      setAiError(`Erreur : ${e instanceof Error ? e.message : String(e)}`);
+    } finally {
+      setAiLoading(false); setAiProgress("");
+    }
+  }, [getAIPipelineTop, getCanvasDataURLTop]);
+
+  const aiDepthMap = useCallback(async () => {
+    if (!imgRef.current) return;
+    setAiLoading(true); setAiError("");
+    try {
+      const estimator = await getAIPipelineTop("depth-estimation", "Xenova/depth-anything-small-hf");
+      setAiProgress("Estimation de la profondeur...");
+      const dataURL = getCanvasDataURLTop();
+      if (!dataURL) throw new Error("Impossible de lire le canvas");
+      const result = await estimator(dataURL);
+      const depthCanvas = result.depth.toCanvas();
+      pushHistoryRef.current();
+      if (depthMode === "preview") {
+        const newImg = new Image();
+        await new Promise<void>((res, rej) => { newImg.onload = () => res(); newImg.onerror = () => rej(); newImg.src = depthCanvas.toDataURL("image/png"); });
+        imgRef.current = newImg;
+      } else {
+        const img = imgRef.current;
+        const w = img.naturalWidth, h = img.naturalHeight;
+        const srcC = document.createElement("canvas"); srcC.width = w; srcC.height = h;
+        const srcCtx = srcC.getContext("2d")!; srcCtx.drawImage(img, 0, 0, w, h);
+        const blurC = document.createElement("canvas"); blurC.width = w; blurC.height = h;
+        const blurCtx = blurC.getContext("2d")!; blurCtx.filter = `blur(${Math.round(depthIntensity / 5)}px)`; blurCtx.drawImage(img, 0, 0, w, h); blurCtx.filter = "none";
+        const dC = document.createElement("canvas"); dC.width = w; dC.height = h;
+        dC.getContext("2d")!.drawImage(depthCanvas, 0, 0, w, h);
+        const depthData = dC.getContext("2d")!.getImageData(0, 0, w, h).data;
+        const srcData = srcCtx.getImageData(0, 0, w, h);
+        const blurData = blurCtx.getImageData(0, 0, w, h);
+        const outData = srcCtx.createImageData(w, h);
+        for (let i = 0; i < depthData.length; i += 4) {
+          const d = depthData[i] / 255;
+          outData.data[i] = srcData.data[i] * d + blurData.data[i] * (1 - d);
+          outData.data[i + 1] = srcData.data[i + 1] * d + blurData.data[i + 1] * (1 - d);
+          outData.data[i + 2] = srcData.data[i + 2] * d + blurData.data[i + 2] * (1 - d);
+          outData.data[i + 3] = 255;
+        }
+        const resC = document.createElement("canvas"); resC.width = w; resC.height = h;
+        resC.getContext("2d")!.putImageData(outData, 0, 0);
+        const newImg = new Image();
+        await new Promise<void>((res, rej) => { newImg.onload = () => res(); newImg.onerror = () => rej(); newImg.src = resC.toDataURL("image/png"); });
+        imgRef.current = newImg;
+      }
+      renderRef.current();
+    } catch (e) {
+      console.error("AI depth error:", e);
+      setAiError(`Erreur : ${e instanceof Error ? e.message : String(e)}`);
+    } finally {
+      setAiLoading(false); setAiProgress("");
+    }
+  }, [getAIPipelineTop, getCanvasDataURLTop, depthMode, depthIntensity]);
+
+  const aiSuperRes = useCallback(async () => {
+    if (!imgRef.current) return;
+    const img = imgRef.current;
+    if (img.naturalWidth > 1024 || img.naturalHeight > 1024) {
+      if (!confirm("L'image est grande. Le traitement peut prendre 30-60 secondes. Continuer ?")) return;
+    }
+    setAiLoading(true); setAiError("");
+    try {
+      const upscaler = await getAIPipelineTop("image-to-image", "Xenova/swin2SR-classical-sr-x2-64");
+      setAiProgress("Amelioration de la resolution (x2)...");
+      const dataURL = getCanvasDataURLTop();
+      if (!dataURL) throw new Error("Impossible de lire le canvas");
+      const result = await upscaler(dataURL);
+      const resultCanvas = result.toCanvas();
+      pushHistoryRef.current();
+      const newImg = new Image();
+      await new Promise<void>((res, rej) => { newImg.onload = () => res(); newImg.onerror = () => rej(); newImg.src = resultCanvas.toDataURL("image/png"); });
+      imgRef.current = newImg;
+      renderRef.current();
+    } catch (e) {
+      console.error("AI super-res error:", e);
+      setAiError(`Erreur : ${e instanceof Error ? e.message : String(e)}`);
+    } finally {
+      setAiLoading(false); setAiProgress("");
+    }
+  }, [getAIPipelineTop, getCanvasDataURLTop]);
+
   /* ═══════════════ RENDER ═══════════════ */
 
   // ---- Drop page (light theme, before image loaded) ----
@@ -900,190 +1044,7 @@ export default function EditeurPhoto() {
     );
   }
 
-  /* ═══════════════════ AI FEATURES ═══════════════════ */
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const loadTransformers = useCallback(async (): Promise<any> => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    if ((window as any).__transformers) return (window as any).__transformers;
-    setAiProgress("Chargement de Transformers.js...");
-    // Dynamic import from CDN — bypasses Turbopack bundler
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const mod = await (new Function('return import("https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.4.0/dist/transformers.min.js")'))() as any;
-    mod.env.allowLocalModels = false;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (window as any).__transformers = mod;
-    return mod;
-  }, []);
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const getAIPipeline = useCallback(async (task: string, model: string, opts?: any) => {
-    const key = `${task}:${model}`;
-    if (aiCacheRef.current.has(key)) return aiCacheRef.current.get(key);
-    const tf = await loadTransformers();
-    setAiProgress(`Telechargement du modele (premiere fois)...`);
-    const pipe = await tf.pipeline(task, model, opts);
-    aiCacheRef.current.set(key, pipe);
-    return pipe;
-  }, [loadTransformers]);
-
-  const getCanvasDataURL = useCallback(() => {
-    const canvas = mainCanvasRef.current;
-    if (!canvas) return null;
-    return canvas.toDataURL("image/png");
-  }, []);
-
-  /* ── Background Removal ── */
-  const aiRemoveBackground = useCallback(async () => {
-    if (!imgRef.current) return;
-    setAiLoading(true); setAiError("");
-    try {
-      const segmenter = await getAIPipeline("background-removal", "Xenova/modnet");
-      setAiProgress("Suppression de l'arriere-plan...");
-      const dataURL = getCanvasDataURL();
-      if (!dataURL) throw new Error("Impossible de lire le canvas");
-      const result = await segmenter(dataURL);
-      // result is a RawImage — convert to canvas
-      const resultCanvas = result.toCanvas();
-      const newImg = new Image();
-      await new Promise<void>((resolve, reject) => {
-        newImg.onload = () => resolve();
-        newImg.onerror = () => reject(new Error("Erreur chargement resultat"));
-        newImg.src = resultCanvas.toDataURL("image/png");
-      });
-      pushHistory();
-      imgRef.current = newImg;
-      render();
-    } catch (e) {
-      console.error("AI BG removal error:", e);
-      setAiError(`Erreur : ${e instanceof Error ? e.message : String(e)}`);
-    } finally {
-      setAiLoading(false); setAiProgress("");
-    }
-  }, [getAIPipeline, getCanvasDataURL, pushHistory, render]);
-
-  /* ── Depth Map + Bokeh ── */
-  const [depthIntensity, setDepthIntensity] = useState(50);
-  const [depthMode, setDepthMode] = useState<"preview" | "bokeh">("bokeh");
-
-  const aiDepthMap = useCallback(async () => {
-    if (!imgRef.current) return;
-    setAiLoading(true); setAiError("");
-    try {
-      const estimator = await getAIPipeline("depth-estimation", "Xenova/depth-anything-small-hf");
-      setAiProgress("Estimation de la profondeur...");
-      const dataURL = getCanvasDataURL();
-      if (!dataURL) throw new Error("Impossible de lire le canvas");
-      const result = await estimator(dataURL);
-      // result.depth is a RawImage (grayscale depth map)
-      const depthCanvas = result.depth.toCanvas();
-
-      pushHistory();
-
-      if (depthMode === "preview") {
-        // Show depth map directly
-        const newImg = new Image();
-        await new Promise<void>((resolve, reject) => {
-          newImg.onload = () => resolve();
-          newImg.onerror = () => reject(new Error("Erreur"));
-          newImg.src = depthCanvas.toDataURL("image/png");
-        });
-        imgRef.current = newImg;
-      } else {
-        // Bokeh effect: blur background based on depth map
-        const img = imgRef.current;
-        const w = img.naturalWidth, h = img.naturalHeight;
-
-        // Draw original
-        const srcCanvas = document.createElement("canvas");
-        srcCanvas.width = w; srcCanvas.height = h;
-        const srcCtx = srcCanvas.getContext("2d")!;
-        srcCtx.drawImage(img, 0, 0, w, h);
-
-        // Draw blurred version
-        const blurCanvas = document.createElement("canvas");
-        blurCanvas.width = w; blurCanvas.height = h;
-        const blurCtx = blurCanvas.getContext("2d")!;
-        const blurAmount = Math.round(depthIntensity / 5);
-        blurCtx.filter = `blur(${blurAmount}px)`;
-        blurCtx.drawImage(img, 0, 0, w, h);
-        blurCtx.filter = "none";
-
-        // Scale depth map to image size
-        const dCanvas = document.createElement("canvas");
-        dCanvas.width = w; dCanvas.height = h;
-        const dCtx = dCanvas.getContext("2d")!;
-        dCtx.drawImage(depthCanvas, 0, 0, w, h);
-        const depthData = dCtx.getImageData(0, 0, w, h).data;
-
-        // Composite: use depth as mask between sharp and blurred
-        const srcData = srcCtx.getImageData(0, 0, w, h);
-        const blurData = blurCtx.getImageData(0, 0, w, h);
-        const outData = srcCtx.createImageData(w, h);
-
-        for (let i = 0; i < depthData.length; i += 4) {
-          // depth: 0 = far (blur), 255 = near (sharp)
-          const depth = depthData[i] / 255;
-          const sharpness = depth; // near objects stay sharp
-          outData.data[i] = srcData.data[i] * sharpness + blurData.data[i] * (1 - sharpness);
-          outData.data[i + 1] = srcData.data[i + 1] * sharpness + blurData.data[i + 1] * (1 - sharpness);
-          outData.data[i + 2] = srcData.data[i + 2] * sharpness + blurData.data[i + 2] * (1 - sharpness);
-          outData.data[i + 3] = 255;
-        }
-
-        const resCanvas = document.createElement("canvas");
-        resCanvas.width = w; resCanvas.height = h;
-        resCanvas.getContext("2d")!.putImageData(outData, 0, 0);
-
-        const newImg = new Image();
-        await new Promise<void>((resolve, reject) => {
-          newImg.onload = () => resolve();
-          newImg.onerror = () => reject(new Error("Erreur"));
-          newImg.src = resCanvas.toDataURL("image/png");
-        });
-        imgRef.current = newImg;
-      }
-      render();
-    } catch (e) {
-      console.error("AI depth error:", e);
-      setAiError(`Erreur : ${e instanceof Error ? e.message : String(e)}`);
-    } finally {
-      setAiLoading(false); setAiProgress("");
-    }
-  }, [getAIPipeline, getCanvasDataURL, pushHistory, render, depthMode, depthIntensity]);
-
-  /* ── Super Resolution ── */
-  const aiSuperRes = useCallback(async () => {
-    if (!imgRef.current) return;
-    const img = imgRef.current;
-    if (img.naturalWidth > 1024 || img.naturalHeight > 1024) {
-      if (!confirm("L'image est grande. Le traitement peut prendre 30-60 secondes. Continuer ?")) return;
-    }
-    setAiLoading(true); setAiError("");
-    try {
-      const upscaler = await getAIPipeline("image-to-image", "Xenova/swin2SR-classical-sr-x2-64");
-      setAiProgress("Amelioration de la resolution (x2)...");
-      const dataURL = getCanvasDataURL();
-      if (!dataURL) throw new Error("Impossible de lire le canvas");
-      const result = await upscaler(dataURL);
-      const resultCanvas = result.toCanvas();
-      pushHistory();
-      const newImg = new Image();
-      await new Promise<void>((resolve, reject) => {
-        newImg.onload = () => resolve();
-        newImg.onerror = () => reject(new Error("Erreur"));
-        newImg.src = resultCanvas.toDataURL("image/png");
-      });
-      imgRef.current = newImg;
-      render();
-    } catch (e) {
-      console.error("AI super-res error:", e);
-      setAiError(`Erreur : ${e instanceof Error ? e.message : String(e)}`);
-    } finally {
-      setAiLoading(false); setAiProgress("");
-    }
-  }, [getAIPipeline, getCanvasDataURL, pushHistory, render]);
-
+  // AI features are defined above (before the early return) to respect React hooks rules
   // ---- Dark workspace (image loaded) ----
 
   const TABS: { id: TabId; label: string }[] = [
