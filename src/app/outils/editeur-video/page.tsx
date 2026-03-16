@@ -179,8 +179,8 @@ export default function EditeurVideo() {
     if (!file.type.startsWith("video/") && !file.name.match(/\.(mp4|webm|mov|avi|mkv|m4v)$/i)) {
       setError("Seuls les fichiers video sont acceptes."); return;
     }
-    if (file.size > 200 * 1024 * 1024) {
-      setError("Fichier trop volumineux (max 200 Mo pour le traitement navigateur)."); return;
+    if (file.size > 500 * 1024 * 1024) {
+      setError("Fichier trop volumineux (max 500 Mo pour le traitement navigateur)."); return;
     }
     const url = URL.createObjectURL(file);
     const v = document.createElement("video");
@@ -337,7 +337,7 @@ export default function EditeurVideo() {
               Deposez votre video ici
             </p>
             <p className="mt-2 text-xs" style={{ color: "var(--muted)" }}>
-              MP4, WebM, MOV, AVI — max 200 Mo
+              MP4, WebM, MOV, AVI — max 500 Mo
             </p>
           </div>
         )}
