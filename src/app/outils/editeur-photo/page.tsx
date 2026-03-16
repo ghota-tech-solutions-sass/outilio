@@ -38,7 +38,7 @@ interface HistoryState {
   flipV: boolean;
 }
 
-type TabId = "adjust" | "filters" | "curves" | "layers";
+type TabId = "adjust" | "filters" | "curves" | "layers" | "ai";
 type CurveChannel = "rgb" | "r" | "g" | "b";
 
 /* ═══════════════════════════ CONSTANTS ═══════════════════════════ */
@@ -214,6 +214,13 @@ export default function EditeurPhoto() {
 
   /* ---------- tabs ---------- */
   const [activeTab, setActiveTab] = useState<TabId>("adjust");
+
+  /* ---------- AI state ---------- */
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiProgress, setAiProgress] = useState("");
+  const [aiError, setAiError] = useState("");
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const aiCacheRef = useRef<Map<string, any>>(new Map());
 
   /* ---------- history ---------- */
   const [history, setHistory] = useState<HistoryState[]>([]);
@@ -893,6 +900,190 @@ export default function EditeurPhoto() {
     );
   }
 
+  /* ═══════════════════ AI FEATURES ═══════════════════ */
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const loadTransformers = useCallback(async (): Promise<any> => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if ((window as any).__transformers) return (window as any).__transformers;
+    setAiProgress("Chargement de Transformers.js...");
+    // Dynamic import from CDN — bypasses Turbopack bundler
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const mod = await (new Function('return import("https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.4.0/dist/transformers.min.js")'))() as any;
+    mod.env.allowLocalModels = false;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (window as any).__transformers = mod;
+    return mod;
+  }, []);
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const getAIPipeline = useCallback(async (task: string, model: string, opts?: any) => {
+    const key = `${task}:${model}`;
+    if (aiCacheRef.current.has(key)) return aiCacheRef.current.get(key);
+    const tf = await loadTransformers();
+    setAiProgress(`Telechargement du modele (premiere fois)...`);
+    const pipe = await tf.pipeline(task, model, opts);
+    aiCacheRef.current.set(key, pipe);
+    return pipe;
+  }, [loadTransformers]);
+
+  const getCanvasDataURL = useCallback(() => {
+    const canvas = mainCanvasRef.current;
+    if (!canvas) return null;
+    return canvas.toDataURL("image/png");
+  }, []);
+
+  /* ── Background Removal ── */
+  const aiRemoveBackground = useCallback(async () => {
+    if (!imgRef.current) return;
+    setAiLoading(true); setAiError("");
+    try {
+      const segmenter = await getAIPipeline("background-removal", "Xenova/modnet");
+      setAiProgress("Suppression de l'arriere-plan...");
+      const dataURL = getCanvasDataURL();
+      if (!dataURL) throw new Error("Impossible de lire le canvas");
+      const result = await segmenter(dataURL);
+      // result is a RawImage — convert to canvas
+      const resultCanvas = result.toCanvas();
+      const newImg = new Image();
+      await new Promise<void>((resolve, reject) => {
+        newImg.onload = () => resolve();
+        newImg.onerror = () => reject(new Error("Erreur chargement resultat"));
+        newImg.src = resultCanvas.toDataURL("image/png");
+      });
+      pushHistory();
+      imgRef.current = newImg;
+      render();
+    } catch (e) {
+      console.error("AI BG removal error:", e);
+      setAiError(`Erreur : ${e instanceof Error ? e.message : String(e)}`);
+    } finally {
+      setAiLoading(false); setAiProgress("");
+    }
+  }, [getAIPipeline, getCanvasDataURL, pushHistory, render]);
+
+  /* ── Depth Map + Bokeh ── */
+  const [depthIntensity, setDepthIntensity] = useState(50);
+  const [depthMode, setDepthMode] = useState<"preview" | "bokeh">("bokeh");
+
+  const aiDepthMap = useCallback(async () => {
+    if (!imgRef.current) return;
+    setAiLoading(true); setAiError("");
+    try {
+      const estimator = await getAIPipeline("depth-estimation", "Xenova/depth-anything-small-hf");
+      setAiProgress("Estimation de la profondeur...");
+      const dataURL = getCanvasDataURL();
+      if (!dataURL) throw new Error("Impossible de lire le canvas");
+      const result = await estimator(dataURL);
+      // result.depth is a RawImage (grayscale depth map)
+      const depthCanvas = result.depth.toCanvas();
+
+      pushHistory();
+
+      if (depthMode === "preview") {
+        // Show depth map directly
+        const newImg = new Image();
+        await new Promise<void>((resolve, reject) => {
+          newImg.onload = () => resolve();
+          newImg.onerror = () => reject(new Error("Erreur"));
+          newImg.src = depthCanvas.toDataURL("image/png");
+        });
+        imgRef.current = newImg;
+      } else {
+        // Bokeh effect: blur background based on depth map
+        const img = imgRef.current;
+        const w = img.naturalWidth, h = img.naturalHeight;
+
+        // Draw original
+        const srcCanvas = document.createElement("canvas");
+        srcCanvas.width = w; srcCanvas.height = h;
+        const srcCtx = srcCanvas.getContext("2d")!;
+        srcCtx.drawImage(img, 0, 0, w, h);
+
+        // Draw blurred version
+        const blurCanvas = document.createElement("canvas");
+        blurCanvas.width = w; blurCanvas.height = h;
+        const blurCtx = blurCanvas.getContext("2d")!;
+        const blurAmount = Math.round(depthIntensity / 5);
+        blurCtx.filter = `blur(${blurAmount}px)`;
+        blurCtx.drawImage(img, 0, 0, w, h);
+        blurCtx.filter = "none";
+
+        // Scale depth map to image size
+        const dCanvas = document.createElement("canvas");
+        dCanvas.width = w; dCanvas.height = h;
+        const dCtx = dCanvas.getContext("2d")!;
+        dCtx.drawImage(depthCanvas, 0, 0, w, h);
+        const depthData = dCtx.getImageData(0, 0, w, h).data;
+
+        // Composite: use depth as mask between sharp and blurred
+        const srcData = srcCtx.getImageData(0, 0, w, h);
+        const blurData = blurCtx.getImageData(0, 0, w, h);
+        const outData = srcCtx.createImageData(w, h);
+
+        for (let i = 0; i < depthData.length; i += 4) {
+          // depth: 0 = far (blur), 255 = near (sharp)
+          const depth = depthData[i] / 255;
+          const sharpness = depth; // near objects stay sharp
+          outData.data[i] = srcData.data[i] * sharpness + blurData.data[i] * (1 - sharpness);
+          outData.data[i + 1] = srcData.data[i + 1] * sharpness + blurData.data[i + 1] * (1 - sharpness);
+          outData.data[i + 2] = srcData.data[i + 2] * sharpness + blurData.data[i + 2] * (1 - sharpness);
+          outData.data[i + 3] = 255;
+        }
+
+        const resCanvas = document.createElement("canvas");
+        resCanvas.width = w; resCanvas.height = h;
+        resCanvas.getContext("2d")!.putImageData(outData, 0, 0);
+
+        const newImg = new Image();
+        await new Promise<void>((resolve, reject) => {
+          newImg.onload = () => resolve();
+          newImg.onerror = () => reject(new Error("Erreur"));
+          newImg.src = resCanvas.toDataURL("image/png");
+        });
+        imgRef.current = newImg;
+      }
+      render();
+    } catch (e) {
+      console.error("AI depth error:", e);
+      setAiError(`Erreur : ${e instanceof Error ? e.message : String(e)}`);
+    } finally {
+      setAiLoading(false); setAiProgress("");
+    }
+  }, [getAIPipeline, getCanvasDataURL, pushHistory, render, depthMode, depthIntensity]);
+
+  /* ── Super Resolution ── */
+  const aiSuperRes = useCallback(async () => {
+    if (!imgRef.current) return;
+    const img = imgRef.current;
+    if (img.naturalWidth > 1024 || img.naturalHeight > 1024) {
+      if (!confirm("L'image est grande. Le traitement peut prendre 30-60 secondes. Continuer ?")) return;
+    }
+    setAiLoading(true); setAiError("");
+    try {
+      const upscaler = await getAIPipeline("image-to-image", "Xenova/swin2SR-classical-sr-x2-64");
+      setAiProgress("Amelioration de la resolution (x2)...");
+      const dataURL = getCanvasDataURL();
+      if (!dataURL) throw new Error("Impossible de lire le canvas");
+      const result = await upscaler(dataURL);
+      const resultCanvas = result.toCanvas();
+      pushHistory();
+      const newImg = new Image();
+      await new Promise<void>((resolve, reject) => {
+        newImg.onload = () => resolve();
+        newImg.onerror = () => reject(new Error("Erreur"));
+        newImg.src = resultCanvas.toDataURL("image/png");
+      });
+      imgRef.current = newImg;
+      render();
+    } catch (e) {
+      console.error("AI super-res error:", e);
+      setAiError(`Erreur : ${e instanceof Error ? e.message : String(e)}`);
+    } finally {
+      setAiLoading(false); setAiProgress("");
+    }
+  }, [getAIPipeline, getCanvasDataURL, pushHistory, render]);
+
   // ---- Dark workspace (image loaded) ----
 
   const TABS: { id: TabId; label: string }[] = [
@@ -900,6 +1091,7 @@ export default function EditeurPhoto() {
     { id: "filters", label: "Filtres" },
     { id: "curves",  label: "Courbes" },
     { id: "layers",  label: "Calques" },
+    { id: "ai",      label: "IA" },
   ];
 
   return (
@@ -1263,6 +1455,116 @@ export default function EditeurPhoto() {
                     </div>
                   ))}
                 </div>
+              </div>
+            )}
+
+            {/* ═══════ AI TAB ═══════ */}
+            {activeTab === "ai" && (
+              <div className="space-y-4">
+                <p className="text-[10px] leading-relaxed" style={{ color: DARK.text }}>
+                  Traitement IA 100% local dans votre navigateur. Les modeles sont telecharges et mis en cache au premier usage.
+                </p>
+
+                {aiError && (
+                  <div className="rounded-lg p-3 text-xs" style={{ background: "#ef444420", color: "#ef4444" }}>{aiError}</div>
+                )}
+
+                {aiLoading && (
+                  <div className="rounded-lg p-4 text-center" style={{ background: DARK.bg3 }}>
+                    <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full" style={{ background: `${DARK.accent}15` }}>
+                      <svg className="animate-spin" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={DARK.accent} strokeWidth="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" /></svg>
+                    </div>
+                    <p className="text-xs font-semibold" style={{ color: DARK.textBright }}>{aiProgress || "Traitement..."}</p>
+                    <p className="mt-1 text-[10px]" style={{ color: DARK.text }}>Ne fermez pas cet onglet</p>
+                  </div>
+                )}
+
+                {!aiLoading && (
+                  <>
+                    {/* Background Removal */}
+                    <div className="rounded-lg p-4" style={{ background: DARK.bg3, border: `1px solid ${DARK.border}` }}>
+                      <div className="flex items-start gap-3">
+                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-lg" style={{ background: `${DARK.accent}15` }}>✂️</div>
+                        <div className="flex-1">
+                          <p className="text-xs font-bold" style={{ color: DARK.textBright }}>Supprimer l&apos;arriere-plan</p>
+                          <p className="mt-0.5 text-[10px]" style={{ color: DARK.text }}>Modele MODNet — 6.6 Mo — Apache 2.0</p>
+                        </div>
+                      </div>
+                      <button onClick={aiRemoveBackground} disabled={!imgRef.current}
+                        className="mt-3 w-full rounded-lg py-2.5 text-xs font-bold transition-all hover:brightness-110 disabled:opacity-40"
+                        style={{ background: DARK.accent, color: "#000" }}>
+                        Supprimer le fond
+                      </button>
+                    </div>
+
+                    {/* Depth Map + Bokeh */}
+                    <div className="rounded-lg p-4" style={{ background: DARK.bg3, border: `1px solid ${DARK.border}` }}>
+                      <div className="flex items-start gap-3">
+                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-lg" style={{ background: "rgba(99,102,241,0.15)" }}>🔮</div>
+                        <div className="flex-1">
+                          <p className="text-xs font-bold" style={{ color: DARK.textBright }}>Profondeur &amp; Bokeh</p>
+                          <p className="mt-0.5 text-[10px]" style={{ color: DARK.text }}>Depth Anything — 20 Mo — Apache 2.0</p>
+                        </div>
+                      </div>
+                      <div className="mt-3 flex gap-1.5">
+                        <button onClick={() => setDepthMode("bokeh")}
+                          className="flex-1 rounded-lg py-1.5 text-[10px] font-bold transition-all"
+                          style={{ background: depthMode === "bokeh" ? "#6366f1" : DARK.bg, color: depthMode === "bokeh" ? "#fff" : DARK.text }}>
+                          Effet Bokeh
+                        </button>
+                        <button onClick={() => setDepthMode("preview")}
+                          className="flex-1 rounded-lg py-1.5 text-[10px] font-bold transition-all"
+                          style={{ background: depthMode === "preview" ? "#6366f1" : DARK.bg, color: depthMode === "preview" ? "#fff" : DARK.text }}>
+                          Carte de profondeur
+                        </button>
+                      </div>
+                      {depthMode === "bokeh" && (
+                        <div className="mt-2 flex items-center gap-2">
+                          <span className="text-[10px]" style={{ color: DARK.text }}>Flou</span>
+                          <input type="range" min={10} max={100} value={depthIntensity}
+                            onChange={(e) => setDepthIntensity(Number(e.target.value))}
+                            className="flex-1 accent-[#6366f1]" />
+                          <span className="w-6 text-right text-[10px] font-bold tabular-nums" style={{ color: "#6366f1" }}>{depthIntensity}</span>
+                        </div>
+                      )}
+                      <button onClick={aiDepthMap} disabled={!imgRef.current}
+                        className="mt-2 w-full rounded-lg py-2.5 text-xs font-bold transition-all hover:brightness-110 disabled:opacity-40"
+                        style={{ background: "#6366f1", color: "#fff" }}>
+                        {depthMode === "bokeh" ? "Appliquer le Bokeh" : "Generer la carte"}
+                      </button>
+                    </div>
+
+                    {/* Super Resolution */}
+                    <div className="rounded-lg p-4" style={{ background: DARK.bg3, border: `1px solid ${DARK.border}` }}>
+                      <div className="flex items-start gap-3">
+                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-lg" style={{ background: "rgba(232,150,62,0.15)" }}>🔍</div>
+                        <div className="flex-1">
+                          <p className="text-xs font-bold" style={{ color: DARK.textBright }}>Super Resolution x2</p>
+                          <p className="mt-0.5 text-[10px]" style={{ color: DARK.text }}>Swin2SR — 16 Mo — Apache 2.0</p>
+                        </div>
+                      </div>
+                      {imgRef.current && (imgRef.current.naturalWidth > 1024 || imgRef.current.naturalHeight > 1024) && (
+                        <p className="mt-2 text-[10px] rounded px-2 py-1" style={{ background: "#e8963e20", color: "#e8963e" }}>
+                          Image &gt; 1024px : le traitement peut prendre 30-60s
+                        </p>
+                      )}
+                      <button onClick={aiSuperRes} disabled={!imgRef.current}
+                        className="mt-3 w-full rounded-lg py-2.5 text-xs font-bold transition-all hover:brightness-110 disabled:opacity-40"
+                        style={{ background: "#e8963e", color: "#000" }}>
+                        Ameliorer la resolution (x2)
+                      </button>
+                    </div>
+
+                    {/* Info */}
+                    <div className="rounded-lg p-3" style={{ background: DARK.bg }}>
+                      <p className="text-[10px] leading-relaxed" style={{ color: DARK.text }}>
+                        Les modeles IA sont telecharges depuis Hugging Face et mis en cache dans votre navigateur.
+                        Premier usage = 6-20 Mo de telechargement. Ensuite, c&apos;est instantane.
+                        Aucune donnee n&apos;est envoyee — tout est local.
+                      </p>
+                    </div>
+                  </>
+                )}
               </div>
             )}
           </div>
