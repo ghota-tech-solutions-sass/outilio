@@ -904,8 +904,24 @@ export default function EditeurPhoto() {
       const dataURL = getCanvasDataURLTop();
       if (!dataURL) throw new Error("Impossible de lire le canvas");
       const result = await segmenter(dataURL);
-      // result is a RawImage — convert to data URL via our helper
-      const resultURL = rawImageToDataURL(result);
+      console.log("BG removal result:", result, "type:", typeof result, "keys:", result ? Object.keys(result) : "null", "isArray:", Array.isArray(result));
+      if (result && typeof result === "object" && !Array.isArray(result)) { console.log("props:", { width: result.width, height: result.height, channels: result.channels, data: result.data?.length, blob: result instanceof Blob }); }
+      if (Array.isArray(result)) { console.log("result[0]:", result[0], "type:", typeof result[0]); }
+      // result might be a RawImage, a Blob, or an array — handle all cases
+      let resultURL: string;
+      if (result instanceof Blob) {
+        resultURL = URL.createObjectURL(result);
+      } else if (result && result.width && result.height && result.data) {
+        resultURL = rawImageToDataURL(result);
+      } else if (Array.isArray(result) && result[0]) {
+        const r = result[0];
+        if (r instanceof Blob) resultURL = URL.createObjectURL(r);
+        else if (r.width && r.height && r.data) resultURL = rawImageToDataURL(r);
+        else if (r.blob && r.blob instanceof Blob) resultURL = URL.createObjectURL(r.blob);
+        else throw new Error("Format de resultat IA non reconnu: " + JSON.stringify(Object.keys(r)));
+      } else {
+        throw new Error("Format de resultat IA non reconnu");
+      }
       const newImg = new Image();
       await new Promise<void>((resolve, reject) => {
         newImg.onload = () => resolve();
@@ -932,8 +948,10 @@ export default function EditeurPhoto() {
       const dataURL = getCanvasDataURLTop();
       if (!dataURL) throw new Error("Impossible de lire le canvas");
       const result = await estimator(dataURL);
-      // result.depth is a RawImage — convert to a canvas for pixel operations
-      const depthRaw = result.depth;
+      console.log("Depth result:", result, "keys:", result ? Object.keys(result) : "null");
+      // result.depth or result.predicted_depth is a RawImage
+      const depthRaw = result.depth || result.predicted_depth || (result[0] && (result[0].depth || result[0].predicted_depth));
+      if (!depthRaw || !depthRaw.width) throw new Error("Depth map non trouvee dans le resultat: " + JSON.stringify(Object.keys(result)));
       const depthDataURL = rawImageToDataURL(depthRaw);
       const depthImg = new Image();
       await new Promise<void>((res, rej) => { depthImg.onload = () => res(); depthImg.onerror = () => rej(); depthImg.src = depthDataURL; });
@@ -988,7 +1006,14 @@ export default function EditeurPhoto() {
       const dataURL = getCanvasDataURLTop();
       if (!dataURL) throw new Error("Impossible de lire le canvas");
       const result = await upscaler(dataURL);
-      const resultURL = rawImageToDataURL(result);
+      console.log("Super-res result:", result, "type:", typeof result);
+      let srURL: string;
+      if (result instanceof Blob) srURL = URL.createObjectURL(result);
+      else if (result && result.width && result.data) srURL = rawImageToDataURL(result);
+      else if (Array.isArray(result) && result[0]) {
+        const r = result[0]; srURL = (r instanceof Blob) ? URL.createObjectURL(r) : (r.width && r.data) ? rawImageToDataURL(r) : rawImageToDataURL(result);
+      } else srURL = rawImageToDataURL(result);
+      const resultURL = srURL;
       pushHistoryRef.current();
       const newImg = new Image();
       await new Promise<void>((res, rej) => { newImg.onload = () => res(); newImg.onerror = () => rej(); newImg.src = resultURL; });
