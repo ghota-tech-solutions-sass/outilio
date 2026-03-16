@@ -216,6 +216,30 @@ export default function Home() {
         </div>
       </section>
 
+      {/* CTA Contribuer */}
+      <section className="border-t py-12" style={{ borderColor: "var(--border)" }}>
+        <div className="mx-auto flex max-w-6xl flex-col items-center gap-5 px-5 text-center sm:flex-row sm:text-left">
+          <div className="flex-1">
+            <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
+              Un outil vous manque ?
+            </h2>
+            <p className="mt-1.5 text-sm" style={{ color: "var(--muted)" }}>
+              Suggerez-le en quelques clics ou contribuez directement au code open source.
+            </p>
+          </div>
+          <a
+            href="/contribuer"
+            className="inline-flex shrink-0 items-center gap-2 rounded-full px-7 py-3.5 text-sm font-semibold text-white transition-all hover:scale-[1.02]"
+            style={{ background: "linear-gradient(135deg, var(--accent) 0%, #d4822e 100%)" }}
+          >
+            Contribuer
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+          </a>
+        </div>
+      </section>
+
       {/* Privacy Banner */}
       <PrivacyBanner />
 

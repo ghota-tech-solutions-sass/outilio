@@ -1,0 +1,53 @@
+name: "\U0001F41B Rapport de bug"
+description: "Signalez un probleme sur Outilis.fr"
+labels: ["bug"]
+body:
+  - type: input
+    id: outil
+    attributes:
+      label: "Outil concerne"
+      description: "Quel outil est concerne par le bug ?"
+      placeholder: "Ex: Calculateur salaire net / brut"
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: "Description du bug"
+      description: "Decrivez ce qui ne fonctionne pas."
+      placeholder: "Quand je fais X, il se passe Y au lieu de Z..."
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: "Etapes de reproduction"
+      description: "Comment reproduire le bug ?"
+      placeholder: |
+        1. Aller sur...
+        2. Cliquer sur...
+        3. Observer...
+    validations:
+      required: false
+  - type: dropdown
+    id: navigateur
+    attributes:
+      label: "Navigateur"
+      options:
+        - Chrome
+        - Firefox
+        - Safari
+        - Edge
+        - Autre
+    validations:
+      required: false
+  - type: dropdown
+    id: appareil
+    attributes:
+      label: "Appareil"
+      options:
+        - Ordinateur
+        - Mobile
+        - Tablette
+    validations:
+      required: false

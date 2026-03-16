@@ -112,7 +112,7 @@ export const tools: Tool[] = [
   {
     title: "Simulateur impot sur le revenu",
     description:
-      "Bareme 2024, quotient familial, taux marginal. Detail par tranche d'imposition.",
+      "Bareme mis a jour, quotient familial, taux marginal. Detail par tranche d'imposition.",
     href: "/outils/simulateur-impot",
     icon: "\u{1F4CB}",
     badge: "Populaire",

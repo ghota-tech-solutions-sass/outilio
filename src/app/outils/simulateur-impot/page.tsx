@@ -3,20 +3,81 @@
 import { useState, useMemo } from "react";
 import AdPlaceholder from "@/components/AdPlaceholder";
 
-const TRANCHES = [
-  { min: 0, max: 11294, rate: 0, label: "0%" },
-  { min: 11294, max: 28797, rate: 0.11, label: "11%" },
-  { min: 28797, max: 82341, rate: 0.30, label: "30%" },
-  { min: 82341, max: 177106, rate: 0.41, label: "41%" },
-  { min: 177106, max: Infinity, rate: 0.45, label: "45%" },
-];
+type Tranche = { min: number; max: number; rate: number; label: string };
 
-function simulerImpot(revenuNet: number, parts: number) {
+// Baremes officiels connus (source: loi de finances)
+// Les seuils sont revalorises chaque annee en fonction de l'inflation.
+// Pour les annees futures sans bareme officiel, on extrapole a partir du dernier
+// bareme connu avec le taux de revalorisation moyen (~2%).
+const BAREMES_OFFICIELS: Record<number, number[]> = {
+  // [seuil_0%, seuil_11%, seuil_30%, seuil_41%]
+  2023: [11294, 28797, 82341, 177106],
+  2024: [11497, 29315, 83823, 180294],
+};
+
+const TAUX = [0, 0.11, 0.30, 0.41, 0.45];
+const TAUX_LABELS = ["0%", "11%", "30%", "41%", "45%"];
+const REVALORISATION = 0.02; // ~2% annuel moyen
+
+function getLastOfficiel(): { annee: number; seuils: number[] } {
+  const annees = Object.keys(BAREMES_OFFICIELS).map(Number).sort((a, b) => b - a);
+  const annee = annees[0];
+  return { annee, seuils: BAREMES_OFFICIELS[annee] };
+}
+
+function getSeuilsPourAnnee(annee: number): number[] {
+  if (BAREMES_OFFICIELS[annee]) return BAREMES_OFFICIELS[annee];
+  const last = getLastOfficiel();
+  const delta = annee - last.annee;
+  if (delta <= 0) return last.seuils; // annee avant le plus ancien connu
+  const factor = Math.pow(1 + REVALORISATION, delta);
+  return last.seuils.map((s) => Math.round(s * factor));
+}
+
+function buildTranches(seuils: number[]): Tranche[] {
+  const limits = [0, ...seuils, Infinity];
+  return TAUX.map((rate, i) => ({
+    min: limits[i],
+    max: limits[i + 1],
+    rate,
+    label: TAUX_LABELS[i],
+  }));
+}
+
+function buildBaremes() {
+  const now = new Date();
+  const currentYear = now.getFullYear();
+  // Couvrir de 2023 jusqu'a l'annee en cours
+  const startYear = Math.min(...Object.keys(BAREMES_OFFICIELS).map(Number));
+  const endYear = currentYear;
+  const result: { annee: number; label: string; tranches: Tranche[]; estime: boolean }[] = [];
+  for (let y = endYear; y >= startYear; y--) {
+    result.push({
+      annee: y,
+      label: `Revenus ${y} (declaration ${y + 1})`,
+      tranches: buildTranches(getSeuilsPourAnnee(y)),
+      estime: !BAREMES_OFFICIELS[y],
+    });
+  }
+  return result;
+}
+
+const BAREMES = buildBaremes();
+
+function getDefaultAnnee(): number {
+  const now = new Date();
+  const year = now.getFullYear();
+  // Avant septembre : on declare les revenus de l'annee precedente
+  const target = now.getMonth() < 9 ? year - 1 : year;
+  return BAREMES.find((b) => b.annee <= target)?.annee ?? BAREMES[0].annee;
+}
+
+function simulerImpot(revenuNet: number, parts: number, tranches: Tranche[]) {
   const quotient = revenuNet / parts;
   let impotParPart = 0;
   const details: { tranche: string; base: number; taux: number; impot: number }[] = [];
 
-  for (const t of TRANCHES) {
+  for (const t of tranches) {
     if (quotient <= t.min) break;
     const base = Math.min(quotient, t.max) - t.min;
     const imp = base * t.rate;
@@ -28,7 +89,7 @@ function simulerImpot(revenuNet: number, parts: number) {
 
   const impotTotal = impotParPart * parts;
   const tauxMoyen = revenuNet > 0 ? (impotTotal / revenuNet) * 100 : 0;
-  const tauxMarginal = TRANCHES.findLast((t) => quotient > t.min)?.rate ?? 0;
+  const tauxMarginal = tranches.findLast((t) => quotient > t.min)?.rate ?? 0;
   const revenuApresImpot = revenuNet - impotTotal;
 
   return { impotTotal, tauxMoyen, tauxMarginal, revenuApresImpot, details, impotParPart };
@@ -38,11 +99,13 @@ export default function SimulateurImpot() {
   const [revenu, setRevenu] = useState("35000");
   const [parts, setParts] = useState("1");
   const [situation, setSituation] = useState("celibataire");
+  const [annee, setAnnee] = useState(() => getDefaultAnnee());
 
   const partsNum = parseFloat(parts) || 1;
   const revenuNum = parseFloat(revenu) || 0;
+  const bareme = BAREMES.find((b) => b.annee === annee) ?? BAREMES[0];
 
-  const result = useMemo(() => simulerImpot(revenuNum, partsNum), [revenuNum, partsNum]);
+  const result = useMemo(() => simulerImpot(revenuNum, partsNum, bareme.tranches), [revenuNum, partsNum, bareme.tranches]);
 
   const fmt = (n: number) => n.toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   const fmtPct = (n: number) => n.toLocaleString("fr-FR", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
@@ -56,7 +119,7 @@ export default function SimulateurImpot() {
             Simulateur <span style={{ color: "var(--primary)" }}>impot sur le revenu</span>
           </h1>
           <p className="animate-fade-up stagger-2 mt-3 max-w-xl text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-            Estimez votre impot 2024 avec le bareme officiel. Quotient familial et taux marginal inclus.
+            Estimez votre impot sur les revenus {annee} avec le bareme officiel. Quotient familial et taux marginal inclus.
           </p>
         </div>
       </section>
@@ -66,6 +129,25 @@ export default function SimulateurImpot() {
           <div className="lg:col-span-2 space-y-6">
             <div className="rounded-2xl border p-6" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
               <div className="space-y-4">
+                {/* Annee de revenus */}
+                <div>
+                  <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>
+                    Annee de revenus
+                  </label>
+                  <select
+                    value={annee}
+                    onChange={(e) => setAnnee(Number(e.target.value))}
+                    className="mt-2 w-full rounded-xl border px-4 py-3 text-sm font-semibold"
+                    style={{ borderColor: "var(--border)" }}
+                  >
+                    {BAREMES.map((b) => (
+                      <option key={b.annee} value={b.annee}>
+                        {b.label}{b.estime ? " (estime)" : ""}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
                 <div>
                   <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>
                     Revenu net imposable annuel
@@ -152,9 +234,9 @@ export default function SimulateurImpot() {
 
             {/* Visual bar chart */}
             <div className="rounded-2xl border p-6" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-              <h2 className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--accent)" }}>Bareme 2024</h2>
+              <h2 className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--accent)" }}>Bareme {annee + 1} (revenus {annee})</h2>
               <div className="mt-4 space-y-2">
-                {TRANCHES.map((t, i) => {
+                {bareme.tranches.map((t, i) => {
                   const quotient = revenuNum / partsNum;
                   const isActive = quotient > t.min;
                   const fill = isActive ? Math.min(100, ((Math.min(quotient, t.max) - t.min) / (t.max === Infinity ? 200000 : t.max - t.min)) * 100) : 0;

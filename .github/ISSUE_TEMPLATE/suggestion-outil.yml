@@ -1,0 +1,54 @@
+name: "\U0001F4A1 Suggestion d'outil"
+description: "Proposez un nouvel outil pour Outilis.fr"
+labels: ["suggestion"]
+body:
+  - type: input
+    id: nom
+    attributes:
+      label: "Nom de l'outil"
+      description: "Comment appelleriez-vous cet outil ?"
+      placeholder: "Ex: Calculateur de TVA inversee"
+    validations:
+      required: true
+  - type: dropdown
+    id: categorie
+    attributes:
+      label: "Categorie"
+      description: "Dans quelle categorie classerait-on cet outil ?"
+      options:
+        - Finance
+        - Immobilier
+        - Business
+        - Carriere
+        - Sante
+        - Texte
+        - Dev
+        - Outils
+        - Legal
+        - Securite
+        - Conversion
+        - Design
+        - Maths
+        - Image
+        - PDF
+        - Video
+        - Audio
+        - Autre
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: "Description"
+      description: "Decrivez l'outil et ce qu'il ferait."
+      placeholder: "Cet outil permettrait de..."
+    validations:
+      required: true
+  - type: textarea
+    id: cas-usage
+    attributes:
+      label: "Cas d'usage"
+      description: "Dans quelles situations utiliseriez-vous cet outil ?"
+      placeholder: "Je l'utiliserais quand..."
+    validations:
+      required: false
