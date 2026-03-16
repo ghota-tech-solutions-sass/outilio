@@ -48,12 +48,18 @@ export default function CalculateurPret() {
 
   return (
     <>
-      <section className="bg-gradient-to-b from-blue-50 to-white py-12">
+      <section className="py-12" style={{ background: "linear-gradient(to bottom, rgba(13,79,60,0.04), var(--surface))" }}>
         <div className="mx-auto max-w-3xl px-4">
-          <h1 className="text-3xl font-extrabold text-gray-900 md:text-4xl">
+          <h1
+            className="animate-fade-up text-3xl font-extrabold md:text-4xl"
+            style={{ fontFamily: "var(--font-display)", color: "var(--foreground)" }}
+          >
             Simulateur de pret immobilier
           </h1>
-          <p className="mt-2 text-gray-600">
+          <p
+            className="animate-fade-up stagger-1 mt-2"
+            style={{ color: "var(--muted)" }}
+          >
             Calculez vos mensualites, le cout total et visualisez le tableau d&apos;amortissement.
           </p>
         </div>
@@ -62,10 +68,13 @@ export default function CalculateurPret() {
       <div className="mx-auto max-w-5xl px-4 py-8">
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
           <div className="lg:col-span-2 space-y-6">
-            <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+            <div
+              className="animate-fade-up stagger-2 rounded-2xl border p-6 shadow-sm"
+              style={{ background: "var(--surface)", borderColor: "var(--border)" }}
+            >
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <Field label="Prix du bien (€)" value={capital} onChange={setCapital} />
-                <Field label="Apport personnel (€)" value={apport} onChange={setApport} />
+                <Field label="Prix du bien (&euro;)" value={capital} onChange={setCapital} />
+                <Field label="Apport personnel (&euro;)" value={apport} onChange={setApport} />
                 <Field label="Taux d'interet (%)" value={taux} onChange={setTaux} step="0.1" />
                 <Field label="Duree (annees)" value={duree} onChange={setDuree} />
               </div>
@@ -74,17 +83,25 @@ export default function CalculateurPret() {
             {result && (
               <>
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                  <StatCard label="Mensualite" value={`${fmt(result.mensualite)} €`} primary />
-                  <StatCard label="Cout total du credit" value={`${fmt(result.interetsTotal)} €`} />
-                  <StatCard label="Montant emprunte" value={`${fmt(result.emprunt)} €`} />
+                  <StatCard label="Mensualite" value={`${fmt(result.mensualite)} \u20AC`} primary />
+                  <StatCard label="Cout total du credit" value={`${fmt(result.interetsTotal)} \u20AC`} />
+                  <StatCard label="Montant emprunte" value={`${fmt(result.emprunt)} \u20AC`} />
                 </div>
 
-                <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-                  <h2 className="text-lg font-semibold text-gray-900">Tableau d&apos;amortissement</h2>
+                <div
+                  className="rounded-2xl border p-6 shadow-sm"
+                  style={{ background: "var(--surface)", borderColor: "var(--border)" }}
+                >
+                  <h2
+                    className="text-lg font-semibold"
+                    style={{ color: "var(--foreground)" }}
+                  >
+                    Tableau d&apos;amortissement
+                  </h2>
                   <div className="mt-4 overflow-x-auto">
                     <table className="w-full text-sm">
                       <thead>
-                        <tr className="border-b text-left text-gray-500">
+                        <tr className="border-b text-left" style={{ borderColor: "var(--border)", color: "var(--muted)" }}>
                           <th className="pb-2 pr-4">Annee</th>
                           <th className="pb-2 pr-4 text-right">Capital rembourse</th>
                           <th className="pb-2 pr-4 text-right">Interets payes</th>
@@ -93,11 +110,11 @@ export default function CalculateurPret() {
                       </thead>
                       <tbody>
                         {result.annualSummary.map((row) => (
-                          <tr key={row.year} className="border-b border-gray-100">
-                            <td className="py-2 pr-4 font-medium">{row.year}</td>
-                            <td className="py-2 pr-4 text-right">{fmt(row.capital)} &euro;</td>
-                            <td className="py-2 pr-4 text-right text-gray-500">{fmt(row.interets)} &euro;</td>
-                            <td className="py-2 text-right">{fmt(row.restant)} &euro;</td>
+                          <tr key={row.year} className="border-b" style={{ borderColor: "var(--border)" }}>
+                            <td className="py-2 pr-4 font-medium" style={{ color: "var(--foreground)" }}>{row.year}</td>
+                            <td className="py-2 pr-4 text-right" style={{ color: "var(--foreground)" }}>{fmt(row.capital)} &euro;</td>
+                            <td className="py-2 pr-4 text-right" style={{ color: "var(--muted)" }}>{fmt(row.interets)} &euro;</td>
+                            <td className="py-2 text-right" style={{ color: "var(--foreground)" }}>{fmt(row.restant)} &euro;</td>
                           </tr>
                         ))}
                       </tbody>
@@ -107,15 +124,18 @@ export default function CalculateurPret() {
               </>
             )}
 
-            <div className="prose max-w-none rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-              <h2>Comment calculer ses mensualites de pret immobilier ?</h2>
-              <p>
+            <div
+              className="prose max-w-none rounded-2xl border p-6 shadow-sm"
+              style={{ background: "var(--surface)", borderColor: "var(--border)" }}
+            >
+              <h2 style={{ fontFamily: "var(--font-display)", color: "var(--foreground)" }}>Comment calculer ses mensualites de pret immobilier ?</h2>
+              <p style={{ color: "var(--foreground)" }}>
                 La mensualite d&apos;un pret immobilier se calcule avec la formule suivante :
                 <strong> M = C x r / (1 - (1+r)^-n)</strong> ou C est le capital emprunte,
                 r le taux mensuel et n le nombre de mensualites.
               </p>
-              <h2>Quel taux pour un pret immobilier en 2024 ?</h2>
-              <p>
+              <h2 style={{ fontFamily: "var(--font-display)", color: "var(--foreground)" }}>Quel taux pour un pret immobilier en 2024 ?</h2>
+              <p style={{ color: "var(--foreground)" }}>
                 Les taux immobiliers varient selon la duree du pret et votre profil emprunteur.
                 En 2024, les taux moyens oscillent entre 3% et 4% sur 20 ans.
                 Utilisez notre simulateur pour estimer vos mensualites selon differents scenarios.
@@ -125,9 +145,12 @@ export default function CalculateurPret() {
 
           <aside className="space-y-6">
             <AdPlaceholder className="h-[250px]" />
-            <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-              <h3 className="font-semibold text-gray-900">Conseils</h3>
-              <ul className="mt-2 space-y-2 text-sm text-gray-500">
+            <div
+              className="rounded-2xl border p-6 shadow-sm"
+              style={{ background: "var(--surface)", borderColor: "var(--border)" }}
+            >
+              <h3 className="font-semibold" style={{ color: "var(--foreground)" }}>Conseils</h3>
+              <ul className="mt-2 space-y-2 text-sm" style={{ color: "var(--muted)" }}>
                 <li>Le taux d&apos;endettement ne doit pas depasser 35%</li>
                 <li>Un apport de 10-20% ameliore votre dossier</li>
                 <li>Comparez plusieurs banques avant de signer</li>
@@ -155,13 +178,18 @@ function Field({
 }) {
   return (
     <div>
-      <label className="text-sm font-medium text-gray-700">{label}</label>
+      <label className="text-sm font-medium" style={{ color: "var(--foreground)" }}>{label}</label>
       <input
         type="number"
         step={step}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="mt-1 w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-[#2563eb] focus:outline-none focus:ring-2 focus:ring-blue-100"
+        className="mt-1 w-full rounded-lg border px-4 py-3 focus:outline-none focus:ring-2"
+        style={{
+          borderColor: "var(--border)",
+          background: "var(--surface)",
+          color: "var(--foreground)",
+        }}
       />
     </div>
   );
@@ -169,9 +197,15 @@ function Field({
 
 function StatCard({ label, value, primary }: { label: string; value: string; primary?: boolean }) {
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-5 text-center shadow-sm">
-      <p className="text-sm text-gray-500">{label}</p>
-      <p className={`mt-1 text-xl font-bold ${primary ? "text-[#2563eb]" : "text-gray-900"}`}>
+    <div
+      className="rounded-2xl border p-5 text-center shadow-sm"
+      style={{ background: "var(--surface)", borderColor: "var(--border)" }}
+    >
+      <p className="text-sm" style={{ color: "var(--muted)" }}>{label}</p>
+      <p
+        className="mt-1 text-xl font-bold"
+        style={{ color: primary ? "var(--primary)" : "var(--foreground)" }}
+      >
         {value}
       </p>
     </div>
