@@ -142,7 +142,7 @@ export default function CompresseurImage() {
                   <div className="flex items-center justify-between mb-4">
                     <h2 className="text-lg font-semibold" style={{ fontFamily: "var(--font-display)" }}>Parametres</h2>
                     <button onClick={() => { setOriginalFile(null); setOriginalURL(""); setCompressedURL(""); setOriginalSize(0); setCompressedSize(0); }}
-                      className="text-sm font-medium px-4 py-2 rounded-lg border transition-colors hover:bg-gray-50"
+                      className="text-sm font-medium px-4 py-2 rounded-lg border transition-colors hover:bg-[var(--surface-alt)]"
                       style={{ borderColor: "var(--border)", color: "var(--muted)" }}>
                       Nouvelle image
                     </button>

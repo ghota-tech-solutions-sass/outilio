@@ -63,12 +63,15 @@ export default function GenerateurMotDePasse() {
 
   return (
     <>
-      <section className="bg-gradient-to-b from-blue-50 to-white py-12">
+      <section className="py-12" style={{ background: "linear-gradient(to bottom, var(--surface-alt), var(--background))" }}>
         <div className="mx-auto max-w-3xl px-4">
-          <h1 className="text-3xl font-extrabold text-gray-900 md:text-4xl">
+          <h1
+            className="animate-fade-up stagger-1 text-3xl font-extrabold md:text-4xl"
+            style={{ color: "var(--foreground)", fontFamily: "var(--font-display)" }}
+          >
             Generateur de mot de passe securise
           </h1>
-          <p className="mt-2 text-gray-600">
+          <p className="animate-fade-up stagger-2 mt-2" style={{ color: "var(--muted)" }}>
             Creez des mots de passe forts et uniques en un clic. 100% local, rien n&apos;est envoye.
           </p>
         </div>
@@ -77,18 +80,23 @@ export default function GenerateurMotDePasse() {
       <div className="mx-auto max-w-5xl px-4 py-8">
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
           <div className="lg:col-span-2 space-y-6">
-            <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+            <div
+              className="rounded-xl p-6 shadow-sm"
+              style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
+            >
               {/* Generated password */}
               <div className="flex items-center gap-2">
                 <input
                   type="text"
                   readOnly
                   value={password}
-                  className="flex-1 rounded-lg border border-gray-300 bg-gray-50 px-4 py-3 font-mono text-lg tracking-wider"
+                  className="flex-1 rounded-lg px-4 py-3 font-mono text-lg tracking-wider"
+                  style={{ background: "var(--surface-alt)", border: "1px solid var(--border)", color: "var(--foreground)" }}
                 />
                 <button
                   onClick={copy}
-                  className="rounded-lg bg-[#2563eb] px-4 py-3 text-sm font-medium text-white hover:bg-[#1d4ed8]"
+                  className="rounded-lg px-4 py-3 text-sm font-medium text-white hover:opacity-90"
+                  style={{ background: "var(--primary)" }}
                 >
                   {copied ? "Copie !" : "Copier"}
                 </button>
@@ -96,20 +104,20 @@ export default function GenerateurMotDePasse() {
 
               {/* Strength bar */}
               <div className="mt-3 flex items-center gap-3">
-                <div className="h-2 flex-1 rounded-full bg-gray-200">
+                <div className="h-2 flex-1 rounded-full" style={{ background: "var(--surface-alt)" }}>
                   <div
                     className={`h-2 rounded-full transition-all ${strength.color}`}
                     style={{ width: `${(strength.score / 6) * 100}%` }}
                   />
                 </div>
-                <span className="text-sm font-medium text-gray-600">{strength.label}</span>
+                <span className="text-sm font-medium" style={{ color: "var(--muted)" }}>{strength.label}</span>
               </div>
 
               {/* Length slider */}
               <div className="mt-6">
                 <div className="flex items-center justify-between">
-                  <label className="text-sm font-medium text-gray-700">Longueur</label>
-                  <span className="text-sm font-bold text-[#2563eb]">{length}</span>
+                  <label className="text-sm font-medium" style={{ color: "var(--foreground)" }}>Longueur</label>
+                  <span className="text-sm font-bold" style={{ color: "var(--primary)" }}>{length}</span>
                 </div>
                 <input
                   type="range"
@@ -131,12 +139,13 @@ export default function GenerateurMotDePasse() {
                     ["symbols", "Symboles (!@#$)"],
                   ] as const
                 ).map(([key, label]) => (
-                  <label key={key} className="flex items-center gap-2 text-sm text-gray-700">
+                  <label key={key} className="flex items-center gap-2 text-sm" style={{ color: "var(--foreground)" }}>
                     <input
                       type="checkbox"
                       checked={options[key]}
                       onChange={(e) => setOptions({ ...options, [key]: e.target.checked })}
-                      className="rounded border-gray-300"
+                      className="rounded"
+                      style={{ borderColor: "var(--border)" }}
                     />
                     {label}
                   </label>
@@ -145,13 +154,17 @@ export default function GenerateurMotDePasse() {
 
               <button
                 onClick={generate}
-                className="mt-6 w-full rounded-lg bg-[#2563eb] py-3 font-semibold text-white hover:bg-[#1d4ed8]"
+                className="mt-6 w-full rounded-lg py-3 font-semibold text-white hover:opacity-90"
+                style={{ background: "var(--primary)" }}
               >
                 Generer un nouveau mot de passe
               </button>
             </div>
 
-            <div className="prose max-w-none rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+            <div
+              className="prose max-w-none rounded-xl p-6 shadow-sm"
+              style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
+            >
               <h2>Qu&apos;est-ce qu&apos;un mot de passe securise ?</h2>
               <p>
                 Un mot de passe securise doit etre long (minimum 12 caracteres),

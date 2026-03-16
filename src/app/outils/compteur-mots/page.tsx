@@ -21,12 +21,12 @@ export default function CompteurMots() {
 
   return (
     <>
-      <section className="bg-gradient-to-b from-blue-50 to-white py-12">
+      <section className="py-12" style={{ background: "linear-gradient(to bottom, var(--surface-alt), var(--background))" }}>
         <div className="mx-auto max-w-3xl px-4">
-          <h1 className="text-3xl font-extrabold text-gray-900 md:text-4xl">
+          <h1 className="animate-fade-up stagger-1 text-3xl font-extrabold md:text-4xl" style={{ fontFamily: "var(--font-display)", color: "var(--foreground)" }}>
             Compteur de mots et caracteres
           </h1>
-          <p className="mt-2 text-gray-600">
+          <p className="animate-fade-up stagger-2 mt-2" style={{ color: "var(--muted)" }}>
             Comptez instantanement les mots, caracteres, phrases et paragraphes de vos textes.
           </p>
         </div>
@@ -42,20 +42,23 @@ export default function CompteurMots() {
               <Stat label="Phrases" value={stats.sentences} />
             </div>
 
-            <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+            <div className="rounded-xl border p-6 shadow-sm" style={{ borderColor: "var(--border)", background: "var(--surface)" }}>
               <textarea
                 value={text}
                 onChange={(e) => setText(e.target.value)}
                 placeholder="Collez ou tapez votre texte ici..."
-                className="h-64 w-full resize-y rounded-lg border border-gray-300 p-4 text-base focus:border-[#2563eb] focus:outline-none focus:ring-2 focus:ring-blue-100"
+                className="h-64 w-full resize-y rounded-lg border p-4 text-base focus:outline-none focus:ring-2"
+                style={{ borderColor: "var(--border)", background: "var(--surface)", color: "var(--foreground)" }}
+                onFocus={(e) => { e.currentTarget.style.borderColor = "var(--primary)"; }}
+                onBlur={(e) => { e.currentTarget.style.borderColor = "var(--border)"; }}
               />
-              <div className="mt-3 flex items-center justify-between text-sm text-gray-500">
+              <div className="mt-3 flex items-center justify-between text-sm" style={{ color: "var(--muted)" }}>
                 <span>Temps de lecture : ~{stats.readingTime} min</span>
                 <span>Temps de parole : ~{stats.speakingTime} min</span>
               </div>
             </div>
 
-            <div className="prose max-w-none rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+            <div className="prose max-w-none rounded-xl border p-6 shadow-sm" style={{ borderColor: "var(--border)", background: "var(--surface)" }}>
               <h2>Compteur de mots en ligne gratuit</h2>
               <p>
                 Notre compteur de mots analyse instantanement votre texte pour vous donner
@@ -73,9 +76,9 @@ export default function CompteurMots() {
 
           <aside className="space-y-6">
             <AdPlaceholder className="h-[250px]" />
-            <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-              <h3 className="font-semibold text-gray-900">Limites courantes</h3>
-              <ul className="mt-2 space-y-2 text-sm text-gray-500">
+            <div className="rounded-xl border p-6 shadow-sm" style={{ borderColor: "var(--border)", background: "var(--surface)" }}>
+              <h3 className="font-semibold" style={{ color: "var(--foreground)" }}>Limites courantes</h3>
+              <ul className="mt-2 space-y-2 text-sm" style={{ color: "var(--muted)" }}>
                 <li>Twitter/X : 280 caracteres</li>
                 <li>Meta description : 155 caracteres</li>
                 <li>Title tag : 60 caracteres</li>
@@ -93,9 +96,9 @@ export default function CompteurMots() {
 
 function Stat({ label, value, primary }: { label: string; value: number; primary?: boolean }) {
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-4 text-center shadow-sm">
-      <p className={`text-2xl font-bold ${primary ? "text-[#2563eb]" : "text-gray-900"}`}>{value}</p>
-      <p className="text-xs text-gray-500">{label}</p>
+    <div className="rounded-xl border p-4 text-center shadow-sm" style={{ borderColor: "var(--border)", background: "var(--surface)" }}>
+      <p className="text-2xl font-bold" style={{ color: primary ? "var(--primary)" : "var(--foreground)" }}>{value}</p>
+      <p className="text-xs" style={{ color: "var(--muted)" }}>{label}</p>
     </div>
   );
 }

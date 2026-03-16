@@ -46,12 +46,12 @@ export default function GenerateurQRCode() {
 
   return (
     <>
-      <section className="bg-gradient-to-b from-blue-50 to-white py-12">
+      <section className="py-12" style={{ background: "linear-gradient(to bottom, var(--surface-alt), var(--background))" }}>
         <div className="mx-auto max-w-3xl px-4">
-          <h1 className="text-3xl font-extrabold text-gray-900 md:text-4xl">
+          <h1 className="animate-fade-up stagger-1 text-3xl font-extrabold md:text-4xl" style={{ fontFamily: "var(--font-display)", color: "var(--foreground)" }}>
             Generateur de QR Code gratuit
           </h1>
-          <p className="mt-2 text-gray-600">
+          <p className="animate-fade-up stagger-2 mt-2" style={{ color: "var(--muted)" }}>
             Creez des QR codes personnalises pour vos liens, textes, emails ou Wi-Fi.
           </p>
         </div>
@@ -60,24 +60,26 @@ export default function GenerateurQRCode() {
       <div className="mx-auto max-w-5xl px-4 py-8">
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
           <div className="lg:col-span-2 space-y-6">
-            <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-              <label className="text-sm font-medium text-gray-700">
+            <div className="rounded-xl border p-6 shadow-sm" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+              <label className="text-sm font-medium" style={{ color: "var(--foreground)" }}>
                 Contenu du QR Code
               </label>
               <textarea
                 value={text}
                 onChange={(e) => setText(e.target.value)}
                 placeholder="URL, texte, email, telephone..."
-                className="mt-1 h-24 w-full rounded-lg border border-gray-300 p-3 focus:border-[#2563eb] focus:outline-none focus:ring-2 focus:ring-blue-100"
+                className="mt-1 h-24 w-full rounded-lg border p-3 focus:outline-none focus:ring-2"
+                style={{ borderColor: "var(--border)", background: "var(--surface)" }}
               />
 
               <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
                 <div>
-                  <label className="text-sm font-medium text-gray-700">Taille (px)</label>
+                  <label className="text-sm font-medium" style={{ color: "var(--foreground)" }}>Taille (px)</label>
                   <select
                     value={size}
                     onChange={(e) => setSize(e.target.value)}
-                    className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-[#2563eb] focus:outline-none"
+                    className="mt-1 w-full rounded-lg border px-3 py-2 focus:outline-none"
+                    style={{ borderColor: "var(--border)", background: "var(--surface)" }}
                   >
                     <option value="128">128 x 128</option>
                     <option value="256">256 x 256</option>
@@ -86,39 +88,42 @@ export default function GenerateurQRCode() {
                   </select>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-700">Couleur</label>
+                  <label className="text-sm font-medium" style={{ color: "var(--foreground)" }}>Couleur</label>
                   <input
                     type="color"
                     value={color}
                     onChange={(e) => setColor(e.target.value)}
-                    className="mt-1 h-10 w-full rounded-lg border border-gray-300"
+                    className="mt-1 h-10 w-full rounded-lg border"
+                    style={{ borderColor: "var(--border)" }}
                   />
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-700">Fond</label>
+                  <label className="text-sm font-medium" style={{ color: "var(--foreground)" }}>Fond</label>
                   <input
                     type="color"
                     value={bgColor}
                     onChange={(e) => setBgColor(e.target.value)}
-                    className="mt-1 h-10 w-full rounded-lg border border-gray-300"
+                    className="mt-1 h-10 w-full rounded-lg border"
+                    style={{ borderColor: "var(--border)" }}
                   />
                 </div>
               </div>
             </div>
 
             {/* QR Preview */}
-            <div className="flex flex-col items-center rounded-xl border border-gray-200 bg-white p-8 shadow-sm">
-              <canvas ref={canvasRef} className="rounded-lg border border-gray-100" />
+            <div className="flex flex-col items-center rounded-xl border p-8 shadow-sm" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+              <canvas ref={canvasRef} className="rounded-lg border" style={{ borderColor: "var(--border)" }} />
               <button
                 onClick={download}
                 disabled={!qrDataUrl}
-                className="mt-4 rounded-lg bg-[#2563eb] px-8 py-3 font-semibold text-white hover:bg-[#1d4ed8] disabled:opacity-50"
+                className="mt-4 rounded-lg px-8 py-3 font-semibold text-white disabled:opacity-50"
+                style={{ background: "var(--primary)" }}
               >
                 Telecharger PNG
               </button>
             </div>
 
-            <div className="prose max-w-none rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+            <div className="prose max-w-none rounded-xl border p-6 shadow-sm" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
               <h2>Comment utiliser un QR Code ?</h2>
               <p>
                 Un QR Code (Quick Response Code) est un code-barres 2D qui peut etre scanne

@@ -70,12 +70,18 @@ export default function ConvertisseurJsonCsv() {
 
   return (
     <>
-      <section className="bg-gradient-to-b from-blue-50 to-white py-12">
+      <section className="py-12" style={{ background: "linear-gradient(to bottom, var(--surface-alt), var(--background))" }}>
         <div className="mx-auto max-w-3xl px-4">
-          <h1 className="text-3xl font-extrabold text-gray-900 md:text-4xl">
+          <h1
+            className="animate-fade-up stagger-1 text-3xl font-extrabold md:text-4xl"
+            style={{ fontFamily: "var(--font-display)", color: "var(--foreground)" }}
+          >
             Convertisseur JSON / CSV
           </h1>
-          <p className="mt-2 text-gray-600">
+          <p
+            className="animate-fade-up stagger-2 mt-2"
+            style={{ color: "var(--muted)" }}
+          >
             Convertissez vos donnees entre JSON et CSV instantanement.
           </p>
         </div>
@@ -84,61 +90,69 @@ export default function ConvertisseurJsonCsv() {
       <div className="mx-auto max-w-5xl px-4 py-8">
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
           <div className="lg:col-span-2 space-y-6">
-            <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+            <div
+              className="rounded-xl p-6 shadow-sm"
+              style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
+            >
               <div className="flex gap-2">
                 <button
                   onClick={() => setMode("json-to-csv")}
-                  className={`flex-1 rounded-lg px-4 py-2 text-sm font-medium transition ${
+                  className="flex-1 rounded-lg px-4 py-2 text-sm font-medium transition"
+                  style={
                     mode === "json-to-csv"
-                      ? "bg-[#2563eb] text-white"
-                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                  }`}
+                      ? { background: "var(--primary)", color: "#ffffff" }
+                      : { background: "var(--surface-alt)", color: "var(--muted)" }
+                  }
                 >
                   JSON &rarr; CSV
                 </button>
                 <button
                   onClick={() => setMode("csv-to-json")}
-                  className={`flex-1 rounded-lg px-4 py-2 text-sm font-medium transition ${
+                  className="flex-1 rounded-lg px-4 py-2 text-sm font-medium transition"
+                  style={
                     mode === "csv-to-json"
-                      ? "bg-[#2563eb] text-white"
-                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                  }`}
+                      ? { background: "var(--primary)", color: "#ffffff" }
+                      : { background: "var(--surface-alt)", color: "var(--muted)" }
+                  }
                 >
                   CSV &rarr; JSON
                 </button>
               </div>
 
               <div className="mt-4">
-                <label className="text-sm font-medium text-gray-700">
+                <label className="text-sm font-medium" style={{ color: "var(--muted)" }}>
                   {mode === "json-to-csv" ? "JSON" : "CSV"} (entree)
                 </label>
                 <textarea
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
-                  className="mt-1 h-40 w-full rounded-lg border border-gray-300 p-3 font-mono text-sm focus:border-[#2563eb] focus:outline-none focus:ring-2 focus:ring-blue-100"
+                  className="mt-1 h-40 w-full rounded-lg p-3 font-mono text-sm focus:outline-none focus:ring-2"
+                  style={{ border: "1px solid var(--border)", background: "var(--surface)", color: "var(--foreground)" }}
                 />
               </div>
 
               <button
                 onClick={convert}
-                className="mt-4 w-full rounded-lg bg-[#2563eb] py-3 font-semibold text-white hover:bg-[#1d4ed8]"
+                className="mt-4 w-full rounded-lg py-3 font-semibold text-white transition"
+                style={{ background: "var(--primary)" }}
               >
                 Convertir
               </button>
 
               {error && (
-                <p className="mt-3 rounded-lg bg-red-50 p-3 text-sm text-red-600">{error}</p>
+                <p className="mt-3 rounded-lg p-3 text-sm" style={{ background: "#fef2f2", color: "#dc2626" }}>{error}</p>
               )}
 
               {output && (
                 <div className="mt-4">
                   <div className="flex items-center justify-between">
-                    <label className="text-sm font-medium text-gray-700">
+                    <label className="text-sm font-medium" style={{ color: "var(--muted)" }}>
                       {mode === "json-to-csv" ? "CSV" : "JSON"} (resultat)
                     </label>
                     <button
                       onClick={download}
-                      className="text-sm font-medium text-[#2563eb] hover:underline"
+                      className="text-sm font-medium hover:underline"
+                      style={{ color: "var(--primary)" }}
                     >
                       Telecharger
                     </button>
@@ -146,7 +160,8 @@ export default function ConvertisseurJsonCsv() {
                   <textarea
                     readOnly
                     value={output}
-                    className="mt-1 h-40 w-full rounded-lg border border-gray-300 bg-gray-50 p-3 font-mono text-sm"
+                    className="mt-1 h-40 w-full rounded-lg p-3 font-mono text-sm"
+                    style={{ border: "1px solid var(--border)", background: "var(--surface-alt)", color: "var(--foreground)" }}
                   />
                 </div>
               )}

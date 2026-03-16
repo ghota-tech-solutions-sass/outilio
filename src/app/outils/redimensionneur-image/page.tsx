@@ -160,7 +160,7 @@ export default function RedimensionneurImage() {
                   <div className="flex items-center justify-between mb-4">
                     <h2 className="text-lg font-semibold" style={{ fontFamily: "var(--font-display)" }}>Dimensions</h2>
                     <button onClick={() => { setOriginalFile(null); setOriginalURL(""); setPreviewURL(""); }}
-                      className="text-sm font-medium px-4 py-2 rounded-lg border transition-colors hover:bg-gray-50"
+                      className="text-sm font-medium px-4 py-2 rounded-lg border transition-colors hover:bg-[var(--surface-alt)]"
                       style={{ borderColor: "var(--border)", color: "var(--muted)" }}>
                       Nouvelle image
                     </button>
@@ -238,7 +238,7 @@ export default function RedimensionneurImage() {
                     <div className="mt-2 flex flex-wrap gap-2">
                       {[25, 50, 75, 100, 150, 200].map((p) => (
                         <button key={p} onClick={() => { setMode("pct"); updatePct(p); }}
-                          className="rounded-lg border px-3 py-1.5 text-xs font-medium transition-all hover:bg-gray-50"
+                          className="rounded-lg border px-3 py-1.5 text-xs font-medium transition-all hover:bg-[var(--surface-alt)]"
                           style={{ borderColor: "var(--border)", color: "var(--muted)" }}>
                           {p}%
                         </button>
