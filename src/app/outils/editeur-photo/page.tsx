@@ -875,6 +875,23 @@ export default function EditeurPhoto() {
     return canvas.toDataURL("image/png");
   }, []);
 
+  // Helper: convert a RawImage (from Transformers.js) to a data URL
+  // RawImage has .data (Uint8ClampedArray), .width, .height, .channels
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const rawImageToDataURL = useCallback((raw: any): string => {
+    const c = document.createElement("canvas");
+    c.width = raw.width; c.height = raw.height;
+    const ctx = c.getContext("2d")!;
+    // Ensure RGBA
+    let rgba = raw;
+    if (raw.channels === 1 || raw.channels === 3) {
+      rgba = raw.channels === 1 ? raw.rgb().rgba() : raw.rgba();
+    }
+    const imgData = new ImageData(new Uint8ClampedArray(rgba.data), raw.width, raw.height);
+    ctx.putImageData(imgData, 0, 0);
+    return c.toDataURL("image/png");
+  }, []);
+
   const [depthIntensity, setDepthIntensity] = useState(50);
   const [depthMode, setDepthMode] = useState<"preview" | "bokeh">("bokeh");
 
@@ -887,12 +904,13 @@ export default function EditeurPhoto() {
       const dataURL = getCanvasDataURLTop();
       if (!dataURL) throw new Error("Impossible de lire le canvas");
       const result = await segmenter(dataURL);
-      const resultCanvas = result.toCanvas();
+      // result is a RawImage — convert to data URL via our helper
+      const resultURL = rawImageToDataURL(result);
       const newImg = new Image();
       await new Promise<void>((resolve, reject) => {
         newImg.onload = () => resolve();
         newImg.onerror = () => reject(new Error("Erreur chargement resultat"));
-        newImg.src = resultCanvas.toDataURL("image/png");
+        newImg.src = resultURL;
       });
       pushHistoryRef.current();
       imgRef.current = newImg;
@@ -914,12 +932,14 @@ export default function EditeurPhoto() {
       const dataURL = getCanvasDataURLTop();
       if (!dataURL) throw new Error("Impossible de lire le canvas");
       const result = await estimator(dataURL);
-      const depthCanvas = result.depth.toCanvas();
+      // result.depth is a RawImage — convert to a canvas for pixel operations
+      const depthRaw = result.depth;
+      const depthDataURL = rawImageToDataURL(depthRaw);
+      const depthImg = new Image();
+      await new Promise<void>((res, rej) => { depthImg.onload = () => res(); depthImg.onerror = () => rej(); depthImg.src = depthDataURL; });
       pushHistoryRef.current();
       if (depthMode === "preview") {
-        const newImg = new Image();
-        await new Promise<void>((res, rej) => { newImg.onload = () => res(); newImg.onerror = () => rej(); newImg.src = depthCanvas.toDataURL("image/png"); });
-        imgRef.current = newImg;
+        imgRef.current = depthImg;
       } else {
         const img = imgRef.current;
         const w = img.naturalWidth, h = img.naturalHeight;
@@ -928,7 +948,7 @@ export default function EditeurPhoto() {
         const blurC = document.createElement("canvas"); blurC.width = w; blurC.height = h;
         const blurCtx = blurC.getContext("2d")!; blurCtx.filter = `blur(${Math.round(depthIntensity / 5)}px)`; blurCtx.drawImage(img, 0, 0, w, h); blurCtx.filter = "none";
         const dC = document.createElement("canvas"); dC.width = w; dC.height = h;
-        dC.getContext("2d")!.drawImage(depthCanvas, 0, 0, w, h);
+        dC.getContext("2d")!.drawImage(depthImg, 0, 0, w, h);
         const depthData = dC.getContext("2d")!.getImageData(0, 0, w, h).data;
         const srcData = srcCtx.getImageData(0, 0, w, h);
         const blurData = blurCtx.getImageData(0, 0, w, h);
@@ -968,10 +988,10 @@ export default function EditeurPhoto() {
       const dataURL = getCanvasDataURLTop();
       if (!dataURL) throw new Error("Impossible de lire le canvas");
       const result = await upscaler(dataURL);
-      const resultCanvas = result.toCanvas();
+      const resultURL = rawImageToDataURL(result);
       pushHistoryRef.current();
       const newImg = new Image();
-      await new Promise<void>((res, rej) => { newImg.onload = () => res(); newImg.onerror = () => rej(); newImg.src = resultCanvas.toDataURL("image/png"); });
+      await new Promise<void>((res, rej) => { newImg.onload = () => res(); newImg.onerror = () => rej(); newImg.src = resultURL; });
       imgRef.current = newImg;
       renderRef.current();
     } catch (e) {
