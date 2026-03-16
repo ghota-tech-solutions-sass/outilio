@@ -2,136 +2,190 @@
 
 import { useState, useCallback, useRef, useEffect, useMemo } from "react";
 
-/* ─────────────────────────── Types ─────────────────────────── */
+/* ═══════════════════════════════ TYPES ═══════════════════════════════ */
 
 interface VideoInfo {
-  name: string;
-  size: number;
-  type: string;
-  duration: number;
-  width: number;
-  height: number;
-  url: string;
-  file: File;
+  name: string; size: number; type: string; duration: number;
+  width: number; height: number; url: string; file: File;
 }
 
-type Operation = "trim" | "convert" | "resize" | "gif" | "capture" | "mute" | "rotate" | "speed";
+type EffectType = "trim" | "resize" | "speed" | "rotate" | "mute";
+type QuickAction = "gif" | "capture";
 
-interface OpDef {
-  key: Operation;
-  label: string;
-  icon: string;
-  desc: string;
+interface TrimConfig { start: number; end: number }
+interface ResizeConfig { w: number; h: number; label: string }
+interface SpeedConfig { value: number; label: string }
+interface RotateConfig { filter: string; label: string }
+type MuteConfig = Record<string, never>;
+
+type EffectConfig = TrimConfig | ResizeConfig | SpeedConfig | RotateConfig | MuteConfig;
+
+interface PipelineEffect {
+  id: string;
+  type: EffectType;
+  config: EffectConfig;
 }
 
-const OPERATIONS: OpDef[] = [
-  { key: "trim", label: "Couper", icon: "M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z", desc: "Decouper un segment" },
-  { key: "convert", label: "Convertir", icon: "M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15", desc: "Changer de format" },
-  { key: "resize", label: "Taille", icon: "M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4", desc: "Redimensionner" },
-  { key: "gif", label: "GIF", icon: "M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z", desc: "Extraire un GIF" },
-  { key: "capture", label: "Image", icon: "M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z", desc: "Capturer une image" },
-  { key: "mute", label: "Muet", icon: "M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2", desc: "Supprimer l'audio" },
-  { key: "rotate", label: "Rotation", icon: "M4 4v5h.582m0 0a8.001 8.001 0 0115.356 2M4.582 9H9", desc: "Pivoter la video" },
-  { key: "speed", label: "Vitesse", icon: "M13 10V3L4 14h7v7l9-11h-7z", desc: "Accelerer / Ralentir" },
+const EFFECT_META: Record<EffectType, { label: string; icon: string; color: string }> = {
+  trim: { label: "Couper", icon: "✂️", color: "#0d4f3c" },
+  resize: { label: "Taille", icon: "📐", color: "#6366f1" },
+  speed: { label: "Vitesse", icon: "⚡", color: "#e8963e" },
+  rotate: { label: "Rotation", icon: "🔄", color: "#ec4899" },
+  mute: { label: "Muet", icon: "🔇", color: "#dc2626" },
+};
+
+const RESIZE_PRESETS = [
+  { w: 1920, h: 1080, label: "1080p" },
+  { w: 1280, h: 720, label: "720p" },
+  { w: 854, h: 480, label: "480p" },
+  { w: 640, h: 360, label: "360p" },
 ];
 
-type ResizePreset = { label: string; w: number; h: number; tag: string };
-const RESIZE_PRESETS: ResizePreset[] = [
-  { label: "1080p", w: 1920, h: 1080, tag: "Full HD" },
-  { label: "720p", w: 1280, h: 720, tag: "HD" },
-  { label: "480p", w: 854, h: 480, tag: "SD" },
-  { label: "360p", w: 640, h: 360, tag: "Mobile" },
+const SPEED_PRESETS = [
+  { value: 0.25, label: "0.25x" }, { value: 0.5, label: "0.5x" },
+  { value: 0.75, label: "0.75x" }, { value: 1.5, label: "1.5x" },
+  { value: 2, label: "2x" }, { value: 4, label: "4x" },
 ];
 
-type RotateOption = { label: string; value: string; icon: string };
-const ROTATE_OPTIONS: RotateOption[] = [
-  { label: "90° droite", value: "transpose=1", icon: "↻" },
-  { label: "90° gauche", value: "transpose=2", icon: "↺" },
-  { label: "180°", value: "transpose=1,transpose=1", icon: "↕" },
-  { label: "Miroir H", value: "hflip", icon: "⇔" },
-  { label: "Miroir V", value: "vflip", icon: "⇕" },
+const ROTATE_PRESETS = [
+  { filter: "transpose=1", label: "90° →" },
+  { filter: "transpose=2", label: "90° ←" },
+  { filter: "transpose=1,transpose=1", label: "180°" },
+  { filter: "hflip", label: "Miroir ↔" },
+  { filter: "vflip", label: "Miroir ↕" },
 ];
 
-const SPEED_OPTIONS = [
-  { label: "0.25x", value: 0.25, tag: "Tres lent" },
-  { label: "0.5x", value: 0.5, tag: "Ralenti" },
-  { label: "0.75x", value: 0.75, tag: "Lent" },
-  { label: "1.5x", value: 1.5, tag: "Rapide" },
-  { label: "2x", value: 2, tag: "Tres rapide" },
-  { label: "4x", value: 4, tag: "Ultra rapide" },
-];
+/* ═══════════════════════════════ UTILS ═══════════════════════════════ */
 
-/* ─────────────────────────── Utils ─────────────────────────── */
-
-function formatSize(bytes: number): string {
-  if (bytes < 1024) return bytes + " o";
-  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " Ko";
-  return (bytes / (1024 * 1024)).toFixed(1) + " Mo";
+function uid() { return Math.random().toString(36).slice(2, 8); }
+function formatSize(b: number) { return b < 1048576 ? (b / 1024).toFixed(1) + " Ko" : (b / 1048576).toFixed(1) + " Mo"; }
+function formatTime(s: number) {
+  const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), sec = Math.floor(s % 60);
+  return h > 0 ? `${h}:${String(m).padStart(2, "0")}:${String(sec).padStart(2, "0")}` : `${m}:${String(sec).padStart(2, "0")}`;
 }
 
-function formatTime(seconds: number): string {
-  const h = Math.floor(seconds / 3600);
-  const m = Math.floor((seconds % 3600) / 60);
-  const s = Math.floor(seconds % 60);
-  if (h > 0) return `${h}:${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
-  return `${m}:${s.toString().padStart(2, "0")}`;
+/* ═══════════════════════ FFmpeg COMMAND BUILDER ═══════════════════════ */
+
+function buildFFmpegArgs(pipeline: PipelineEffect[], format: "mp4" | "webm", quality: number): string[] {
+  const args: string[] = [];
+  const vFilters: string[] = [];
+  let hasAudioFilter = false;
+  const aFilters: string[] = [];
+  let muted = false;
+
+  // 1. Trim (must come before -i or as -ss/-to)
+  const trim = pipeline.find((e) => e.type === "trim") as PipelineEffect | undefined;
+  if (trim) {
+    const c = trim.config as TrimConfig;
+    args.push("-ss", c.start.toFixed(2), "-to", c.end.toFixed(2));
+  }
+
+  // 2. Collect video filters
+  for (const effect of pipeline) {
+    if (effect.type === "resize") {
+      const c = effect.config as ResizeConfig;
+      vFilters.push(`scale=${c.w}:${c.h}:force_original_aspect_ratio=decrease,pad=${c.w}:${c.h}:(ow-iw)/2:(oh-ih)/2`);
+    }
+    if (effect.type === "rotate") {
+      const c = effect.config as RotateConfig;
+      vFilters.push(c.filter);
+    }
+    if (effect.type === "speed") {
+      const c = effect.config as SpeedConfig;
+      vFilters.push(`setpts=${(1 / c.value).toFixed(4)}*PTS`);
+      hasAudioFilter = true;
+      // atempo only supports 0.5-2.0, chain for extremes
+      let spd = c.value;
+      while (spd > 2) { aFilters.push("atempo=2.0"); spd /= 2; }
+      while (spd < 0.5) { aFilters.push("atempo=0.5"); spd /= 0.5; }
+      if (spd !== 1) aFilters.push(`atempo=${spd.toFixed(4)}`);
+    }
+    if (effect.type === "mute") muted = true;
+  }
+
+  // 3. Build output args
+  // If there are video filters, we must re-encode
+  const needsReencode = vFilters.length > 0;
+
+  if (vFilters.length > 0) args.push("-vf", vFilters.join(","));
+  if (muted) {
+    args.push("-an");
+  } else if (aFilters.length > 0) {
+    args.push("-af", aFilters.join(","));
+  }
+
+  if (needsReencode) {
+    if (format === "mp4") {
+      args.push("-c:v", "libx264", "-crf", String(quality), "-preset", "fast");
+      if (!muted && !hasAudioFilter) args.push("-c:a", "aac");
+    } else {
+      args.push("-c:v", "libvpx-vp9", "-crf", String(quality), "-b:v", "0");
+      if (!muted && !hasAudioFilter) args.push("-c:a", "libvorbis");
+    }
+  } else {
+    // No re-encode needed (trim only, or mute only)
+    args.push("-c:v", "copy");
+    if (!muted) args.push("-c:a", "copy");
+  }
+
+  return args;
 }
 
-function timeToSeconds(str: string): number {
-  const parts = str.split(":").map(Number);
-  if (parts.length === 3) return parts[0] * 3600 + parts[1] * 60 + parts[2];
-  if (parts.length === 2) return parts[0] * 60 + parts[1];
-  return parts[0] || 0;
-}
-
-/* ─────────────────────────── Main ─────────────────────────── */
+/* ═══════════════════════════════ MAIN ═══════════════════════════════ */
 
 export default function EditeurVideo() {
-  // File state
+  /* ─── Video state ─── */
   const [video, setVideo] = useState<VideoInfo | null>(null);
   const [dragOver, setDragOver] = useState(false);
   const [error, setError] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
 
-  // Operation state
-  const [activeOp, setActiveOp] = useState<Operation>("trim");
+  /* ─── Pipeline state ─── */
+  const [pipeline, setPipeline] = useState<PipelineEffect[]>([]);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [showAddMenu, setShowAddMenu] = useState(false);
 
-  // FFmpeg state
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const ffmpegRef = useRef<any>(null);
-  const [ffmpegReady, setFfmpegReady] = useState(false);
-  const [processing, setProcessing] = useState(false);
-  const [progress, setProgress] = useState(0);
-  const [progressMsg, setProgressMsg] = useState("");
-  const [result, setResult] = useState<{ url: string; size: number; name: string; type: string } | null>(null);
+  /* ─── Export settings ─── */
+  const [exportFormat, setExportFormat] = useState<"mp4" | "webm">("mp4");
+  const [exportQuality, setExportQuality] = useState(23);
 
-  // Trim params
-  const [trimStart, setTrimStart] = useState(0);
-  const [trimEnd, setTrimEnd] = useState(0);
-
-  // Convert params
-  const [convertFormat, setConvertFormat] = useState<"mp4" | "webm">("mp4");
-  const [convertQuality, setConvertQuality] = useState(23);
-
-  // Resize params
-  const [resizePreset, setResizePreset] = useState(1);
-
-  // GIF params
+  /* ─── Quick action state ─── */
+  const [quickAction, setQuickAction] = useState<QuickAction | null>(null);
   const [gifStart, setGifStart] = useState(0);
   const [gifDuration, setGifDuration] = useState(5);
   const [gifFps, setGifFps] = useState(15);
-
-  // Capture params
   const [captureTime, setCaptureTime] = useState(0);
 
-  // Rotate params
-  const [rotateOption, setRotateOption] = useState(0);
+  /* ─── FFmpeg state ─── */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const ffmpegRef = useRef<any>(null);
+  const [processing, setProcessing] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [progressMsg, setProgressMsg] = useState("");
+  const [progressStep, setProgressStep] = useState(0);
+  const [result, setResult] = useState<{ url: string; size: number; name: string; type: string } | null>(null);
 
-  // Speed params
-  const [speedOption, setSpeedOption] = useState(3); // 1.5x default
+  /* ─── Derived ─── */
+  const selectedEffect = useMemo(() => pipeline.find((e) => e.id === selectedId), [pipeline, selectedId]);
+  const hasTrim = pipeline.some((e) => e.type === "trim");
+  const hasType = (t: EffectType) => pipeline.some((e) => e.type === t);
 
-  // COI service worker
+  const estimatedDuration = useMemo(() => {
+    if (!video) return 0;
+    let dur = video.duration;
+    const trim = pipeline.find((e) => e.type === "trim");
+    if (trim) { const c = trim.config as TrimConfig; dur = c.end - c.start; }
+    const speed = pipeline.find((e) => e.type === "speed");
+    if (speed) { dur /= (speed.config as SpeedConfig).value; }
+    return dur;
+  }, [video, pipeline]);
+
+  const needsReencode = useMemo(() =>
+    pipeline.some((e) => e.type === "resize" || e.type === "speed" || e.type === "rotate"),
+  [pipeline]);
+
+  /* ─── COI service worker ─── */
   useEffect(() => {
     if (typeof window !== "undefined" && !window.crossOriginIsolated) {
       const script = document.createElement("script");
@@ -140,590 +194,639 @@ export default function EditeurVideo() {
     }
   }, []);
 
-  // Cleanup
-  useEffect(() => {
-    return () => {
-      if (video?.url) URL.revokeObjectURL(video.url);
-      if (result?.url) URL.revokeObjectURL(result.url);
-    };
+  useEffect(() => () => {
+    if (video?.url) URL.revokeObjectURL(video.url);
+    if (result?.url) URL.revokeObjectURL(result.url);
   }, [video, result]);
 
-  /* ─── FFmpeg loading ─── */
+  /* ─── FFmpeg ─── */
   const loadFFmpeg = useCallback(async () => {
-    if (ffmpegRef.current?.loaded) { setFfmpegReady(true); return true; }
+    if (ffmpegRef.current) return true;
     setProgressMsg("Chargement de FFmpeg...");
     try {
-      const { FFmpeg } = await import("@ffmpeg/ffmpeg");
-      const { toBlobURL } = await import("@ffmpeg/util");
-      const ffmpeg = new FFmpeg();
-      ffmpeg.on("progress", ({ progress: p }) => setProgress(Math.min(Math.round(p * 100), 100)));
-      const baseURL = "https://unpkg.com/@ffmpeg/core@0.12.6/dist/esm";
-      await ffmpeg.load({
-        coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, "text/javascript"),
-        wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, "application/wasm"),
+      // Load FFmpeg UMD via script tag to bypass Turbopack bundler issues
+      await new Promise<void>((resolve, reject) => {
+        if ((window as any).FFmpegWASM) { resolve(); return; }
+        const s = document.createElement("script");
+        s.src = "/ffmpeg/ffmpeg.js";
+        s.onload = () => resolve();
+        s.onerror = () => reject(new Error("Echec chargement FFmpeg"));
+        document.head.appendChild(s);
       });
-      ffmpegRef.current = ffmpeg;
-      setFfmpegReady(true);
-      setProgressMsg("");
+
+      const { FFmpeg } = (window as any).FFmpegWASM;
+      const ffmpeg = new FFmpeg();
+      ffmpeg.on("log", ({ message }: { message: string }) => console.log("[FFmpeg]", message));
+      ffmpeg.on("progress", ({ progress: p }: { progress: number }) => setProgress(Math.min(Math.round(p * 100), 100)));
+
+      // Inline toBlobURL (avoids loading @ffmpeg/util which has UMD global issues)
+      const toBlobURL = async (url: string, type: string) => {
+        const buf = await (await fetch(url)).arrayBuffer();
+        return URL.createObjectURL(new Blob([buf], { type }));
+      };
+      // Inline fetchFile
+      const fetchFileLocal = async (file: File) => new Uint8Array(await file.arrayBuffer());
+
+      setProgressMsg("Telechargement du moteur WASM...");
+      const coreBase = "https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd";
+      const coreURL = await toBlobURL(`${coreBase}/ffmpeg-core.js`, "text/javascript");
+      const wasmURL = await toBlobURL(`${coreBase}/ffmpeg-core.wasm`, "application/wasm");
+
+      setProgressMsg("Initialisation de FFmpeg...");
+      await ffmpeg.load({ coreURL, wasmURL });
+      ffmpegRef.current = { ffmpeg, fetchFile: fetchFileLocal };
       return true;
-    } catch {
-      setError("Impossible de charger FFmpeg. Utilisez Chrome, Firefox ou Edge recent.");
-      setProgressMsg("");
+    } catch (e) {
+      console.error("FFmpeg load error:", e);
+      setError(`Erreur FFmpeg : ${e instanceof Error ? e.message : String(e)}. Verifiez votre connexion et utilisez Chrome, Firefox ou Edge.`);
       return false;
     }
   }, []);
 
-  /* ─── Video loading ─── */
-  const loadVideo = useCallback(async (file: File) => {
-    setError(""); setResult(null); setProgress(0);
-    if (!file.type.startsWith("video/") && !file.name.match(/\.(mp4|webm|mov|avi|mkv|m4v)$/i)) {
-      setError("Seuls les fichiers video sont acceptes."); return;
-    }
-    if (file.size > 500 * 1024 * 1024) {
-      setError("Fichier trop volumineux (max 500 Mo pour le traitement navigateur)."); return;
-    }
-    const url = URL.createObjectURL(file);
-    const v = document.createElement("video");
-    v.preload = "metadata"; v.src = url;
-    try {
-      await new Promise<void>((res, rej) => { v.onloadedmetadata = () => res(); v.onerror = () => rej(); });
-    } catch { setError("Impossible de lire cette video."); URL.revokeObjectURL(url); return; }
-    const info: VideoInfo = { name: file.name, size: file.size, type: file.type, duration: v.duration, width: v.videoWidth, height: v.videoHeight, url, file };
-    setVideo(info);
-    setTrimEnd(v.duration);
-    setGifStart(0);
-    setGifDuration(Math.min(5, v.duration));
-  }, []);
-
-  const handleDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault(); setDragOver(false);
-    const file = e.dataTransfer.files[0];
-    if (file) loadVideo(file);
-  }, [loadVideo]);
-
-  /* ─── Execute FFmpeg ─── */
-  const exec = useCallback(async (args: string[], outputFile: string, mime: string, ext: string) => {
+  const execFFmpeg = useCallback(async (args: string[], outFile: string, mime: string, ext: string) => {
     if (!video) return;
     setProcessing(true); setProgress(0); setResult(null); setError("");
-    setProgressMsg("Chargement de FFmpeg...");
-    const loaded = await loadFFmpeg();
-    if (!loaded) { setProcessing(false); return; }
-    const ffmpeg = ffmpegRef.current;
-    setProgressMsg("Preparation...");
+    setProgressMsg("Chargement de FFmpeg..."); setProgressStep(1);
+    if (!(await loadFFmpeg())) { setProcessing(false); return; }
+    const { ffmpeg, fetchFile } = ffmpegRef.current;
+    setProgressMsg("Preparation du fichier..."); setProgressStep(2);
     try {
-      const { fetchFile } = await import("@ffmpeg/util");
-      const inputExt = video.name.split(".").pop()?.toLowerCase() || "mp4";
-      const inputFile = `input.${inputExt}`;
-      await ffmpeg.writeFile(inputFile, await fetchFile(video.file));
-      setProgressMsg("Traitement en cours...");
-      const fullArgs = ["-i", inputFile, ...args, "-y", outputFile];
-      const code = await ffmpeg.exec(fullArgs);
-      if (code !== 0) { setError("Erreur FFmpeg. Essayez d'autres parametres."); setProcessing(false); setProgressMsg(""); return; }
-      const data = await ffmpeg.readFile(outputFile);
+      const inExt = video.name.split(".").pop()?.toLowerCase() || "mp4";
+      const inFile = `input.${inExt}`;
+      await ffmpeg.writeFile(inFile, await fetchFile(video.file));
+      setProgressMsg("Traitement en cours..."); setProgressStep(3);
+      const code = await ffmpeg.exec(["-i", inFile, ...args, "-y", outFile]);
+      if (code !== 0) { setError("Erreur FFmpeg. Essayez d'autres parametres."); setProcessing(false); return; }
+      const data = await ffmpeg.readFile(outFile);
+      try { await ffmpeg.deleteFile(inFile); await ffmpeg.deleteFile(outFile); } catch { /**/ }
       const blob = new Blob([data], { type: mime });
-      const url = URL.createObjectURL(blob);
-      setResult({ url, size: blob.size, name: video.name.replace(/\.[^.]+$/, `_edit.${ext}`), type: mime });
-      setProgress(100);
-      try { await ffmpeg.deleteFile(inputFile); await ffmpeg.deleteFile(outputFile); } catch { /* ok */ }
-    } catch (e) { console.error(e); setError("Erreur lors du traitement."); }
+      setResult({ url: URL.createObjectURL(blob), size: blob.size, name: video.name.replace(/\.[^.]+$/, `_edit.${ext}`), type: mime });
+      setProgress(100); setProgressStep(4);
+    } catch (e) { console.error("FFmpeg exec error:", e); setError(`Erreur : ${e instanceof Error ? e.message : String(e)}`); }
     setProcessing(false); setProgressMsg("");
   }, [video, loadFFmpeg]);
 
-  /* ─── Operation handlers ─── */
-  const handleTrim = () => {
-    const ss = trimStart.toFixed(2);
-    const to = trimEnd.toFixed(2);
-    exec(["-ss", ss, "-to", to, "-c", "copy"], "output.mp4", "video/mp4", "mp4");
+  /* ─── Video loading ─── */
+  const loadVideo = useCallback(async (file: File) => {
+    setError(""); setResult(null); setPipeline([]); setSelectedId(null); setQuickAction(null);
+    if (!file.type.startsWith("video/") && !file.name.match(/\.(mp4|webm|mov|avi|mkv)$/i)) {
+      setError("Format video non reconnu."); return;
+    }
+    if (file.size > 500 * 1024 * 1024) { setError("Fichier trop volumineux (max 500 Mo)."); return; }
+    const url = URL.createObjectURL(file);
+    const v = document.createElement("video"); v.preload = "metadata"; v.src = url;
+    try { await new Promise<void>((res, rej) => { v.onloadedmetadata = () => res(); v.onerror = () => rej(); }); }
+    catch { setError("Impossible de lire cette video."); URL.revokeObjectURL(url); return; }
+    setVideo({ name: file.name, size: file.size, type: file.type, duration: v.duration, width: v.videoWidth, height: v.videoHeight, url, file });
+  }, []);
+
+  /* ─── Pipeline ops ─── */
+  const addEffect = (type: EffectType) => {
+    if (hasType(type)) return; // one of each type
+    let config: EffectConfig;
+    if (type === "trim") config = { start: 0, end: video?.duration ?? 10 } as TrimConfig;
+    else if (type === "resize") config = RESIZE_PRESETS[1]; // 720p default
+    else if (type === "speed") config = SPEED_PRESETS[3]; // 1.5x
+    else if (type === "rotate") config = ROTATE_PRESETS[0]; // 90 right
+    else config = {} as MuteConfig;
+    const id = uid();
+    setPipeline((p) => [...p, { id, type, config }]);
+    setSelectedId(id);
+    setShowAddMenu(false);
   };
 
-  const handleConvert = () => {
-    const args = convertFormat === "mp4"
-      ? ["-c:v", "libx264", "-crf", String(convertQuality), "-preset", "fast", "-c:a", "aac"]
-      : ["-c:v", "libvpx-vp9", "-crf", String(convertQuality), "-b:v", "0", "-c:a", "libvorbis"];
-    exec(args, `output.${convertFormat}`, convertFormat === "mp4" ? "video/mp4" : "video/webm", convertFormat);
+  const removeEffect = (id: string) => {
+    setPipeline((p) => p.filter((e) => e.id !== id));
+    if (selectedId === id) setSelectedId(null);
   };
 
-  const handleResize = () => {
-    const p = RESIZE_PRESETS[resizePreset];
-    exec(["-vf", `scale=${p.w}:${p.h}:force_original_aspect_ratio=decrease,pad=${p.w}:${p.h}:(ow-iw)/2:(oh-ih)/2`, "-c:a", "copy"], "output.mp4", "video/mp4", "mp4");
+  const updateConfig = (id: string, config: EffectConfig) => {
+    setPipeline((p) => p.map((e) => (e.id === id ? { ...e, config } : e)));
+  };
+
+  const moveEffect = (id: string, dir: -1 | 1) => {
+    setPipeline((p) => {
+      const idx = p.findIndex((e) => e.id === id);
+      if (idx < 0) return p;
+      const newIdx = idx + dir;
+      if (newIdx < 0 || newIdx >= p.length) return p;
+      const arr = [...p]; [arr[idx], arr[newIdx]] = [arr[newIdx], arr[idx]];
+      return arr;
+    });
+  };
+
+  /* ─── Export ─── */
+  const handleExport = () => {
+    if (!video || pipeline.length === 0) return;
+    const ext = exportFormat;
+    const mime = ext === "mp4" ? "video/mp4" : "video/webm";
+    const args = buildFFmpegArgs(pipeline, exportFormat, exportQuality);
+    execFFmpeg(args, `output.${ext}`, mime, ext);
   };
 
   const handleGif = () => {
-    const ss = gifStart.toFixed(2);
-    const t = gifDuration.toFixed(2);
-    exec(["-ss", ss, "-t", t, "-vf", `fps=${gifFps},scale=480:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse`, "-loop", "0"], "output.gif", "image/gif", "gif");
+    if (!video) return;
+    const ss = gifStart.toFixed(2), t = gifDuration.toFixed(2);
+    execFFmpeg(["-ss", ss, "-t", t, "-vf", `fps=${gifFps},scale=480:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse`, "-loop", "0"], "output.gif", "image/gif", "gif");
   };
 
   const handleCapture = () => {
-    exec(["-ss", captureTime.toFixed(2), "-frames:v", "1", "-q:v", "2"], "output.jpg", "image/jpeg", "jpg");
+    if (!video) return;
+    execFFmpeg(["-ss", captureTime.toFixed(2), "-frames:v", "1", "-q:v", "2"], "output.jpg", "image/jpeg", "jpg");
   };
 
-  const handleMute = () => {
-    exec(["-an", "-c:v", "copy"], "output.mp4", "video/mp4", "mp4");
-  };
+  const seekTo = useCallback((t: number) => { if (videoRef.current) videoRef.current.currentTime = t; }, []);
 
-  const handleRotate = () => {
-    const filter = ROTATE_OPTIONS[rotateOption].value;
-    exec(["-vf", filter, "-c:a", "copy"], "output.mp4", "video/mp4", "mp4");
-  };
-
-  const handleSpeed = () => {
-    const spd = SPEED_OPTIONS[speedOption].value;
-    const vf = `setpts=${(1 / spd).toFixed(4)}*PTS`;
-    const af = spd <= 0.5 ? `atempo=0.5,atempo=${spd / 0.5}` : spd > 2 ? `atempo=2.0,atempo=${spd / 2}` : `atempo=${spd}`;
-    exec(["-vf", vf, "-af", af], "output.mp4", "video/mp4", "mp4");
-  };
-
-  const reset = () => {
+  const resetAll = () => {
     if (video?.url) URL.revokeObjectURL(video.url);
     if (result?.url) URL.revokeObjectURL(result.url);
-    setVideo(null); setResult(null); setProgress(0); setError(""); setProgressMsg("");
+    setVideo(null); setResult(null); setPipeline([]); setSelectedId(null); setError(""); setQuickAction(null);
   };
 
-  const clearResult = () => {
-    if (result?.url) URL.revokeObjectURL(result.url);
-    setResult(null); setProgress(0);
-  };
-
-  /* ─── Seek video preview on trim/capture slider ─── */
-  const seekTo = useCallback((t: number) => {
-    if (videoRef.current) videoRef.current.currentTime = t;
-  }, []);
-
-  /* ─── Duration text ─── */
-  const trimDuration = useMemo(() => trimEnd - trimStart, [trimStart, trimEnd]);
-
-  /* ─────────────────────────── Render ─────────────────────────── */
+  /* ═══════════════════════════════ RENDER ═══════════════════════════════ */
 
   return (
     <>
-      {/* Hero */}
-      <section className="relative py-14" style={{ borderBottom: "1px solid var(--border)" }}>
+      {/* Header */}
+      <section className="relative py-12" style={{ borderBottom: "1px solid var(--border)" }}>
         <div className="mx-auto max-w-6xl px-5">
-          <p className="animate-fade-up text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: "var(--accent)" }}>
-            Video
-          </p>
+          <p className="animate-fade-up text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: "var(--accent)" }}>Video</p>
           <h1 className="animate-fade-up stagger-1 mt-3 text-4xl tracking-tight md:text-5xl" style={{ fontFamily: "var(--font-display)" }}>
             Editeur <span style={{ color: "var(--primary)" }}>Video</span>
           </h1>
           <p className="animate-fade-up stagger-2 mt-3 max-w-xl text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-            Couper, convertir, redimensionner, extraire GIF et plus. Tout se passe dans votre navigateur, rien n&apos;est envoye.
+            Combinez plusieurs effets et exportez en une seule fois. Tout se passe dans votre navigateur.
           </p>
         </div>
       </section>
 
-      <div className="mx-auto max-w-6xl px-5 py-10">
-        {/* Drop zone */}
+      <div className="mx-auto max-w-6xl px-5 py-8">
+        {/* ─── DROP ZONE ─── */}
         {!video && (
           <div
             onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
             onDragLeave={() => setDragOver(false)}
-            onDrop={handleDrop}
+            onDrop={(e) => { e.preventDefault(); setDragOver(false); e.dataTransfer.files[0] && loadVideo(e.dataTransfer.files[0]); }}
             onClick={() => inputRef.current?.click()}
             className="animate-fade-up stagger-3 mx-auto max-w-2xl cursor-pointer rounded-2xl border-2 border-dashed p-16 text-center transition-all hover:shadow-lg"
-            style={{
-              borderColor: dragOver ? "var(--primary)" : "var(--border)",
-              background: dragOver ? "rgba(13,79,60,0.04)" : "var(--surface)",
-            }}
+            style={{ borderColor: dragOver ? "var(--primary)" : "var(--border)", background: dragOver ? "rgba(13,79,60,0.04)" : "var(--surface)" }}
           >
             <input ref={inputRef} type="file" accept="video/*,.mp4,.webm,.mov,.avi,.mkv" className="hidden"
               onChange={(e) => e.target.files?.[0] && loadVideo(e.target.files[0])} />
             <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl" style={{ background: "rgba(13,79,60,0.08)" }}>
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ color: "var(--primary)" }}>
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" style={{ color: "var(--primary)" }}>
                 <polygon points="23 7 16 12 23 17 23 7" /><rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
               </svg>
             </div>
-            <p className="mt-5 text-lg tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
-              Deposez votre video ici
-            </p>
-            <p className="mt-2 text-xs" style={{ color: "var(--muted)" }}>
-              MP4, WebM, MOV, AVI — max 500 Mo
-            </p>
+            <p className="mt-5 text-lg tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Deposez votre video ici</p>
+            <p className="mt-2 text-xs" style={{ color: "var(--muted)" }}>MP4, WebM, MOV, AVI — max 500 Mo</p>
           </div>
         )}
 
         {error && (
-          <div className="mx-auto mt-4 max-w-2xl rounded-xl border p-4 text-sm"
-            style={{ background: "rgba(220,38,38,0.06)", borderColor: "rgba(220,38,38,0.2)", color: "#dc2626" }}>
-            {error}
+          <div className="mx-auto mt-4 max-w-2xl rounded-xl border p-4 text-sm" style={{ background: "rgba(220,38,38,0.06)", borderColor: "rgba(220,38,38,0.2)", color: "#dc2626" }}>{error}</div>
+        )}
+
+        {/* ─── EDITOR ─── */}
+        {video && !processing && !result && (
+          <div className="space-y-5">
+
+            {/* Video preview + info */}
+            <div className="overflow-hidden rounded-2xl border" style={{ borderColor: "var(--border)" }}>
+              <div style={{ background: "#0a0a0a" }}>
+                <video ref={videoRef} src={video.url} controls className="mx-auto block" style={{ maxHeight: "380px", width: "100%" }} crossOrigin="anonymous" />
+              </div>
+              {/* Timeline bar */}
+              {hasTrim && (() => {
+                const trim = pipeline.find((e) => e.type === "trim");
+                const c = trim?.config as TrimConfig;
+                const leftPct = (c.start / video.duration) * 100;
+                const widthPct = ((c.end - c.start) / video.duration) * 100;
+                return (
+                  <div className="relative h-8 border-t" style={{ borderColor: "var(--border)", background: "var(--surface-alt)" }}>
+                    {/* Full bar */}
+                    <div className="absolute inset-0 opacity-30" style={{ background: "repeating-linear-gradient(90deg, var(--border) 0, var(--border) 1px, transparent 1px, transparent 10%)" }} />
+                    {/* Selected range */}
+                    <div className="absolute top-0 bottom-0 rounded-sm" style={{ left: `${leftPct}%`, width: `${widthPct}%`, background: "rgba(13,79,60,0.15)", borderLeft: "2px solid var(--primary)", borderRight: "2px solid var(--primary)" }}>
+                      <div className="flex h-full items-center justify-center text-[9px] font-bold" style={{ color: "var(--primary)" }}>
+                        {formatTime(c.end - c.start)}
+                      </div>
+                    </div>
+                    {/* Timestamps */}
+                    <span className="absolute bottom-0.5 left-1 text-[9px]" style={{ color: "var(--muted)" }}>0:00</span>
+                    <span className="absolute bottom-0.5 right-1 text-[9px]" style={{ color: "var(--muted)" }}>{formatTime(video.duration)}</span>
+                  </div>
+                );
+              })()}
+              {/* Info bar + effect badges */}
+              <div className="flex flex-wrap items-center gap-3 border-t px-4 py-2.5" style={{ borderColor: "var(--border)", background: "var(--surface)" }}>
+                <span className="truncate text-xs font-semibold" style={{ maxWidth: 160 }} title={video.name}>{video.name}</span>
+                <div className="flex items-center gap-2 text-[11px]" style={{ color: "var(--muted)" }}>
+                  <span>{video.width}x{video.height}</span>
+                  <span style={{ color: "var(--border)" }}>|</span>
+                  <span>{formatTime(video.duration)}</span>
+                  <span style={{ color: "var(--border)" }}>|</span>
+                  <span>{formatSize(video.size)}</span>
+                </div>
+                {/* Effect badges */}
+                {pipeline.length > 0 && (
+                  <div className="ml-auto flex flex-wrap gap-1.5">
+                    {pipeline.map((e) => (
+                      <span key={e.id} className="rounded-full px-2 py-0.5 text-[10px] font-bold text-white" style={{ background: EFFECT_META[e.type].color }}>
+                        {EFFECT_META[e.type].icon} {EFFECT_META[e.type].label}
+                      </span>
+                    ))}
+                  </div>
+                )}
+                <button onClick={resetAll} className="text-[11px] font-semibold hover:opacity-70" style={{ color: "#dc2626" }}>Changer</button>
+              </div>
+            </div>
+
+            {/* Main editor: Pipeline + Config */}
+            <div className="grid grid-cols-1 gap-5 lg:grid-cols-[320px_1fr]">
+
+              {/* Left: Pipeline list */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--muted)" }}>Effets ({pipeline.length})</h2>
+                </div>
+
+                {/* Effect list */}
+                <div className="space-y-2">
+                  {pipeline.map((effect, idx) => (
+                    <div
+                      key={effect.id}
+                      onClick={() => { setSelectedId(effect.id); setQuickAction(null); }}
+                      className="flex cursor-pointer items-center gap-3 rounded-xl border p-3 transition-all"
+                      style={{
+                        borderColor: selectedId === effect.id ? EFFECT_META[effect.type].color : "var(--border)",
+                        background: selectedId === effect.id ? `${EFFECT_META[effect.type].color}08` : "var(--surface)",
+                        boxShadow: selectedId === effect.id ? `0 0 0 1px ${EFFECT_META[effect.type].color}30` : "none",
+                      }}
+                    >
+                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-sm" style={{ background: `${EFFECT_META[effect.type].color}15` }}>
+                        {EFFECT_META[effect.type].icon}
+                      </span>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-semibold">{EFFECT_META[effect.type].label}</p>
+                        <p className="truncate text-[10px]" style={{ color: "var(--muted)" }}>
+                          {effect.type === "trim" && `${formatTime((effect.config as TrimConfig).start)} → ${formatTime((effect.config as TrimConfig).end)}`}
+                          {effect.type === "resize" && (effect.config as ResizeConfig).label}
+                          {effect.type === "speed" && (effect.config as SpeedConfig).label}
+                          {effect.type === "rotate" && (effect.config as RotateConfig).label}
+                          {effect.type === "mute" && "Audio supprime"}
+                        </p>
+                      </div>
+                      <div className="flex shrink-0 items-center gap-0.5">
+                        {idx > 0 && <button onClick={(ev) => { ev.stopPropagation(); moveEffect(effect.id, -1); }} className="rounded p-1 hover:bg-black/5" title="Monter"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M18 15l-6-6-6 6" /></svg></button>}
+                        {idx < pipeline.length - 1 && <button onClick={(ev) => { ev.stopPropagation(); moveEffect(effect.id, 1); }} className="rounded p-1 hover:bg-black/5" title="Descendre"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M6 9l6 6 6-6" /></svg></button>}
+                        <button onClick={(ev) => { ev.stopPropagation(); removeEffect(effect.id); }} className="rounded p-1 hover:bg-red-50" style={{ color: "#dc2626" }} title="Supprimer"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M18 6L6 18M6 6l12 12" /></svg></button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Add effect button */}
+                <div className="relative">
+                  <button
+                    onClick={() => setShowAddMenu(!showAddMenu)}
+                    className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed py-3 text-xs font-semibold transition-all hover:border-[var(--primary)] hover:bg-[rgba(13,79,60,0.02)]"
+                    style={{ borderColor: "var(--border)", color: "var(--muted)" }}
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 5v14M5 12h14" /></svg>
+                    Ajouter un effet
+                  </button>
+                  {showAddMenu && (
+                    <div className="absolute left-0 right-0 top-full z-10 mt-1 overflow-hidden rounded-xl border shadow-lg" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+                      {(["trim", "resize", "speed", "rotate", "mute"] as EffectType[]).map((type) => (
+                        <button
+                          key={type}
+                          disabled={hasType(type)}
+                          onClick={() => addEffect(type)}
+                          className="flex w-full items-center gap-3 px-4 py-3 text-left text-xs transition-all hover:bg-[var(--surface-alt)] disabled:opacity-30 disabled:cursor-not-allowed"
+                        >
+                          <span>{EFFECT_META[type].icon}</span>
+                          <span className="font-semibold">{EFFECT_META[type].label}</span>
+                          {hasType(type) && <span className="ml-auto text-[10px]" style={{ color: "var(--muted)" }}>Deja ajoute</span>}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Quick actions */}
+                <div className="border-t pt-3" style={{ borderColor: "var(--border)" }}>
+                  <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>Actions rapides</p>
+                  <div className="mt-2 grid grid-cols-2 gap-2">
+                    <button onClick={() => { setQuickAction("gif"); setSelectedId(null); }}
+                      className="rounded-lg border p-2.5 text-center text-xs font-semibold transition-all hover:border-[var(--accent)]"
+                      style={{ borderColor: quickAction === "gif" ? "var(--accent)" : "var(--border)", background: quickAction === "gif" ? "rgba(232,150,62,0.06)" : "transparent" }}>
+                      🎞️ Extraire GIF
+                    </button>
+                    <button onClick={() => { setQuickAction("capture"); setSelectedId(null); }}
+                      className="rounded-lg border p-2.5 text-center text-xs font-semibold transition-all hover:border-[var(--primary)]"
+                      style={{ borderColor: quickAction === "capture" ? "var(--primary)" : "var(--border)", background: quickAction === "capture" ? "rgba(13,79,60,0.04)" : "transparent" }}>
+                      📸 Capturer image
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right: Config panel */}
+              <div className="rounded-2xl border" style={{ borderColor: "var(--border)", background: "var(--surface)" }}>
+                <div className="p-5">
+                  {/* Empty state */}
+                  {!selectedEffect && !quickAction && (
+                    <div className="py-12 text-center">
+                      <p className="text-3xl">🎬</p>
+                      <p className="mt-3 text-sm font-semibold" style={{ fontFamily: "var(--font-display)" }}>
+                        {pipeline.length === 0 ? "Ajoutez des effets pour commencer" : "Selectionnez un effet a configurer"}
+                      </p>
+                      <p className="mt-1 text-xs" style={{ color: "var(--muted)" }}>
+                        Combinez coupe, taille, vitesse, rotation et plus. Exportez en un clic.
+                      </p>
+                    </div>
+                  )}
+
+                  {/* ─── TRIM CONFIG ─── */}
+                  {selectedEffect?.type === "trim" && (() => {
+                    const c = selectedEffect.config as TrimConfig;
+                    return (
+                      <div className="space-y-5">
+                        <h3 className="text-xs font-semibold uppercase tracking-wider" style={{ color: EFFECT_META.trim.color }}>✂️ Configuration de la coupe</h3>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <label className="text-xs" style={{ color: "var(--muted)" }}>Debut</label>
+                            <input type="range" min={0} max={video!.duration} step={0.1} value={c.start}
+                              onChange={(e) => { const v = Math.min(parseFloat(e.target.value), c.end - 0.5); updateConfig(selectedEffect.id, { ...c, start: v }); seekTo(v); }}
+                              className="mt-1 w-full accent-[#0d4f3c]" />
+                            <p className="mt-1 text-center text-sm font-bold" style={{ fontFamily: "var(--font-display)" }}>{formatTime(c.start)}</p>
+                          </div>
+                          <div>
+                            <label className="text-xs" style={{ color: "var(--muted)" }}>Fin</label>
+                            <input type="range" min={0} max={video!.duration} step={0.1} value={c.end}
+                              onChange={(e) => { const v = Math.max(parseFloat(e.target.value), c.start + 0.5); updateConfig(selectedEffect.id, { ...c, end: v }); seekTo(v); }}
+                              className="mt-1 w-full accent-[#0d4f3c]" />
+                            <p className="mt-1 text-center text-sm font-bold" style={{ fontFamily: "var(--font-display)" }}>{formatTime(c.end)}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-center gap-2 rounded-xl py-2" style={{ background: "rgba(13,79,60,0.04)" }}>
+                          <span className="text-xs font-semibold" style={{ color: "var(--primary)" }}>Duree : {formatTime(c.end - c.start)}</span>
+                        </div>
+                      </div>
+                    );
+                  })()}
+
+                  {/* ─── RESIZE CONFIG ─── */}
+                  {selectedEffect?.type === "resize" && (() => {
+                    const c = selectedEffect.config as ResizeConfig;
+                    return (
+                      <div className="space-y-5">
+                        <h3 className="text-xs font-semibold uppercase tracking-wider" style={{ color: EFFECT_META.resize.color }}>📐 Resolution cible</h3>
+                        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                          {RESIZE_PRESETS.map((p) => (
+                            <button key={p.label} onClick={() => updateConfig(selectedEffect.id, p)}
+                              className="rounded-xl border p-3 text-center transition-all"
+                              style={{ borderColor: c.label === p.label ? EFFECT_META.resize.color : "var(--border)", background: c.label === p.label ? `${EFFECT_META.resize.color}08` : "transparent" }}>
+                              <p className="text-sm font-bold">{p.label}</p>
+                              <p className="text-[10px]" style={{ color: "var(--muted)" }}>{p.w}x{p.h}</p>
+                            </button>
+                          ))}
+                        </div>
+                        <p className="text-xs" style={{ color: "var(--muted)" }}>{video!.width}x{video!.height} → <strong style={{ color: "var(--foreground)" }}>{c.w}x{c.h}</strong></p>
+                      </div>
+                    );
+                  })()}
+
+                  {/* ─── SPEED CONFIG ─── */}
+                  {selectedEffect?.type === "speed" && (() => {
+                    const c = selectedEffect.config as SpeedConfig;
+                    return (
+                      <div className="space-y-5">
+                        <h3 className="text-xs font-semibold uppercase tracking-wider" style={{ color: EFFECT_META.speed.color }}>⚡ Vitesse de lecture</h3>
+                        <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
+                          {SPEED_PRESETS.map((p) => (
+                            <button key={p.label} onClick={() => updateConfig(selectedEffect.id, p)}
+                              className="rounded-xl border p-3 text-center transition-all"
+                              style={{ borderColor: c.label === p.label ? EFFECT_META.speed.color : "var(--border)", background: c.label === p.label ? `${EFFECT_META.speed.color}08` : "transparent" }}>
+                              <p className="text-sm font-bold">{p.label}</p>
+                            </button>
+                          ))}
+                        </div>
+                        <p className="text-xs" style={{ color: "var(--muted)" }}>Duree estimee : <strong style={{ color: "var(--foreground)" }}>{formatTime(estimatedDuration)}</strong></p>
+                      </div>
+                    );
+                  })()}
+
+                  {/* ─── ROTATE CONFIG ─── */}
+                  {selectedEffect?.type === "rotate" && (() => {
+                    const c = selectedEffect.config as RotateConfig;
+                    return (
+                      <div className="space-y-5">
+                        <h3 className="text-xs font-semibold uppercase tracking-wider" style={{ color: EFFECT_META.rotate.color }}>🔄 Transformation</h3>
+                        <div className="grid grid-cols-5 gap-2">
+                          {ROTATE_PRESETS.map((p) => (
+                            <button key={p.label} onClick={() => updateConfig(selectedEffect.id, p)}
+                              className="rounded-xl border p-3 text-center transition-all"
+                              style={{ borderColor: c.label === p.label ? EFFECT_META.rotate.color : "var(--border)", background: c.label === p.label ? `${EFFECT_META.rotate.color}08` : "transparent" }}>
+                              <p className="text-xs font-semibold">{p.label}</p>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })()}
+
+                  {/* ─── MUTE CONFIG ─── */}
+                  {selectedEffect?.type === "mute" && (
+                    <div className="flex items-center gap-4 rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                      <span className="text-3xl">🔇</span>
+                      <div>
+                        <p className="text-sm font-semibold">Audio supprime</p>
+                        <p className="text-xs" style={{ color: "var(--muted)" }}>La piste audio sera entierement retiree de la video exportee.</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* ─── GIF QUICK ACTION ─── */}
+                  {quickAction === "gif" && (
+                    <div className="space-y-5">
+                      <h3 className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--accent)" }}>🎞️ Extraire un GIF</h3>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="text-xs" style={{ color: "var(--muted)" }}>Debut</label>
+                          <input type="range" min={0} max={video!.duration} step={0.1} value={gifStart}
+                            onChange={(e) => { setGifStart(parseFloat(e.target.value)); seekTo(parseFloat(e.target.value)); }}
+                            className="mt-1 w-full accent-[#e8963e]" />
+                          <p className="mt-1 text-center text-sm font-bold" style={{ fontFamily: "var(--font-display)" }}>{formatTime(gifStart)}</p>
+                        </div>
+                        <div>
+                          <label className="text-xs" style={{ color: "var(--muted)" }}>Duree (max 10s)</label>
+                          <input type="range" min={1} max={Math.min(10, video!.duration - gifStart)} step={0.5} value={gifDuration}
+                            onChange={(e) => setGifDuration(parseFloat(e.target.value))}
+                            className="mt-1 w-full accent-[#e8963e]" />
+                          <p className="mt-1 text-center text-sm font-bold" style={{ fontFamily: "var(--font-display)" }}>{gifDuration}s</p>
+                        </div>
+                      </div>
+                      <div>
+                        <label className="text-xs" style={{ color: "var(--muted)" }}>FPS</label>
+                        <div className="mt-2 flex gap-2">
+                          {[10, 15, 20, 25].map((f) => (
+                            <button key={f} onClick={() => setGifFps(f)} className="flex-1 rounded-lg border py-2 text-xs font-semibold transition-all"
+                              style={{ borderColor: gifFps === f ? "var(--accent)" : "var(--border)", color: gifFps === f ? "var(--accent)" : "var(--muted)" }}>
+                              {f}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      <button onClick={handleGif} className="w-full rounded-xl py-3 text-sm font-semibold text-white transition-all hover:opacity-90" style={{ background: "linear-gradient(135deg, var(--accent) 0%, #d4822e 100%)" }}>
+                        Extraire le GIF
+                      </button>
+                    </div>
+                  )}
+
+                  {/* ─── CAPTURE QUICK ACTION ─── */}
+                  {quickAction === "capture" && (
+                    <div className="space-y-5">
+                      <h3 className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--primary)" }}>📸 Capturer une image</h3>
+                      <div>
+                        <input type="range" min={0} max={video!.duration} step={0.1} value={captureTime}
+                          onChange={(e) => { setCaptureTime(parseFloat(e.target.value)); seekTo(parseFloat(e.target.value)); }}
+                          className="w-full accent-[#0d4f3c]" />
+                        <p className="mt-2 text-center text-lg font-bold" style={{ fontFamily: "var(--font-display)", color: "var(--primary)" }}>{formatTime(captureTime)}</p>
+                      </div>
+                      <button onClick={handleCapture} className="w-full rounded-xl py-3 text-sm font-semibold text-white transition-all hover:opacity-90" style={{ background: "var(--primary)" }}>
+                        Capturer
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Export bar */}
+            {pipeline.length > 0 && (
+              <div className="overflow-hidden rounded-2xl border" style={{ borderColor: "var(--primary)", background: "rgba(13,79,60,0.02)" }}>
+                <div className="flex flex-wrap items-center gap-4 p-5">
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold" style={{ fontFamily: "var(--font-display)" }}>
+                      {pipeline.length} effet{pipeline.length > 1 ? "s" : ""} — Duree estimee : {formatTime(estimatedDuration)}
+                    </p>
+                    <div className="mt-1 flex flex-wrap gap-1.5">
+                      {pipeline.map((e) => (
+                        <span key={e.id} className="text-[10px]" style={{ color: "var(--muted)" }}>
+                          {EFFECT_META[e.type].icon} {EFFECT_META[e.type].label}
+                        </span>
+                      ))}
+                      {needsReencode && <span className="text-[10px]" style={{ color: "var(--accent)" }}>• Re-encodage</span>}
+                      {!needsReencode && <span className="text-[10px]" style={{ color: "var(--primary)" }}>• Copie directe (rapide)</span>}
+                    </div>
+                  </div>
+                  {/* Format + quality */}
+                  <div className="flex items-center gap-2">
+                    <select value={exportFormat} onChange={(e) => setExportFormat(e.target.value as "mp4" | "webm")}
+                      className="rounded-lg border px-3 py-2 text-xs font-semibold" style={{ borderColor: "var(--border)" }}>
+                      <option value="mp4">MP4</option>
+                      <option value="webm">WebM</option>
+                    </select>
+                    {needsReencode && (
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px]" style={{ color: "var(--muted)" }}>CRF</span>
+                        <input type="range" min={18} max={35} value={exportQuality} onChange={(e) => setExportQuality(parseInt(e.target.value))}
+                          className="w-20 accent-[#0d4f3c]" />
+                        <span className="w-5 text-xs font-bold" style={{ color: "var(--primary)" }}>{exportQuality}</span>
+                      </div>
+                    )}
+                  </div>
+                  <button onClick={handleExport}
+                    className="rounded-xl px-8 py-3 text-sm font-semibold text-white transition-all hover:scale-[1.02] hover:shadow-lg"
+                    style={{ background: "linear-gradient(135deg, var(--primary) 0%, #1a6b4f 100%)" }}>
+                    Exporter la video
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
-        {/* Editor */}
-        {video && (
-          <div className="space-y-6">
-            {/* Video Theater */}
-            <div className="overflow-hidden rounded-2xl border" style={{ borderColor: "var(--border)" }}>
-              {/* Dark preview area */}
-              <div className="relative" style={{ background: "#0a0a0a" }}>
-                <video
-                  ref={videoRef}
-                  src={video.url}
-                  controls
-                  className="mx-auto block"
-                  style={{ maxHeight: "420px", width: "100%" }}
-                  crossOrigin="anonymous"
-                />
+        {/* ─── PROCESSING ─── */}
+        {processing && (
+          <div className="mx-auto max-w-lg rounded-2xl border p-8" style={{ borderColor: "var(--border)", background: "var(--surface)" }}>
+            <div className="text-center">
+              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl" style={{ background: "rgba(13,79,60,0.08)" }}>
+                <svg className="animate-spin" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ color: "var(--primary)" }}>
+                  <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
+                </svg>
               </div>
-              {/* Info bar */}
-              <div className="flex flex-wrap items-center gap-4 border-t px-5 py-3"
-                style={{ borderColor: "var(--border)", background: "var(--surface)" }}>
-                <span className="text-xs font-semibold truncate max-w-[200px]" title={video.name}>{video.name}</span>
-                <div className="flex items-center gap-3 text-xs" style={{ color: "var(--muted)" }}>
-                  <span>{video.width}x{video.height}</span>
-                  <span className="h-3 w-px" style={{ background: "var(--border)" }} />
-                  <span>{formatTime(video.duration)}</span>
-                  <span className="h-3 w-px" style={{ background: "var(--border)" }} />
-                  <span>{formatSize(video.size)}</span>
-                </div>
-                <button onClick={reset} className="ml-auto text-xs font-semibold transition-colors hover:opacity-70" style={{ color: "#dc2626" }}>
-                  Changer
-                </button>
-              </div>
-            </div>
-
-            {/* Operation tabs */}
-            <div className="overflow-x-auto rounded-2xl border" style={{ borderColor: "var(--border)", background: "var(--surface)" }}>
-              <div className="flex min-w-max border-b" style={{ borderColor: "var(--border)" }}>
-                {OPERATIONS.map((op) => (
-                  <button
-                    key={op.key}
-                    onClick={() => { setActiveOp(op.key); clearResult(); }}
-                    className="relative flex items-center gap-2 px-5 py-3.5 text-xs font-semibold transition-all"
-                    style={{
-                      color: activeOp === op.key ? "var(--primary)" : "var(--muted)",
-                      background: activeOp === op.key ? "rgba(13,79,60,0.04)" : "transparent",
-                    }}
-                  >
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d={op.icon} />
-                    </svg>
-                    {op.label}
-                    {activeOp === op.key && (
-                      <span className="absolute bottom-0 left-0 right-0 h-0.5" style={{ background: "var(--primary)" }} />
-                    )}
-                  </button>
+              <p className="mt-4 text-sm font-semibold">{progressMsg || "Traitement..."}</p>
+              {/* Step indicators */}
+              <div className="mt-4 flex items-center justify-center gap-1">
+                {["FFmpeg", "Fichier", "Traitement", "Resultat"].map((s, i) => (
+                  <div key={s} className="flex items-center gap-1">
+                    <div className="flex h-6 w-6 items-center justify-center rounded-full text-[9px] font-bold text-white"
+                      style={{ background: progressStep > i ? "var(--primary)" : "var(--border)" }}>
+                      {progressStep > i ? "✓" : i + 1}
+                    </div>
+                    {i < 3 && <div className="h-px w-6" style={{ background: progressStep > i + 1 ? "var(--primary)" : "var(--border)" }} />}
+                  </div>
                 ))}
               </div>
-
-              {/* Operation panel */}
-              <div className="p-6">
-                {!processing && !result && (
-                  <>
-                    {/* TRIM */}
-                    {activeOp === "trim" && (
-                      <div className="space-y-5">
-                        <div>
-                          <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>Plage de coupe</p>
-                          <div className="mt-3 grid grid-cols-2 gap-4">
-                            <div>
-                              <label className="text-xs" style={{ color: "var(--muted)" }}>Debut</label>
-                              <input type="range" min={0} max={video.duration} step={0.1} value={trimStart}
-                                onChange={(e) => { const v = parseFloat(e.target.value); setTrimStart(Math.min(v, trimEnd - 0.5)); seekTo(v); }}
-                                className="mt-1 w-full accent-[#0d4f3c]" />
-                              <p className="mt-1 text-center text-sm font-bold" style={{ fontFamily: "var(--font-display)" }}>{formatTime(trimStart)}</p>
-                            </div>
-                            <div>
-                              <label className="text-xs" style={{ color: "var(--muted)" }}>Fin</label>
-                              <input type="range" min={0} max={video.duration} step={0.1} value={trimEnd}
-                                onChange={(e) => { const v = parseFloat(e.target.value); setTrimEnd(Math.max(v, trimStart + 0.5)); seekTo(v); }}
-                                className="mt-1 w-full accent-[#0d4f3c]" />
-                              <p className="mt-1 text-center text-sm font-bold" style={{ fontFamily: "var(--font-display)" }}>{formatTime(trimEnd)}</p>
-                            </div>
-                          </div>
-                          <div className="mt-3 flex items-center justify-center gap-2 rounded-xl py-2" style={{ background: "rgba(13,79,60,0.04)" }}>
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ color: "var(--primary)" }}>
-                              <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
-                            </svg>
-                            <span className="text-xs font-semibold" style={{ color: "var(--primary)" }}>
-                              Duree du segment : {formatTime(trimDuration)}
-                            </span>
-                          </div>
-                        </div>
-                        <div className="flex items-start gap-3 rounded-xl p-3" style={{ background: "var(--surface-alt)" }}>
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="mt-0.5 shrink-0" style={{ color: "var(--accent)" }}>
-                            <path d="M13 10V3L4 14h7v7l9-11h-7z" />
-                          </svg>
-                          <p className="text-xs" style={{ color: "var(--muted)" }}>Mode copie directe — pas de re-encodage, quasi instantane.</p>
-                        </div>
-                        <button onClick={handleTrim} className="w-full rounded-xl py-3.5 text-sm font-semibold text-white transition-all hover:opacity-90" style={{ background: "var(--primary)" }}>
-                          Couper la video
-                        </button>
-                      </div>
-                    )}
-
-                    {/* CONVERT */}
-                    {activeOp === "convert" && (
-                      <div className="space-y-5">
-                        <div>
-                          <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>Format de sortie</p>
-                          <div className="mt-3 grid grid-cols-2 gap-3">
-                            {(["mp4", "webm"] as const).map((fmt) => (
-                              <button key={fmt} onClick={() => setConvertFormat(fmt)}
-                                className="rounded-xl border p-4 text-left transition-all"
-                                style={{ borderColor: convertFormat === fmt ? "var(--primary)" : "var(--border)", background: convertFormat === fmt ? "rgba(13,79,60,0.04)" : "transparent" }}>
-                                <p className="text-sm font-bold">{fmt.toUpperCase()}</p>
-                                <p className="mt-1 text-xs" style={{ color: "var(--muted)" }}>{fmt === "mp4" ? "H.264 + AAC — Compatible partout" : "VP9 + Vorbis — Web optimise"}</p>
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                        <div>
-                          <div className="flex items-center justify-between">
-                            <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>Qualite (CRF)</p>
-                            <span className="text-xs font-bold" style={{ color: "var(--primary)" }}>{convertQuality}</span>
-                          </div>
-                          <input type="range" min={18} max={35} value={convertQuality} onChange={(e) => setConvertQuality(parseInt(e.target.value))}
-                            className="mt-2 w-full accent-[#0d4f3c]" />
-                          <div className="flex justify-between text-[10px]" style={{ color: "var(--muted)" }}>
-                            <span>Haute qualite</span><span>Fichier leger</span>
-                          </div>
-                        </div>
-                        <button onClick={handleConvert} className="w-full rounded-xl py-3.5 text-sm font-semibold text-white transition-all hover:opacity-90" style={{ background: "var(--primary)" }}>
-                          Convertir en {convertFormat.toUpperCase()}
-                        </button>
-                      </div>
-                    )}
-
-                    {/* RESIZE */}
-                    {activeOp === "resize" && (
-                      <div className="space-y-5">
-                        <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>Resolution cible</p>
-                        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-                          {RESIZE_PRESETS.map((p, i) => (
-                            <button key={p.label} onClick={() => setResizePreset(i)}
-                              className="rounded-xl border p-4 text-center transition-all"
-                              style={{ borderColor: resizePreset === i ? "var(--primary)" : "var(--border)", background: resizePreset === i ? "rgba(13,79,60,0.04)" : "transparent" }}>
-                              <p className="text-sm font-bold">{p.label}</p>
-                              <p className="mt-0.5 text-[10px]" style={{ color: "var(--muted)" }}>{p.w}x{p.h}</p>
-                              <p className="mt-1 text-[10px] font-semibold" style={{ color: "var(--accent)" }}>{p.tag}</p>
-                            </button>
-                          ))}
-                        </div>
-                        <div className="flex items-center gap-2 text-xs" style={{ color: "var(--muted)" }}>
-                          <span>Actuel : <strong style={{ color: "var(--foreground)" }}>{video.width}x{video.height}</strong></span>
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
-                          <span>Cible : <strong style={{ color: "var(--primary)" }}>{RESIZE_PRESETS[resizePreset].w}x{RESIZE_PRESETS[resizePreset].h}</strong></span>
-                        </div>
-                        <button onClick={handleResize} className="w-full rounded-xl py-3.5 text-sm font-semibold text-white transition-all hover:opacity-90" style={{ background: "var(--primary)" }}>
-                          Redimensionner
-                        </button>
-                      </div>
-                    )}
-
-                    {/* GIF */}
-                    {activeOp === "gif" && (
-                      <div className="space-y-5">
-                        <div className="grid grid-cols-2 gap-4">
-                          <div>
-                            <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>Debut</label>
-                            <input type="range" min={0} max={video.duration} step={0.1} value={gifStart}
-                              onChange={(e) => { setGifStart(parseFloat(e.target.value)); seekTo(parseFloat(e.target.value)); }}
-                              className="mt-2 w-full accent-[#e8963e]" />
-                            <p className="mt-1 text-center text-sm font-bold" style={{ fontFamily: "var(--font-display)" }}>{formatTime(gifStart)}</p>
-                          </div>
-                          <div>
-                            <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>Duree (max 10s)</label>
-                            <input type="range" min={1} max={Math.min(10, video.duration - gifStart)} step={0.5} value={gifDuration}
-                              onChange={(e) => setGifDuration(parseFloat(e.target.value))}
-                              className="mt-2 w-full accent-[#e8963e]" />
-                            <p className="mt-1 text-center text-sm font-bold" style={{ fontFamily: "var(--font-display)" }}>{gifDuration}s</p>
-                          </div>
-                        </div>
-                        <div>
-                          <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>Images par seconde</p>
-                          <div className="mt-2 flex gap-2">
-                            {[10, 15, 20, 25].map((fps) => (
-                              <button key={fps} onClick={() => setGifFps(fps)}
-                                className="flex-1 rounded-lg border py-2 text-xs font-semibold transition-all"
-                                style={{ borderColor: gifFps === fps ? "var(--accent)" : "var(--border)", background: gifFps === fps ? "rgba(232,150,62,0.08)" : "transparent", color: gifFps === fps ? "var(--accent)" : "var(--muted)" }}>
-                                {fps} fps
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                        <button onClick={handleGif} className="w-full rounded-xl py-3.5 text-sm font-semibold text-white transition-all hover:opacity-90" style={{ background: "linear-gradient(135deg, var(--accent) 0%, #d4822e 100%)" }}>
-                          Extraire le GIF
-                        </button>
-                      </div>
-                    )}
-
-                    {/* CAPTURE */}
-                    {activeOp === "capture" && (
-                      <div className="space-y-5">
-                        <div>
-                          <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>Timestamp de capture</p>
-                          <input type="range" min={0} max={video.duration} step={0.1} value={captureTime}
-                            onChange={(e) => { setCaptureTime(parseFloat(e.target.value)); seekTo(parseFloat(e.target.value)); }}
-                            className="mt-3 w-full accent-[#0d4f3c]" />
-                          <p className="mt-2 text-center text-lg font-bold" style={{ fontFamily: "var(--font-display)", color: "var(--primary)" }}>{formatTime(captureTime)}</p>
-                          <p className="text-center text-xs" style={{ color: "var(--muted)" }}>Deplacez le curseur et verifiez le preview ci-dessus</p>
-                        </div>
-                        <button onClick={handleCapture} className="w-full rounded-xl py-3.5 text-sm font-semibold text-white transition-all hover:opacity-90" style={{ background: "var(--primary)" }}>
-                          Capturer l&apos;image
-                        </button>
-                      </div>
-                    )}
-
-                    {/* MUTE */}
-                    {activeOp === "mute" && (
-                      <div className="space-y-5">
-                        <div className="flex items-center gap-4 rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
-                          <div className="flex h-12 w-12 items-center justify-center rounded-full" style={{ background: "rgba(13,79,60,0.1)" }}>
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: "var(--primary)" }}>
-                              <path d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
-                              <line x1="17" y1="14" x2="21" y2="10" /><line x1="17" y1="10" x2="21" y2="14" />
-                            </svg>
-                          </div>
-                          <div>
-                            <p className="text-sm font-semibold">Supprimer la piste audio</p>
-                            <p className="text-xs" style={{ color: "var(--muted)" }}>La video sera identique, sans le son. Pas de re-encodage, quasi instantane.</p>
-                          </div>
-                        </div>
-                        <button onClick={handleMute} className="w-full rounded-xl py-3.5 text-sm font-semibold text-white transition-all hover:opacity-90" style={{ background: "var(--primary)" }}>
-                          Supprimer l&apos;audio
-                        </button>
-                      </div>
-                    )}
-
-                    {/* ROTATE */}
-                    {activeOp === "rotate" && (
-                      <div className="space-y-5">
-                        <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>Transformation</p>
-                        <div className="grid grid-cols-5 gap-2">
-                          {ROTATE_OPTIONS.map((opt, i) => (
-                            <button key={opt.label} onClick={() => setRotateOption(i)}
-                              className="rounded-xl border p-3 text-center transition-all"
-                              style={{ borderColor: rotateOption === i ? "var(--primary)" : "var(--border)", background: rotateOption === i ? "rgba(13,79,60,0.04)" : "transparent" }}>
-                              <p className="text-xl">{opt.icon}</p>
-                              <p className="mt-1 text-[10px] font-semibold">{opt.label}</p>
-                            </button>
-                          ))}
-                        </div>
-                        <button onClick={handleRotate} className="w-full rounded-xl py-3.5 text-sm font-semibold text-white transition-all hover:opacity-90" style={{ background: "var(--primary)" }}>
-                          Appliquer la rotation
-                        </button>
-                      </div>
-                    )}
-
-                    {/* SPEED */}
-                    {activeOp === "speed" && (
-                      <div className="space-y-5">
-                        <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>Vitesse de lecture</p>
-                        <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
-                          {SPEED_OPTIONS.map((opt, i) => (
-                            <button key={opt.label} onClick={() => setSpeedOption(i)}
-                              className="rounded-xl border p-3 text-center transition-all"
-                              style={{ borderColor: speedOption === i ? "var(--primary)" : "var(--border)", background: speedOption === i ? "rgba(13,79,60,0.04)" : "transparent" }}>
-                              <p className="text-sm font-bold">{opt.label}</p>
-                              <p className="mt-0.5 text-[10px]" style={{ color: "var(--muted)" }}>{opt.tag}</p>
-                            </button>
-                          ))}
-                        </div>
-                        <div className="text-xs" style={{ color: "var(--muted)" }}>
-                          Duree estimee : <strong style={{ color: "var(--foreground)" }}>{formatTime(video.duration / SPEED_OPTIONS[speedOption].value)}</strong>
-                        </div>
-                        <button onClick={handleSpeed} className="w-full rounded-xl py-3.5 text-sm font-semibold text-white transition-all hover:opacity-90" style={{ background: "var(--primary)" }}>
-                          Appliquer la vitesse {SPEED_OPTIONS[speedOption].label}
-                        </button>
-                      </div>
-                    )}
-                  </>
-                )}
-
-                {/* Progress */}
-                {processing && (
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--accent)" }}>{progressMsg || "Traitement..."}</p>
-                      <span className="text-sm font-bold" style={{ fontFamily: "var(--font-display)" }}>{progress}%</span>
-                    </div>
-                    <div className="h-2 w-full overflow-hidden rounded-full" style={{ background: "var(--surface-alt)" }}>
-                      <div className="h-full rounded-full transition-all duration-300" style={{ width: `${progress}%`, background: "linear-gradient(90deg, var(--primary) 0%, var(--accent) 100%)" }} />
-                    </div>
-                    <p className="text-xs" style={{ color: "var(--muted)" }}>
-                      Le traitement utilise FFmpeg WebAssembly. Ne fermez pas cet onglet.
-                    </p>
-                  </div>
-                )}
-
-                {/* Result */}
-                {result && (
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-full" style={{ background: "rgba(22,163,74,0.1)" }}>
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M22 11.08V12a10 10 0 11-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" />
-                        </svg>
-                      </div>
-                      <div>
-                        <p className="text-sm font-semibold">Traitement termine</p>
-                        <p className="text-xs" style={{ color: "var(--muted)" }}>{result.name}</p>
-                      </div>
-                    </div>
-
-                    {/* Size comparison */}
-                    <div className="grid grid-cols-3 gap-3">
-                      <div className="rounded-xl border p-3 text-center" style={{ borderColor: "var(--border)" }}>
-                        <p className="text-[10px] font-semibold uppercase" style={{ color: "var(--muted)" }}>Original</p>
-                        <p className="mt-1 text-sm font-bold">{formatSize(video.size)}</p>
-                      </div>
-                      <div className="rounded-xl border p-3 text-center" style={{ borderColor: "rgba(22,163,74,0.3)", background: "rgba(22,163,74,0.04)" }}>
-                        <p className="text-[10px] font-semibold uppercase" style={{ color: "#16a34a" }}>Resultat</p>
-                        <p className="mt-1 text-sm font-bold" style={{ color: "#16a34a" }}>{formatSize(result.size)}</p>
-                      </div>
-                      <div className="rounded-xl border p-3 text-center" style={{ borderColor: "var(--border)" }}>
-                        <p className="text-[10px] font-semibold uppercase" style={{ color: "var(--muted)" }}>Diff</p>
-                        <p className="mt-1 text-sm font-bold" style={{ color: "var(--primary)" }}>
-                          {result.size < video.size ? `-${Math.round((1 - result.size / video.size) * 100)}%` : result.size > video.size ? `+${Math.round((result.size / video.size - 1) * 100)}%` : "="}
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* Preview for images */}
-                    {result.type.startsWith("image/") && (
-                      <div className="overflow-hidden rounded-xl border" style={{ borderColor: "var(--border)" }}>
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={result.url} alt="Capture" className="w-full" />
-                      </div>
-                    )}
-
-                    {/* Preview for video */}
-                    {result.type.startsWith("video/") && (
-                      <video src={result.url} controls className="w-full rounded-xl" style={{ maxHeight: "300px", background: "#0a0a0a" }} />
-                    )}
-
-                    {/* Download */}
-                    <a href={result.url} download={result.name}
-                      className="block w-full rounded-xl py-3.5 text-center text-sm font-semibold text-white transition-all hover:opacity-90"
-                      style={{ background: "var(--primary)" }}>
-                      Telecharger {result.type.startsWith("image/") ? "l'image" : result.name.endsWith(".gif") ? "le GIF" : "la video"}
-                    </a>
-                    <button onClick={clearResult}
-                      className="w-full rounded-xl border py-3 text-sm font-semibold transition-all hover:bg-[var(--surface-alt)]"
-                      style={{ borderColor: "var(--border)" }}>
-                      Autre operation
-                    </button>
-                  </div>
-                )}
+              <div className="mt-4 h-2 w-full overflow-hidden rounded-full" style={{ background: "var(--surface-alt)" }}>
+                <div className="h-full rounded-full transition-all duration-300" style={{ width: `${progress}%`, background: "linear-gradient(90deg, var(--primary) 0%, var(--accent) 100%)" }} />
               </div>
+              <p className="mt-2 text-xs" style={{ color: "var(--muted)" }}>{progress}% — Ne fermez pas cet onglet</p>
             </div>
+          </div>
+        )}
 
-            {/* Capabilities info */}
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-              {[
-                { icon: "M13 10V3L4 14h7v7l9-11h-7z", title: "Rapide", desc: "Couper et muet sont quasi instantanes (pas de re-encodage)" },
-                { icon: "M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z", title: "Prive", desc: "Tout se passe dans votre navigateur, rien n'est envoye" },
-                { icon: "M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z", title: "Gratuit", desc: "Aucune limite, aucun watermark, aucun compte requis" },
-              ].map((f) => (
-                <div key={f.title} className="rounded-xl border p-5" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: "var(--primary)" }}>
-                    <path d={f.icon} />
-                  </svg>
-                  <p className="mt-2 text-sm font-semibold">{f.title}</p>
-                  <p className="mt-1 text-xs" style={{ color: "var(--muted)" }}>{f.desc}</p>
+        {/* ─── RESULT ─── */}
+        {result && video && (
+          <div className="mx-auto max-w-lg space-y-5">
+            <div className="rounded-2xl border p-6" style={{ borderColor: "var(--border)", background: "var(--surface)" }}>
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full" style={{ background: "rgba(22,163,74,0.1)" }}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="2.5"><path d="M22 11.08V12a10 10 0 11-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" /></svg>
                 </div>
-              ))}
+                <div>
+                  <p className="text-sm font-semibold">Export termine</p>
+                  <p className="text-xs" style={{ color: "var(--muted)" }}>{result.name}</p>
+                </div>
+              </div>
+              <div className="mt-4 grid grid-cols-3 gap-3">
+                <div className="rounded-xl border p-3 text-center" style={{ borderColor: "var(--border)" }}>
+                  <p className="text-[10px] font-semibold uppercase" style={{ color: "var(--muted)" }}>Original</p>
+                  <p className="mt-1 text-sm font-bold">{formatSize(video.size)}</p>
+                </div>
+                <div className="rounded-xl border p-3 text-center" style={{ borderColor: "rgba(22,163,74,0.3)", background: "rgba(22,163,74,0.04)" }}>
+                  <p className="text-[10px] font-semibold uppercase" style={{ color: "#16a34a" }}>Resultat</p>
+                  <p className="mt-1 text-sm font-bold" style={{ color: "#16a34a" }}>{formatSize(result.size)}</p>
+                </div>
+                <div className="rounded-xl border p-3 text-center" style={{ borderColor: "var(--border)" }}>
+                  <p className="text-[10px] font-semibold uppercase" style={{ color: "var(--muted)" }}>Diff</p>
+                  <p className="mt-1 text-sm font-bold" style={{ color: "var(--primary)" }}>
+                    {result.size < video.size ? `-${Math.round((1 - result.size / video.size) * 100)}%` : result.size > video.size ? `+${Math.round((result.size / video.size - 1) * 100)}%` : "="}
+                  </p>
+                </div>
+              </div>
+
+              {result.type.startsWith("image/") && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={result.url} alt="Capture" className="mt-4 w-full rounded-xl" />
+              )}
+              {result.type.startsWith("video/") && (
+                <video src={result.url} controls className="mt-4 w-full rounded-xl" style={{ maxHeight: "300px", background: "#0a0a0a" }} />
+              )}
+
+              <a href={result.url} download={result.name}
+                className="mt-4 block w-full rounded-xl py-3.5 text-center text-sm font-semibold text-white transition-all hover:opacity-90"
+                style={{ background: "var(--primary)" }}>
+                Telecharger
+              </a>
+              <button onClick={() => { if (result?.url) URL.revokeObjectURL(result.url); setResult(null); setProgress(0); }}
+                className="mt-2 w-full rounded-xl border py-3 text-sm font-semibold transition-all hover:bg-[var(--surface-alt)]"
+                style={{ borderColor: "var(--border)" }}>
+                Continuer l&apos;edition
+              </button>
             </div>
           </div>
         )}
