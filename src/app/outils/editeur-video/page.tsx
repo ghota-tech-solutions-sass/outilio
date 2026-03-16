@@ -4,7 +4,7 @@ import { useState, useCallback, useRef, useEffect, useMemo } from "react";
 
 /* ═══════════════════════════ TYPES ═══════════════════════════ */
 
-interface VideoInfo { name: string; size: number; type: string; duration: number; width: number; height: number; url: string; file: File }
+interface VideoInfo { name: string; size: number; type: string; duration: number; width: number; height: number; url: string; file: File; hasAudio: boolean }
 
 type EffectType = "trim" | "resize" | "speed" | "rotate" | "mute";
 type QuickAction = "gif" | "capture";
@@ -72,7 +72,7 @@ function getKeepSegments(cfg: TrimCfg): { start: number; end: number }[] {
   return keeps.filter((k) => k.end - k.start > 0.1);
 }
 
-function buildArgs(pipeline: PipelineEffect[], fmt: "mp4" | "webm", quality: number, duration: number): string[] {
+function buildArgs(pipeline: PipelineEffect[], fmt: "mp4" | "webm", quality: number, duration: number, hasAudio: boolean = true): string[] {
   let muted = false;
   const extraVf: string[] = [], extraAf: string[] = [];
 
@@ -100,21 +100,22 @@ function buildArgs(pipeline: PipelineEffect[], fmt: "mp4" | "webm", quality: num
 
     const n = keeps.length;
     const vParts: string[] = [], aParts: string[] = [], vLabels: string[] = [], aLabels: string[] = [];
+    const includeAudio = hasAudio && !muted;
     for (let i = 0; i < n; i++) {
       const k = keeps[i];
       const vExtra = extraVf.length ? "," + extraVf.join(",") : "";
       const aExtra = extraAf.length ? "," + extraAf.join(",") : "";
       vParts.push(`[0:v]trim=${k.start.toFixed(2)}:${k.end.toFixed(2)},setpts=PTS-STARTPTS${vExtra}[v${i}]`);
-      if (!muted) aParts.push(`[0:a]atrim=${k.start.toFixed(2)}:${k.end.toFixed(2)},asetpts=PTS-STARTPTS${aExtra}[a${i}]`);
+      if (includeAudio) aParts.push(`[0:a]atrim=${k.start.toFixed(2)}:${k.end.toFixed(2)},asetpts=PTS-STARTPTS${aExtra}[a${i}]`);
       vLabels.push(`[v${i}]`);
       aLabels.push(`[a${i}]`);
     }
     let fc = vParts.join(";") + ";" + vLabels.join("") + `concat=n=${n}:v=1:a=0[outv]`;
-    if (!muted && aParts.length) fc += ";" + aParts.join(";") + ";" + aLabels.join("") + `concat=n=${n}:v=0:a=1[outa]`;
+    if (includeAudio) fc += ";" + aParts.join(";") + ";" + aLabels.join("") + `concat=n=${n}:v=0:a=1[outa]`;
 
     const args = ["-filter_complex", fc, "-map", "[outv]"];
-    if (!muted && aParts.length) args.push("-map", "[outa]");
-    else if (muted) args.push("-an");
+    if (includeAudio) args.push("-map", "[outa]");
+    else args.push("-an");
 
     if (fmt === "mp4") { args.push("-c:v", "libx264", "-crf", String(quality), "-preset", "fast"); if (!muted) args.push("-c:a", "aac"); }
     else { args.push("-c:v", "libvpx-vp9", "-crf", String(quality), "-b:v", "0"); if (!muted) args.push("-c:a", "libvorbis"); }
@@ -127,13 +128,13 @@ function buildArgs(pipeline: PipelineEffect[], fmt: "mp4" | "webm", quality: num
 
   const needsEnc = extraVf.length > 0;
   if (extraVf.length) args.push("-vf", extraVf.join(","));
-  if (muted) args.push("-an");
+  if (muted || !hasAudio) args.push("-an");
   else if (extraAf.length) args.push("-af", extraAf.join(","));
 
   if (needsEnc) {
-    if (fmt === "mp4") { args.push("-c:v", "libx264", "-crf", String(quality), "-preset", "fast"); if (!muted && !extraAf.length) args.push("-c:a", "aac"); }
-    else { args.push("-c:v", "libvpx-vp9", "-crf", String(quality), "-b:v", "0"); if (!muted && !extraAf.length) args.push("-c:a", "libvorbis"); }
-  } else { args.push("-c:v", "copy"); if (!muted) args.push("-c:a", "copy"); }
+    if (fmt === "mp4") { args.push("-c:v", "libx264", "-crf", String(quality), "-preset", "fast"); if (!muted && hasAudio && !extraAf.length) args.push("-c:a", "aac"); }
+    else { args.push("-c:v", "libvpx-vp9", "-crf", String(quality), "-b:v", "0"); if (!muted && hasAudio && !extraAf.length) args.push("-c:a", "libvorbis"); }
+  } else { args.push("-c:v", "copy"); if (!muted && hasAudio) args.push("-c:a", "copy"); }
   return args;
 }
 
@@ -282,7 +283,16 @@ export default function EditeurVideo() {
     const v = document.createElement("video"); v.preload = "metadata"; v.src = url;
     try { await new Promise<void>((res, rej) => { v.onloadedmetadata = () => res(); v.onerror = () => rej(); }); }
     catch { setError("Impossible de lire cette video."); URL.revokeObjectURL(url); return; }
-    setVideo({ name: file.name, size: file.size, type: file.type, duration: v.duration, width: v.videoWidth, height: v.videoHeight, url, file });
+    // Detect audio track
+    let hasAudio = false;
+    try {
+      const ac = new AudioContext();
+      const buf = await file.slice(0, Math.min(file.size, 512 * 1024)).arrayBuffer();
+      const decoded = await ac.decodeAudioData(buf).catch(() => null);
+      hasAudio = decoded !== null && decoded.numberOfChannels > 0;
+      ac.close();
+    } catch { /* no audio or decode error */ }
+    setVideo({ name: file.name, size: file.size, type: file.type, duration: v.duration, width: v.videoWidth, height: v.videoHeight, url, file, hasAudio });
   }, []);
 
   /* ─── Pipeline ops ─── */
@@ -350,7 +360,7 @@ export default function EditeurVideo() {
   /* ─── Handlers ─── */
   const handleExport = () => {
     if (!video || !pipeline.length) return;
-    const args = buildArgs(pipeline, exportFmt, exportQ, video.duration);
+    const args = buildArgs(pipeline, exportFmt, exportQ, video.duration, video.hasAudio);
     execFFmpeg(args, `output.${exportFmt}`, exportFmt === "mp4" ? "video/mp4" : "video/webm", exportFmt);
   };
   const handleGif = () => { if (!video) return; execFFmpeg(["-ss", gifStart.toFixed(2), "-t", gifDur.toFixed(2), "-vf", `fps=${gifFps},scale=480:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse`, "-loop", "0"], "output.gif", "image/gif", "gif"); };
