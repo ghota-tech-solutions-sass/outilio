@@ -1,6 +1,6 @@
 # Outilis.fr
 
-> **77 outils en ligne gratuits** pour simplifier votre quotidien. 100% client-side, sans inscription, respectueux de la vie privee.
+> **78 outils en ligne gratuits** pour simplifier votre quotidien. 100% client-side, sans inscription, respectueux de la vie privee.
 
 [![Deploy](https://github.com/ghota-tech-solutions-sass/outilio/actions/workflows/deploy.yml/badge.svg)](https://github.com/ghota-tech-solutions-sass/outilio/actions/workflows/deploy.yml)
 
@@ -18,7 +18,7 @@
 | Hosting | GitHub Pages |
 | CI/CD | GitHub Actions |
 
-## Outils (77)
+## Outils (78)
 
 ### Finance (9)
 
@@ -167,6 +167,13 @@
 | [Fusionneur PDF](https://outilis.fr/outils/fusionneur-pdf) | Fusionnez plusieurs fichiers PDF en un seul document. Glissez-deposez, reordonnez par drag & drop. |
 | [PDF vers Texte](https://outilis.fr/outils/pdf-vers-texte) | Analysez vos PDF : metadonnees, pages, dimensions. Extrayez et telechargez des pages individuelles. |
 
+### Video (2)
+
+| Outil | Description |
+|---|---|
+| [Compresseur Video](https://outilis.fr/outils/compresseur-video) | Compressez vos videos dans le navigateur. 3 niveaux de qualite, barre de progression, telechargement. |
+| [Editeur Video](https://outilis.fr/outils/editeur-video) | Couper, convertir, redimensionner, GIF, capturer image, vitesse, rotation. 8 operations, 100% navigateur. |
+
 ### Audio (2)
 
 | Outil | Description |
@@ -215,12 +222,6 @@
 | Outil | Description |
 |---|---|
 | [Calculateur pourboire](https://outilis.fr/outils/calculateur-pourboire) | Pourboire ideal, partage de l'addition. Comparaison des taux et arrondi. |
-
-### Video (1)
-
-| Outil | Description |
-|---|---|
-| [Compresseur Video](https://outilis.fr/outils/compresseur-video) | Compressez vos videos dans le navigateur. 3 niveaux de qualite, barre de progression, telechargement. |
 
 ## Developpement
 

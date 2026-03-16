@@ -689,4 +689,13 @@ export const tools: Tool[] = [
     badge: "Nouveau",
     category: "Outils",
   },
+  {
+    title: "Editeur Video",
+    description:
+      "Couper, convertir, redimensionner, GIF, capturer image, vitesse, rotation. 8 operations, 100% navigateur.",
+    href: "/outils/editeur-video",
+    icon: "\u{1F3AC}",
+    badge: "Nouveau",
+    category: "Video",
+  },
 ];
