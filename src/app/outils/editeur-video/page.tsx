@@ -304,320 +304,279 @@ export default function EditeurVideo() {
 
   /* ═══════════════════════════ RENDER ═══════════════════════════ */
 
+  /* ── Shared dark panel colors ── */
+  const dk = { bg: "#141416", bg2: "#1c1c1f", bg3: "#232327", border: "#2a2a2f", text: "#a0a0a8", textBright: "#e4e4e7", accent: "#4ade80" };
+
+  /* ── Effect config renderer ── */
+  const renderConfig = () => {
+    if (selEffect?.type === "trim") { const c = selEffect.config as TrimCfg; return (
+      <div className="space-y-4">
+        <div className="grid grid-cols-2 gap-4">
+          <div><label className="text-[10px] uppercase tracking-wider" style={{ color: dk.text }}>Debut</label><input type="range" min={0} max={video!.duration} step={0.1} value={c.start} onChange={(e) => { const v = Math.min(+e.target.value, c.end - 0.5); updateCfg(selEffect.id, { ...c, start: v }); if (videoRef.current) videoRef.current.currentTime = v; }} className="mt-2 w-full accent-[#4ade80]" /><p className="mt-1 text-center font-mono text-xs" style={{ color: dk.accent }}>{fmtTimeFine(c.start)}</p></div>
+          <div><label className="text-[10px] uppercase tracking-wider" style={{ color: dk.text }}>Fin</label><input type="range" min={0} max={video!.duration} step={0.1} value={c.end} onChange={(e) => { const v = Math.max(+e.target.value, c.start + 0.5); updateCfg(selEffect.id, { ...c, end: v }); if (videoRef.current) videoRef.current.currentTime = v; }} className="mt-2 w-full accent-[#4ade80]" /><p className="mt-1 text-center font-mono text-xs" style={{ color: dk.accent }}>{fmtTimeFine(c.end)}</p></div>
+        </div>
+        <div className="rounded-lg px-3 py-2 text-center text-xs font-semibold" style={{ background: "rgba(74,222,128,0.08)", color: dk.accent }}>Duree : {fmtTime(c.end - c.start)}</div>
+      </div>
+    ); }
+    if (selEffect?.type === "resize") { const c = selEffect.config as ResizeCfg; return (
+      <div className="space-y-3">
+        <div className="grid grid-cols-4 gap-1.5">{RESIZE_P.map((p) => (<button key={p.label} onClick={() => updateCfg(selEffect.id, p)} className="rounded-lg py-2.5 text-center text-[11px] font-bold transition-all" style={{ background: c.label === p.label ? EFX.resize.color : dk.bg3, color: c.label === p.label ? "#fff" : dk.text }}>{p.label}</button>))}</div>
+        <p className="text-xs" style={{ color: dk.text }}>{video!.width}x{video!.height} → <span style={{ color: dk.textBright }}>{c.w}x{c.h}</span></p>
+      </div>
+    ); }
+    if (selEffect?.type === "speed") { const c = selEffect.config as SpeedCfg; return (
+      <div className="space-y-3">
+        <div className="grid grid-cols-3 gap-1.5">{SPEED_P.map((p) => (<button key={p.label} onClick={() => updateCfg(selEffect.id, p)} className="rounded-lg py-2.5 text-center text-[11px] font-bold transition-all" style={{ background: c.label === p.label ? EFX.speed.color : dk.bg3, color: c.label === p.label ? "#fff" : dk.text }}>{p.label}</button>))}</div>
+        <p className="text-xs" style={{ color: dk.text }}>Duree : <span style={{ color: dk.textBright }}>{fmtTime(estDuration)}</span></p>
+      </div>
+    ); }
+    if (selEffect?.type === "rotate") { const c = selEffect.config as RotateCfg; return (
+      <div className="grid grid-cols-5 gap-1.5">{ROTATE_P.map((p) => (<button key={p.label} onClick={() => updateCfg(selEffect.id, p)} className="rounded-lg py-2.5 text-center text-[10px] font-bold transition-all" style={{ background: c.label === p.label ? EFX.rotate.color : dk.bg3, color: c.label === p.label ? "#fff" : dk.text }}>{p.label}</button>))}</div>
+    ); }
+    if (selEffect?.type === "mute") return <p className="text-xs" style={{ color: dk.text }}>La piste audio sera supprimee. Pas de re-encodage.</p>;
+    if (quickAction === "gif") return (
+      <div className="space-y-3">
+        <div className="grid grid-cols-2 gap-3">
+          <div><label className="text-[10px] uppercase" style={{ color: dk.text }}>Debut</label><input type="range" min={0} max={video!.duration} step={0.1} value={gifStart} onChange={(e) => { setGifStart(+e.target.value); if (videoRef.current) videoRef.current.currentTime = +e.target.value; }} className="mt-1 w-full accent-[#e8963e]" /><p className="text-center font-mono text-[11px]" style={{ color: "#e8963e" }}>{fmtTime(gifStart)}</p></div>
+          <div><label className="text-[10px] uppercase" style={{ color: dk.text }}>Duree</label><input type="range" min={1} max={Math.min(10, video!.duration - gifStart)} step={0.5} value={gifDur} onChange={(e) => setGifDur(+e.target.value)} className="mt-1 w-full accent-[#e8963e]" /><p className="text-center font-mono text-[11px]" style={{ color: "#e8963e" }}>{gifDur}s</p></div>
+        </div>
+        <div className="flex gap-1.5">{[10, 15, 20].map((f) => (<button key={f} onClick={() => setGifFps(f)} className="flex-1 rounded-lg py-2 text-[11px] font-bold transition-all" style={{ background: gifFps === f ? "#e8963e" : dk.bg3, color: gifFps === f ? "#fff" : dk.text }}>{f} fps</button>))}</div>
+        <button onClick={handleGif} className="w-full rounded-lg py-2.5 text-xs font-bold text-white" style={{ background: "#e8963e" }}>Extraire le GIF</button>
+      </div>
+    );
+    if (quickAction === "capture") return (
+      <div className="space-y-3">
+        <input type="range" min={0} max={video!.duration} step={0.1} value={capTime} onChange={(e) => { setCapTime(+e.target.value); if (videoRef.current) videoRef.current.currentTime = +e.target.value; }} className="w-full accent-[#4ade80]" />
+        <p className="text-center font-mono text-lg font-bold" style={{ color: dk.accent }}>{fmtTimeFine(capTime)}</p>
+        <button onClick={handleCapture} className="w-full rounded-lg py-2.5 text-xs font-bold text-black" style={{ background: dk.accent }}>Capturer l&apos;image</button>
+      </div>
+    );
+    return null;
+  };
+
+  const configTitle = selEffect ? `${EFX[selEffect.type].icon} ${EFX[selEffect.type].label}` : quickAction === "gif" ? "🎞️ GIF" : quickAction === "capture" ? "📸 Capture" : null;
+
   return (
     <>
-      {/* Header - compact */}
-      <section className="py-8" style={{ borderBottom: "1px solid var(--border)" }}>
-        <div className="mx-auto max-w-7xl px-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
-                Editeur <span style={{ color: "var(--primary)" }}>Video</span>
-              </h1>
-              <p className="mt-1 text-xs" style={{ color: "var(--muted)" }}>Combinez plusieurs effets, previsualiser sur la timeline, exportez en un clic.</p>
+      {/* ─── Drop zone (light, before video loaded) ─── */}
+      {!video && (
+        <div className="py-20">
+          <div className="mx-auto max-w-6xl px-5">
+            <div className="text-center">
+              <p className="text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: "var(--accent)" }}>Video</p>
+              <h1 className="mt-2 text-4xl tracking-tight md:text-5xl" style={{ fontFamily: "var(--font-display)" }}>Editeur <span style={{ color: "var(--primary)" }}>Video</span></h1>
+              <p className="mx-auto mt-3 max-w-md text-sm" style={{ color: "var(--muted)" }}>Combinez coupe, vitesse, rotation et plus. Exportez en un clic. 100% dans votre navigateur.</p>
             </div>
-            {video && (
-              <div className="flex items-center gap-2">
-                <span className="hidden text-xs sm:block" style={{ color: "var(--muted)" }}>{video.name} &middot; {video.width}x{video.height} &middot; {fmtTime(video.duration)}</span>
-                <button onClick={resetAll} className="rounded-lg border px-3 py-1.5 text-xs font-semibold transition-all hover:bg-red-50" style={{ borderColor: "var(--border)", color: "#dc2626" }}>Nouveau</button>
+            <div
+              onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+              onDragLeave={() => setDragOver(false)}
+              onDrop={(e) => { e.preventDefault(); setDragOver(false); e.dataTransfer.files[0] && loadVideo(e.dataTransfer.files[0]); }}
+              onClick={() => inputRef.current?.click()}
+              className="mx-auto mt-10 max-w-lg cursor-pointer rounded-2xl border-2 border-dashed p-12 text-center transition-all hover:shadow-xl hover:scale-[1.01]"
+              style={{ borderColor: dragOver ? "var(--primary)" : "var(--border)", background: dragOver ? "rgba(13,79,60,0.04)" : "var(--surface)" }}
+            >
+              <input ref={inputRef} type="file" accept="video/*,.mp4,.webm,.mov,.avi,.mkv" className="hidden" onChange={(e) => e.target.files?.[0] && loadVideo(e.target.files[0])} />
+              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl" style={{ background: "rgba(13,79,60,0.08)" }}>
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" style={{ color: "var(--primary)" }}><polygon points="23 7 16 12 23 17 23 7" /><rect x="1" y="5" width="15" height="14" rx="2" /></svg>
               </div>
-            )}
+              <p className="mt-4 text-lg tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Deposez votre video ici</p>
+              <p className="mt-1 text-xs" style={{ color: "var(--muted)" }}>MP4, WebM, MOV, AVI — max 500 Mo</p>
+            </div>
           </div>
         </div>
-      </section>
+      )}
 
-      <div className="mx-auto max-w-7xl px-4 py-6">
-        {/* ─── DROP ZONE ─── */}
-        {!video && (
-          <div
-            onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
-            onDragLeave={() => setDragOver(false)}
-            onDrop={(e) => { e.preventDefault(); setDragOver(false); e.dataTransfer.files[0] && loadVideo(e.dataTransfer.files[0]); }}
-            onClick={() => inputRef.current?.click()}
-            className="mx-auto max-w-xl cursor-pointer rounded-2xl border-2 border-dashed p-14 text-center transition-all hover:shadow-lg"
-            style={{ borderColor: dragOver ? "var(--primary)" : "var(--border)", background: dragOver ? "rgba(13,79,60,0.04)" : "var(--surface)" }}
-          >
-            <input ref={inputRef} type="file" accept="video/*,.mp4,.webm,.mov,.avi,.mkv" className="hidden" onChange={(e) => e.target.files?.[0] && loadVideo(e.target.files[0])} />
-            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl" style={{ background: "rgba(13,79,60,0.08)" }}>
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" style={{ color: "var(--primary)" }}><polygon points="23 7 16 12 23 17 23 7" /><rect x="1" y="5" width="15" height="14" rx="2" /></svg>
+      {error && <div className="mx-auto max-w-xl px-5 py-3"><div className="rounded-xl border p-3 text-sm" style={{ background: "rgba(220,38,38,0.06)", borderColor: "rgba(220,38,38,0.2)", color: "#dc2626" }}>{error}</div></div>}
+
+      {/* ═══════════ DARK WORKSPACE ═══════════ */}
+      {video && !processing && !result && (
+        <div style={{ background: dk.bg, minHeight: "calc(100vh - 64px)" }}>
+          {/* ── Top bar ── */}
+          <div className="flex items-center gap-4 border-b px-4 py-2" style={{ borderColor: dk.border }}>
+            <button onClick={togglePlay} className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md transition-all hover:scale-110" style={{ background: dk.accent }}>
+              {playing
+                ? <svg width="10" height="10" viewBox="0 0 24 24" fill="#000"><rect x="6" y="4" width="4" height="16" /><rect x="14" y="4" width="4" height="16" /></svg>
+                : <svg width="10" height="10" viewBox="0 0 24 24" fill="#000"><polygon points="5 3 19 12 5 21" /></svg>}
+            </button>
+            <span className="font-mono text-xs font-bold tabular-nums" style={{ color: dk.accent }}>{fmtTimeFine(playhead)}</span>
+            <span className="text-[10px]" style={{ color: dk.text }}>/ {fmtTime(video.duration)}</span>
+            <div className="mx-3 h-4 w-px" style={{ background: dk.border }} />
+            <span className="truncate text-[10px]" style={{ color: dk.text, maxWidth: 200 }}>{video.name}</span>
+            <span className="text-[10px]" style={{ color: dk.text }}>{video.width}x{video.height}</span>
+            <span className="text-[10px]" style={{ color: dk.text }}>{fmtSize(video.size)}</span>
+            <div className="ml-auto flex items-center gap-2">
+              {pipeline.length > 0 && <span className="text-[10px] font-semibold" style={{ color: dk.accent }}>{pipeline.length} effet{pipeline.length > 1 ? "s" : ""}</span>}
+              {pipeline.length > 0 && (
+                <button onClick={handleExport} className="rounded-md px-4 py-1.5 text-[11px] font-bold text-black transition-all hover:scale-105" style={{ background: dk.accent }}>
+                  Exporter
+                </button>
+              )}
+              <button onClick={resetAll} className="rounded-md px-3 py-1.5 text-[10px] font-semibold transition-all hover:bg-white/5" style={{ color: dk.text, border: `1px solid ${dk.border}` }}>Nouveau</button>
             </div>
-            <p className="mt-4 text-base tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Deposez votre video ici</p>
-            <p className="mt-1 text-xs" style={{ color: "var(--muted)" }}>MP4, WebM, MOV — max 500 Mo</p>
           </div>
-        )}
 
-        {error && <div className="mx-auto mt-4 max-w-xl rounded-xl border p-3 text-sm" style={{ background: "rgba(220,38,38,0.06)", borderColor: "rgba(220,38,38,0.2)", color: "#dc2626" }}>{error}</div>}
-
-        {/* ─── EDITOR ─── */}
-        {video && !processing && !result && (
-          <div className="space-y-4">
-            {/* ── Video Preview ── */}
-            <div className="overflow-hidden rounded-xl" style={{ background: "#0a0a0a" }}>
-              <video ref={videoRef} src={video.url} className="mx-auto block" style={{ maxHeight: "340px", width: "100%" }} crossOrigin="anonymous" onClick={togglePlay} />
+          {/* ── Main area: Preview + Sidebar ── */}
+          <div className="flex" style={{ height: "calc(100vh - 64px - 40px - 220px)" }}>
+            {/* Preview */}
+            <div className="relative flex flex-1 items-center justify-center overflow-hidden" style={{ background: "#000" }}>
+              <video ref={videoRef} src={video.url} className="max-h-full max-w-full" crossOrigin="anonymous" onClick={togglePlay} style={{ cursor: "pointer" }} />
+              {/* Play overlay */}
+              {!playing && <div className="pointer-events-none absolute inset-0 flex items-center justify-center"><div className="flex h-14 w-14 items-center justify-center rounded-full bg-black/40 backdrop-blur-sm"><svg width="20" height="20" viewBox="0 0 24 24" fill="white"><polygon points="5 3 19 12 5 21" /></svg></div></div>}
             </div>
 
-            {/* ── Transport bar ── */}
-            <div className="flex items-center gap-3 rounded-xl border px-4 py-2" style={{ borderColor: "var(--border)", background: "var(--surface)" }}>
-              <button onClick={togglePlay} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full transition-all hover:scale-110" style={{ background: "var(--primary)" }}>
-                {playing ? (
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="white"><rect x="6" y="4" width="4" height="16" /><rect x="14" y="4" width="4" height="16" /></svg>
-                ) : (
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="white"><polygon points="5 3 19 12 5 21 5 3" /></svg>
-                )}
-              </button>
-              <span className="w-24 text-center font-mono text-xs font-bold" style={{ color: "var(--primary)" }}>{fmtTimeFine(playhead)}</span>
-              <span className="text-xs" style={{ color: "var(--muted)" }}>/ {fmtTime(video.duration)}</span>
-              <div className="ml-auto flex gap-1.5">
-                {pipeline.map((e) => (
-                  <span key={e.id} className="rounded-full px-2 py-0.5 text-[9px] font-bold text-white" style={{ background: EFX[e.type].color }}>{EFX[e.type].icon}</span>
-                ))}
-              </div>
-            </div>
-
-            {/* ══════════ TIMELINE ══════════ */}
-            <div className="rounded-xl border overflow-hidden" style={{ borderColor: "var(--border)", background: "#1a1a1a" }}>
-
-              {/* Video track + playhead */}
-              <div ref={timelineRef} className="relative h-14 cursor-crosshair select-none" onClick={handleTimelineClick} style={{ background: "linear-gradient(90deg, #1e293b 0%, #0f172a 100%)" }}>
-                {/* Time markers */}
-                {video.duration > 0 && Array.from({ length: Math.min(Math.ceil(video.duration), 20) }, (_, i) => {
-                  const t = (i / Math.min(Math.ceil(video.duration), 20)) * video.duration;
-                  return <div key={i} className="absolute top-0 h-2 border-l" style={{ left: `${pctOf(t)}%`, borderColor: "rgba(255,255,255,0.1)" }} />;
-                })}
-
-                {/* Trim overlay */}
-                {trimCfg && (
-                  <>
-                    {/* Dimmed outside trim */}
-                    <div className="absolute inset-y-0 left-0" style={{ width: `${pctOf(trimCfg.start)}%`, background: "rgba(0,0,0,0.6)" }} />
-                    <div className="absolute inset-y-0 right-0" style={{ width: `${100 - pctOf(trimCfg.end)}%`, background: "rgba(0,0,0,0.6)" }} />
-                    {/* Trim range */}
-                    <div className="absolute inset-y-0" style={{ left: `${pctOf(trimCfg.start)}%`, width: `${pctOf(trimCfg.end) - pctOf(trimCfg.start)}%`, borderTop: "2px solid var(--primary)", borderBottom: "2px solid var(--primary)" }} />
-                    {/* Left handle */}
-                    <div className="absolute inset-y-0 z-10 w-3 cursor-col-resize" style={{ left: `calc(${pctOf(trimCfg.start)}% - 6px)` }} onMouseDown={(e) => handleTimelineMouseDown(e, "trimL")}>
-                      <div className="absolute inset-y-1 left-1 w-1.5 rounded-full" style={{ background: "var(--primary)" }} />
-                    </div>
-                    {/* Right handle */}
-                    <div className="absolute inset-y-0 z-10 w-3 cursor-col-resize" style={{ left: `calc(${pctOf(trimCfg.end)}% - 6px)` }} onMouseDown={(e) => handleTimelineMouseDown(e, "trimR")}>
-                      <div className="absolute inset-y-1 left-1 w-1.5 rounded-full" style={{ background: "var(--primary)" }} />
-                    </div>
-                  </>
-                )}
-
-                {/* Active region glow */}
-                <div className="absolute inset-y-0" style={{ left: `${pctOf(trimCfg?.start ?? 0)}%`, width: `${pctOf((trimCfg?.end ?? video.duration) - (trimCfg?.start ?? 0))}%`, background: "linear-gradient(90deg, rgba(13,79,60,0.08), rgba(13,79,60,0.15), rgba(13,79,60,0.08))" }} />
-
-                {/* Playhead */}
-                <div className="absolute top-0 bottom-0 z-20 w-0.5 -translate-x-1/2" style={{ left: `${pctOf(playhead)}%`, background: "#fff", boxShadow: "0 0 6px rgba(255,255,255,0.5)" }} onMouseDown={(e) => handleTimelineMouseDown(e, "playhead")}>
-                  <div className="absolute -top-0.5 left-1/2 h-2 w-2 -translate-x-1/2 rotate-45 rounded-sm bg-white" />
-                </div>
-              </div>
-
-              {/* Effect layers */}
-              <div className="space-y-px" style={{ background: "#111" }}>
-                {pipeline.map((e) => (
-                  <div
-                    key={e.id}
-                    onClick={() => { setSelectedId(e.id); setQuickAction(null); }}
-                    className="relative flex h-7 cursor-pointer items-center gap-2 px-3 transition-all"
-                    style={{ background: selectedId === e.id ? `${EFX[e.type].color}25` : "#1a1a1a" }}
-                  >
-                    <span className="w-16 shrink-0 text-[10px] font-bold" style={{ color: EFX[e.type].color }}>{EFX[e.type].icon} {EFX[e.type].label}</span>
-                    {/* Effect bar */}
-                    <div className="relative h-3 flex-1 overflow-hidden rounded-sm" style={{ background: "rgba(255,255,255,0.05)" }}>
-                      <div className="absolute inset-y-0 rounded-sm" style={{
-                        left: e.type === "trim" ? `${pctOf((e.config as TrimCfg).start)}%` : `${pctOf(trimCfg?.start ?? 0)}%`,
-                        width: e.type === "trim" ? `${pctOf((e.config as TrimCfg).end - (e.config as TrimCfg).start)}%` : `${pctOf((trimCfg?.end ?? video.duration) - (trimCfg?.start ?? 0))}%`,
-                        background: `${EFX[e.type].color}60`,
-                        borderLeft: `2px solid ${EFX[e.type].color}`,
-                        borderRight: `2px solid ${EFX[e.type].color}`,
-                      }} />
-                    </div>
-                    <button onClick={(ev) => { ev.stopPropagation(); removeEffect(e.id); }} className="shrink-0 text-xs opacity-40 hover:opacity-100" style={{ color: "#fff" }}>✕</button>
-                  </div>
-                ))}
-
-                {/* Add layer button */}
-                <div className="relative">
-                  <button onClick={() => setShowAddMenu(!showAddMenu)} className="flex h-7 w-full items-center justify-center gap-1.5 text-[10px] font-semibold transition-all hover:bg-white/5" style={{ color: "rgba(255,255,255,0.3)" }}>
-                    <span>+</span> Ajouter un calque
-                  </button>
-                  {showAddMenu && (
-                    <div className="absolute bottom-full left-0 right-0 z-30 overflow-hidden rounded-t-lg border shadow-xl" style={{ background: "#1e1e1e", borderColor: "#333" }}>
-                      {(["trim", "resize", "speed", "rotate", "mute"] as EffectType[]).map((type) => (
-                        <button key={type} disabled={hasType(type)} onClick={() => addEffect(type)}
-                          className="flex w-full items-center gap-3 px-4 py-2.5 text-left text-xs text-white transition-all hover:bg-white/10 disabled:opacity-20 disabled:cursor-not-allowed">
-                          <span>{EFX[type].icon}</span>
-                          <span className="font-semibold">{EFX[type].label}</span>
-                          {hasType(type) && <span className="ml-auto text-[9px] opacity-50">Ajoute</span>}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Time ruler */}
-              <div className="flex items-center justify-between px-3 py-1" style={{ background: "#111" }}>
-                <span className="text-[9px] font-mono" style={{ color: "rgba(255,255,255,0.3)" }}>0:00</span>
-                <div className="flex gap-3 text-[9px]" style={{ color: "rgba(255,255,255,0.3)" }}>
-                  {pipeline.length > 0 && <span>Duree: <strong style={{ color: "rgba(255,255,255,0.6)" }}>{fmtTime(estDuration)}</strong></span>}
-                  {needsEnc && <span style={{ color: "#e8963e" }}>Re-encodage</span>}
-                  {!needsEnc && pipeline.length > 0 && <span style={{ color: "#22c55e" }}>Copie directe</span>}
-                </div>
-                <span className="text-[9px] font-mono" style={{ color: "rgba(255,255,255,0.3)" }}>{fmtTime(video.duration)}</span>
-              </div>
-            </div>
-
-            {/* ── Properties panel + Quick actions ── */}
-            <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_280px]">
+            {/* Sidebar */}
+            <div className="flex w-72 shrink-0 flex-col border-l" style={{ borderColor: dk.border, background: dk.bg2 }}>
               {/* Properties */}
-              <div className="rounded-xl border p-5" style={{ borderColor: "var(--border)", background: "var(--surface)" }}>
-                {!selEffect && !quickAction && (
-                  <div className="py-8 text-center">
-                    <p className="text-2xl">🎬</p>
-                    <p className="mt-2 text-sm font-semibold" style={{ fontFamily: "var(--font-display)" }}>{pipeline.length === 0 ? "Ajoutez un calque sur la timeline" : "Selectionnez un calque"}</p>
-                    <p className="mt-1 text-xs" style={{ color: "var(--muted)" }}>Cliquez sur un calque pour le configurer, ou ajoutez-en un nouveau.</p>
-                  </div>
-                )}
-
-                {/* TRIM */}
-                {selEffect?.type === "trim" && (() => { const c = selEffect.config as TrimCfg; return (
-                  <div className="space-y-4">
-                    <h3 className="text-xs font-bold uppercase tracking-wider" style={{ color: EFX.trim.color }}>✂️ Coupe</h3>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div><label className="text-[10px] uppercase" style={{ color: "var(--muted)" }}>Debut</label><input type="range" min={0} max={video.duration} step={0.1} value={c.start} onChange={(e) => { const v = Math.min(+e.target.value, c.end - 0.5); updateCfg(selEffect.id, { ...c, start: v }); if (videoRef.current) videoRef.current.currentTime = v; }} className="mt-1 w-full accent-[#0d4f3c]" /><p className="text-center text-xs font-bold">{fmtTimeFine(c.start)}</p></div>
-                      <div><label className="text-[10px] uppercase" style={{ color: "var(--muted)" }}>Fin</label><input type="range" min={0} max={video.duration} step={0.1} value={c.end} onChange={(e) => { const v = Math.max(+e.target.value, c.start + 0.5); updateCfg(selEffect.id, { ...c, end: v }); if (videoRef.current) videoRef.current.currentTime = v; }} className="mt-1 w-full accent-[#0d4f3c]" /><p className="text-center text-xs font-bold">{fmtTimeFine(c.end)}</p></div>
+              <div className="flex-1 overflow-y-auto p-4">
+                {configTitle ? (
+                  <div>
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-[11px] font-bold uppercase tracking-wider" style={{ color: dk.textBright }}>{configTitle}</h3>
+                      {selEffect && <button onClick={() => removeEffect(selEffect.id)} className="text-[10px] transition-all hover:opacity-100" style={{ color: "#ef4444", opacity: 0.6 }}>Supprimer</button>}
                     </div>
-                    <p className="text-center text-xs" style={{ color: "var(--primary)" }}>Duree : {fmtTime(c.end - c.start)} — Glissez les poignees sur la timeline</p>
+                    <div className="mt-4">{renderConfig()}</div>
                   </div>
-                ); })()}
-
-                {/* RESIZE */}
-                {selEffect?.type === "resize" && (() => { const c = selEffect.config as ResizeCfg; return (
-                  <div className="space-y-4">
-                    <h3 className="text-xs font-bold uppercase tracking-wider" style={{ color: EFX.resize.color }}>📐 Taille</h3>
-                    <div className="grid grid-cols-4 gap-2">{RESIZE_P.map((p) => (<button key={p.label} onClick={() => updateCfg(selEffect.id, p)} className="rounded-lg border p-2 text-center text-xs font-bold transition-all" style={{ borderColor: c.label === p.label ? EFX.resize.color : "var(--border)", background: c.label === p.label ? `${EFX.resize.color}10` : "transparent" }}>{p.label}</button>))}</div>
-                    <p className="text-xs" style={{ color: "var(--muted)" }}>{video.width}x{video.height} → <strong>{c.w}x{c.h}</strong></p>
-                  </div>
-                ); })()}
-
-                {/* SPEED */}
-                {selEffect?.type === "speed" && (() => { const c = selEffect.config as SpeedCfg; return (
-                  <div className="space-y-4">
-                    <h3 className="text-xs font-bold uppercase tracking-wider" style={{ color: EFX.speed.color }}>⚡ Vitesse</h3>
-                    <div className="grid grid-cols-6 gap-2">{SPEED_P.map((p) => (<button key={p.label} onClick={() => updateCfg(selEffect.id, p)} className="rounded-lg border p-2 text-center text-xs font-bold transition-all" style={{ borderColor: c.label === p.label ? EFX.speed.color : "var(--border)", background: c.label === p.label ? `${EFX.speed.color}10` : "transparent" }}>{p.label}</button>))}</div>
-                    <p className="text-xs" style={{ color: "var(--muted)" }}>Duree estimee : <strong>{fmtTime(estDuration)}</strong></p>
-                  </div>
-                ); })()}
-
-                {/* ROTATE */}
-                {selEffect?.type === "rotate" && (() => { const c = selEffect.config as RotateCfg; return (
-                  <div className="space-y-4">
-                    <h3 className="text-xs font-bold uppercase tracking-wider" style={{ color: EFX.rotate.color }}>🔄 Rotation</h3>
-                    <div className="grid grid-cols-5 gap-2">{ROTATE_P.map((p) => (<button key={p.label} onClick={() => updateCfg(selEffect.id, p)} className="rounded-lg border p-2 text-center text-[10px] font-bold transition-all" style={{ borderColor: c.label === p.label ? EFX.rotate.color : "var(--border)", background: c.label === p.label ? `${EFX.rotate.color}10` : "transparent" }}>{p.label}</button>))}</div>
-                  </div>
-                ); })()}
-
-                {/* MUTE */}
-                {selEffect?.type === "mute" && (
-                  <div className="flex items-center gap-3 rounded-lg p-4" style={{ background: "var(--surface-alt)" }}>
-                    <span className="text-2xl">🔇</span>
-                    <div><p className="text-sm font-semibold">Audio supprime</p><p className="text-xs" style={{ color: "var(--muted)" }}>Pas de re-encodage, quasi instantane.</p></div>
-                  </div>
-                )}
-
-                {/* GIF */}
-                {quickAction === "gif" && (
-                  <div className="space-y-4">
-                    <h3 className="text-xs font-bold uppercase tracking-wider" style={{ color: "var(--accent)" }}>🎞️ Extraire GIF</h3>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div><label className="text-[10px] uppercase" style={{ color: "var(--muted)" }}>Debut</label><input type="range" min={0} max={video.duration} step={0.1} value={gifStart} onChange={(e) => { setGifStart(+e.target.value); if (videoRef.current) videoRef.current.currentTime = +e.target.value; }} className="mt-1 w-full accent-[#e8963e]" /><p className="text-center text-xs font-bold">{fmtTime(gifStart)}</p></div>
-                      <div><label className="text-[10px] uppercase" style={{ color: "var(--muted)" }}>Duree</label><input type="range" min={1} max={Math.min(10, video.duration - gifStart)} step={0.5} value={gifDur} onChange={(e) => setGifDur(+e.target.value)} className="mt-1 w-full accent-[#e8963e]" /><p className="text-center text-xs font-bold">{gifDur}s</p></div>
-                    </div>
-                    <div className="flex gap-2">{[10, 15, 20].map((f) => (<button key={f} onClick={() => setGifFps(f)} className="flex-1 rounded-lg border py-1.5 text-xs font-bold" style={{ borderColor: gifFps === f ? "var(--accent)" : "var(--border)", color: gifFps === f ? "var(--accent)" : "var(--muted)" }}>{f} fps</button>))}</div>
-                    <button onClick={handleGif} className="w-full rounded-lg py-3 text-sm font-semibold text-white" style={{ background: "var(--accent)" }}>Extraire</button>
-                  </div>
-                )}
-
-                {/* CAPTURE */}
-                {quickAction === "capture" && (
-                  <div className="space-y-4">
-                    <h3 className="text-xs font-bold uppercase tracking-wider" style={{ color: "var(--primary)" }}>📸 Capturer image</h3>
-                    <input type="range" min={0} max={video.duration} step={0.1} value={capTime} onChange={(e) => { setCapTime(+e.target.value); if (videoRef.current) videoRef.current.currentTime = +e.target.value; }} className="w-full accent-[#0d4f3c]" />
-                    <p className="text-center text-lg font-bold" style={{ fontFamily: "var(--font-display)", color: "var(--primary)" }}>{fmtTimeFine(capTime)}</p>
-                    <button onClick={handleCapture} className="w-full rounded-lg py-3 text-sm font-semibold text-white" style={{ background: "var(--primary)" }}>Capturer</button>
+                ) : (
+                  <div className="flex h-full flex-col items-center justify-center text-center">
+                    <p className="text-[11px]" style={{ color: dk.text }}>Selectionnez un calque ou ajoutez-en un</p>
                   </div>
                 )}
               </div>
 
-              {/* Quick actions sidebar */}
-              <div className="space-y-3">
-                <p className="text-[10px] font-bold uppercase tracking-wider" style={{ color: "var(--muted)" }}>Actions rapides</p>
-                <button onClick={() => { setQuickAction("gif"); setSelectedId(null); }} className="flex w-full items-center gap-2 rounded-lg border p-3 text-xs font-semibold transition-all hover:bg-[var(--surface-alt)]" style={{ borderColor: quickAction === "gif" ? "var(--accent)" : "var(--border)", background: quickAction === "gif" ? "rgba(232,150,62,0.04)" : "var(--surface)" }}>🎞️ Extraire GIF</button>
-                <button onClick={() => { setQuickAction("capture"); setSelectedId(null); }} className="flex w-full items-center gap-2 rounded-lg border p-3 text-xs font-semibold transition-all hover:bg-[var(--surface-alt)]" style={{ borderColor: quickAction === "capture" ? "var(--primary)" : "var(--border)", background: quickAction === "capture" ? "rgba(13,79,60,0.04)" : "var(--surface)" }}>📸 Capturer image</button>
-
+              {/* Quick actions */}
+              <div className="border-t p-3 space-y-1.5" style={{ borderColor: dk.border }}>
+                <div className="flex gap-1.5">
+                  <button onClick={() => { setQuickAction("gif"); setSelectedId(null); }} className="flex-1 rounded-md py-2 text-[10px] font-semibold transition-all" style={{ background: quickAction === "gif" ? "#e8963e" : dk.bg3, color: quickAction === "gif" ? "#fff" : dk.text }}>🎞️ GIF</button>
+                  <button onClick={() => { setQuickAction("capture"); setSelectedId(null); }} className="flex-1 rounded-md py-2 text-[10px] font-semibold transition-all" style={{ background: quickAction === "capture" ? dk.accent : dk.bg3, color: quickAction === "capture" ? "#000" : dk.text }}>📸 Capture</button>
+                </div>
                 {/* Export settings */}
                 {pipeline.length > 0 && (
-                  <div className="space-y-3 rounded-lg border p-4" style={{ borderColor: "var(--primary)", background: "rgba(13,79,60,0.02)" }}>
-                    <p className="text-[10px] font-bold uppercase tracking-wider" style={{ color: "var(--primary)" }}>Export</p>
-                    <div className="flex gap-2">
-                      {(["mp4", "webm"] as const).map((f) => (
-                        <button key={f} onClick={() => setExportFmt(f)} className="flex-1 rounded-lg border py-1.5 text-xs font-bold transition-all" style={{ borderColor: exportFmt === f ? "var(--primary)" : "var(--border)", color: exportFmt === f ? "var(--primary)" : "var(--muted)" }}>{f.toUpperCase()}</button>
-                      ))}
+                  <div className="space-y-2 rounded-md p-2.5" style={{ background: dk.bg3 }}>
+                    <div className="flex gap-1">{(["mp4", "webm"] as const).map((f) => (<button key={f} onClick={() => setExportFmt(f)} className="flex-1 rounded py-1 text-[10px] font-bold transition-all" style={{ background: exportFmt === f ? dk.accent : "transparent", color: exportFmt === f ? "#000" : dk.text }}>{f.toUpperCase()}</button>))}</div>
+                    {needsEnc && <div className="flex items-center gap-2"><span className="text-[9px]" style={{ color: dk.text }}>Qualite</span><input type="range" min={18} max={35} value={exportQ} onChange={(e) => setExportQ(+e.target.value)} className="flex-1 accent-[#4ade80]" /><span className="font-mono text-[10px] font-bold" style={{ color: dk.accent }}>{exportQ}</span></div>}
+                    <div className="flex items-center gap-2 text-[9px]" style={{ color: dk.text }}>
+                      <span>{fmtTime(estDuration)}</span>
+                      <span style={{ color: needsEnc ? "#e8963e" : dk.accent }}>{needsEnc ? "Re-encodage" : "Copie directe"}</span>
                     </div>
-                    {needsEnc && (
-                      <div className="flex items-center gap-2">
-                        <span className="text-[10px]" style={{ color: "var(--muted)" }}>CRF</span>
-                        <input type="range" min={18} max={35} value={exportQ} onChange={(e) => setExportQ(+e.target.value)} className="flex-1 accent-[#0d4f3c]" />
-                        <span className="w-5 text-xs font-bold" style={{ color: "var(--primary)" }}>{exportQ}</span>
-                      </div>
-                    )}
-                    <button onClick={handleExport} className="w-full rounded-lg py-3 text-sm font-semibold text-white transition-all hover:scale-[1.01]" style={{ background: "linear-gradient(135deg, var(--primary) 0%, #1a6b4f 100%)" }}>
-                      Exporter ({fmtTime(estDuration)})
-                    </button>
                   </div>
                 )}
               </div>
             </div>
           </div>
-        )}
 
-        {/* ─── PROCESSING ─── */}
-        {processing && (
-          <div className="mx-auto max-w-md rounded-xl border p-8 text-center" style={{ borderColor: "var(--border)", background: "var(--surface)" }}>
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl" style={{ background: "rgba(13,79,60,0.08)" }}>
-              <svg className="animate-spin" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ color: "var(--primary)" }}><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" /></svg>
-            </div>
-            <p className="mt-3 text-sm font-semibold">{progressMsg || "Traitement..."}</p>
-            <div className="mt-3 h-2 w-full overflow-hidden rounded-full" style={{ background: "var(--surface-alt)" }}>
-              <div className="h-full rounded-full transition-all duration-300" style={{ width: `${progress}%`, background: "linear-gradient(90deg, var(--primary), var(--accent))" }} />
-            </div>
-            <p className="mt-2 text-xs" style={{ color: "var(--muted)" }}>{progress}%</p>
-          </div>
-        )}
-
-        {/* ─── RESULT ─── */}
-        {result && video && (
-          <div className="mx-auto max-w-md space-y-4">
-            <div className="rounded-xl border p-5" style={{ borderColor: "var(--border)", background: "var(--surface)" }}>
-              <div className="flex items-center gap-3"><div className="flex h-9 w-9 items-center justify-center rounded-full" style={{ background: "rgba(22,163,74,0.1)" }}><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="2.5"><path d="M22 11.08V12a10 10 0 11-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" /></svg></div><div><p className="text-sm font-semibold">Export termine</p><p className="text-xs" style={{ color: "var(--muted)" }}>{result.name}</p></div></div>
-              <div className="mt-3 grid grid-cols-3 gap-2">
-                <div className="rounded-lg border p-2 text-center" style={{ borderColor: "var(--border)" }}><p className="text-[9px] uppercase" style={{ color: "var(--muted)" }}>Original</p><p className="text-xs font-bold">{fmtSize(video.size)}</p></div>
-                <div className="rounded-lg border p-2 text-center" style={{ borderColor: "rgba(22,163,74,0.3)", background: "rgba(22,163,74,0.04)" }}><p className="text-[9px] uppercase" style={{ color: "#16a34a" }}>Resultat</p><p className="text-xs font-bold" style={{ color: "#16a34a" }}>{fmtSize(result.size)}</p></div>
-                <div className="rounded-lg border p-2 text-center" style={{ borderColor: "var(--border)" }}><p className="text-[9px] uppercase" style={{ color: "var(--muted)" }}>Diff</p><p className="text-xs font-bold" style={{ color: "var(--primary)" }}>{result.size < video.size ? `-${Math.round((1 - result.size / video.size) * 100)}%` : result.size > video.size ? `+${Math.round((result.size / video.size - 1) * 100)}%` : "="}</p></div>
+          {/* ══════════ TIMELINE ══════════ */}
+          <div style={{ background: dk.bg2, borderTop: `1px solid ${dk.border}` }}>
+            {/* Scrubber / Video track */}
+            <div ref={timelineRef} className="relative mx-3 mt-2 h-16 cursor-crosshair select-none overflow-hidden rounded-lg" onClick={handleTimelineClick} style={{ background: dk.bg3 }}>
+              {/* Tick marks */}
+              {video.duration > 0 && Array.from({ length: Math.min(Math.ceil(video.duration * 2), 40) }, (_, i) => {
+                const t = (i / Math.min(Math.ceil(video.duration * 2), 40)) * video.duration;
+                const isMajor = i % 4 === 0;
+                return (
+                  <div key={i} className="absolute top-0" style={{ left: `${pctOf(t)}%` }}>
+                    <div style={{ width: 1, height: isMajor ? 10 : 5, background: isMajor ? "rgba(255,255,255,0.15)" : "rgba(255,255,255,0.06)" }} />
+                    {isMajor && <span className="absolute top-2.5 -translate-x-1/2 text-[8px] font-mono" style={{ color: "rgba(255,255,255,0.2)" }}>{fmtTime(t)}</span>}
+                  </div>
+                );
+              })}
+              {/* Trim regions */}
+              {trimCfg && <>
+                <div className="absolute inset-y-0 left-0" style={{ width: `${pctOf(trimCfg.start)}%`, background: "rgba(0,0,0,0.55)", borderRight: `2px solid ${dk.accent}` }} />
+                <div className="absolute inset-y-0 right-0" style={{ width: `${100 - pctOf(trimCfg.end)}%`, background: "rgba(0,0,0,0.55)", borderLeft: `2px solid ${dk.accent}` }} />
+                <div className="absolute inset-y-0 z-10 w-4 cursor-col-resize" style={{ left: `calc(${pctOf(trimCfg.start)}% - 8px)` }} onMouseDown={(e) => handleTimelineMouseDown(e, "trimL")}><div className="mx-auto mt-1 h-4 w-1 rounded-full" style={{ background: dk.accent }} /></div>
+                <div className="absolute inset-y-0 z-10 w-4 cursor-col-resize" style={{ left: `calc(${pctOf(trimCfg.end)}% - 8px)` }} onMouseDown={(e) => handleTimelineMouseDown(e, "trimR")}><div className="mx-auto mt-1 h-4 w-1 rounded-full" style={{ background: dk.accent }} /></div>
+              </>}
+              {/* Video track bar */}
+              <div className="absolute bottom-0 left-0 right-0 h-7 rounded-b-lg" style={{ background: "linear-gradient(90deg, rgba(74,222,128,0.1), rgba(74,222,128,0.05))" }}>
+                <div className="flex h-full items-center px-3"><span className="text-[9px] font-bold" style={{ color: "rgba(74,222,128,0.5)" }}>VIDEO</span></div>
               </div>
-              {result.type.startsWith("image/") && (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={result.url} alt="Capture" className="mt-3 w-full rounded-lg" />
+              {/* Playhead */}
+              <div className="absolute top-0 bottom-0 z-20" style={{ left: `${pctOf(playhead)}%`, transform: "translateX(-50%)" }} onMouseDown={(e) => handleTimelineMouseDown(e, "playhead")}>
+                <div style={{ width: 2, height: "100%", background: "#fff", boxShadow: "0 0 8px rgba(255,255,255,0.4)" }} />
+                <div className="absolute -top-1 left-1/2 -translate-x-1/2"><div className="h-0 w-0" style={{ borderLeft: "5px solid transparent", borderRight: "5px solid transparent", borderTop: "6px solid #fff" }} /></div>
+              </div>
+            </div>
+
+            {/* Effect layers */}
+            <div className="mx-3 mt-1 space-y-0.5">
+              {pipeline.map((e) => (
+                <div key={e.id} onClick={() => { setSelectedId(e.id); setQuickAction(null); }} className="relative flex h-8 cursor-pointer items-center rounded-md px-2 transition-all" style={{ background: selectedId === e.id ? `${EFX[e.type].color}20` : dk.bg3, outline: selectedId === e.id ? `1px solid ${EFX[e.type].color}50` : "none" }}>
+                  <span className="w-20 shrink-0 text-[10px] font-bold" style={{ color: EFX[e.type].color }}>{EFX[e.type].icon} {EFX[e.type].label}</span>
+                  <div className="relative h-4 flex-1 overflow-hidden rounded-sm" style={{ background: "rgba(255,255,255,0.03)" }}>
+                    <div className="absolute inset-y-0 rounded-sm transition-all" style={{
+                      left: e.type === "trim" ? `${pctOf((e.config as TrimCfg).start)}%` : `${pctOf(trimCfg?.start ?? 0)}%`,
+                      width: e.type === "trim" ? `${pctOf((e.config as TrimCfg).end - (e.config as TrimCfg).start)}%` : `${pctOf((trimCfg?.end ?? video.duration) - (trimCfg?.start ?? 0))}%`,
+                      background: `${EFX[e.type].color}40`,
+                      borderLeft: `2px solid ${EFX[e.type].color}`,
+                      borderRight: `2px solid ${EFX[e.type].color}`,
+                    }} />
+                  </div>
+                  <button onClick={(ev) => { ev.stopPropagation(); removeEffect(e.id); }} className="ml-2 shrink-0 rounded px-1 text-[10px] opacity-30 transition-all hover:opacity-100" style={{ color: "#fff" }}>✕</button>
+                </div>
+              ))}
+            </div>
+
+            {/* Add layer + info */}
+            <div className="relative mx-3 mt-1 mb-2 flex items-center">
+              <button onClick={() => setShowAddMenu(!showAddMenu)} className="flex items-center gap-1.5 rounded-md px-3 py-1.5 text-[10px] font-semibold transition-all hover:bg-white/5" style={{ color: dk.text, border: `1px dashed ${dk.border}` }}>
+                + Calque
+              </button>
+              {showAddMenu && (
+                <div className="absolute bottom-full left-0 z-30 mb-1 overflow-hidden rounded-lg shadow-2xl" style={{ background: dk.bg3, border: `1px solid ${dk.border}`, minWidth: 160 }}>
+                  {(["trim", "resize", "speed", "rotate", "mute"] as EffectType[]).map((type) => (
+                    <button key={type} disabled={hasType(type)} onClick={() => addEffect(type)}
+                      className="flex w-full items-center gap-2 px-3 py-2 text-left text-[11px] transition-all hover:bg-white/5 disabled:opacity-20 disabled:cursor-not-allowed" style={{ color: dk.textBright }}>
+                      <span>{EFX[type].icon}</span><span className="font-semibold">{EFX[type].label}</span>
+                    </button>
+                  ))}
+                </div>
               )}
-              {result.type.startsWith("video/") && <video src={result.url} controls className="mt-3 w-full rounded-lg" style={{ maxHeight: "250px", background: "#0a0a0a" }} />}
-              <a href={result.url} download={result.name} className="mt-3 block w-full rounded-lg py-3 text-center text-sm font-semibold text-white" style={{ background: "var(--primary)" }}>Telecharger</a>
-              <button onClick={() => { if (result?.url) URL.revokeObjectURL(result.url); setResult(null); setProgress(0); }} className="mt-2 w-full rounded-lg border py-2.5 text-sm font-semibold" style={{ borderColor: "var(--border)" }}>Continuer l&apos;edition</button>
+              <div className="ml-auto flex items-center gap-3 text-[10px]" style={{ color: dk.text }}>
+                {pipeline.length > 0 && <span>Duree : <strong style={{ color: dk.textBright }}>{fmtTime(estDuration)}</strong></span>}
+                {needsEnc && <span className="rounded-full px-2 py-0.5" style={{ background: "rgba(232,150,62,0.15)", color: "#e8963e" }}>Re-encodage</span>}
+                {!needsEnc && pipeline.length > 0 && <span className="rounded-full px-2 py-0.5" style={{ background: "rgba(74,222,128,0.1)", color: dk.accent }}>Copie directe</span>}
+              </div>
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
+
+      {/* ─── PROCESSING ─── */}
+      {processing && (
+        <div style={{ background: dk.bg, minHeight: "calc(100vh - 64px)" }} className="flex items-center justify-center">
+          <div className="w-full max-w-sm rounded-2xl p-8 text-center" style={{ background: dk.bg2 }}>
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl" style={{ background: "rgba(74,222,128,0.1)" }}>
+              <svg className="animate-spin" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={dk.accent} strokeWidth="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" /></svg>
+            </div>
+            <p className="mt-4 text-sm font-semibold" style={{ color: dk.textBright }}>{progressMsg || "Traitement..."}</p>
+            <div className="mt-4 h-1.5 w-full overflow-hidden rounded-full" style={{ background: dk.bg3 }}>
+              <div className="h-full rounded-full transition-all duration-300" style={{ width: `${progress}%`, background: dk.accent }} />
+            </div>
+            <p className="mt-2 font-mono text-xs" style={{ color: dk.accent }}>{progress}%</p>
+          </div>
+        </div>
+      )}
+
+      {/* ─── RESULT ─── */}
+      {result && video && (
+        <div style={{ background: dk.bg, minHeight: "calc(100vh - 64px)" }} className="flex items-center justify-center p-6">
+          <div className="w-full max-w-lg rounded-2xl p-6" style={{ background: dk.bg2 }}>
+            <div className="flex items-center gap-3"><div className="flex h-10 w-10 items-center justify-center rounded-full" style={{ background: "rgba(74,222,128,0.15)" }}><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={dk.accent} strokeWidth="2.5"><path d="M22 11.08V12a10 10 0 11-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" /></svg></div><div><p className="text-sm font-semibold" style={{ color: dk.textBright }}>Export termine</p><p className="text-[11px]" style={{ color: dk.text }}>{result.name}</p></div></div>
+            <div className="mt-4 grid grid-cols-3 gap-2">
+              <div className="rounded-lg p-2.5 text-center" style={{ background: dk.bg3 }}><p className="text-[9px] uppercase" style={{ color: dk.text }}>Original</p><p className="text-xs font-bold" style={{ color: dk.textBright }}>{fmtSize(video.size)}</p></div>
+              <div className="rounded-lg p-2.5 text-center" style={{ background: "rgba(74,222,128,0.08)" }}><p className="text-[9px] uppercase" style={{ color: dk.accent }}>Resultat</p><p className="text-xs font-bold" style={{ color: dk.accent }}>{fmtSize(result.size)}</p></div>
+              <div className="rounded-lg p-2.5 text-center" style={{ background: dk.bg3 }}><p className="text-[9px] uppercase" style={{ color: dk.text }}>Diff</p><p className="text-xs font-bold" style={{ color: dk.accent }}>{result.size < video.size ? `-${Math.round((1 - result.size / video.size) * 100)}%` : result.size > video.size ? `+${Math.round((result.size / video.size - 1) * 100)}%` : "="}</p></div>
+            </div>
+            {result.type.startsWith("image/") && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={result.url} alt="Capture" className="mt-4 w-full rounded-lg" />
+            )}
+            {result.type.startsWith("video/") && <video src={result.url} controls className="mt-4 w-full rounded-lg" style={{ maxHeight: "280px", background: "#000" }} />}
+            <a href={result.url} download={result.name} className="mt-4 block w-full rounded-lg py-3 text-center text-sm font-bold text-black" style={{ background: dk.accent }}>Telecharger</a>
+            <button onClick={() => { if (result?.url) URL.revokeObjectURL(result.url); setResult(null); setProgress(0); }} className="mt-2 w-full rounded-lg py-2.5 text-sm font-semibold transition-all hover:bg-white/5" style={{ color: dk.text, border: `1px solid ${dk.border}` }}>Continuer l&apos;edition</button>
+          </div>
+        </div>
+      )}
     </>
   );
 }
