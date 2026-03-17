@@ -55,6 +55,12 @@ export function trackRecentTool(href: string) {
   );
 }
 
+function removeFavorite(href: string) {
+  const favs = getFavorites().filter((f) => f !== href);
+  localStorage.setItem(FAVORITES_KEY, JSON.stringify(favs));
+  window.dispatchEvent(new Event("outilis-favorites-changed"));
+}
+
 export default function RecentAndFavorites() {
   const [favorites, setFavorites] = useState<Tool[]>([]);
   const [recent, setRecent] = useState<Tool[]>([]);
@@ -107,18 +113,43 @@ export default function RecentAndFavorites() {
           </div>
           <div className="mt-3 flex flex-wrap gap-2">
             {favorites.map((tool) => (
-              <Link
+              <div
                 key={tool.href}
-                href={tool.href}
-                className="flex items-center gap-2 rounded-lg border px-3 py-2 text-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
+                className="group flex items-center gap-1 rounded-lg border text-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
                 style={{
                   background: "var(--surface)",
                   borderColor: "var(--border)",
                 }}
               >
-                <span>{tool.icon}</span>
-                <span className="font-medium">{tool.title}</span>
-              </Link>
+                <Link
+                  href={tool.href}
+                  className="flex items-center gap-2 py-2 pl-3 pr-1"
+                >
+                  <span>{tool.icon}</span>
+                  <span className="font-medium">{tool.title}</span>
+                </Link>
+                <button
+                  onClick={() => removeFavorite(tool.href)}
+                  className="flex items-center justify-center rounded-md p-1.5 mr-1 transition-colors hover:bg-red-50"
+                  style={{ color: "var(--muted)" }}
+                  aria-label={`Retirer ${tool.title} des favoris`}
+                  title="Retirer des favoris"
+                >
+                  <svg
+                    width="12"
+                    height="12"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="transition-colors hover:stroke-red-500"
+                  >
+                    <path d="M18 6L6 18M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
             ))}
           </div>
         </div>
