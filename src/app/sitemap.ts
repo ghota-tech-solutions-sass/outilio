@@ -25,6 +25,23 @@ function getToolPriority(href: string): number {
   return 0.7;
 }
 
+function slugify(str: string) {
+  return str
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/[^a-z0-9-]/g, "");
+}
+
+function getUniqueCategories(): string[] {
+  const seen = new Set<string>();
+  for (const t of tools) {
+    seen.add(slugify(t.category));
+  }
+  return Array.from(seen);
+}
+
 export default function sitemap(): MetadataRoute.Sitemap {
   const staticPages: MetadataRoute.Sitemap = [
     {
@@ -49,11 +66,19 @@ export default function sitemap(): MetadataRoute.Sitemap {
     },
   ];
 
+  const categoryPages: MetadataRoute.Sitemap = getUniqueCategories().map(
+    (slug) => ({
+      url: `${BASE_URL}/categories/${slug}`,
+      changeFrequency: "weekly",
+      priority: 0.8,
+    })
+  );
+
   const toolPages: MetadataRoute.Sitemap = tools.map((tool) => ({
     url: `${BASE_URL}${tool.href}`,
     changeFrequency: "monthly",
     priority: getToolPriority(tool.href),
   }));
 
-  return [...staticPages, ...toolPages];
+  return [...staticPages, ...categoryPages, ...toolPages];
 }

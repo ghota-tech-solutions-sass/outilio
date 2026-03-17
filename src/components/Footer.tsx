@@ -10,13 +10,25 @@ const TOOL_LINKS = [
   { href: "/outils/convertisseur-json-csv", label: "JSON / CSV" },
 ];
 
+const CATEGORY_LINKS = [
+  { href: "/categories/finance", label: "Finance" },
+  { href: "/categories/immobilier", label: "Immobilier" },
+  { href: "/categories/business", label: "Business" },
+  { href: "/categories/dev", label: "Dev" },
+  { href: "/categories/image", label: "Image" },
+  { href: "/categories/outils", label: "Outils" },
+  { href: "/categories/sante", label: "Sante" },
+  { href: "/categories/securite", label: "Securite" },
+  { href: "/categories/conversion", label: "Conversion" },
+];
+
 export default function Footer() {
   return (
     <footer className="border-t" style={{ borderColor: "var(--border)", background: "var(--surface-alt)" }}>
       <div className="mx-auto max-w-6xl px-5 py-16">
         <div className="grid grid-cols-1 gap-12 md:grid-cols-12">
           {/* Brand */}
-          <div className="md:col-span-5">
+          <div className="md:col-span-4">
             <span
               className="text-3xl tracking-tight"
               style={{ fontFamily: "var(--font-display)", color: "var(--primary)" }}
@@ -30,7 +42,7 @@ export default function Footer() {
           </div>
 
           {/* Tools */}
-          <div className="md:col-span-4">
+          <div className="md:col-span-2">
             <h4
               className="text-xs font-semibold uppercase tracking-[0.15em]"
               style={{ color: "var(--muted)" }}
@@ -39,6 +51,29 @@ export default function Footer() {
             </h4>
             <ul className="mt-4 space-y-2.5">
               {TOOL_LINKS.map((link) => (
+                <li key={link.href}>
+                  <Link
+                    href={link.href}
+                    className="text-sm transition-colors hover:underline underline-offset-4"
+                    style={{ color: "var(--foreground)" }}
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Categories */}
+          <div className="md:col-span-3">
+            <h4
+              className="text-xs font-semibold uppercase tracking-[0.15em]"
+              style={{ color: "var(--muted)" }}
+            >
+              Categories
+            </h4>
+            <ul className="mt-4 space-y-2.5">
+              {CATEGORY_LINKS.map((link) => (
                 <li key={link.href}>
                   <Link
                     href={link.href}

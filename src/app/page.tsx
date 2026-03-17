@@ -1,5 +1,6 @@
 import ToolSearchFilter from "@/components/ToolSearch";
 import PrivacyBanner from "@/components/PrivacyBanner";
+import RecentAndFavorites from "@/components/RecentAndFavorites";
 import { tools } from "@/data/tools";
 import type { Metadata } from "next";
 
@@ -153,6 +154,9 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* Recent & Favorites */}
+      <RecentAndFavorites />
 
       {/* Tools Grid with Search */}
       <section id="outils" className="border-t py-20" style={{ borderColor: "var(--border)" }}>
