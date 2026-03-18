@@ -209,6 +209,66 @@ export default function CalculateurSalaire() {
                 </p>
               </div>
             </div>
+
+            {/* FAQ Section */}
+            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
+                Questions frequentes
+              </h2>
+              <div className="mt-6 space-y-5">
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>
+                    Comment calculer son salaire net en 2026 ?
+                  </h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    En 2026, pour obtenir votre salaire net a partir du brut, appliquez le taux de cotisations
+                    salariales correspondant a votre statut. Pour un salarie non-cadre du secteur prive,
+                    deduisez environ 22&nbsp;% du salaire brut. Pour un cadre, comptez environ 25&nbsp;%.
+                    Les fonctionnaires ont un taux plus faible, autour de 17&nbsp;%. Le prelevement a la source
+                    de l&apos;impot sur le revenu est ensuite retranchi pour obtenir le net &laquo;&nbsp;en poche&nbsp;&raquo;.
+                  </p>
+                </div>
+
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>
+                    Quelle difference entre salaire brut et net ?
+                  </h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    Le salaire brut est la remuneration totale avant toute deduction. Le salaire net est ce que
+                    vous percevez reellement apres deduction des cotisations salariales (assurance maladie,
+                    retraite, chomage, CSG, CRDS). En France, la difference represente entre 17&nbsp;% et
+                    25&nbsp;% du brut selon votre statut. Depuis 2019, le net &laquo;&nbsp;apres impot&nbsp;&raquo;
+                    figurant sur votre fiche de paie tient egalement compte du prelevement a la source.
+                  </p>
+                </div>
+
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>
+                    Quel est le taux de charges salariales en 2026 ?
+                  </h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    En 2026, les cotisations salariales representent en moyenne 22&nbsp;% du salaire brut
+                    pour un non-cadre et 25&nbsp;% pour un cadre dans le secteur prive. Ces charges incluent
+                    la CSG (9,2&nbsp;% dont 6,8&nbsp;% deductibles), la CRDS (0,5&nbsp;%), les cotisations
+                    retraite de base et complementaire, et l&apos;assurance chomage. Les taux exacts dependent
+                    de votre convention collective et de votre tranche de salaire.
+                  </p>
+                </div>
+
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>
+                    Comment est calcule le prelevement a la source ?
+                  </h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    Le prelevement a la source (PAS) est preleve chaque mois directement sur votre salaire
+                    par votre employeur. Le taux est calcule par l&apos;administration fiscale en fonction de
+                    votre derniere declaration de revenus. Il tient compte de l&apos;ensemble de vos revenus
+                    et de votre situation familiale (nombre de parts fiscales). Vous pouvez demander une
+                    modulation de votre taux a tout moment sur impots.gouv.fr si votre situation change.
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
 
           <aside className="space-y-6">

@@ -41,9 +41,29 @@ export const metadata: Metadata = {
     type: "website",
     locale: "fr_FR",
     siteName: "Outilis.fr",
+    url: "https://outilis.fr",
     title: "Outilis.fr - Outils en ligne gratuits",
     description:
       "Calculateurs, generateurs et convertisseurs gratuits. 100% dans votre navigateur.",
+    images: [
+      {
+        url: "https://outilis.fr/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Outilis.fr - 78 outils en ligne gratuits",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Outilis.fr - Outils en ligne gratuits",
+    description: "78 outils gratuits : calculateurs, generateurs, convertisseurs. 100% navigateur.",
+    images: ["https://outilis.fr/og-image.png"],
+    creator: "@MickaelV79228",
+  },
+  metadataBase: new URL("https://outilis.fr"),
+  alternates: {
+    canonical: "https://outilis.fr",
   },
 };
 

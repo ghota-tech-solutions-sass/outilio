@@ -262,6 +262,57 @@ export default function SimulateurImpot() {
                 <p><strong className="text-[var(--foreground)]">Taux moyen</strong> : c&apos;est le rapport entre l&apos;impot total et le revenu. Il est toujours inferieur au taux marginal.</p>
               </div>
             </div>
+
+            {/* FAQ Section */}
+            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
+                Questions frequentes
+              </h2>
+              <div className="mt-6 space-y-5">
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>
+                    Quel est le bareme de l&apos;impot sur le revenu 2026 ?
+                  </h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    Le bareme 2026 (applicable aux revenus 2025) a ete revalorise de 0,9&nbsp;% par la loi
+                    de finances 2026 pour tenir compte de l&apos;inflation. Les tranches sont les suivantes :
+                    0&nbsp;% jusqu&apos;a 11&nbsp;600&nbsp;&euro;, 11&nbsp;% de 11&nbsp;601 a 29&nbsp;579&nbsp;&euro;,
+                    30&nbsp;% de 29&nbsp;580 a 84&nbsp;577&nbsp;&euro;, 41&nbsp;% de 84&nbsp;578 a
+                    181&nbsp;917&nbsp;&euro;, et 45&nbsp;% au-dela. Ces seuils s&apos;appliquent par part
+                    de quotient familial.
+                  </p>
+                </div>
+
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>
+                    Comment fonctionne le quotient familial ?
+                  </h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    Le quotient familial divise votre revenu net imposable par le nombre de parts fiscales
+                    de votre foyer. Un celibataire a 1 part, un couple marie ou pacse a 2 parts. Chacun des
+                    deux premiers enfants a charge ajoute 0,5 part, et chaque enfant a partir du troisieme
+                    ajoute 1 part. L&apos;impot est calcule sur ce quotient, puis multiplie par le nombre
+                    de parts. Ce mecanisme avantage les familles nombreuses, mais un plafonnement limite
+                    l&apos;avantage a environ 1&nbsp;759&nbsp;&euro; par demi-part supplementaire en 2026.
+                  </p>
+                </div>
+
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>
+                    Quand declarer ses impots en 2026 ?
+                  </h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    La declaration des revenus 2025 s&apos;effectue au printemps 2026. Le service en ligne
+                    sur impots.gouv.fr ouvre generalement mi-avril. Les dates limites varient selon votre
+                    departement de residence : fin mai pour les departements 01 a 19, debut juin pour les
+                    departements 20 a 54, et mi-juin pour les departements 55 et au-dela. La declaration
+                    papier, reservee aux contribuables ne pouvant declarer en ligne, doit etre deposee
+                    fin mai. Le prelevement a la source est ajuste en septembre apres traitement de votre
+                    declaration.
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
 
           <aside className="space-y-6">

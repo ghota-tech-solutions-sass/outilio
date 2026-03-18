@@ -42,25 +42,32 @@ function getUniqueCategories(): string[] {
   return Array.from(seen);
 }
 
+// Date of last major update (used as lastmod for all pages)
+const LAST_UPDATE = new Date("2026-03-18").toISOString();
+
 export default function sitemap(): MetadataRoute.Sitemap {
   const staticPages: MetadataRoute.Sitemap = [
     {
       url: BASE_URL,
+      lastModified: LAST_UPDATE,
       changeFrequency: "weekly",
       priority: 1.0,
     },
     {
       url: `${BASE_URL}/contribuer`,
+      lastModified: LAST_UPDATE,
       changeFrequency: "monthly",
       priority: 0.6,
     },
     {
       url: `${BASE_URL}/comment-ca-marche`,
+      lastModified: LAST_UPDATE,
       changeFrequency: "monthly",
       priority: 0.5,
     },
     {
       url: `${BASE_URL}/mentions-legales`,
+      lastModified: LAST_UPDATE,
       changeFrequency: "yearly",
       priority: 0.3,
     },
@@ -69,6 +76,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const categoryPages: MetadataRoute.Sitemap = getUniqueCategories().map(
     (slug) => ({
       url: `${BASE_URL}/categories/${slug}`,
+      lastModified: LAST_UPDATE,
       changeFrequency: "weekly",
       priority: 0.8,
     })
@@ -76,6 +84,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   const toolPages: MetadataRoute.Sitemap = tools.map((tool) => ({
     url: `${BASE_URL}${tool.href}`,
+    lastModified: LAST_UPDATE,
     changeFrequency: "monthly",
     priority: getToolPriority(tool.href),
   }));

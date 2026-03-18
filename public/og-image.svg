@@ -1,0 +1,21 @@
+<svg width="1200" height="630" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0a3f30"/>
+      <stop offset="50%" style="stop-color:#0d4f3c"/>
+      <stop offset="100%" style="stop-color:#1a6b4f"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <circle cx="200" cy="150" r="300" fill="#e8963e" opacity="0.06"/>
+  <circle cx="1000" cy="500" r="250" fill="#ffffff" opacity="0.04"/>
+  <text x="100" y="220" font-family="Georgia, serif" font-size="72" fill="white" font-weight="bold">Outilis</text>
+  <text x="370" y="220" font-family="Georgia, serif" font-size="72" fill="#e8963e" font-weight="bold">.fr</text>
+  <text x="100" y="300" font-family="Arial, sans-serif" font-size="32" fill="rgba(255,255,255,0.7)">78 outils en ligne gratuits pour le quotidien</text>
+  <text x="100" y="380" font-family="Arial, sans-serif" font-size="22" fill="rgba(255,255,255,0.5)">Calculateur salaire · Simulateur impot · Freelance vs CDI</text>
+  <text x="100" y="420" font-family="Arial, sans-serif" font-size="22" fill="rgba(255,255,255,0.5)">Generateur factures · Pret immobilier · QR Code · et plus</text>
+  <rect x="100" y="480" width="280" height="50" rx="25" fill="white"/>
+  <text x="155" y="512" font-family="Arial, sans-serif" font-size="18" fill="#0d4f3c" font-weight="bold">100% gratuit · Open source</text>
+  <rect x="400" y="480" width="340" height="50" rx="25" fill="rgba(255,255,255,0.1)" stroke="rgba(255,255,255,0.2)" stroke-width="1"/>
+  <text x="435" y="512" font-family="Arial, sans-serif" font-size="18" fill="rgba(255,255,255,0.7)">Zero donnees collectees</text>
+</svg>
