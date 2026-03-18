@@ -249,7 +249,7 @@ export default function FreelanceVsCDI() {
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [cdiTauxSalariales, setCdiTauxSalariales] = useState("22");
   const [cdiTauxPatronales, setCdiTauxPatronales] = useState("45");
-  const [microTauxCotisations, setMicroTauxCotisations] = useState("21.1");
+  const [microTauxCotisations, setMicroTauxCotisations] = useState("25.6");
   const [sasuTauxPatronales, setSasuTauxPatronales] = useState("45");
   const [sasuTauxSalariales, setSasuTauxSalariales] = useState("22");
   const [sasuPctFrais, setSasuPctFrais] = useState("5");
@@ -279,7 +279,7 @@ export default function FreelanceVsCDI() {
       calcMicro({
         tjm: tjmNum,
         joursAn: joursNum,
-        tauxCotisations: (parseFloat(microTauxCotisations) || 21.1) / 100,
+        tauxCotisations: (parseFloat(microTauxCotisations) || 25.6) / 100,
         parts: partsNum,
       }),
     [tjmNum, joursNum, microTauxCotisations, partsNum]
@@ -331,7 +331,7 @@ export default function FreelanceVsCDI() {
         return calcMicro({
           tjm: t,
           joursAn: joursNum,
-          tauxCotisations: (parseFloat(microTauxCotisations) || 21.1) / 100,
+          tauxCotisations: (parseFloat(microTauxCotisations) || 25.6) / 100,
           parts: partsNum,
         }).netMensuel;
       } else if (statut === "sasu") {
