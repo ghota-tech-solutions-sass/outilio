@@ -1,7 +1,7 @@
 export default function PrivacyBanner() {
   return (
     <section className="py-16" style={{ borderColor: "var(--border)" }}>
-      <div className="mx-auto max-w-6xl px-5">
+      <div className="mx-auto max-w-7xl px-6 2xl:max-w-[1400px]">
         <div
           className="rounded-2xl px-8 py-10 md:px-12 md:py-12"
           style={{ background: "var(--primary)" }}

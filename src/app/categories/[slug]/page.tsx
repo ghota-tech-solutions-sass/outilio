@@ -68,7 +68,7 @@ export default async function CategoryPage({
   return (
     <>
       {/* Breadcrumb */}
-      <nav className="mx-auto max-w-6xl px-5 pt-6">
+      <nav className="mx-auto max-w-7xl px-6 2xl:max-w-[1400px] pt-6">
         <ol className="flex items-center gap-1.5 text-xs" style={{ color: "var(--muted)" }}>
           <li>
             <Link href="/" className="transition-colors hover:text-[var(--primary)]">Accueil</Link>
@@ -86,7 +86,7 @@ export default async function CategoryPage({
 
       {/* Hero */}
       <section className="py-12" style={{ borderBottom: "1px solid var(--border)" }}>
-        <div className="mx-auto max-w-6xl px-5">
+        <div className="mx-auto max-w-7xl px-6 2xl:max-w-[1400px]">
           <p
             className="text-xs font-semibold uppercase tracking-[0.2em]"
             style={{ color: "var(--accent)" }}
@@ -114,7 +114,7 @@ export default async function CategoryPage({
       </section>
 
       {/* Tools grid */}
-      <section className="mx-auto max-w-6xl px-5 py-10">
+      <section className="mx-auto max-w-7xl px-6 2xl:max-w-[1400px] py-10">
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {categoryTools.map((tool) => (
             <Link
@@ -177,7 +177,7 @@ export default async function CategoryPage({
         className="border-t py-12"
         style={{ borderColor: "var(--border)", background: "var(--surface-alt)" }}
       >
-        <div className="mx-auto max-w-6xl px-5">
+        <div className="mx-auto max-w-7xl px-6 2xl:max-w-[1400px]">
           <h2
             className="text-2xl tracking-tight"
             style={{ fontFamily: "var(--font-display)" }}

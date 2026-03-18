@@ -475,7 +475,7 @@ export default function EditeurVideo() {
       {/* ─── Drop zone (light, before video loaded) ─── */}
       {!video && (
         <div className="py-20">
-          <div className="mx-auto max-w-6xl px-5">
+          <div className="mx-auto max-w-7xl px-6 2xl:max-w-[1400px]">
             <div className="text-center">
               <p className="text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: "var(--accent)" }}>Video</p>
               <h1 className="mt-2 text-4xl tracking-tight md:text-5xl" style={{ fontFamily: "var(--font-display)" }}>Editeur <span style={{ color: "var(--primary)" }}>Video</span></h1>

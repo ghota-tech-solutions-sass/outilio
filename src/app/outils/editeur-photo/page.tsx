@@ -1034,7 +1034,7 @@ export default function EditeurPhoto() {
     return (
       <>
         <section className="relative py-14" style={{ borderBottom: "1px solid var(--border)" }}>
-          <div className="mx-auto max-w-5xl px-5">
+          <div className="mx-auto max-w-7xl px-6 2xl:max-w-[1400px]">
             <p className="animate-fade-up text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: "var(--accent)" }}>Image</p>
             <h1 className="animate-fade-up stagger-1 mt-3 text-4xl tracking-tight md:text-5xl" style={{ fontFamily: "var(--font-display)" }}>
               Editeur <span style={{ color: "var(--primary)" }}>Photo</span>

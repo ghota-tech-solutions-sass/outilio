@@ -39,7 +39,7 @@ export default function RelatedTools() {
 
   return (
     <section className="border-t" style={{ borderColor: "var(--border)" }}>
-      <div className="mx-auto max-w-5xl px-5 py-12">
+      <div className="mx-auto max-w-7xl px-6 2xl:max-w-[1400px] py-12">
         <h2
           className="text-2xl tracking-tight"
           style={{ fontFamily: "var(--font-display)" }}

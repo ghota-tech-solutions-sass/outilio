@@ -50,7 +50,7 @@ export default function ShareButtons() {
   };
 
   return (
-    <div className="no-print mx-auto max-w-5xl px-5 pb-2">
+    <div className="no-print mx-auto max-w-7xl px-6 2xl:max-w-[1400px] pb-2">
       <div
         className="flex flex-wrap items-center gap-2 rounded-xl border px-5 py-3"
         style={{ background: "var(--surface)", borderColor: "var(--border)" }}

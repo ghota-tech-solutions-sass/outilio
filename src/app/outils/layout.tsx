@@ -10,7 +10,7 @@ export default function OutilsLayout({
 }) {
   return (
     <>
-      <div className="no-print mx-auto max-w-5xl px-5 pt-2 flex justify-end">
+      <div className="no-print mx-auto max-w-7xl px-6 2xl:max-w-[1400px] pt-2 flex justify-end">
         <FavoriteButton />
       </div>
       {children}

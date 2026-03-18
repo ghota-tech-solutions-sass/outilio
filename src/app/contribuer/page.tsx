@@ -113,7 +113,7 @@ export default function ContribuerPage() {
               "radial-gradient(circle at 30% 40%, #0d4f3c 0%, transparent 40%), radial-gradient(circle at 70% 60%, #e8963e 0%, transparent 35%)",
           }}
         />
-        <div className="relative mx-auto max-w-6xl px-5">
+        <div className="relative mx-auto max-w-7xl px-6 2xl:max-w-[1400px]">
           <div className="max-w-2xl">
             <p
               className="animate-fade-up text-xs font-semibold uppercase tracking-[0.2em]"
@@ -139,7 +139,7 @@ export default function ContribuerPage() {
         </div>
       </section>
 
-      <div className="mx-auto max-w-6xl px-5 py-16">
+      <div className="mx-auto max-w-7xl px-6 2xl:max-w-[1400px] py-16">
         <div className="grid grid-cols-1 gap-16 lg:grid-cols-2">
           {/* Section 1: Suggerer un outil */}
           <div>
