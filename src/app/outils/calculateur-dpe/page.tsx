@@ -22,10 +22,11 @@ const DPE_CLASSES = [
 type EnergyType = "electricite" | "gaz" | "fioul" | "bois";
 
 const ENERGIES: Record<EnergyType, { label: string; prixKwh: number; facteurCo2: number; facteurEP: number }> = {
-  electricite: { label: "Electricite",      prixKwh: 0.19,  facteurCo2: 0.079, facteurEP: 2.3 },
-  gaz:         { label: "Gaz naturel",      prixKwh: 0.11,  facteurCo2: 0.227, facteurEP: 1.0 },
-  fioul:       { label: "Fioul domestique",  prixKwh: 0.11,  facteurCo2: 0.324, facteurEP: 1.0 },
-  bois:        { label: "Bois / Granules",   prixKwh: 0.07,  facteurCo2: 0.030, facteurEP: 1.0 },
+  // Prix TTC moyens 2026 (sources: CRE tarif reglemente, indices INSEE)
+  electricite: { label: "Electricite",      prixKwh: 0.2065, facteurCo2: 0.079, facteurEP: 2.3 },
+  gaz:         { label: "Gaz naturel",      prixKwh: 0.10,   facteurCo2: 0.227, facteurEP: 1.0 },
+  fioul:       { label: "Fioul domestique",  prixKwh: 0.12,   facteurCo2: 0.324, facteurEP: 1.0 },
+  bois:        { label: "Bois / Granules",   prixKwh: 0.07,   facteurCo2: 0.030, facteurEP: 1.0 },
 };
 
 /* ------------------------------------------------------------------ */
