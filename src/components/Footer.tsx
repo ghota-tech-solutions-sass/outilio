@@ -122,6 +122,7 @@ export default function Footer() {
             <ul className="mt-4 space-y-2.5 text-sm" style={{ color: "var(--muted)" }}>
               <li><Link href="/comment-ca-marche" className="transition-colors hover:text-[#0d4f3c] hover:underline underline-offset-4" style={{ color: "var(--foreground)" }}>Comment ca marche</Link></li>
               <li><Link href="/contribuer" className="transition-colors hover:text-[#0d4f3c] hover:underline underline-offset-4" style={{ color: "var(--foreground)" }}>Contribuer</Link></li>
+              <li><Link href="/blog" className="transition-colors hover:text-[#0d4f3c] hover:underline underline-offset-4" style={{ color: "var(--foreground)" }}>Blog</Link></li>
               <li>100% gratuit</li>
               <li>Aucune donnee collectee</li>
               <li>
