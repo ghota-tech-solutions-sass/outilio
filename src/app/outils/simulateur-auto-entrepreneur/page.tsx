@@ -39,7 +39,7 @@ const ACTIVITIES: Record<ActivityType, ActivityConfig> = {
 interface YearRates {
   // Cotisations sociales (taux normal)
   cotisations: Record<ActivityType, number>;
-  // ACRE : taux reduit (50% des taux normaux jusqu'au 30/06/2026, 75% apres)
+  // ACRE : taux reduit de 50% la premiere annee d'activite
   acre: Record<ActivityType, number>;
   // Versement liberatoire IR
   versementLiberatoire: Record<ActivityType, number>;
