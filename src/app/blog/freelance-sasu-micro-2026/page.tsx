@@ -135,7 +135,7 @@ export default function ArticleSasuMicro2026() {
           </div>
 
           {/* CTA */}
-          <div className="mt-10">
+          <div className="mt-10 text-center">
             <Link
               href="/outils/simulateur-auto-entrepreneur"
               className="inline-flex items-center gap-2.5 rounded-xl px-6 py-3.5 text-sm font-semibold text-white transition-all hover:opacity-90 hover:shadow-lg"
