@@ -131,6 +131,49 @@ export default function CalculateurRetraite() {
                   </div>
                 </div>
 
+                {/* Taux plein vs decote */}
+                <div className="rounded-2xl border p-6" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+                  <h2 className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--accent)" }}>Taux plein vs decote</h2>
+                  <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    <p>
+                      <strong style={{ color: "var(--foreground)" }}>Taux plein (50%)</strong> : vous percevez votre pension de base sans penalite.
+                      Pour l&apos;obtenir, vous devez avoir cotise le nombre de trimestres requis selon votre annee de naissance,
+                      ou atteindre l&apos;age de <strong style={{ color: "var(--foreground)" }}>67 ans</strong> (taux plein automatique, quelle que soit la duree de cotisation).
+                    </p>
+                    <p>
+                      <strong style={{ color: "#dc2626" }}>Decote (penalite)</strong> : si vous partez a la retraite sans avoir tous vos trimestres
+                      et avant 67 ans, votre pension est reduite de <strong style={{ color: "#dc2626" }}>1,25% par trimestre manquant</strong> (soit 5% par an).
+                      La decote maximale est de 20 trimestres, soit une reduction pouvant atteindre 25% de votre pension.
+                    </p>
+                    <p>
+                      <strong style={{ color: "var(--primary)" }}>Surcote</strong> : si vous continuez a travailler apres le taux plein,
+                      votre pension est majoree de <strong style={{ color: "var(--primary)" }}>1,25% par trimestre supplementaire</strong>.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Agirc-Arrco */}
+                <div className="rounded-2xl border p-6" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+                  <h2 className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--accent)" }}>Retraite complementaire Agirc-Arrco</h2>
+                  <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    <p>
+                      En plus de la retraite de base (regime general), les salaries du secteur prive cotisent obligatoirement
+                      a l&apos;<strong style={{ color: "var(--foreground)" }}>Agirc-Arrco</strong>, la caisse de retraite complementaire.
+                      Cette pension peut representer <strong style={{ color: "var(--foreground)" }}>40 a 60%</strong> de votre retraite totale.
+                    </p>
+                    <p>
+                      Depuis 2019, un <strong style={{ color: "var(--foreground)" }}>coefficient de solidarite (malus)</strong> de 10%
+                      s&apos;applique pendant 3 ans si vous partez des l&apos;obtention du taux plein.
+                      Pour l&apos;eviter, il faut decaler son depart d&apos;un an apres la date du taux plein.
+                    </p>
+                    <p>
+                      Le montant de votre complementaire depend du <strong style={{ color: "var(--foreground)" }}>nombre de points accumules</strong> tout au long de votre carriere,
+                      multiplie par la valeur du point (1,4159 &euro; en 2024). Consultez votre releve de carriere sur{" "}
+                      <span style={{ color: "var(--primary)", fontWeight: 600 }}>info-retraite.fr</span> pour une estimation personnalisee.
+                    </p>
+                  </div>
+                </div>
+
                 {/* Table reforme */}
                 <div className="rounded-2xl border p-6" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
                   <h2 className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--accent)" }}>Reforme retraite 2023</h2>

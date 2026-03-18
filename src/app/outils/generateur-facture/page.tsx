@@ -10,7 +10,7 @@ interface LigneFacture {
 }
 
 export default function GenerateurFacture() {
-  const [emetteur, setEmetteur] = useState({ nom: "", adresse: "", siret: "", email: "" });
+  const [emetteur, setEmetteur] = useState({ nom: "", adresse: "", siret: "", email: "", iban: "" });
   const [client, setClient] = useState({ nom: "", adresse: "", email: "" });
   const [numero, setNumero] = useState("FAC-001");
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
@@ -62,6 +62,7 @@ export default function GenerateurFacture() {
                 <Input label="SIRET" value={emetteur.siret} onChange={(v) => setEmetteur({ ...emetteur, siret: v })} />
                 <Input label="Adresse" value={emetteur.adresse} onChange={(v) => setEmetteur({ ...emetteur, adresse: v })} />
                 <Input label="Email" value={emetteur.email} onChange={(v) => setEmetteur({ ...emetteur, email: v })} />
+                <Input label="IBAN / RIB" value={emetteur.iban} onChange={(v) => setEmetteur({ ...emetteur, iban: v })} className="sm:col-span-2" />
               </div>
             </div>
 
@@ -202,6 +203,13 @@ export default function GenerateurFacture() {
             <p>TVA ({tva}%) : {fmt(montantTVA)} &euro;</p>
             <p className="text-lg font-bold">Total TTC : {fmt(totalTTC)} &euro;</p>
           </div>
+
+          {emetteur.iban && (
+            <div className="mt-8 rounded-xl p-4" style={{ background: "var(--surface-alt)" }}>
+              <h3 className="font-semibold">Coordonnees bancaires</h3>
+              <p className="mt-1 text-sm font-mono tracking-wide">{emetteur.iban}</p>
+            </div>
+          )}
         </div>
       </div>
     </>

@@ -15,6 +15,7 @@ export default function CalculateurRentabilite() {
   const [tauxCredit, setTauxCredit] = useState("3.5");
   const [dureeCredit, setDureeCredit] = useState("20");
   const [apport, setApport] = useState("20000");
+  const [appreciationAn, setAppreciationAn] = useState("2");
 
   const result = useMemo(() => {
     const prix = parseFloat(prixAchat) || 0;
@@ -41,8 +42,17 @@ export default function CalculateurRentabilite() {
     const cashflowMensuel = loyer * (1 - vacance) - depensesAn / 12 - mensualiteCredit;
     const effortEpargne = cashflowMensuel < 0 ? Math.abs(cashflowMensuel) : 0;
 
-    return { coutTotal, frais, loyerAn, loyerEffectif, depensesAn, rentaBrute, rentaNette, mensualiteCredit, cashflowMensuel, effortEpargne, emprunt };
-  }, [prixAchat, fraisNotaire, travaux, loyerMensuel, chargesAn, taxeFonciere, assurancePNO, vacanceLocative, tauxCredit, dureeCredit, apport]);
+    // Cash-on-cash return
+    const apportVal = parseFloat(apport) || 0;
+    const cashflowAnnuel = cashflowMensuel * 12;
+    const cashOnCash = apportVal > 0 ? (cashflowAnnuel / apportVal) * 100 : 0;
+
+    // Appreciation annuelle
+    const appreciation = (parseFloat(appreciationAn) || 0) / 100;
+    const plusValueAn1 = prix * appreciation;
+
+    return { coutTotal, frais, loyerAn, loyerEffectif, depensesAn, rentaBrute, rentaNette, mensualiteCredit, cashflowMensuel, effortEpargne, emprunt, cashOnCash, plusValueAn1, apportVal };
+  }, [prixAchat, fraisNotaire, travaux, loyerMensuel, chargesAn, taxeFonciere, assurancePNO, vacanceLocative, tauxCredit, dureeCredit, apport, appreciationAn]);
 
   const fmt = (n: number) => n.toLocaleString("fr-FR", { maximumFractionDigits: 0 });
   const fmtPct = (n: number) => n.toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -89,15 +99,16 @@ export default function CalculateurRentabilite() {
             {/* Credit */}
             <div className="rounded-2xl border p-6" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
               <h2 className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--accent)" }}>Financement</h2>
-              <div className="mt-4 grid grid-cols-3 gap-3">
+              <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
                 <Field label="Apport (€)" value={apport} onChange={setApport} />
                 <Field label="Taux credit (%)" value={tauxCredit} onChange={setTauxCredit} />
                 <Field label="Duree (annees)" value={dureeCredit} onChange={setDureeCredit} />
+                <Field label="Appreciation/an (%)" value={appreciationAn} onChange={setAppreciationAn} />
               </div>
             </div>
 
             {/* Results */}
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
               <StatCard label="Renta. brute" value={`${fmtPct(result.rentaBrute)}%`}
                 color={result.rentaBrute >= 7 ? "var(--primary)" : result.rentaBrute >= 5 ? "var(--accent)" : "#dc2626"} />
               <StatCard label="Renta. nette" value={`${fmtPct(result.rentaNette)}%`}
@@ -105,6 +116,9 @@ export default function CalculateurRentabilite() {
               <StatCard label="Cashflow/mois" value={`${fmt(result.cashflowMensuel)} €`}
                 color={result.cashflowMensuel >= 0 ? "var(--primary)" : "#dc2626"} />
               <StatCard label="Mensualite credit" value={`${fmt(result.mensualiteCredit)} €`} color="var(--foreground)" />
+              <StatCard label="Cash-on-cash" value={`${fmtPct(result.cashOnCash)}%`}
+                color={result.cashOnCash >= 10 ? "var(--primary)" : result.cashOnCash >= 5 ? "var(--accent)" : "#dc2626"} />
+              <StatCard label="Plus-value/an" value={`${fmt(result.plusValueAn1)} €`} color="var(--accent)" />
             </div>
 
             {/* Summary */}
@@ -117,6 +131,8 @@ export default function CalculateurRentabilite() {
                 <Row label="Charges & taxes annuelles" value={`- ${fmt(result.depensesAn)} €`} />
                 <Row label="Credit annuel" value={`- ${fmt(result.mensualiteCredit * 12)} €`} />
                 <Row label="Cashflow annuel" value={`${fmt(result.cashflowMensuel * 12)} €`} highlight primary={result.cashflowMensuel >= 0} />
+                <Row label="Plus-value estimee (an 1)" value={`+ ${fmt(result.plusValueAn1)} €`} />
+                <Row label="Cash-on-cash return" value={`${fmtPct(result.cashOnCash)}%`} highlight primary={result.cashOnCash >= 0} />
                 {result.effortEpargne > 0 && (
                   <Row label="Effort d'epargne mensuel" value={`${fmt(result.effortEpargne)} €`} warning />
                 )}
@@ -133,6 +149,7 @@ export default function CalculateurRentabilite() {
                 <li>Renta. brute <strong>5-7%</strong> = correct</li>
                 <li>Renta. brute &lt; <strong style={{ color: "#dc2626" }}>5%</strong> = faible</li>
                 <li>Cashflow positif = autofinancement</li>
+                <li><strong>Cash-on-cash</strong> = cashflow annuel / apport</li>
               </ul>
             </div>
             <AdPlaceholder className="h-[600px]" />
