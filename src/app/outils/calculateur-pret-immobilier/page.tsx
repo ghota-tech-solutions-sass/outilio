@@ -8,6 +8,7 @@ export default function CalculateurPret() {
   const [taux, setTaux] = useState("3.5");
   const [duree, setDuree] = useState("20");
   const [apport, setApport] = useState("20000");
+  const [tauxAssurance, setTauxAssurance] = useState("0.34");
 
   const result = useMemo(() => {
     const c = (parseFloat(capital) || 0) - (parseFloat(apport) || 0);
@@ -15,9 +16,12 @@ export default function CalculateurPret() {
     const n = (parseFloat(duree) || 1) * 12;
     if (c <= 0 || r <= 0 || n <= 0) return null;
 
-    const mensualite = (c * r) / (1 - Math.pow(1 + r, -n));
-    const coutTotal = mensualite * n;
+    const mensualiteHorsAssurance = (c * r) / (1 - Math.pow(1 + r, -n));
+    const assuranceMensuelle = (c * (parseFloat(tauxAssurance) || 0) / 100) / 12;
+    const mensualite = mensualiteHorsAssurance + assuranceMensuelle;
+    const coutTotal = mensualiteHorsAssurance * n;
     const interetsTotal = coutTotal - c;
+    const coutAssuranceTotal = assuranceMensuelle * n;
 
     // Tableau d'amortissement (premiers 12 mois + recapitulatif annuel)
     const annualSummary: { year: number; capital: number; interets: number; restant: number }[] = [];
@@ -40,8 +44,8 @@ export default function CalculateurPret() {
       });
     }
 
-    return { mensualite, coutTotal, interetsTotal, emprunt: c, annualSummary };
-  }, [capital, taux, duree, apport]);
+    return { mensualite, mensualiteHorsAssurance, assuranceMensuelle, coutTotal, interetsTotal, coutAssuranceTotal, emprunt: c, annualSummary };
+  }, [capital, taux, duree, apport, tauxAssurance]);
 
   const fmt = (n: number) =>
     n.toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -49,7 +53,7 @@ export default function CalculateurPret() {
   return (
     <>
       <section className="py-12" style={{ background: "linear-gradient(to bottom, rgba(13,79,60,0.04), var(--surface))" }}>
-        <div className="mx-auto max-w-3xl px-4">
+        <div className="mx-auto max-w-7xl px-6 2xl:max-w-[1400px]">
           <h1
             className="animate-fade-up text-3xl font-extrabold md:text-4xl"
             style={{ fontFamily: "var(--font-display)", color: "var(--foreground)" }}
@@ -65,7 +69,7 @@ export default function CalculateurPret() {
         </div>
       </section>
 
-      <div className="mx-auto max-w-5xl px-4 py-8">
+      <div className="mx-auto max-w-7xl px-6 2xl:max-w-[1400px] py-8">
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
           <div className="lg:col-span-2 space-y-6">
             <div
@@ -77,15 +81,17 @@ export default function CalculateurPret() {
                 <Field label="Apport personnel (&euro;)" value={apport} onChange={setApport} />
                 <Field label="Taux d'interet (%)" value={taux} onChange={setTaux} step="0.1" />
                 <Field label="Duree (annees)" value={duree} onChange={setDuree} />
+                <Field label="Assurance emprunteur (%)" value={tauxAssurance} onChange={setTauxAssurance} step="0.01" />
               </div>
             </div>
 
             {result && (
               <>
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                  <StatCard label="Mensualite" value={`${fmt(result.mensualite)} \u20AC`} primary />
-                  <StatCard label="Cout total du credit" value={`${fmt(result.interetsTotal)} \u20AC`} />
-                  <StatCard label="Montant emprunte" value={`${fmt(result.emprunt)} \u20AC`} />
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                  <StatCard label="Mensualite totale" value={`${fmt(result.mensualite)} \u20AC`} primary />
+                  <StatCard label="Dont assurance" value={`${fmt(result.assuranceMensuelle)} \u20AC/mois`} />
+                  <StatCard label="Cout total interets" value={`${fmt(result.interetsTotal)} \u20AC`} />
+                  <StatCard label="Cout total assurance" value={`${fmt(result.coutAssuranceTotal)} \u20AC`} />
                 </div>
 
                 <div
@@ -134,7 +140,7 @@ export default function CalculateurPret() {
                 <strong> M = C x r / (1 - (1+r)^-n)</strong> ou C est le capital emprunte,
                 r le taux mensuel et n le nombre de mensualites.
               </p>
-              <h2 style={{ fontFamily: "var(--font-display)", color: "var(--foreground)" }}>Quel taux pour un pret immobilier en 2024 ?</h2>
+              <h2 style={{ fontFamily: "var(--font-display)", color: "var(--foreground)" }}>Quel taux pour un pret immobilier en 2026 ?</h2>
               <p style={{ color: "var(--foreground)" }}>
                 Les taux immobiliers varient selon la duree du pret et votre profil emprunteur.
                 En 2024, les taux moyens oscillent entre 3% et 4% sur 20 ans.
