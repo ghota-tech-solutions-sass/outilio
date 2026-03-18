@@ -11,8 +11,10 @@ type Tranche = { min: number; max: number; rate: number; label: string };
 // bareme connu avec le taux de revalorisation moyen (~2%).
 const BAREMES_OFFICIELS: Record<number, number[]> = {
   // [seuil_0%, seuil_11%, seuil_30%, seuil_41%]
+  // Source: lois de finances successives
   2023: [11294, 28797, 82341, 177106],
-  2024: [11497, 29315, 83823, 180294],
+  2024: [11497, 29315, 83823, 180294],  // LF 2024 (+4.8%)
+  2025: [11600, 29579, 84577, 181917],  // LF 2026 applicable revenus 2025 (+0.9%)
 };
 
 const TAUX = [0, 0.11, 0.30, 0.41, 0.45];

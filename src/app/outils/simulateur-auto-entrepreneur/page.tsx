@@ -71,14 +71,14 @@ const RATES_BY_YEAR: Record<number, YearRates> = {
 };
 
 // ---------------------------------------------------------------------------
-// Bareme IR 2024 (revenus 2024, declaration 2025) pour estimation hors VFL
+// Bareme IR 2026 (revenus 2025, declaration 2026) - LF 2026 +0.9%
 // ---------------------------------------------------------------------------
 const IR_TRANCHES = [
-  { min: 0, max: 11497, rate: 0 },
-  { min: 11497, max: 29315, rate: 0.11 },
-  { min: 29315, max: 83823, rate: 0.30 },
-  { min: 83823, max: 180294, rate: 0.41 },
-  { min: 180294, max: Infinity, rate: 0.45 },
+  { min: 0, max: 11600, rate: 0 },
+  { min: 11600, max: 29579, rate: 0.11 },
+  { min: 29579, max: 84577, rate: 0.30 },
+  { min: 84577, max: 181917, rate: 0.41 },
+  { min: 181917, max: Infinity, rate: 0.45 },
 ];
 
 // ---------------------------------------------------------------------------

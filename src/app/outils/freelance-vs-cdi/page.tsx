@@ -7,12 +7,13 @@ import AdPlaceholder from "@/components/AdPlaceholder";
 function calcImpot(revenu: number, parts: number) {
   const q = revenu / parts;
   let impot = 0;
+  // Bareme IR 2026 sur revenus 2025 (LF 2026, +0.9%)
   const tranches = [
-    { min: 0, max: 11294, rate: 0 },
-    { min: 11294, max: 28797, rate: 0.11 },
-    { min: 28797, max: 82341, rate: 0.30 },
-    { min: 82341, max: 177106, rate: 0.41 },
-    { min: 177106, max: Infinity, rate: 0.45 },
+    { min: 0, max: 11600, rate: 0 },
+    { min: 11600, max: 29579, rate: 0.11 },
+    { min: 29579, max: 84577, rate: 0.30 },
+    { min: 84577, max: 181917, rate: 0.41 },
+    { min: 181917, max: Infinity, rate: 0.45 },
   ];
   for (const t of tranches) {
     if (q <= t.min) break;
