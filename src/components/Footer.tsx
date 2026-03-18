@@ -24,27 +24,51 @@ const CATEGORY_LINKS = [
 
 export default function Footer() {
   return (
-    <footer className="border-t" style={{ borderColor: "var(--border)", background: "var(--surface-alt)" }}>
-      <div className="mx-auto max-w-6xl px-5 py-16">
+    <footer className="relative" style={{ background: "var(--surface-alt)" }}>
+      {/* Decorative top border */}
+      <div className="h-px" style={{ background: "linear-gradient(90deg, transparent, var(--border), var(--accent)30, var(--border), transparent)" }} />
+
+      <div className="mx-auto max-w-7xl px-6 py-16 2xl:max-w-[1400px]">
         <div className="grid grid-cols-1 gap-12 md:grid-cols-12">
           {/* Brand */}
           <div className="md:col-span-4">
-            <span
-              className="text-3xl tracking-tight"
-              style={{ fontFamily: "var(--font-display)", color: "var(--primary)" }}
-            >
-              Outilis
-            </span>
+            <div className="flex items-baseline gap-0.5">
+              <span
+                className="text-3xl tracking-tight"
+                style={{ fontFamily: "var(--font-display)", color: "var(--primary)" }}
+              >
+                Outilis
+              </span>
+              <span className="text-[10px] font-semibold tracking-[0.15em] uppercase" style={{ color: "var(--accent)" }}>
+                .fr
+              </span>
+            </div>
             <p className="mt-4 max-w-xs text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
               Des outils en ligne penses pour simplifier votre quotidien.
               Rapides, gratuits, sans inscription. Vos donnees restent sur votre navigateur.
             </p>
+            {/* Mini trust badges */}
+            <div className="mt-5 flex gap-3">
+              {[
+                { icon: "\u{1F512}", label: "100% local" },
+                { icon: "\u{26A1}", label: "Instantane" },
+              ].map((badge, i) => (
+                <span
+                  key={i}
+                  className="inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-[11px] font-medium"
+                  style={{ borderColor: "var(--border)", color: "var(--muted)", background: "var(--surface)" }}
+                >
+                  <span className="text-xs">{badge.icon}</span>
+                  {badge.label}
+                </span>
+              ))}
+            </div>
           </div>
 
           {/* Tools */}
           <div className="md:col-span-2">
             <h4
-              className="text-xs font-semibold uppercase tracking-[0.15em]"
+              className="text-[11px] font-semibold uppercase tracking-[0.15em]"
               style={{ color: "var(--muted)" }}
             >
               Nos outils
@@ -54,7 +78,7 @@ export default function Footer() {
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-sm transition-colors hover:underline underline-offset-4"
+                    className="text-sm transition-colors hover:text-[#0d4f3c] hover:underline underline-offset-4"
                     style={{ color: "var(--foreground)" }}
                   >
                     {link.label}
@@ -67,7 +91,7 @@ export default function Footer() {
           {/* Categories */}
           <div className="md:col-span-3">
             <h4
-              className="text-xs font-semibold uppercase tracking-[0.15em]"
+              className="text-[11px] font-semibold uppercase tracking-[0.15em]"
               style={{ color: "var(--muted)" }}
             >
               Categories
@@ -77,7 +101,7 @@ export default function Footer() {
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-sm transition-colors hover:underline underline-offset-4"
+                    className="text-sm transition-colors hover:text-[#0d4f3c] hover:underline underline-offset-4"
                     style={{ color: "var(--foreground)" }}
                   >
                     {link.label}
@@ -90,14 +114,14 @@ export default function Footer() {
           {/* Info */}
           <div className="md:col-span-3">
             <h4
-              className="text-xs font-semibold uppercase tracking-[0.15em]"
+              className="text-[11px] font-semibold uppercase tracking-[0.15em]"
               style={{ color: "var(--muted)" }}
             >
               A propos
             </h4>
             <ul className="mt-4 space-y-2.5 text-sm" style={{ color: "var(--muted)" }}>
-              <li><Link href="/comment-ca-marche" className="transition-colors hover:underline underline-offset-4" style={{ color: "var(--foreground)" }}>Comment ca marche</Link></li>
-              <li><Link href="/contribuer" className="transition-colors hover:underline underline-offset-4" style={{ color: "var(--foreground)" }}>Contribuer</Link></li>
+              <li><Link href="/comment-ca-marche" className="transition-colors hover:text-[#0d4f3c] hover:underline underline-offset-4" style={{ color: "var(--foreground)" }}>Comment ca marche</Link></li>
+              <li><Link href="/contribuer" className="transition-colors hover:text-[#0d4f3c] hover:underline underline-offset-4" style={{ color: "var(--foreground)" }}>Contribuer</Link></li>
               <li>100% gratuit</li>
               <li>Aucune donnee collectee</li>
               <li>
@@ -105,12 +129,12 @@ export default function Footer() {
                   href="https://github.com/ghota-tech-solutions-sass/outilio"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 transition-colors hover:underline underline-offset-4"
+                  className="inline-flex items-center gap-1.5 transition-colors hover:text-[#0d4f3c] hover:underline underline-offset-4"
                   style={{ color: "var(--foreground)" }}
                 >
                   <svg
-                    width="16"
-                    height="16"
+                    width="15"
+                    height="15"
                     viewBox="0 0 24 24"
                     fill="currentColor"
                     aria-hidden="true"
@@ -125,8 +149,8 @@ export default function Footer() {
         </div>
 
         <div
-          className="mt-16 flex flex-col items-center justify-between gap-4 border-t pt-8 text-xs sm:flex-row"
-          style={{ borderColor: "var(--border)", color: "var(--muted)" }}
+          className="mt-14 flex flex-col items-center justify-between gap-4 pt-8 text-xs sm:flex-row"
+          style={{ borderTop: "1px solid var(--border)", color: "var(--muted)" }}
         >
           <span>&copy; {new Date().getFullYear()} Outilis.fr &mdash; <Link href="/mentions-legales" className="underline underline-offset-2 hover:text-[var(--foreground)]">Mentions legales</Link></span>
           <span>Fait avec soin en France par <a href="https://ghotatechsolutions.com" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-[var(--foreground)]">Ghota Tech Solutions</a></span>

@@ -90,7 +90,7 @@ export default function RecentAndFavorites() {
   if (favorites.length === 0 && recent.length === 0) return null;
 
   return (
-    <section className="mx-auto max-w-6xl px-5 pb-8">
+    <section className="mx-auto max-w-7xl px-6 pb-8 2xl:max-w-[1400px]">
       {favorites.length > 0 && (
         <div className="mb-6">
           <div className="flex items-center gap-2">

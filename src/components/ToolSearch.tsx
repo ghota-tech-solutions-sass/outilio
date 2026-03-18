@@ -81,7 +81,7 @@ export default function ToolSearchFilter({ tools }: { tools: Tool[] }) {
     <div>
       {/* Search bar */}
       <div className="relative">
-        <div className="absolute left-4 top-1/2 -translate-y-1/2" style={{ color: "var(--muted)" }}>
+        <div className="absolute left-4 top-1/2 -translate-y-1/2 transition-colors" style={{ color: query ? "var(--primary)" : "var(--muted)" }}>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <circle cx="11" cy="11" r="8"/>
             <line x1="21" y1="21" x2="16.65" y2="16.65"/>
@@ -93,7 +93,7 @@ export default function ToolSearchFilter({ tools }: { tools: Tool[] }) {
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Rechercher un outil... (salaire, pret, image, pdf...)"
           className="w-full rounded-2xl border py-4 pl-12 pr-12 text-sm transition-all placeholder:text-[var(--muted)]"
-          style={{ borderColor: "var(--border)", background: "var(--surface)" }}
+          style={{ borderColor: "var(--border)", background: "var(--surface)", boxShadow: "var(--shadow-sm)" }}
         />
         {query ? (
           <button
@@ -106,7 +106,7 @@ export default function ToolSearchFilter({ tools }: { tools: Tool[] }) {
             </svg>
           </button>
         ) : (
-          <span className="absolute right-4 top-1/2 -translate-y-1/2 hidden rounded-lg border px-2 py-0.5 text-[10px] font-medium sm:inline-block" style={{ borderColor: "var(--border)", color: "var(--muted)" }}>
+          <span className="absolute right-4 top-1/2 -translate-y-1/2 hidden rounded-lg border px-2 py-0.5 text-[10px] font-medium sm:inline-block" style={{ borderColor: "var(--border)", color: "var(--muted)", background: "var(--surface-alt)" }}>
             Ctrl+K
           </span>
         )}
@@ -123,6 +123,7 @@ export default function ToolSearchFilter({ tools }: { tools: Tool[] }) {
               borderColor: activeCategory === "all" ? "var(--primary)" : "var(--border)",
               background: activeCategory === "all" ? "var(--primary)" : "var(--surface)",
               color: activeCategory === "all" ? "white" : "var(--muted)",
+              boxShadow: activeCategory === "all" ? "0 2px 8px rgba(13,79,60,0.2)" : "none",
             }}
           >
             {"\u{2728}"} Tous
@@ -142,11 +143,12 @@ export default function ToolSearchFilter({ tools }: { tools: Tool[] }) {
             <button
               key={cat.id}
               onClick={() => setActiveCategory(activeCategory === cat.id ? "all" : cat.id)}
-              className="flex items-center gap-1.5 rounded-full border px-3 py-2 text-xs font-semibold transition-all hover:border-[#0d4f3c]/30"
+              className="flex items-center gap-1.5 rounded-full border px-3 py-2 text-xs font-semibold transition-all hover:border-[#0d4f3c]/20 hover:shadow-sm"
               style={{
                 borderColor: activeCategory === cat.id ? "var(--primary)" : "var(--border)",
                 background: activeCategory === cat.id ? "var(--primary)" : "var(--surface)",
                 color: activeCategory === cat.id ? "white" : "var(--muted)",
+                boxShadow: activeCategory === cat.id ? "0 2px 8px rgba(13,79,60,0.2)" : "none",
               }}
             >
               <span className="text-sm">{cat.icon}</span>
@@ -167,7 +169,7 @@ export default function ToolSearchFilter({ tools }: { tools: Tool[] }) {
           {categories.length > 8 && (
             <button
               onClick={() => setShowAllCategories(!showAllCategories)}
-              className="flex items-center gap-1 rounded-full border border-dashed px-3 py-2 text-xs font-semibold transition-all hover:border-[#0d4f3c]/30"
+              className="flex items-center gap-1 rounded-full border border-dashed px-3 py-2 text-xs font-semibold transition-all hover:border-[#0d4f3c]/30 hover:bg-[#0d4f3c]/[0.02]"
               style={{ borderColor: "var(--border)", color: "var(--muted)" }}
             >
               {showAllCategories ? (
@@ -191,7 +193,7 @@ export default function ToolSearchFilter({ tools }: { tools: Tool[] }) {
       </div>
 
       {/* Results count */}
-      <div className="mt-5 flex items-center justify-between">
+      <div className="mt-6 flex items-center justify-between">
         <p className="text-sm" style={{ color: "var(--muted)" }}>
           {filtered.length === tools.length ? (
             <>{tools.length} outils disponibles</>
@@ -215,9 +217,9 @@ export default function ToolSearchFilter({ tools }: { tools: Tool[] }) {
       </div>
 
       {/* Grid */}
-      <div className="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-        {filtered.map((tool) => (
-          <div key={tool.href} className="animate-scale-in">
+      <div className="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
+        {filtered.map((tool, index) => (
+          <div key={tool.href} className="animate-scale-in" style={{ animationDelay: `${Math.min(index * 0.03, 0.3)}s` }}>
             <ToolCard {...tool} />
           </div>
         ))}
@@ -235,7 +237,7 @@ export default function ToolSearchFilter({ tools }: { tools: Tool[] }) {
           </p>
           <button
             onClick={() => { setQuery(""); setActiveCategory("all"); }}
-            className="mt-4 rounded-full px-6 py-2 text-sm font-semibold text-white transition-all hover:opacity-90"
+            className="mt-4 rounded-full px-6 py-2.5 text-sm font-semibold text-white transition-all hover:scale-[1.02] hover:shadow-lg"
             style={{ background: "var(--primary)" }}
           >
             Voir tous les outils

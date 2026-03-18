@@ -11,6 +11,10 @@
   --surface-alt: #f0ede8;
   --muted: #8a8578;
   --border: #e2ded6;
+  --shadow-sm: 0 1px 2px rgba(26,26,26,0.04), 0 1px 3px rgba(13,79,60,0.03);
+  --shadow-md: 0 4px 6px -1px rgba(26,26,26,0.05), 0 2px 4px -2px rgba(13,79,60,0.04);
+  --shadow-lg: 0 10px 25px -3px rgba(26,26,26,0.06), 0 4px 10px -4px rgba(13,79,60,0.04);
+  --shadow-xl: 0 20px 40px -5px rgba(26,26,26,0.08), 0 8px 16px -8px rgba(13,79,60,0.05);
 }
 
 @theme inline {
@@ -32,7 +36,7 @@ body::before {
   inset: 0;
   z-index: 9999;
   pointer-events: none;
-  opacity: 0.03;
+  opacity: 0.025;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
@@ -53,12 +57,34 @@ body::before {
 }
 
 @keyframes scaleIn {
-  from { opacity: 0; transform: scale(0.95); }
+  from { opacity: 0; transform: scale(0.96); }
   to { opacity: 1; transform: scale(1); }
 }
 
+@keyframes orbFloat {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  25% { transform: translate(10px, -15px) scale(1.02); }
+  50% { transform: translate(-5px, -25px) scale(0.98); }
+  75% { transform: translate(-15px, -10px) scale(1.01); }
+}
+
+@keyframes cardShine {
+  0% { transform: translateX(-100%) rotate(12deg); }
+  100% { transform: translateX(200%) rotate(12deg); }
+}
+
+@keyframes subtleBounce {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(3px); }
+}
+
+@keyframes gradientShift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
 .animate-fade-up {
-  animation: fadeUp 0.6s ease-out both;
+  animation: fadeUp 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .animate-fade-in {
@@ -66,20 +92,20 @@ body::before {
 }
 
 .animate-slide-in {
-  animation: slideIn 0.5s ease-out both;
+  animation: slideIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .animate-scale-in {
-  animation: scaleIn 0.4s ease-out both;
+  animation: scaleIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-.stagger-1 { animation-delay: 0.05s; }
-.stagger-2 { animation-delay: 0.1s; }
-.stagger-3 { animation-delay: 0.15s; }
-.stagger-4 { animation-delay: 0.2s; }
-.stagger-5 { animation-delay: 0.25s; }
-.stagger-6 { animation-delay: 0.3s; }
-.stagger-7 { animation-delay: 0.35s; }
+.stagger-1 { animation-delay: 0.06s; }
+.stagger-2 { animation-delay: 0.12s; }
+.stagger-3 { animation-delay: 0.18s; }
+.stagger-4 { animation-delay: 0.24s; }
+.stagger-5 { animation-delay: 0.30s; }
+.stagger-6 { animation-delay: 0.36s; }
+.stagger-7 { animation-delay: 0.42s; }
 
 /* Floating animation for hero elements */
 @keyframes float {
@@ -98,16 +124,49 @@ body::before {
 }
 
 .animate-float { animation: float 6s ease-in-out infinite; }
+.animate-orb-float { animation: orbFloat 12s ease-in-out infinite; }
 .animate-shimmer {
   background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.4) 50%, transparent 100%);
   background-size: 200% 100%;
   animation: shimmer 2s ease-in-out infinite;
 }
-.animate-pulse-glow { animation: pulse-glow 2s ease-in-out infinite; }
+.animate-pulse-glow { animation: pulse-glow 2.5s ease-in-out infinite; }
+.animate-gradient-shift {
+  background-size: 200% 200%;
+  animation: gradientShift 6s ease-in-out infinite;
+}
+
+/* Card hover shine effect - uses inner element to avoid clipping badges */
+.card-shine-inner {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 1;
+}
+.card-shine-inner::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.5) 45%, rgba(255,255,255,0.2) 50%, transparent 55%);
+  transition: opacity 0.3s;
+}
+.group:hover .card-shine-inner::after {
+  opacity: 1;
+  animation: cardShine 0.8s ease-out;
+}
+
+/* Arrow bounce on hover */
+.arrow-bounce:hover .arrow-icon {
+  animation: subtleBounce 0.6s ease-in-out infinite;
+}
 
 /* Trust badge styles */
 .trust-strip {
-  background: linear-gradient(135deg, var(--primary) 0%, #1a6b4f 100%);
+  background: linear-gradient(135deg, var(--primary) 0%, #1a6b4f 50%, #0d4f3c 100%);
+  background-size: 200% 100%;
 }
 
 /* Category pill active state */
@@ -121,7 +180,7 @@ body::before {
 input:focus, select:focus, textarea:focus {
   outline: none;
   border-color: var(--primary) !important;
-  box-shadow: 0 0 0 3px rgba(13, 79, 60, 0.1);
+  box-shadow: 0 0 0 3px rgba(13, 79, 60, 0.08), 0 0 0 1px rgba(13, 79, 60, 0.15);
 }
 
 /* Selection color */
@@ -135,6 +194,34 @@ input:focus, select:focus, textarea:focus {
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+
+/* Feature card accent border */
+.feature-card {
+  position: relative;
+}
+.feature-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  border-radius: 999px 999px 0 0;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.feature-card:hover::before {
+  opacity: 1;
+}
+
+/* Bento grid item hover */
+.bento-item {
+  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.bento-item:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
 
 /* Print */
 @media print {
