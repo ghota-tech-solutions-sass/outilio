@@ -64,7 +64,7 @@ export default function ArticleSasuMicro2026() {
             </h2>
             <p>
               En <strong>micro-entreprise</strong>, les cotisations sociales sont proportionnelles au chiffre
-              d&apos;affaires. Pour les prestations de services (BNC), le taux est de <strong>21,1 %</strong> en
+              d&apos;affaires. Pour les prestations de services (BNC), le taux est de <strong>25,6 %</strong> en
               2026 (URSSAF). Ce systeme est simple et previsible : pas de CA, pas de cotisations.
             </p>
             <p>
@@ -132,33 +132,35 @@ export default function ArticleSasuMicro2026() {
               votre chiffre d&apos;affaires et vos charges. Testez differents scenarios pour prendre la meilleure
               decision.
             </p>
-          </div>
+            {/* CTA */}
+            <div className="mt-10 rounded-2xl border p-8 text-center" style={{ background: "var(--surface-alt)", borderColor: "var(--border)" }}>
+              <p className="text-sm font-medium" style={{ color: "var(--muted)" }}>Comparez SASU et Micro en quelques clics</p>
+              <Link
+                href="/outils/simulateur-auto-entrepreneur"
+                className="mt-4 inline-flex items-center gap-2 rounded-full px-7 py-3.5 text-sm font-semibold text-white transition-all hover:scale-[1.02] hover:shadow-lg"
+                style={{ background: "linear-gradient(135deg, var(--primary) 0%, #1a6b4f 100%)" }}
+              >
+                Essayer l&apos;outil
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              </Link>
+            </div>
 
-          {/* CTA */}
-          <div className="mt-10 text-center">
-            <Link
-              href="/outils/simulateur-auto-entrepreneur"
-              className="inline-flex items-center gap-2.5 rounded-xl px-6 py-3.5 text-sm font-semibold text-white transition-all hover:opacity-90 hover:shadow-lg"
-              style={{ background: "var(--primary)" }}
-            >
-              Essayer l&apos;outil &rarr;
-              <span className="text-xs font-normal opacity-75">Simulateur auto-entrepreneur</span>
-            </Link>
-          </div>
-
-          {/* Back link */}
-          <div className="mt-12 border-t pt-8" style={{ borderColor: "var(--border)" }}>
-            <Link
-              href="/blog"
-              className="text-sm font-medium transition-colors hover:text-[#0d4f3c] hover:underline underline-offset-4"
-              style={{ color: "var(--muted)" }}
-            >
-              &larr; Retour au blog
-            </Link>
+            {/* Back link */}
+            <div className="mt-10 border-t pt-6" style={{ borderColor: "var(--border)" }}>
+              <Link
+                href="/blog"
+                className="text-sm font-medium transition-colors hover:text-[#0d4f3c] hover:underline underline-offset-4"
+                style={{ color: "var(--muted)" }}
+              >
+                &larr; Retour au blog
+              </Link>
+            </div>
           </div>
           <aside className="hidden space-y-6 lg:block">
-            <AdPlaceholder className="min-h-[250px]" />
-            <AdPlaceholder className="min-h-[250px]" />
+            <div className="sticky top-24 space-y-6">
+              <AdPlaceholder className="min-h-[250px]" />
+              <AdPlaceholder className="min-h-[250px]" />
+            </div>
           </aside>
           </div>
         </div>

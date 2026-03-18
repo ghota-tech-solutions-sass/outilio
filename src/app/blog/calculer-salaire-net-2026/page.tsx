@@ -142,33 +142,35 @@ export default function ArticleSalaireNet2026() {
               precise en quelques secondes, avec prise en compte du bareme IR 2026 et du nombre de parts
               fiscales.
             </p>
-          </div>
+            {/* CTA */}
+            <div className="mt-10 rounded-2xl border p-8 text-center" style={{ background: "var(--surface-alt)", borderColor: "var(--border)" }}>
+              <p className="text-sm font-medium" style={{ color: "var(--muted)" }}>Calculez votre salaire net en quelques secondes</p>
+              <Link
+                href="/outils/calculateur-salaire"
+                className="mt-4 inline-flex items-center gap-2 rounded-full px-7 py-3.5 text-sm font-semibold text-white transition-all hover:scale-[1.02] hover:shadow-lg"
+                style={{ background: "linear-gradient(135deg, var(--primary) 0%, #1a6b4f 100%)" }}
+              >
+                Essayer l&apos;outil
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              </Link>
+            </div>
 
-          {/* CTA */}
-          <div className="mt-10 text-center">
-            <Link
-              href="/outils/calculateur-salaire"
-              className="inline-flex items-center gap-2.5 rounded-xl px-6 py-3.5 text-sm font-semibold text-white transition-all hover:opacity-90 hover:shadow-lg"
-              style={{ background: "var(--primary)" }}
-            >
-              Essayer l&apos;outil &rarr;
-              <span className="text-xs font-normal opacity-75">Calculateur salaire net / brut</span>
-            </Link>
-          </div>
-
-          {/* Back link */}
-          <div className="mt-12 border-t pt-8" style={{ borderColor: "var(--border)" }}>
-            <Link
-              href="/blog"
-              className="text-sm font-medium transition-colors hover:text-[#0d4f3c] hover:underline underline-offset-4"
-              style={{ color: "var(--muted)" }}
-            >
-              &larr; Retour au blog
-            </Link>
+            {/* Back link */}
+            <div className="mt-10 border-t pt-6" style={{ borderColor: "var(--border)" }}>
+              <Link
+                href="/blog"
+                className="text-sm font-medium transition-colors hover:text-[#0d4f3c] hover:underline underline-offset-4"
+                style={{ color: "var(--muted)" }}
+              >
+                &larr; Retour au blog
+              </Link>
+            </div>
           </div>
           <aside className="hidden space-y-6 lg:block">
-            <AdPlaceholder className="min-h-[250px]" />
-            <AdPlaceholder className="min-h-[250px]" />
+            <div className="sticky top-24 space-y-6">
+              <AdPlaceholder className="min-h-[250px]" />
+              <AdPlaceholder className="min-h-[250px]" />
+            </div>
           </aside>
           </div>
         </div>
