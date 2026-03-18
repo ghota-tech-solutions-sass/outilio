@@ -172,6 +172,7 @@ interface EURLParams {
   pctRemuneration: number;
   tauxCotisationsTNS: number;
   pctFraisPro: number;
+  capitalSocial: number; // capital social + compte courant d'associe
   parts: number;
 }
 function calcEURL(p: EURLParams) {
@@ -179,8 +180,6 @@ function calcEURL(p: EURLParams) {
   const fraisPro = ca * p.pctFraisPro;
 
   // Remuneration gerant TNS
-  // Budget remuneration = remuneration nette + cotisations TNS
-  // Cotisations TNS sont calculees sur la remuneration : cout = remuneration * (1 + taux)
   const budgetRemuneration = ca * p.pctRemuneration;
   const remunerationBase = budgetRemuneration / (1 + p.tauxCotisationsTNS);
   const cotisationsTNS = remunerationBase * p.tauxCotisationsTNS;
@@ -192,11 +191,24 @@ function calcEURL(p: EURLParams) {
   const is = calcIS(beneficeAvantIS);
   const beneficeApresIS = beneficeAvantIS - is;
 
-  // Dividendes EURL : au-dela de 10% du capital, soumis a cotisations TNS
-  // Simplification : flat tax 30% + surcout TNS estime a 15% supplementaires
-  // (en pratique la plupart des dividendes > 10% capital sont soumis aux cotisations)
+  // Dividendes EURL IS :
+  // - Part <= 10% du (capital social + CCA) : flat tax 30% (PFU)
+  // - Part > 10% : soumise aux cotisations TNS (~45%) au lieu de la part CSG/CRDS
+  //   En pratique : ~45% de cotisations TNS + 12.8% d'IR = ~57.8% de prelevements
+  // Avec un capital faible (ex: 1000€), quasi tout est soumis aux cotisations TNS
   const dividendesBruts = Math.max(0, beneficeApresIS);
-  const prelDividendes = dividendesBruts * 0.45; // ~30% PFU + ~15% cotisations TNS sur la part > 10% capital
+  const seuil10pct = p.capitalSocial * 0.10;
+  const partSousFranchise = Math.min(dividendesBruts, seuil10pct);
+  const partAuDessus = Math.max(0, dividendesBruts - seuil10pct);
+
+  // Part sous franchise : flat tax 30%
+  const prelFranchise = partSousFranchise * 0.30;
+  // Part au-dessus : cotisations TNS (~45%) + IR residuel (12.8%)
+  const cotisationsTNSDividendes = partAuDessus * p.tauxCotisationsTNS;
+  const irDividendesAuDessus = partAuDessus * 0.128;
+  const prelAuDessus = cotisationsTNSDividendes + irDividendesAuDessus;
+
+  const prelDividendes = prelFranchise + prelAuDessus;
   const dividendesNets = dividendesBruts - prelDividendes;
 
   // IR sur la remuneration
@@ -215,13 +227,17 @@ function calcEURL(p: EURLParams) {
     is,
     beneficeApresIS,
     dividendesBruts,
+    seuil10pct,
+    partSousFranchise,
+    partAuDessus,
+    cotisationsTNSDividendes,
     prelDividendes,
     dividendesNets,
     impotRemuneration,
     totalNet,
     netMensuel: totalNet / 12,
     avantages: [
-      "Cotisations TNS plus faibles",
+      "Cotisations TNS plus faibles qu'en SASU",
       "Impot sur les societes (IS)",
       "Deduction des frais reels",
       "Patrimoine professionnel separe",
@@ -263,6 +279,7 @@ export default function FreelanceVsCDI() {
   const [sasuPctFrais, setSasuPctFrais] = useState("5");
   const [eurlTauxTNS, setEurlTauxTNS] = useState("45");
   const [eurlPctFrais, setEurlPctFrais] = useState("5");
+  const [eurlCapitalCCA, setEurlCapitalCCA] = useState("1000");
 
   /* ── Parsed values ── */
   const partsNum = parseFloat(parts) || 1;
@@ -323,9 +340,10 @@ export default function FreelanceVsCDI() {
         pctRemuneration: eurlPctRemuneration / 100,
         tauxCotisationsTNS: (parseFloat(eurlTauxTNS) || 45) / 100,
         pctFraisPro: (parseFloat(eurlPctFrais) || 5) / 100,
+        capitalSocial: parseFloat(eurlCapitalCCA) || 1000,
         parts: partsNum,
       }),
-    [tjmNum, joursNum, eurlPctRemuneration, eurlTauxTNS, eurlPctFrais, partsNum]
+    [tjmNum, joursNum, eurlPctRemuneration, eurlTauxTNS, eurlPctFrais, eurlCapitalCCA, partsNum]
   );
 
   const freelance = statut === "micro" ? micro : statut === "sasu" ? sasu : eurl;
@@ -359,6 +377,7 @@ export default function FreelanceVsCDI() {
           pctRemuneration: eurlPctRemuneration / 100,
           tauxCotisationsTNS: (parseFloat(eurlTauxTNS) || 45) / 100,
           pctFraisPro: (parseFloat(eurlPctFrais) || 5) / 100,
+          capitalSocial: parseFloat(eurlCapitalCCA) || 1000,
           parts: partsNum,
         }).netMensuel;
       }
@@ -442,7 +461,9 @@ export default function FreelanceVsCDI() {
       ["Benefice avant IS", `${fmt(eurl.beneficeAvantIS)} \u20ac`],
       ["Impot sur les societes", `- ${fmt(eurl.is)} \u20ac`],
       ["Dividendes bruts", `${fmt(eurl.dividendesBruts)} \u20ac`],
-      ["Prelevements (~45%)", `- ${fmt(eurl.prelDividendes)} \u20ac`],
+      [`Franchise PFU (\u226410% capital)`, `${fmt(eurl.partSousFranchise)} \u20ac`],
+      ...(eurl.partAuDessus > 0 ? [[`Soumis TNS (>${fmt(eurl.seuil10pct)}\u20ac)`, `${fmt(eurl.partAuDessus)} \u20ac`] as [string, string]] : []),
+      ["Prelevements totaux", `- ${fmt(eurl.prelDividendes)} \u20ac`],
       ["Dividendes nets", `${fmt(eurl.dividendesNets)} \u20ac`],
       ["\u2500\u2500 Total \u2500\u2500", ""],
       ["Net annuel total", `${fmt(eurl.totalNet)} \u20ac`, true],
@@ -488,7 +509,7 @@ export default function FreelanceVsCDI() {
             <div
               className="grid grid-cols-1 gap-4 sm:grid-cols-3"
             >
-              <InputCard label="TJM" value={tjm} onChange={setTjm} suffix="\u20ac/jour" />
+              <InputCard label="TJM" value={tjm} onChange={setTjm} suffix="€/jour" />
               <InputCard
                 label="Jours travailles / an"
                 value={joursAn}
@@ -813,7 +834,7 @@ export default function FreelanceVsCDI() {
                   >
                     EURL
                   </p>
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-3 gap-3">
                     <AdvancedInput
                       label="Cotisations TNS (%)"
                       value={eurlTauxTNS}
@@ -823,6 +844,11 @@ export default function FreelanceVsCDI() {
                       label="Frais pro (% CA)"
                       value={eurlPctFrais}
                       onChange={setEurlPctFrais}
+                    />
+                    <AdvancedInput
+                      label="Capital + CCA (€)"
+                      value={eurlCapitalCCA}
+                      onChange={setEurlCapitalCCA}
                     />
                   </div>
                 </div>
