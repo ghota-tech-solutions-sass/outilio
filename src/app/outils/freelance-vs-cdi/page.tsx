@@ -123,11 +123,18 @@ function calcSASU(p: SASUParams) {
   const pfuDividendes = dividendesBruts * 0.30;
   const dividendesNets = dividendesBruts - pfuDividendes;
 
+  // Taxe PUMa : si remuneration < 20% du PASS (~9 273€), taxe 6.5% sur revenus du capital
+  const PASS_2026 = 47100;
+  const seuilPuma = PASS_2026 * 0.20; // ~9 420€
+  const taxePuma = remunerationBrute < seuilPuma && dividendesBruts > 0
+    ? dividendesBruts * 0.065
+    : 0;
+
   // IR sur la remuneration nette
   const impotRemuneration = calcImpot(remunerationNette, p.parts);
 
   // Total net
-  const totalNet = remunerationNette - impotRemuneration + dividendesNets;
+  const totalNet = remunerationNette - impotRemuneration + dividendesNets - taxePuma;
 
   return {
     ca,
@@ -143,6 +150,7 @@ function calcSASU(p: SASUParams) {
     dividendesBruts,
     pfuDividendes,
     dividendesNets,
+    taxePuma,
     impotRemuneration,
     totalNet,
     netMensuel: totalNet / 12,
@@ -416,6 +424,7 @@ export default function FreelanceVsCDI() {
         ["Dividendes bruts", `${fmt(sasu.dividendesBruts)} \u20ac`],
         ["Flat tax (30%)", `- ${fmt(sasu.pfuDividendes)} \u20ac`],
         ["Dividendes nets", `${fmt(sasu.dividendesNets)} \u20ac`],
+        ...(sasu.taxePuma > 0 ? [["Taxe PUMa (6,5%)", `- ${fmt(sasu.taxePuma)} \u20ac`] as [string, string]] : []),
         ["\u2500\u2500 Total \u2500\u2500", ""],
         ["Net annuel total", `${fmt(sasu.totalNet)} \u20ac`, true],
       ];
@@ -623,6 +632,18 @@ export default function FreelanceVsCDI() {
                     </p>
                   </div>
                 </div>
+                {sasu.taxePuma > 0 && (
+                  <div className="mt-3 flex items-start gap-2 rounded-lg border p-3" style={{ borderColor: "#dc262640", background: "#dc26260a" }}>
+                    <span className="mt-0.5 text-sm">{"\u26A0\uFE0F"}</span>
+                    <div>
+                      <p className="text-xs font-semibold" style={{ color: "#dc2626" }}>Taxe PUMa applicable</p>
+                      <p className="mt-0.5 text-[11px] leading-relaxed" style={{ color: "var(--muted)" }}>
+                        Remuneration inf. a 20% du PASS ({fmt(47100 * 0.20)} &euro;). Taxe de 6,5% sur les dividendes : <strong>{fmt(sasu.taxePuma)} &euro;</strong>.
+                        Augmentez la part remuneration pour l&apos;eviter.
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
