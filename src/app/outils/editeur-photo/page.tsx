@@ -1045,7 +1045,7 @@ export default function EditeurPhoto() {
           </div>
         </section>
 
-        <div className="mx-auto max-w-3xl px-5 py-16">
+        <div className="mx-auto max-w-7xl px-6 2xl:max-w-[1400px] py-16">
           <div
             onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
             onDragLeave={() => setDragging(false)}

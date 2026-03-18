@@ -71,7 +71,7 @@ export default function ConvertisseurJsonCsv() {
   return (
     <>
       <section className="py-12" style={{ background: "linear-gradient(to bottom, var(--surface-alt), var(--background))" }}>
-        <div className="mx-auto max-w-3xl px-4">
+        <div className="mx-auto max-w-7xl px-6 2xl:max-w-[1400px]">
           <h1
             className="animate-fade-up stagger-1 text-3xl font-extrabold md:text-4xl"
             style={{ fontFamily: "var(--font-display)", color: "var(--foreground)" }}
@@ -87,7 +87,7 @@ export default function ConvertisseurJsonCsv() {
         </div>
       </section>
 
-      <div className="mx-auto max-w-5xl px-4 py-8">
+      <div className="mx-auto max-w-7xl px-6 2xl:max-w-[1400px] py-8">
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
           <div className="lg:col-span-2 space-y-6">
             <div

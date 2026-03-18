@@ -96,7 +96,7 @@ export default function GenerateurCV() {
         className="py-12 no-print"
         style={{ background: "linear-gradient(to bottom, var(--surface-alt), var(--background))" }}
       >
-        <div className="mx-auto max-w-4xl px-5 animate-fade-up">
+        <div className="mx-auto max-w-7xl px-6 2xl:max-w-[1400px] animate-fade-up">
           <h1
             className="text-3xl font-extrabold md:text-4xl"
             style={{ fontFamily: "var(--font-display)", color: "var(--primary)" }}
