@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import AdPlaceholder from "@/components/AdPlaceholder";
 
 export default function ArticleDeclarationImpots2026() {
   return (
@@ -47,7 +48,8 @@ export default function ArticleDeclarationImpots2026() {
       {/* Article body */}
       <article className="py-12">
         <div className="mx-auto max-w-7xl px-6 2xl:max-w-[1400px]">
-          <div className="prose-outilis mx-auto max-w-3xl space-y-6 text-[15px] leading-relaxed" style={{ color: "var(--foreground)" }}>
+          <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_300px]">
+          <div className="prose-outilis space-y-6 text-[15px] leading-relaxed" style={{ color: "var(--foreground)" }}>
             <p>
               La campagne de declaration des revenus 2025 ouvre ses portes en avril 2026. Nouveau bareme,
               dates limites, quotient familial : voici l&apos;essentiel pour preparer sereinement votre
@@ -182,6 +184,11 @@ export default function ArticleDeclarationImpots2026() {
             >
               &larr; Retour au blog
             </Link>
+          </div>
+          <aside className="hidden space-y-6 lg:block">
+            <AdPlaceholder className="min-h-[250px]" />
+            <AdPlaceholder className="min-h-[250px]" />
+          </aside>
           </div>
         </div>
       </article>
