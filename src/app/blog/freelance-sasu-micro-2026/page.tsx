@@ -10,7 +10,7 @@ export default function ArticleSasuMicro2026() {
         className="relative py-14"
         style={{ borderBottom: "1px solid var(--border)" }}
       >
-        <div className="mx-auto max-w-3xl px-6">
+        <div className="mx-auto max-w-7xl px-6 2xl:max-w-[1400px]">
           {/* Breadcrumb */}
           <nav className="mb-6 flex items-center gap-2 text-xs" style={{ color: "var(--muted)" }}>
             <Link href="/blog" className="transition-colors hover:text-[#0d4f3c] hover:underline underline-offset-4">
@@ -46,8 +46,8 @@ export default function ArticleSasuMicro2026() {
 
       {/* Article body */}
       <article className="py-12">
-        <div className="mx-auto max-w-3xl px-6">
-          <div className="prose-outilis space-y-6 text-[15px] leading-relaxed" style={{ color: "var(--foreground)" }}>
+        <div className="mx-auto max-w-7xl px-6 2xl:max-w-[1400px]">
+          <div className="prose-outilis mx-auto max-w-3xl space-y-6 text-[15px] leading-relaxed" style={{ color: "var(--foreground)" }}>
             <p>
               Choisir entre la SASU et la micro-entreprise est l&apos;une des premieres decisions que doit prendre
               un freelance. Chaque statut presente des avantages et des limites. Avec les evolutions
