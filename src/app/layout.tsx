@@ -47,7 +47,7 @@ export const metadata: Metadata = {
       "Calculateurs, generateurs et convertisseurs gratuits. 100% dans votre navigateur.",
     images: [
       {
-        url: "https://outilis.fr/og-image.png",
+        url: "https://outilis.fr/og-image.svg",
         width: 1200,
         height: 630,
         alt: "Outilis.fr - 78 outils en ligne gratuits",
@@ -58,13 +58,10 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Outilis.fr - Outils en ligne gratuits",
     description: "78 outils gratuits : calculateurs, generateurs, convertisseurs. 100% navigateur.",
-    images: ["https://outilis.fr/og-image.png"],
+    images: ["https://outilis.fr/og-image.svg"],
     creator: "@MickaelV79228",
   },
   metadataBase: new URL("https://outilis.fr"),
-  alternates: {
-    canonical: "https://outilis.fr",
-  },
 };
 
 export default function RootLayout({

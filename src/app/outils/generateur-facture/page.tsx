@@ -146,10 +146,82 @@ export default function GenerateurFacture() {
             >
               Imprimer / Sauvegarder en PDF
             </button>
+
+            {/* SEO Content */}
+            <div className="rounded-2xl border p-8 no-print" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
+                Comment creer une facture conforme en France ?
+              </h2>
+              <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                <p>
+                  En France, une facture doit obligatoirement contenir certaines mentions legales pour etre valide.
+                  Notre generateur prend en charge toutes ces exigences automatiquement.
+                </p>
+                <ul className="ml-4 list-disc space-y-1">
+                  <li><strong className="text-[var(--foreground)]">Identite de l&apos;emetteur</strong> : nom ou raison sociale, adresse, SIRET</li>
+                  <li><strong className="text-[var(--foreground)]">Identite du client</strong> : nom ou raison sociale, adresse</li>
+                  <li><strong className="text-[var(--foreground)]">Numero de facture</strong> : unique et sequentiel</li>
+                  <li><strong className="text-[var(--foreground)]">Date d&apos;emission</strong> et date de la prestation</li>
+                  <li><strong className="text-[var(--foreground)]">Detail des prestations</strong> : designation, quantite, prix unitaire HT</li>
+                  <li><strong className="text-[var(--foreground)]">Montants</strong> : total HT, taux et montant de TVA, total TTC</li>
+                </ul>
+                <p>
+                  Depuis le 1er juillet 2024, la facturation electronique est progressivement obligatoire
+                  pour les entreprises assujetties a la TVA. Cet outil vous permet de generer des factures
+                  au format PDF, valides pour votre comptabilite.
+                </p>
+              </div>
+            </div>
+
+            {/* FAQ */}
+            <div className="rounded-2xl border p-8 no-print" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
+                Questions frequentes
+              </h2>
+              <div className="mt-6 space-y-5">
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>
+                    Une facture sans TVA est-elle valide ?
+                  </h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    Oui. Si vous etes auto-entrepreneur en franchise de TVA (article 293 B du CGI),
+                    vous devez indiquer la mention &laquo;&nbsp;TVA non applicable, art. 293 B du CGI&nbsp;&raquo;
+                    sur vos factures. Mettez simplement le taux de TVA a 0% dans notre outil.
+                  </p>
+                </div>
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>
+                    Comment numerote-t-on ses factures ?
+                  </h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    La numerotation doit etre chronologique et continue, sans trou. Vous pouvez utiliser
+                    un format comme FAC-2026-001 ou simplement 001, 002, 003. L&apos;important est que
+                    chaque facture ait un numero unique et que la sequence soit ininterrompue.
+                  </p>
+                </div>
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>
+                    Combien de temps conserver ses factures ?
+                  </h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    En France, les factures doivent etre conservees pendant 10 ans (obligation comptable)
+                    ou 6 ans (obligation fiscale). Le delai le plus long s&apos;applique. Les factures
+                    electroniques au format PDF sont acceptees comme preuves legales depuis la loi de 2017.
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
 
           <aside className="space-y-6 no-print">
             <AdPlaceholder className="h-[250px]" />
+            <div className="rounded-2xl border p-6" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+              <h3 className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--accent)" }}>A propos</h3>
+              <p className="mt-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                Ce generateur cree des factures conformes a la legislation francaise.
+                Vos donnees restent dans votre navigateur et ne sont jamais transmises a un serveur.
+              </p>
+            </div>
             <AdPlaceholder className="h-[600px]" />
           </aside>
         </div>

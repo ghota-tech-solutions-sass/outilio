@@ -705,6 +705,68 @@ export default function EditeurVideo() {
           </div>
         </div>
       )}
+
+      {/* SEO Content */}
+      <section className="py-12" style={{ background: "var(--surface-alt)" }}>
+        <div className="mx-auto max-w-4xl px-6 space-y-8">
+          <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+            <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)", color: "var(--foreground)" }}>
+              Editeur video en ligne gratuit
+            </h2>
+            <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+              <p>
+                Notre editeur video fonctionne entierement dans votre navigateur grace a la technologie FFmpeg WebAssembly.
+                Aucun fichier n&apos;est envoye sur un serveur : tout le traitement se fait localement sur votre appareil.
+              </p>
+              <p>Fonctionnalites disponibles :</p>
+              <ul className="ml-4 list-disc space-y-1">
+                <li><strong className="text-[var(--foreground)]">Couper</strong> : decoupez vos videos en selectionnant un point de debut et de fin</li>
+                <li><strong className="text-[var(--foreground)]">Redimensionner</strong> : convertissez en 1080p, 720p, 480p ou 360p</li>
+                <li><strong className="text-[var(--foreground)]">Vitesse</strong> : accelerez (2x, 4x) ou ralentissez (0.25x, 0.5x) vos videos</li>
+                <li><strong className="text-[var(--foreground)]">Rotation</strong> : pivotez a 90, 180 degres ou appliquez un effet miroir</li>
+                <li><strong className="text-[var(--foreground)]">GIF</strong> : convertissez un extrait video en GIF anime</li>
+                <li><strong className="text-[var(--foreground)]">Capture</strong> : extrayez une image fixe (screenshot) depuis votre video</li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+            <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)", color: "var(--foreground)" }}>
+              Questions frequentes
+            </h2>
+            <div className="mt-6 space-y-5">
+              <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>
+                  Quels formats video sont supportes ?
+                </h3>
+                <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                  L&apos;editeur supporte tous les formats reconnus par votre navigateur : MP4 (H.264), WebM, MOV, AVI et MKV.
+                  L&apos;export se fait en MP4 (H.264) pour une compatibilite maximale avec tous les appareils et plateformes.
+                </p>
+              </div>
+              <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>
+                  Y a-t-il une limite de taille de fichier ?
+                </h3>
+                <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                  Il n&apos;y a pas de limite imposee par notre outil. Cependant, le traitement se fait dans votre navigateur,
+                  donc la vitesse depend de la puissance de votre appareil. Pour des fichiers tres volumineux (plus de 500 Mo),
+                  prevoyez un temps de traitement plus long.
+                </p>
+              </div>
+              <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>
+                  Mes videos sont-elles envoyees sur un serveur ?
+                </h3>
+                <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                  Non. Tout le traitement est realise localement dans votre navigateur grace a FFmpeg compile en WebAssembly.
+                  Vos fichiers ne quittent jamais votre appareil. C&apos;est 100% prive et securise.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
     </>
   );
 }
