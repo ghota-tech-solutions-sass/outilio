@@ -144,6 +144,41 @@ export default function CalculateurBeton() {
                 <p>Le dosage standard pour du beton de fondation est de 350 kg de ciment par m&sup3; de beton.</p>
               </div>
             </div>
+
+            {/* SEO Content */}
+            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
+                Comment utiliser le calculateur de beton
+              </h2>
+              <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                <p>Notre calculateur de beton vous permet d&apos;estimer avec precision le volume de beton necessaire pour vos travaux de construction ou de renovation. Que vous couliez une dalle de terrasse, une fondation de maison ou un poteau, l&apos;outil calcule automatiquement le volume en m&sup3;, le nombre de sacs et le poids total.</p>
+                <ul className="ml-4 list-disc space-y-1">
+                  <li><strong className="text-[var(--foreground)]">Choisissez le type d&apos;ouvrage</strong> : dalle/plancher, fondation/semelle ou poteau/cylindre selon votre projet.</li>
+                  <li><strong className="text-[var(--foreground)]">Entrez les dimensions en metres</strong> : longueur, largeur et epaisseur pour une dalle, ou diametre et hauteur pour un poteau.</li>
+                  <li><strong className="text-[var(--foreground)]">Lisez les resultats</strong> : volume exact en m&sup3;, volume avec 10% de marge de securite, nombre de sacs de 25 kg et 35 kg, et poids total en tonnes.</li>
+                </ul>
+                <p>Les quantites incluent automatiquement une marge de 10% pour compenser les pertes liees au coulage, aux irregularites du sol et aux residus dans la betonniere. La densite utilisee est de 2 400 kg/m&sup3;, valeur standard pour le beton arme en France.</p>
+              </div>
+            </div>
+
+            {/* FAQ */}
+            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Questions frequentes</h2>
+              <div className="mt-6 space-y-5">
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Combien de sacs de beton pour 1 m&sup3; ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Il faut environ 84 sacs de 25 kg (soit ~12 litres chacun) ou 59 sacs de 35 kg (~17 litres chacun) pour obtenir 1 m&sup3; de beton. Ces chiffres sont des estimations basees sur du beton pret a l&apos;emploi en sac. Pour les gros volumes, un camion toupie de beton pret a l&apos;emploi (BPE) est plus economique et pratique.</p>
+                </div>
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Quelle epaisseur de beton pour une dalle de terrasse ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Pour une dalle de terrasse pietons, une epaisseur de 10 a 12 cm est generalement suffisante. Pour une dalle carrossable (passage de vehicules), prevoyez 15 a 20 cm. Dans tous les cas, le beton doit reposer sur un lit de gravier compacte de 10 a 15 cm pour assurer un drainage correct.</p>
+                </div>
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Quelle est la difference entre beton et mortier ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Le beton est compose de ciment, sable, gravier et eau. Il est utilise pour les ouvrages structurels (dalles, fondations, poteaux). Le mortier ne contient pas de gravier : il est compose uniquement de ciment, sable et eau. On l&apos;utilise pour la pose de briques, parpaings et enduits. Ce calculateur est concu pour le beton, pas le mortier.</p>
+                </div>
+              </div>
+            </div>
           </div>
           <aside className="space-y-6">
             <AdPlaceholder className="h-[250px]" />

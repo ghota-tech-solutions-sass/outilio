@@ -101,6 +101,44 @@ export default function GenerateurMentionsLegales() {
                 {text}
               </div>
             </div>
+
+            {/* SEO Content */}
+            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
+                Comment generer vos mentions legales
+              </h2>
+              <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                <p>
+                  En France, la loi n&deg;2004-575 du 21 juin 2004 (LCEN) impose a tout editeur de site internet de publier des mentions legales.
+                  Notre generateur cree un texte conforme incluant les informations obligatoires et les clauses RGPD.
+                </p>
+                <ul className="ml-4 list-disc space-y-1">
+                  <li><strong className="text-[var(--foreground)]">Renseignez les informations du site</strong> : nom et URL de votre site web</li>
+                  <li><strong className="text-[var(--foreground)]">Choisissez votre statut</strong> : particulier ou entreprise (avec SIRET et raison sociale)</li>
+                  <li><strong className="text-[var(--foreground)]">Ajoutez l&apos;hebergeur</strong> : nom et adresse de votre hebergeur web</li>
+                  <li><strong className="text-[var(--foreground)]">Copiez le resultat</strong> : collez-le dans une page dediee de votre site</li>
+                </ul>
+              </div>
+            </div>
+
+            {/* FAQ */}
+            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Questions frequentes</h2>
+              <div className="mt-6 space-y-5">
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Les mentions legales sont-elles obligatoires en France ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Oui, la loi LCEN de 2004 oblige tout editeur de site internet professionnel a afficher des mentions legales. L&apos;absence de mentions legales est passible d&apos;une amende pouvant aller jusqu&apos;a 75 000 &euro; pour les personnes physiques et 375 000 &euro; pour les personnes morales.</p>
+                </div>
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Que doit contenir une page de mentions legales ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Les mentions legales doivent inclure : l&apos;identite de l&apos;editeur (nom, adresse, SIRET pour les entreprises), les coordonnees de contact, les informations de l&apos;hebergeur, une clause sur la propriete intellectuelle et les droits relatifs aux donnees personnelles (RGPD).</p>
+                </div>
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Le texte genere est-il suffisant pour etre en conformite ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Le texte genere couvre les principales obligations legales. Cependant, selon votre activite (e-commerce, collecte de donnees sensibles), des clauses supplementaires peuvent etre necessaires. Il est recommande de faire valider vos mentions par un juriste.</p>
+                </div>
+              </div>
+            </div>
           </div>
           <aside className="space-y-6">
             <AdPlaceholder className="h-[250px]" />

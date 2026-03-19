@@ -158,6 +158,44 @@ export default function EncodeurBase64() {
                 <p><strong className="text-[var(--foreground)]">Attention</strong> : Base64 n&apos;est pas un chiffrement. C&apos;est un encodage reversible, il ne protege pas les donnees.</p>
               </div>
             </div>
+
+            {/* SEO Content */}
+            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
+                Comment utiliser l&apos;encodeur Base64
+              </h2>
+              <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                <p>
+                  Cet outil vous permet d&apos;encoder du texte en Base64 ou de decoder du Base64 en texte lisible.
+                  Le traitement gere correctement les caracteres Unicode (accents, emojis) grace a l&apos;encodage UTF-8.
+                </p>
+                <ul className="ml-4 list-disc space-y-1">
+                  <li><strong className="text-[var(--foreground)]">Choisissez le mode</strong> : encodage (texte vers Base64) ou decodage (Base64 vers texte)</li>
+                  <li><strong className="text-[var(--foreground)]">Collez votre contenu</strong> : dans la zone de saisie</li>
+                  <li><strong className="text-[var(--foreground)]">Cliquez sur Encoder/Decoder</strong> : le resultat s&apos;affiche instantanement</li>
+                  <li><strong className="text-[var(--foreground)]">Inversez les entrees</strong> : basculez d&apos;un mode a l&apos;autre en un clic</li>
+                </ul>
+              </div>
+            </div>
+
+            {/* FAQ */}
+            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Questions frequentes</h2>
+              <div className="mt-6 space-y-5">
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Base64 est-il un moyen de securiser des donnees ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Non, Base64 est un encodage, pas un chiffrement. N&apos;importe qui peut decoder du Base64 sans cle. Pour securiser des donnees, utilisez un vrai algorithme de chiffrement comme AES.</p>
+                </div>
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Pourquoi la taille augmente-t-elle en Base64 ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Base64 convertit 3 octets en 4 caracteres ASCII, ce qui augmente la taille d&apos;environ 33%. C&apos;est le prix a payer pour representer des donnees binaires en texte pur, compatible avec les emails et les URLs.</p>
+                </div>
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>L&apos;outil gere-t-il les caracteres speciaux et les accents ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Oui, l&apos;encodeur utilise l&apos;API TextEncoder pour convertir correctement les caracteres Unicode (accents francais, emojis, caracteres asiatiques) en UTF-8 avant l&apos;encodage Base64.</p>
+                </div>
+              </div>
+            </div>
           </div>
 
           <aside className="space-y-6">

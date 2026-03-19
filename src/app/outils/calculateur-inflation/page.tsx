@@ -145,6 +145,41 @@ export default function CalculateurInflation() {
                 <p><strong className="text-[var(--foreground)]">Source</strong> : Donnees basees sur l&apos;IPC INSEE (Institut National de la Statistique et des Etudes Economiques).</p>
               </div>
             </div>
+
+            {/* SEO Content */}
+            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
+                Comment utiliser le calculateur d&apos;inflation
+              </h2>
+              <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                <p>Ce calculateur d&apos;inflation vous permet de comparer la valeur d&apos;un montant en euros entre deux annees, en tenant compte de l&apos;evolution des prix en France. Les donnees utilisees sont basees sur l&apos;Indice des Prix a la Consommation (IPC) publie par l&apos;INSEE, de 1970 a 2025.</p>
+                <ul className="ml-4 list-disc space-y-1">
+                  <li><strong className="text-[var(--foreground)]">Saisissez un montant</strong> : par exemple 1 000 &euro; pour connaitre son equivalent dans une autre annee.</li>
+                  <li><strong className="text-[var(--foreground)]">Choisissez l&apos;annee de depart</strong> : l&apos;annee a laquelle ce montant etait valable (par exemple 2000).</li>
+                  <li><strong className="text-[var(--foreground)]">Choisissez l&apos;annee de comparaison</strong> : l&apos;annee pour laquelle vous voulez connaitre l&apos;equivalent en pouvoir d&apos;achat.</li>
+                </ul>
+                <p>L&apos;outil affiche l&apos;equivalent ajuste a l&apos;inflation, le taux d&apos;inflation cumule et le taux annuel moyen sur la periode. Le graphique retrace l&apos;evolution du pouvoir d&apos;achat de votre montant annee par annee.</p>
+              </div>
+            </div>
+
+            {/* FAQ */}
+            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Questions frequentes</h2>
+              <div className="mt-6 space-y-5">
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Combien valent 1 000 &euro; de l&apos;an 2000 aujourd&apos;hui ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>1 000 &euro; de l&apos;an 2000 correspondent a environ 1 540 &euro; en 2025, soit une inflation cumulee d&apos;environ 54% sur 25 ans. Autrement dit, il faut aujourd&apos;hui 1 540 &euro; pour acheter ce que 1 000 &euro; permettaient d&apos;acheter en 2000. Le taux d&apos;inflation annuel moyen sur cette periode est d&apos;environ 1,7%.</p>
+                </div>
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Qu&apos;est-ce que l&apos;IPC et comment est-il calcule ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>L&apos;IPC (Indice des Prix a la Consommation) est un indicateur publie chaque mois par l&apos;INSEE. Il mesure l&apos;evolution du niveau general des prix des biens et services consommes par les menages en France. L&apos;indice est base sur un panier representatif d&apos;environ 1 100 familles de produits, pondere selon les habitudes de consommation des Francais.</p>
+                </div>
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Pourquoi l&apos;inflation a-t-elle ete si forte en 2022-2023 ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>La poussee inflationniste de 2022-2023 (environ 5 a 6% par an en France) est principalement due a la hausse des prix de l&apos;energie liee a la guerre en Ukraine, aux perturbations des chaines d&apos;approvisionnement post-Covid et a la forte reprise economique mondiale. Le bouclier tarifaire mis en place par l&apos;Etat a limite l&apos;impact en France par rapport a d&apos;autres pays europeens.</p>
+                </div>
+              </div>
+            </div>
           </div>
 
           <aside className="space-y-6">

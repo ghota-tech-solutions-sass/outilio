@@ -136,6 +136,52 @@ export default function ConvertisseurTemps() {
                 <p><strong className="text-[var(--foreground)]">Annee</strong> : 365 jours (365,25 pour les annees bissextiles en moyenne).</p>
               </div>
             </div>
+
+            {/* SEO Content */}
+            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
+                Comment utiliser le convertisseur de temps
+              </h2>
+              <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                <p>
+                  Ce convertisseur de temps gratuit vous permet de convertir instantanement entre secondes, minutes, heures, jours, semaines, mois et annees. Il est utile pour la gestion de projet, les calculs scientifiques ou simplement pour satisfaire votre curiosite.
+                </p>
+                <ul className="ml-4 list-disc space-y-1">
+                  <li><strong className="text-[var(--foreground)]">Saisissez une valeur</strong> : entrez le nombre d&apos;unites de temps a convertir.</li>
+                  <li><strong className="text-[var(--foreground)]">Selectionnez l&apos;unite source</strong> : choisissez parmi secondes, minutes, heures, jours, semaines, mois (30 jours) ou annees (365 jours).</li>
+                  <li><strong className="text-[var(--foreground)]">Consultez les resultats</strong> : toutes les conversions s&apos;affichent simultanement. L&apos;unite source est mise en evidence.</li>
+                  <li><strong className="text-[var(--foreground)]">Decomposition lisible</strong> : l&apos;outil affiche aussi une decomposition humaine (ex : 2 jours, 3 heures, 15 minutes) pour mieux visualiser la duree.</li>
+                </ul>
+                <p>
+                  Les conversions sont basees sur les valeurs standard : 1 mois = 30 jours et 1 annee = 365 jours. Pour des calculs de dates precis tenant compte des mois reels et des annees bissextiles, utilisez un calculateur de dates.
+                </p>
+              </div>
+            </div>
+
+            {/* FAQ */}
+            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Questions frequentes</h2>
+              <div className="mt-6 space-y-5">
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Combien de secondes y a-t-il dans une journee ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    Une journee compte exactement 86 400 secondes (24 heures &times; 60 minutes &times; 60 secondes). Ce chiffre est utilise comme base dans de nombreux calculs informatiques, notamment pour les horodatages Unix (timestamps) qui comptent les secondes ecoulees depuis le 1er janvier 1970.
+                  </p>
+                </div>
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Pourquoi les mois sont-ils comptes sur 30 jours ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    Les mois du calendrier gregorien varient de 28 a 31 jours. La valeur de 30 jours est une approximation standard utilisee pour les conversions generales. La moyenne exacte est d&apos;environ 30,44 jours (365,25/12). Pour des calculs de dates precis, il est preferable de travailler avec des dates calendaires plutot qu&apos;avec des conversions d&apos;unites.
+                  </p>
+                </div>
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Combien d&apos;heures de travail dans une annee en France ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    En France, la duree legale du travail est de 35 heures par semaine. Sur une annee de 52 semaines, cela represente 1 820 heures. En pratique, en deduisant les 5 semaines de conges payes et les jours feries (environ 8), on obtient environ 1 607 heures de travail effectif par an, soit la base utilisee par le Code du travail.
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
 
           <aside className="space-y-6">

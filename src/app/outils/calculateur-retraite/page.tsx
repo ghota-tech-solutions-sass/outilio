@@ -209,6 +209,41 @@ export default function CalculateurRetraite() {
                 </div>
               </>
             )}
+
+            {/* SEO Content */}
+            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
+                Comment utiliser le calculateur de retraite
+              </h2>
+              <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                <p>Ce simulateur vous permet d&apos;estimer votre age de depart a la retraite selon la reforme 2023, en tenant compte de votre annee de naissance et de votre parcours professionnel. Retrouvez vos trimestres requis et verifiez si vous pouvez beneficier du taux plein.</p>
+                <ul className="ml-4 list-disc space-y-1">
+                  <li><strong className="text-[var(--foreground)]">Indiquez votre annee de naissance</strong> : l&apos;age legal de depart et le nombre de trimestres requis dependent directement de votre generation, suite a la reforme des retraites 2023.</li>
+                  <li><strong className="text-[var(--foreground)]">Precisez votre age de debut de carriere</strong> : cela permet d&apos;estimer automatiquement le nombre de trimestres deja cotises si vous ne le connaissez pas.</li>
+                  <li><strong className="text-[var(--foreground)]">Renseignez vos trimestres (optionnel)</strong> : si vous connaissez votre nombre exact de trimestres cotises (via votre releve de carriere sur info-retraite.fr), saisissez-le pour un resultat plus precis.</li>
+                  <li><strong className="text-[var(--foreground)]">Consultez le resultat</strong> : age legal, annee de depart, trimestres manquants et progression vers le taux plein.</li>
+                </ul>
+              </div>
+            </div>
+
+            {/* FAQ */}
+            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Questions frequentes</h2>
+              <div className="mt-6 space-y-5">
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Quel est l&apos;age legal de depart a la retraite apres la reforme 2023 ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Depuis la reforme de 2023, l&apos;age legal de depart a la retraite passe progressivement de 62 a 64 ans. Les personnes nees a partir de 1968 devront attendre 64 ans. Pour les generations intermediaires (1961-1967), l&apos;age augmente de 3 mois par annee de naissance.</p>
+                </div>
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Combien de trimestres faut-il pour le taux plein ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Le nombre de trimestres requis pour le taux plein varie de 166 a 172 selon votre annee de naissance. Pour les personnes nees a partir de 1965, il faut 172 trimestres (soit 43 annees de cotisation). Alternativement, vous obtenez automatiquement le taux plein a 67 ans, quel que soit votre nombre de trimestres.</p>
+                </div>
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Que se passe-t-il si je pars a la retraite sans tous mes trimestres ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Si vous partez avant d&apos;avoir tous vos trimestres et avant 67 ans, une decote de 1,25% par trimestre manquant est appliquee sur votre pension de base. La decote maximale est de 20 trimestres, soit une reduction pouvant atteindre 25% de votre pension. Il peut etre plus avantageux de travailler quelques trimestres de plus pour eviter cette penalite.</p>
+                </div>
+              </div>
+            </div>
           </div>
 
           <aside className="space-y-6">

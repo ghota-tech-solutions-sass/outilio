@@ -1579,6 +1579,45 @@ export default function EditeurPhoto() {
 
       {/* Hidden canvases */}
       <canvas ref={offscreenCanvasRef} className="hidden" />
+
+      {/* SEO Content */}
+      <div className="mx-auto max-w-7xl px-6 2xl:max-w-[1400px] py-10 space-y-6" style={{ background: DARK.bg }}>
+        <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+          <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)", color: "var(--foreground)" }}>
+            Comment utiliser l&apos;editeur photo en ligne
+          </h2>
+          <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+            <p>
+              Notre editeur photo propose des fonctionnalites avancees directement dans votre navigateur, sans rien installer.
+              Importez une image pour acceder a un espace de travail professionnel avec reglages, filtres et outils IA.
+            </p>
+            <ul className="ml-4 list-disc space-y-1">
+              <li><strong className="text-[var(--foreground)]">Importez votre image</strong> : glissez un fichier ou cliquez pour parcourir (JPEG, PNG, WebP)</li>
+              <li><strong className="text-[var(--foreground)]">Ajustez les parametres</strong> : luminosite, contraste, saturation, temperature, nettete, vignette et grain</li>
+              <li><strong className="text-[var(--foreground)]">Appliquez des filtres</strong> : Clarendon, Vintage, Lo-Fi et 10+ presets inspires d&apos;Instagram</li>
+              <li><strong className="text-[var(--foreground)]">Utilisez l&apos;IA</strong> : suppression d&apos;arriere-plan, flou d&apos;arriere-plan et upscaling directement dans le navigateur</li>
+            </ul>
+          </div>
+        </div>
+
+        <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+          <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)", color: "var(--foreground)" }}>Questions frequentes</h2>
+          <div className="mt-6 space-y-5">
+            <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+              <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Mes photos sont-elles envoyees sur un serveur ?</h3>
+              <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Non, absolument tout le traitement se fait dans votre navigateur. Vos images ne quittent jamais votre ordinateur. Les modeles IA sont telecharges depuis Hugging Face et mis en cache localement.</p>
+            </div>
+            <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+              <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Quels formats d&apos;image sont supportes ?</h3>
+              <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>L&apos;editeur accepte tous les formats supportes par votre navigateur : JPEG, PNG, WebP, GIF et BMP. L&apos;export se fait au format PNG pour conserver la meilleure qualite possible.</p>
+            </div>
+            <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+              <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Comment fonctionne la suppression d&apos;arriere-plan par IA ?</h3>
+              <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>L&apos;outil utilise le modele RMBG de Hugging Face via Transformers.js. Au premier usage, le modele (environ 6 Mo) est telecharge et mis en cache. Le traitement est ensuite instantane et entierement local.</p>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

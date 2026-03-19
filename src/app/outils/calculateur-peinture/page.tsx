@@ -412,6 +412,41 @@ export default function CalculateurPeinture() {
                 </p>
               </div>
             </div>
+
+            {/* SEO Content */}
+            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
+                Comment utiliser le calculateur de peinture
+              </h2>
+              <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                <p>Ce calculateur de peinture vous permet d&apos;estimer avec precision la quantite de peinture necessaire pour peindre une piece. Il prend en compte les ouvertures (portes et fenetres) pour eviter de surestimer vos besoins, et calcule le nombre de pots selon les formats courants.</p>
+                <ul className="ml-4 list-disc space-y-1">
+                  <li><strong className="text-[var(--foreground)]">Dimensions de la piece</strong> : saisissez la longueur, la largeur et la hauteur sous plafond en metres.</li>
+                  <li><strong className="text-[var(--foreground)]">Ouvertures a deduire</strong> : indiquez le nombre et les dimensions de vos portes et fenetres. Les dimensions standard sont pre-remplies.</li>
+                  <li><strong className="text-[var(--foreground)]">Options</strong> : choisissez le nombre de couches (1 a 3), le rendement de votre peinture (indique sur le pot) et si vous souhaitez inclure le plafond.</li>
+                </ul>
+                <p>L&apos;outil calcule la surface nette a peindre, le volume de peinture en litres et le nombre de pots necessaires en formats 0,5 L, 2,5 L, 5 L et 10 L. Prevoyez 5 a 10% de peinture supplementaire pour les retouches.</p>
+              </div>
+            </div>
+
+            {/* FAQ */}
+            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Questions frequentes</h2>
+              <div className="mt-6 space-y-5">
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Combien de litres de peinture pour une piece de 20 m&sup2; ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Pour une piece de 20 m&sup2; au sol (par exemple 5 x 4 m) avec une hauteur de 2,50 m, la surface des murs est d&apos;environ 45 m&sup2; apres deduction d&apos;une porte et deux fenetres. Avec 2 couches et un rendement de 10 m&sup2;/L, il faut environ 9 litres de peinture, soit 1 pot de 10 L ou 2 pots de 5 L. Ajoutez le plafond (20 m&sup2;) si vous souhaitez le peindre aussi.</p>
+                </div>
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Faut-il appliquer une sous-couche avant de peindre ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Une sous-couche (ou primaire d&apos;accrochage) est recommandee sur les supports neufs (platre, placoplatre), absorbants ou lorsque vous changez radicalement de couleur (par exemple du fonce vers du clair). Elle ameliore l&apos;adherence de la peinture, uniformise l&apos;absorption du support et peut reduire le nombre de couches de finition necessaires. Son rendement est legerement inferieur (8 a 10 m&sup2;/L).</p>
+                </div>
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Quelle peinture choisir : acrylique ou glycero ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>La peinture acrylique (a l&apos;eau) est la plus utilisee : elle seche vite, degage peu d&apos;odeur et se nettoie a l&apos;eau. Elle convient a la plupart des pieces. La peinture glycero (a l&apos;huile) offre une meilleure resistance a l&apos;humidite et aux chocs, ce qui la rend adaptee aux cuisines, salles de bain et boiseries. Cependant, la reglementation francaise limite de plus en plus les peintures a solvants au profit des formules aqueuses.</p>
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Sidebar */}

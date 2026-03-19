@@ -454,6 +454,52 @@ export default function CompresseurVideo() {
                 <p><strong className="text-[var(--foreground)]">Format de sortie</strong> : WebM (VP9/VP8) selon la compatibilite de votre navigateur.</p>
               </div>
             </div>
+
+            {/* SEO Content */}
+            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
+                Comment utiliser le compresseur video en ligne
+              </h2>
+              <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                <p>
+                  Ce compresseur video gratuit reduit la taille de vos fichiers video directement dans votre navigateur, sans envoyer aucune donnee sur un serveur. Il supporte les formats MP4, WebM, MOV et AVI en entree.
+                </p>
+                <ul className="ml-4 list-disc space-y-1">
+                  <li><strong className="text-[var(--foreground)]">Deposez votre video</strong> : glissez un fichier video dans la zone de depot ou cliquez pour le selectionner sur votre appareil.</li>
+                  <li><strong className="text-[var(--foreground)]">Choisissez le niveau de qualite</strong> : Haute (2,5 Mbps, proche de l&apos;original), Moyenne (1 Mbps, bon equilibre) ou Basse (0,5 Mbps, taille minimale).</li>
+                  <li><strong className="text-[var(--foreground)]">Lancez la compression</strong> : cliquez sur le bouton et patientez pendant le re-encodage. La progression s&apos;affiche en temps reel.</li>
+                  <li><strong className="text-[var(--foreground)]">Telechargez le resultat</strong> : comparez la taille avant/apres et telechargez la video compressee au format WebM.</li>
+                </ul>
+                <p>
+                  La compression utilise l&apos;API MediaRecorder du navigateur avec le codec VP9 (ou VP8 en fallback). La resolution est egalement reduite pour les niveaux Moyenne (75 %) et Basse (50 %) afin de maximiser la reduction de taille.
+                </p>
+              </div>
+            </div>
+
+            {/* FAQ */}
+            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Questions frequentes</h2>
+              <div className="mt-6 space-y-5">
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Ma video est-elle envoyee sur un serveur ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    Non. L&apos;integralite du traitement se fait dans votre navigateur grace a l&apos;API MediaRecorder. Aucun fichier n&apos;est telecharge vers un serveur distant. C&apos;est ideal pour les videos confidentielles ou les fichiers volumineux que vous ne souhaitez pas uploader.
+                  </p>
+                </div>
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Pourquoi le fichier de sortie est-il au format WebM ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    L&apos;API MediaRecorder des navigateurs supporte principalement le format WebM avec les codecs VP8 ou VP9. Le WebM est un format libre et ouvert developpe par Google, compatible avec tous les navigateurs modernes et les principales plateformes (YouTube, Discord, etc.). Si vous avez besoin de MP4, vous pouvez reconvertir le fichier avec notre convertisseur audio/video.
+                  </p>
+                </div>
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Quel niveau de qualite choisir ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    Pour un partage sur les reseaux sociaux ou par email, la qualite &laquo; Moyenne &raquo; (1 Mbps) offre un bon compromis entre taille de fichier et rendu visuel. Pour une presentation professionnelle ou une video destinee a un grand ecran, preferez la qualite &laquo; Haute &raquo; (2,5 Mbps). La qualite &laquo; Basse &raquo; (0,5 Mbps) convient pour les previsualisations rapides ou les envois par messagerie avec limite de taille.
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
 
           <aside className="space-y-6">

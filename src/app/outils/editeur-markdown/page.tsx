@@ -575,6 +575,44 @@ export default function EditeurMarkdown() {
             </table>
           </div>
         </div>
+
+        {/* SEO Content */}
+        <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+          <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
+            Comment utiliser l&apos;editeur Markdown en ligne
+          </h2>
+          <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+            <p>
+              Notre editeur Markdown vous permet d&apos;ecrire du contenu formate et de visualiser le rendu HTML en temps reel.
+              Ideal pour rediger de la documentation, des articles de blog ou des README pour vos projets GitHub.
+            </p>
+            <ul className="ml-4 list-disc space-y-1">
+              <li><strong className="text-[var(--foreground)]">Ecrivez dans le panneau gauche</strong> : utilisez la syntaxe Markdown standard (titres, gras, listes, code...)</li>
+              <li><strong className="text-[var(--foreground)]">Visualisez en temps reel</strong> : le panneau droit affiche instantanement le rendu HTML</li>
+              <li><strong className="text-[var(--foreground)]">Utilisez la barre d&apos;outils</strong> : pour inserer rapidement du formatage sans connaitre la syntaxe</li>
+              <li><strong className="text-[var(--foreground)]">Exportez votre travail</strong> : copiez le HTML genere ou telechargez le fichier .md</li>
+            </ul>
+          </div>
+        </div>
+
+        {/* FAQ */}
+        <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+          <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Questions frequentes</h2>
+          <div className="mt-6 space-y-5">
+            <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+              <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Qu&apos;est-ce que le Markdown ?</h3>
+              <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Markdown est un langage de balisage leger cree par John Gruber en 2004. Il permet de formater du texte (titres, gras, listes, liens) avec une syntaxe simple et lisible, qui se convertit facilement en HTML. Il est tres utilise sur GitHub, les blogs techniques et les outils de documentation.</p>
+            </div>
+            <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+              <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Quels raccourcis clavier sont disponibles ?</h3>
+              <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>L&apos;editeur supporte Ctrl+B pour le gras, Ctrl+I pour l&apos;italique, Ctrl+K pour inserer un lien et Tab pour l&apos;indentation. Ces raccourcis fonctionnent aussi avec la touche Cmd sur Mac.</p>
+            </div>
+            <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+              <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Puis-je utiliser le HTML genere dans mon site web ?</h3>
+              <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Oui, cliquez sur &laquo; Copier HTML &raquo; pour recuperer le code HTML genere. Vous pouvez l&apos;integrer directement dans votre site, votre CMS ou votre newsletter. Le HTML est propre et bien structure.</p>
+            </div>
+          </div>
+        </div>
       </div>
     </>
   );

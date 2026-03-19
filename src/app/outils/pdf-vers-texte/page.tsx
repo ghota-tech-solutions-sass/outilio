@@ -321,6 +321,44 @@ export default function PdfVersTexte() {
                 <p><strong className="text-[var(--foreground)]">100% local</strong> : Tout le traitement se fait dans votre navigateur. Aucun fichier n&apos;est envoye.</p>
               </div>
             </div>
+
+            {/* SEO Content */}
+            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
+                Comment analyser et extraire des pages d&apos;un PDF
+              </h2>
+              <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                <p>
+                  Notre outil d&apos;analyse PDF vous permet de consulter les metadonnees d&apos;un fichier PDF et d&apos;extraire des pages individuelles.
+                  Tout le traitement se fait localement dans votre navigateur grace a la bibliotheque pdf-lib.
+                </p>
+                <ul className="ml-4 list-disc space-y-1">
+                  <li><strong className="text-[var(--foreground)]">Importez votre PDF</strong> : glissez-deposez ou cliquez pour parcourir vos fichiers</li>
+                  <li><strong className="text-[var(--foreground)]">Consultez les metadonnees</strong> : titre, auteur, dates de creation/modification, producteur</li>
+                  <li><strong className="text-[var(--foreground)]">Visualisez les pages</strong> : nombre de pages et dimensions (A4, Letter, etc.)</li>
+                  <li><strong className="text-[var(--foreground)]">Extrayez des pages</strong> : telechargez une page individuelle ou toutes les pages en PDF separe</li>
+                </ul>
+              </div>
+            </div>
+
+            {/* FAQ */}
+            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Questions frequentes</h2>
+              <div className="mt-6 space-y-5">
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>L&apos;outil fonctionne-t-il avec les PDF proteges ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>L&apos;outil tente de lire les PDF proteges par mot de passe en ignorant le chiffrement. Cela fonctionne pour les PDF avec restrictions d&apos;edition, mais pas pour ceux qui necessitent un mot de passe d&apos;ouverture.</p>
+                </div>
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Mon fichier PDF est-il envoye sur un serveur ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Non, absolument pas. L&apos;analyse et l&apos;extraction se font entierement dans votre navigateur via JavaScript. Votre fichier PDF ne quitte jamais votre ordinateur, ce qui garantit la confidentialite de vos documents.</p>
+                </div>
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Puis-je extraire le texte d&apos;un PDF ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Cet outil se concentre sur l&apos;analyse des metadonnees et l&apos;extraction de pages individuelles en PDF. L&apos;extraction de texte brut depend de la facon dont le PDF a ete cree : les PDF generes depuis un traitement de texte sont extractibles, mais les PDF scannes necessitent un outil OCR.</p>
+                </div>
+              </div>
+            </div>
           </div>
 
           <aside className="space-y-6">

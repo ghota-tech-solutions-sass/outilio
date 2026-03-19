@@ -312,6 +312,44 @@ export default function Minuteur() {
                 <p><strong className="text-[var(--foreground)]">Chronometre</strong> : Mesurez le temps ecoule avec precision. Fonction tour pour enregistrer des temps intermediaires. Parfait pour le sport et les mesures de performance.</p>
               </div>
             </div>
+
+            {/* SEO Content */}
+            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
+                Comment utiliser le minuteur et le chronometre en ligne
+              </h2>
+              <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                <p>
+                  Notre outil combine un minuteur (compte a rebours) et un chronometre dans une interface simple et gratuite.
+                  Parfait pour la methode Pomodoro, la cuisine, le sport ou toute activite chronometree.
+                </p>
+                <ul className="ml-4 list-disc space-y-1">
+                  <li><strong className="text-[var(--foreground)]">Minuteur</strong> : choisissez une preselection (1, 5, 25 min...) ou entrez une duree personnalisee</li>
+                  <li><strong className="text-[var(--foreground)]">Alarme sonore</strong> : un signal sonore retentit automatiquement a la fin du compte a rebours</li>
+                  <li><strong className="text-[var(--foreground)]">Chronometre</strong> : mesurez le temps ecoule avec precision au centieme de seconde</li>
+                  <li><strong className="text-[var(--foreground)]">Fonction tours</strong> : enregistrez des temps intermediaires pour comparer vos performances</li>
+                </ul>
+              </div>
+            </div>
+
+            {/* FAQ */}
+            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Questions frequentes</h2>
+              <div className="mt-6 space-y-5">
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Qu&apos;est-ce que la methode Pomodoro ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>La technique Pomodoro est une methode de gestion du temps inventee par Francesco Cirillo. Elle consiste a travailler pendant 25 minutes, puis prendre une pause de 5 minutes. Apres 4 cycles, on prend une pause longue de 15 a 30 minutes. Utilisez notre minuteur avec la preselection 25 min.</p>
+                </div>
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Le minuteur fonctionne-t-il en arriere-plan ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Oui, le minuteur continue de fonctionner si vous changez d&apos;onglet. L&apos;alarme sonore se declenchera a la fin du compte a rebours. Assurez-vous que le son de votre navigateur n&apos;est pas coupe.</p>
+                </div>
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Quelle est la precision du chronometre ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Le chronometre utilise <code style={{ color: "var(--primary)" }}>Date.now()</code> et se met a jour toutes les 10 millisecondes. La precision affichee est au centieme de seconde, ce qui est suffisant pour la plupart des usages (sport, cuisine, mesures de performance).</p>
+                </div>
+              </div>
+            </div>
           </div>
 
           <aside className="space-y-6">

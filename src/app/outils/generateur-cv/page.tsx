@@ -392,6 +392,47 @@ export default function GenerateurCV() {
         </div>
       </div>
 
+      {/* ===================== SEO CONTENT ===================== */}
+      <div className="mx-auto max-w-[1400px] px-5 pb-8 space-y-6 no-print">
+        {/* SEO Content */}
+        <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+          <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
+            Comment creer votre CV en ligne gratuitement
+          </h2>
+          <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+            <p>
+              Notre generateur de CV gratuit vous permet de creer un curriculum vitae professionnel en quelques minutes.
+              Remplissez les champs, choisissez un modele et telechargez directement en PDF. Aucune inscription requise.
+            </p>
+            <ul className="ml-4 list-disc space-y-1">
+              <li><strong className="text-[var(--foreground)]">Remplissez vos informations</strong> : coordonnees, profil, experiences, formations et competences</li>
+              <li><strong className="text-[var(--foreground)]">Choisissez un modele</strong> : classique (sobre et traditionnel) ou moderne (avec barre laterale coloree)</li>
+              <li><strong className="text-[var(--foreground)]">Previsualisation en temps reel</strong> : votre CV se met a jour au fur et a mesure de la saisie</li>
+              <li><strong className="text-[var(--foreground)]">Telechargez en PDF</strong> : via la boite de dialogue d&apos;impression de votre navigateur</li>
+            </ul>
+          </div>
+        </div>
+
+        {/* FAQ */}
+        <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+          <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Questions frequentes</h2>
+          <div className="mt-6 space-y-5">
+            <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+              <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Le CV genere est-il au format A4 ?</h3>
+              <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Oui, les modeles sont concus au format A4 (210 x 297 mm), le standard en France et en Europe. Lors du telechargement PDF, assurez-vous de selectionner le format A4 dans les parametres d&apos;impression.</p>
+            </div>
+            <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+              <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Mes donnees sont-elles sauvegardees ?</h3>
+              <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Non, aucune donnee personnelle n&apos;est stockee sur nos serveurs. Tout le traitement se fait localement dans votre navigateur. Vos informations disparaissent des que vous fermez la page.</p>
+            </div>
+            <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+              <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Puis-je ajouter une photo sur mon CV ?</h3>
+              <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Le modele moderne affiche vos initiales dans un avatar. En France, la photo n&apos;est pas obligatoire sur un CV. De nombreux recruteurs recommandent meme de ne pas en mettre pour favoriser l&apos;egalite des chances.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* ===================== PRINT VERSION ===================== */}
       <div ref={previewRef} className="hidden print:block">
         {template === "classique" ? (

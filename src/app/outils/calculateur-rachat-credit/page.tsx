@@ -644,6 +644,41 @@ export default function CalculateurRachatCredit() {
                 </p>
               </div>
             </div>
+
+            {/* SEO Content */}
+            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
+                Comment utiliser le simulateur de rachat de credit
+              </h2>
+              <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                <p>Ce simulateur vous permet d&apos;evaluer l&apos;interet d&apos;un regroupement de credits en quelques etapes simples. Vous obtenez une comparaison detaillee entre votre situation actuelle et le nouveau pret envisage.</p>
+                <ul className="ml-4 list-disc space-y-1">
+                  <li><strong className="text-[var(--foreground)]">Ajoutez vos credits existants</strong> : renseignez le capital restant du, le taux, la duree restante et la mensualite de chaque pret en cours.</li>
+                  <li><strong className="text-[var(--foreground)]">Definissez le nouveau credit</strong> : indiquez le taux et la duree souhaites pour le credit de regroupement.</li>
+                  <li><strong className="text-[var(--foreground)]">Integrez les frais</strong> : ajoutez les indemnites de remboursement anticipe (IRA) et les frais de dossier pour un resultat realiste.</li>
+                  <li><strong className="text-[var(--foreground)]">Analysez le verdict</strong> : l&apos;outil vous indique si le rachat est avantageux et affiche l&apos;economie mensuelle et totale.</li>
+                </ul>
+              </div>
+            </div>
+
+            {/* FAQ */}
+            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Questions frequentes</h2>
+              <div className="mt-6 space-y-5">
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Quels types de credits peut-on regrouper ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Vous pouvez regrouper la plupart des credits : credit immobilier, credit auto, credit consommation, pret personnel, credit travaux et meme les credits revolving. La seule condition est que les credits soient en cours de remboursement.</p>
+                </div>
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Quels sont les frais lies au rachat de credit en France ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Les principaux frais sont les indemnites de remboursement anticipe (IRA), plafonnees a 3% du capital restant du ou 6 mois d&apos;interets. S&apos;ajoutent les frais de dossier de la nouvelle banque (300 &euro; a 1 000 &euro; en moyenne), les frais de garantie et eventuellement les frais de courtage.</p>
+                </div>
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>A partir de quel ecart de taux le rachat est-il rentable ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>En regle generale, un ecart d&apos;au moins 0,7 a 1 point de pourcentage entre votre taux actuel et le nouveau taux rend le rachat interessant. Cependant, cela depend aussi de la duree restante du credit et du montant du capital : plus ils sont eleves, plus l&apos;economie potentielle est importante.</p>
+                </div>
+              </div>
+            </div>
           </div>
 
           <aside className="space-y-6">

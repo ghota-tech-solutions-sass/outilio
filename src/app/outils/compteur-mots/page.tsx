@@ -72,6 +72,44 @@ export default function CompteurMots() {
                 <li>Preparer des discours avec le temps de parole estime</li>
               </ul>
             </div>
+
+            {/* SEO Content */}
+            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
+                Comment utiliser le compteur de mots
+              </h2>
+              <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                <p>
+                  Collez ou tapez votre texte dans la zone de saisie pour obtenir instantanement le decompte de mots, caracteres, phrases et paragraphes.
+                  L&apos;outil calcule egalement le temps de lecture (base sur 200 mots/minute) et le temps de parole (130 mots/minute).
+                </p>
+                <ul className="ml-4 list-disc space-y-1">
+                  <li><strong className="text-[var(--foreground)]">Comptage en temps reel</strong> : les statistiques se mettent a jour a chaque frappe</li>
+                  <li><strong className="text-[var(--foreground)]">Caracteres avec et sans espaces</strong> : utile pour les limites de reseaux sociaux</li>
+                  <li><strong className="text-[var(--foreground)]">Estimation du temps de lecture</strong> : ideal pour les articles de blog et le content marketing</li>
+                  <li><strong className="text-[var(--foreground)]">100% gratuit et sans inscription</strong> : aucune donnee n&apos;est stockee ni envoyee</li>
+                </ul>
+              </div>
+            </div>
+
+            {/* FAQ */}
+            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Questions frequentes</h2>
+              <div className="mt-6 space-y-5">
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Comment sont comptes les mots ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Les mots sont separes par les espaces, tabulations et retours a la ligne. Les nombres, abreviations et mots composes avec un trait d&apos;union comptent chacun comme un seul mot.</p>
+                </div>
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Combien de mots faut-il pour un article SEO ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Pour le referencement naturel en France, un article de blog performant contient generalement entre 1 500 et 2 500 mots. Les contenus de plus de 3 000 mots obtiennent souvent de meilleurs classements sur Google pour les requetes competitives.</p>
+                </div>
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>L&apos;outil fonctionne-t-il avec les caracteres accentues ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Oui, le compteur gere parfaitement les caracteres accentues francais (e, a, u, etc.), les caracteres speciaux et les emojis. Chaque caractere Unicode est compte individuellement.</p>
+                </div>
+              </div>
+            </div>
           </div>
 
           <aside className="space-y-6">

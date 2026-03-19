@@ -168,6 +168,41 @@ export default function CalculateurMarge() {
                 <p><strong className="text-[var(--foreground)]">Exemple</strong> : Un produit achete 60 &euro; et vendu 100 &euro; a une marge de 40% mais un markup de 66,7%.</p>
               </div>
             </div>
+
+            {/* SEO Content */}
+            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
+                Comment utiliser le calculateur de marge commerciale
+              </h2>
+              <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                <p>Ce calculateur de marge vous aide a determiner votre marge commerciale, votre taux de marge et votre taux de markup. Il est concu pour les entrepreneurs, commercants et auto-entrepreneurs qui souhaitent fixer leurs prix de vente de maniere rentable.</p>
+                <ul className="ml-4 list-disc space-y-1">
+                  <li><strong className="text-[var(--foreground)]">Calcul direct</strong> : saisissez votre prix d&apos;achat HT et votre prix de vente HT pour connaitre le benefice, le taux de marge et le taux de markup.</li>
+                  <li><strong className="text-[var(--foreground)]">Calcul inverse</strong> : entrez votre prix d&apos;achat HT et la marge souhaitee (en %) pour obtenir le prix de vente recommande.</li>
+                  <li><strong className="text-[var(--foreground)]">Visualisation</strong> : la barre de repartition vous montre la proportion cout/marge dans votre prix de vente.</li>
+                </ul>
+                <p>Les calculs sont effectues en HT (hors taxes). Pour obtenir le prix TTC, ajoutez la TVA applicable a votre activite (20% en taux normal, 10% pour la restauration, 5,5% pour l&apos;alimentaire de base).</p>
+              </div>
+            </div>
+
+            {/* FAQ */}
+            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Questions frequentes</h2>
+              <div className="mt-6 space-y-5">
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Quelle est la difference entre marge et markup ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>La marge est calculee par rapport au prix de vente (benefice / prix de vente x 100), tandis que le markup est calcule par rapport au prix d&apos;achat (benefice / prix d&apos;achat x 100). Exemple : un produit achete 60 &euro; et vendu 100 &euro; a une marge de 40% mais un markup de 66,7%. Les deux indicateurs sont utiles mais ne sont pas interchangeables.</p>
+                </div>
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Quelle marge viser pour etre rentable ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>La marge necessaire varie fortement selon le secteur. En grande distribution, une marge de 2 a 5% est courante en raison des volumes. En restauration, on vise 60 a 70% sur les produits. En e-commerce, 20 a 40% est la norme. Pour un auto-entrepreneur, il faut aussi tenir compte des charges sociales (environ 22%) et de l&apos;impot sur le revenu dans le calcul de la rentabilite reelle.</p>
+                </div>
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Comment calculer un prix de vente a partir d&apos;un taux de marge ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>La formule est : Prix de vente = Prix d&apos;achat / (1 - Taux de marge / 100). Par exemple, pour un produit achete 60 &euro; avec une marge souhaitee de 40% : 60 / (1 - 0,40) = 100 &euro;. Utilisez le mode &laquo; Calcul inverse &raquo; de notre outil pour obtenir ce resultat automatiquement.</p>
+                </div>
+              </div>
+            </div>
           </div>
 
           <aside className="space-y-6">

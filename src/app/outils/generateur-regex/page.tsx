@@ -356,6 +356,44 @@ export default function GenerateurRegex() {
                 ))}
               </div>
             </div>
+
+            {/* SEO Content */}
+            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
+                Comment tester vos expressions regulieres en ligne
+              </h2>
+              <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                <p>
+                  Notre testeur de regex vous permet de construire et valider vos expressions regulieres en temps reel.
+                  Visualisez instantanement les correspondances, les groupes de capture et exportez pour JavaScript ou Python.
+                </p>
+                <ul className="ml-4 list-disc space-y-1">
+                  <li><strong className="text-[var(--foreground)]">Ecrivez votre regex</strong> : dans le champ de saisie avec les drapeaux (g, i, m, s)</li>
+                  <li><strong className="text-[var(--foreground)]">Collez un texte de test</strong> : les correspondances sont surlignees en temps reel</li>
+                  <li><strong className="text-[var(--foreground)]">Consultez la bibliotheque</strong> : 12 patterns courants (email, URL, telephone FR, IP...)</li>
+                  <li><strong className="text-[var(--foreground)]">Exportez en un clic</strong> : format JavaScript, Python ou pattern brut</li>
+                </ul>
+              </div>
+            </div>
+
+            {/* FAQ */}
+            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Questions frequentes</h2>
+              <div className="mt-6 space-y-5">
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Qu&apos;est-ce qu&apos;une expression reguliere (regex) ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Une expression reguliere est un motif de recherche qui decrit un ensemble de chaines de caracteres. Les regex sont utilisees en programmation pour valider des formats (email, telephone), rechercher des patterns dans du texte ou effectuer des remplacements avances.</p>
+                </div>
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Quelle regex pour valider un email ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Le pattern <code style={{ fontFamily: "monospace", color: "var(--primary)" }}>[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]&#123;2,&#125;</code> couvre la plupart des adresses email valides. Cliquez sur &laquo; Email &raquo; dans la bibliotheque de patterns pour le charger directement.</p>
+                </div>
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>A quoi servent les drapeaux g, i, m et s ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Le drapeau <strong>g</strong> (global) trouve toutes les correspondances, <strong>i</strong> ignore la casse, <strong>m</strong> (multiline) fait que ^ et $ s&apos;appliquent a chaque ligne, et <strong>s</strong> (dotAll) permet au point de correspondre aux retours a la ligne.</p>
+                </div>
+              </div>
+            </div>
           </div>
 
           <aside className="space-y-6">

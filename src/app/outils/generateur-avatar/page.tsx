@@ -167,6 +167,44 @@ export default function GenerateurAvatar() {
                 <p>Cet outil genere une image PNG que vous pouvez utiliser comme photo de profil, icone d&apos;application ou placeholder dans vos maquettes.</p>
               </div>
             </div>
+
+            {/* SEO Content */}
+            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
+                Comment creer un avatar avec initiales
+              </h2>
+              <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                <p>
+                  Generez un avatar professionnel avec vos initiales en quelques secondes. Personnalisez la couleur, la forme et la taille
+                  pour obtenir un resultat adapte a votre usage.
+                </p>
+                <ul className="ml-4 list-disc space-y-1">
+                  <li><strong className="text-[var(--foreground)]">Entrez votre nom</strong> : les initiales sont extraites automatiquement (2 lettres max)</li>
+                  <li><strong className="text-[var(--foreground)]">Choisissez une couleur</strong> : parmi 12 couleurs predefinies ou personnalisez</li>
+                  <li><strong className="text-[var(--foreground)]">Selectionnez le style</strong> : cercle, carre arrondi ou carre</li>
+                  <li><strong className="text-[var(--foreground)]">Telechargez en PNG</strong> : en 64, 128, 256 ou 512 pixels</li>
+                </ul>
+              </div>
+            </div>
+
+            {/* FAQ */}
+            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Questions frequentes</h2>
+              <div className="mt-6 space-y-5">
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Quelle taille choisir pour mon avatar ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Pour un usage web (profil de site, CRM, messagerie), 128 ou 256 pixels suffisent. Pour l&apos;impression ou les applications haute resolution, choisissez 512 pixels. Les reseaux sociaux recommandent generalement 256x256 px minimum.</p>
+                </div>
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Puis-je utiliser cet avatar a des fins commerciales ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Oui, les avatars generes sont libres de droits. Vous pouvez les utiliser pour vos projets personnels, vos applications, vos maquettes ou vos supports marketing sans restriction.</p>
+                </div>
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>L&apos;avatar a-t-il un fond transparent ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>L&apos;image PNG generee possede un fond transparent autour de la forme (cercle, carre arrondi). Seule la forme de l&apos;avatar contient la couleur de fond, ce qui facilite l&apos;integration dans vos designs.</p>
+                </div>
+              </div>
+            </div>
           </div>
           <aside className="space-y-6">
             <AdPlaceholder className="h-[250px]" />

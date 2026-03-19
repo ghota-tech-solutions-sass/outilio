@@ -179,6 +179,44 @@ export default function GenerateurMotDePasse() {
                 <li>Utilisez un gestionnaire de mots de passe</li>
               </ul>
             </div>
+
+            {/* SEO Content */}
+            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
+                Comment generer un mot de passe securise
+              </h2>
+              <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                <p>
+                  Notre generateur utilise l&apos;API <code style={{ color: "var(--primary)" }}>crypto.getRandomValues()</code> de votre navigateur
+                  pour creer des mots de passe cryptographiquement aleatoires. Aucun mot de passe n&apos;est stocke ni transmis.
+                </p>
+                <ul className="ml-4 list-disc space-y-1">
+                  <li><strong className="text-[var(--foreground)]">Ajustez la longueur</strong> : de 4 a 64 caracteres (16+ recommande)</li>
+                  <li><strong className="text-[var(--foreground)]">Choisissez les types de caracteres</strong> : minuscules, majuscules, chiffres et symboles</li>
+                  <li><strong className="text-[var(--foreground)]">Indicateur de force</strong> : evaluez la robustesse du mot de passe en temps reel</li>
+                  <li><strong className="text-[var(--foreground)]">Copie en un clic</strong> : collez directement dans votre gestionnaire de mots de passe</li>
+                </ul>
+              </div>
+            </div>
+
+            {/* FAQ */}
+            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Questions frequentes</h2>
+              <div className="mt-6 space-y-5">
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Quelle longueur minimale pour un mot de passe ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>L&apos;ANSSI recommande un minimum de 12 caracteres pour un mot de passe standard. Pour les comptes sensibles (banque, email principal), visez 16 caracteres ou plus. Plus le mot de passe est long, plus il est resistant aux attaques par force brute.</p>
+                </div>
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Le mot de passe genere est-il vraiment aleatoire ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Oui, l&apos;outil utilise l&apos;API Web Crypto du navigateur (<code style={{ color: "var(--primary)" }}>crypto.getRandomValues</code>), qui fournit des nombres cryptographiquement securises. C&apos;est le meme niveau d&apos;aleatoire utilise par les protocoles de securite professionnels.</p>
+                </div>
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Pourquoi utiliser un gestionnaire de mots de passe ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Un gestionnaire de mots de passe (comme Bitwarden, 1Password ou KeePass) stocke tous vos mots de passe de maniere chiffree. Vous n&apos;avez besoin de retenir qu&apos;un seul mot de passe maitre. C&apos;est la methode la plus sure pour gerer des dizaines de comptes avec des mots de passe uniques.</p>
+                </div>
+              </div>
+            </div>
           </div>
 
           <aside className="space-y-6">

@@ -508,6 +508,44 @@ export default function ExtracteurAudio() {
                 <p><strong className="text-[var(--foreground)]">100% local</strong> : Aucun fichier n&apos;est envoye sur un serveur. Tout se passe dans votre navigateur.</p>
               </div>
             </div>
+
+            {/* SEO Content */}
+            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
+                Comment extraire l&apos;audio d&apos;une video en ligne
+              </h2>
+              <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                <p>
+                  Cet outil vous permet d&apos;extraire la piste audio de n&apos;importe quelle video directement dans votre navigateur.
+                  Ideal pour recuperer la musique d&apos;une video, transcrire une interview ou isoler une bande sonore.
+                </p>
+                <ul className="ml-4 list-disc space-y-1">
+                  <li><strong className="text-[var(--foreground)]">Importez votre video</strong> : glissez-deposez un fichier MP4, WebM ou MOV</li>
+                  <li><strong className="text-[var(--foreground)]">Visualisez la forme d&apos;onde</strong> : verifiez que la video contient bien une piste audio</li>
+                  <li><strong className="text-[var(--foreground)]">Lancez l&apos;extraction</strong> : le processus s&apos;effectue en temps reel avec une barre de progression</li>
+                  <li><strong className="text-[var(--foreground)]">Telechargez le resultat</strong> : ecoutez l&apos;apercu puis telechargez le fichier audio</li>
+                </ul>
+              </div>
+            </div>
+
+            {/* FAQ */}
+            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Questions frequentes</h2>
+              <div className="mt-6 space-y-5">
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Pourquoi l&apos;extraction prend-elle du temps ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>L&apos;extraction se fait en temps reel via la Web Audio API : la video est lue en accelere pendant que l&apos;audio est capture. La duree d&apos;extraction depend de la longueur de la video et des performances de votre navigateur.</p>
+                </div>
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Quel format audio est produit ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>L&apos;audio est exporte au format WebM avec le codec Opus, qui offre une excellente qualite sonore avec une taille de fichier reduite. Ce format est compatible avec Chrome, Firefox et la plupart des lecteurs multimedia modernes.</p>
+                </div>
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Ma video est-elle envoyee sur un serveur ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Non, l&apos;extraction est entierement realisee dans votre navigateur. Vos fichiers video ne quittent jamais votre ordinateur, garantissant la confidentialite de vos contenus.</p>
+                </div>
+              </div>
+            </div>
           </div>
 
           <aside className="space-y-6">

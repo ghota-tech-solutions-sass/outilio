@@ -151,6 +151,41 @@ export default function CalculateurHeuresTravail() {
                 <p><strong className="text-[var(--foreground)]">Repos obligatoire</strong> : 11 heures consecutives de repos quotidien et 35 heures consecutives de repos hebdomadaire (24h + 11h).</p>
               </div>
             </div>
+
+            {/* SEO Content */}
+            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
+                Comment utiliser le calculateur d&apos;heures de travail
+              </h2>
+              <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                <p>Cet outil vous permet de calculer precisement vos heures de travail hebdomadaires, en tenant compte des pauses et du temps de repos. Il compare automatiquement le total a votre contrat pour detecter les heures supplementaires.</p>
+                <ul className="ml-4 list-disc space-y-1">
+                  <li><strong className="text-[var(--foreground)]">Definissez votre contrat</strong> : indiquez le nombre d&apos;heures hebdomadaires prevues par votre contrat de travail (35h par defaut en France).</li>
+                  <li><strong className="text-[var(--foreground)]">Remplissez vos horaires</strong> : pour chaque jour, saisissez l&apos;heure de debut, l&apos;heure de fin et la duree de votre pause dejeuner en minutes.</li>
+                  <li><strong className="text-[var(--foreground)]">Consultez le recapitulatif</strong> : total des heures travaillees, heures supplementaires, nombre de jours travailles et moyenne journaliere.</li>
+                </ul>
+                <p>Le calculateur gere automatiquement les semaines de 7 jours, y compris le samedi et le dimanche, pour les salaries qui travaillent le week-end.</p>
+              </div>
+            </div>
+
+            {/* FAQ */}
+            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Questions frequentes</h2>
+              <div className="mt-6 space-y-5">
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>La pause dejeuner est-elle comptee dans le temps de travail ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Non, en France la pause dejeuner n&apos;est generalement pas comptee comme du temps de travail effectif. Le Code du travail impose une pause minimale de 20 minutes pour toute periode de 6 heures consecutives de travail. La plupart des entreprises accordent entre 45 minutes et 1 heure de pause repas, qui est deduite du temps de presence.</p>
+                </div>
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Comment sont majorees les heures supplementaires ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>En France, les 8 premieres heures supplementaires (de la 36e a la 43e heure) sont majorees de 25%. Au-dela de 43 heures, la majoration passe a 50%. Le contingent annuel d&apos;heures supplementaires est de 220 heures par salarie, sauf accord de branche different. Un accord d&apos;entreprise peut aussi prevoir le remplacement de la majoration par un repos compensateur equivalent.</p>
+                </div>
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Quelle est la duree maximale de travail par jour en France ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>La duree maximale quotidienne de travail est de 10 heures (12 heures sur derogation). La duree maximale hebdomadaire est de 48 heures sur une semaine isolee et de 44 heures en moyenne sur 12 semaines consecutives. Tout salarie doit beneficier d&apos;au moins 11 heures de repos consecutives entre deux journees de travail.</p>
+                </div>
+              </div>
+            </div>
           </div>
           <aside className="space-y-6">
             <AdPlaceholder className="h-[250px]" />

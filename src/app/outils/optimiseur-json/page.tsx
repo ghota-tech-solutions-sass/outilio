@@ -334,6 +334,44 @@ export default function OptimiseurJson() {
                 <p><strong className="text-[var(--foreground)]">Coloration</strong> : <span style={{ color: "#0d4f3c" }}>cles</span>, <span style={{ color: "#e8963e" }}>texte</span>, <span style={{ color: "#2563eb" }}>nombres</span>, <span style={{ color: "#9333ea" }}>booleens</span>, <span style={{ color: "#dc2626" }}>null</span>.</p>
               </div>
             </div>
+
+            {/* SEO Content */}
+            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
+                Comment utiliser l&apos;optimiseur JSON en ligne
+              </h2>
+              <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                <p>
+                  Notre optimiseur JSON est un outil complet pour les developpeurs : formatage, minification, validation et tri des cles.
+                  Collez votre JSON brut et transformez-le en un clic.
+                </p>
+                <ul className="ml-4 list-disc space-y-1">
+                  <li><strong className="text-[var(--foreground)]">Collez votre JSON</strong> : dans la zone de saisie ou chargez l&apos;exemple</li>
+                  <li><strong className="text-[var(--foreground)]">Choisissez l&apos;indentation</strong> : 2, 4 ou 8 espaces selon vos preferences</li>
+                  <li><strong className="text-[var(--foreground)]">Formatez ou minifiez</strong> : rendez le JSON lisible ou compactez-le pour reduire sa taille</li>
+                  <li><strong className="text-[var(--foreground)]">Validez et triez</strong> : verifiez la syntaxe et ordonnez les cles alphabetiquement</li>
+                </ul>
+              </div>
+            </div>
+
+            {/* FAQ */}
+            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Questions frequentes</h2>
+              <div className="mt-6 space-y-5">
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Qu&apos;est-ce que le format JSON ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>JSON (JavaScript Object Notation) est un format de donnees textuel leger utilise pour l&apos;echange de donnees entre un serveur et un client. Il est lisible par les humains et facile a parser par les machines. C&apos;est le format standard des APIs REST modernes.</p>
+                </div>
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Pourquoi minifier du JSON ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>La minification supprime les espaces, tabulations et retours a la ligne superflus. Cela reduit la taille du fichier de 30 a 50%, ce qui accelere les transferts reseau et reduit la bande passante utilisee par vos APIs.</p>
+                </div>
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>A quoi sert le tri des cles ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Trier les cles alphabetiquement facilite la lecture et la comparaison de fichiers JSON. C&apos;est utile pour les fichiers de configuration, les schemas d&apos;API et le versionnage avec Git (les diffs sont plus lisibles).</p>
+                </div>
+              </div>
+            </div>
           </div>
 
           <aside className="space-y-6">

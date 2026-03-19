@@ -176,6 +176,51 @@ export default function ConvertisseurCouleurs() {
                 ))}
               </div>
             </div>
+            {/* SEO Content */}
+            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
+                Comment utiliser le convertisseur de couleurs
+              </h2>
+              <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                <p>
+                  Ce convertisseur de couleurs gratuit vous permet de passer instantanement entre les formats HEX, RGB et HSL. Que vous soyez designer, developpeur web ou simplement curieux, l&apos;outil vous donne toutes les valeurs dont vous avez besoin en un clic.
+                </p>
+                <ul className="ml-4 list-disc space-y-1">
+                  <li><strong className="text-[var(--foreground)]">Utilisez le color picker</strong> : cliquez sur le selecteur de couleur pour choisir visuellement la teinte souhaitee.</li>
+                  <li><strong className="text-[var(--foreground)]">Saisissez un code HEX</strong> : entrez directement un code hexadecimal comme #0d4f3c pour obtenir ses equivalents RGB et HSL.</li>
+                  <li><strong className="text-[var(--foreground)]">Ajustez via les curseurs</strong> : modifiez les composantes Rouge, Vert, Bleu (RGB) ou Teinte, Saturation, Luminosite (HSL) avec les curseurs interactifs.</li>
+                  <li><strong className="text-[var(--foreground)]">Copiez les valeurs</strong> : chaque format dispose d&apos;un bouton de copie pour coller directement la valeur dans votre code CSS ou votre logiciel de design.</li>
+                </ul>
+                <p>
+                  L&apos;apercu en temps reel affiche la couleur selectionnee avec le code correspondant, ce qui facilite le choix exact de la teinte pour vos projets web, graphiques ou d&apos;impression.
+                </p>
+              </div>
+            </div>
+
+            {/* FAQ */}
+            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Questions frequentes</h2>
+              <div className="mt-6 space-y-5">
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Quelle est la difference entre HEX, RGB et HSL ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    HEX (hexadecimal) represente une couleur avec 6 caracteres precedee d&apos;un # (ex : #0d4f3c). RGB definit une couleur par ses composantes Rouge, Vert et Bleu (0-255). HSL utilise la Teinte (0-360&deg;), la Saturation (0-100 %) et la Luminosite (0-100 %). Les trois formats sont interchangeables et representent les memes couleurs.
+                  </p>
+                </div>
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Quel format de couleur utiliser en CSS ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    Les trois formats sont valides en CSS. Le HEX est le plus repandu et le plus compact. Le RGB est pratique quand vous devez ajouter de la transparence (rgba). Le HSL est ideal pour creer des palettes harmonieuses car il suffit de modifier la teinte tout en gardant la meme saturation et luminosite.
+                  </p>
+                </div>
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Comment trouver la couleur complementaire ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    En utilisant le format HSL, ajoutez 180&deg; a la valeur de teinte (H) pour obtenir la couleur complementaire. Par exemple, si votre couleur a une teinte de 150&deg;, sa complementaire sera a 330&deg;. Les couleurs complementaires creent un contraste fort et sont tres utilisees en design graphique.
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
 
           <aside className="space-y-6">

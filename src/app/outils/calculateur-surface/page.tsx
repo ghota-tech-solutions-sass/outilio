@@ -190,6 +190,41 @@ export default function CalculateurSurface() {
                 <p><strong className="text-[var(--foreground)]">Trapeze</strong> : Aire = ((Grande base + Petite base) x Hauteur) / 2</p>
               </div>
             </div>
+
+            {/* SEO Content */}
+            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
+                Comment utiliser le calculateur de surface
+              </h2>
+              <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                <p>Ce calculateur de surface vous permet de determiner l&apos;aire de quatre formes geometriques courantes. Que ce soit pour mesurer une piece, un terrain ou resoudre un exercice de mathematiques, obtenez le resultat en m&sup2; avec conversions automatiques.</p>
+                <ul className="ml-4 list-disc space-y-1">
+                  <li><strong className="text-[var(--foreground)]">Selectionnez la forme</strong> : choisissez parmi rectangle, cercle, triangle ou trapeze selon la surface a calculer.</li>
+                  <li><strong className="text-[var(--foreground)]">Entrez les dimensions en metres</strong> : remplissez les champs correspondants (longueur et largeur pour un rectangle, rayon pour un cercle, etc.).</li>
+                  <li><strong className="text-[var(--foreground)]">Obtenez le resultat instantanement</strong> : la surface s&apos;affiche en metres carres (m&sup2;) avec conversion automatique en cm&sup2;, km&sup2;, hectares, ares et pieds carres.</li>
+                  <li><strong className="text-[var(--foreground)]">Utilisations courantes</strong> : calcul de la surface habitable (loi Carrez), estimation de la superficie d&apos;un terrain, quantite de peinture ou de carrelage necessaire.</li>
+                </ul>
+              </div>
+            </div>
+
+            {/* FAQ */}
+            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Questions frequentes</h2>
+              <div className="mt-6 space-y-5">
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Comment calculer la surface d&apos;une piece non rectangulaire ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Pour une piece de forme irreguliere, decomposez-la en formes simples (rectangles, triangles, trapezes). Calculez la surface de chaque partie separement, puis additionnez les resultats. Pour les parties arrondies (baie vitree, alcove), utilisez la formule du demi-cercle.</p>
+                </div>
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Quelle est la difference entre surface habitable et surface loi Carrez ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>La surface habitable (loi Boutin) inclut les pieces d&apos;une hauteur sous plafond superieure a 1,80 m, en excluant les murs, cloisons, caves et garages. La surface loi Carrez, obligatoire pour la vente de lots de copropriete, exclut egalement les surfaces dont la hauteur est inferieure a 1,80 m mais inclut certains espaces supplementaires comme les combles amenages.</p>
+                </div>
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Combien de metres carres dans un hectare ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Un hectare equivaut a 10 000 m&sup2;, soit un carre de 100 m de cote. Un are correspond a 100 m&sup2;. Ces unites sont principalement utilisees pour mesurer des terrains agricoles ou des parcelles de grande taille en France.</p>
+                </div>
+              </div>
+            </div>
           </div>
 
           <aside className="space-y-6">

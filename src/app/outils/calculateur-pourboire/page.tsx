@@ -144,6 +144,41 @@ export default function CalculateurPourboire() {
                 <p>Au <strong className="text-[var(--foreground)]">Japon</strong>, laisser un pourboire est considere comme impoli.</p>
               </div>
             </div>
+
+            {/* SEO Content */}
+            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
+                Comment utiliser le calculateur de pourboire
+              </h2>
+              <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                <p>Notre calculateur de pourboire vous permet de determiner rapidement le montant a laisser au restaurant ou dans tout autre etablissement de service. Il suffit de renseigner le montant de l&apos;addition et le pourcentage souhaite pour obtenir le resultat instantanement.</p>
+                <ul className="ml-4 list-disc space-y-1">
+                  <li><strong className="text-[var(--foreground)]">Entrez le montant de l&apos;addition</strong> : saisissez la somme totale hors pourboire en euros.</li>
+                  <li><strong className="text-[var(--foreground)]">Choisissez le pourcentage</strong> : utilisez le curseur ou les boutons predefinis (5%, 10%, 15%, 20%, 25%) selon votre satisfaction.</li>
+                  <li><strong className="text-[var(--foreground)]">Partagez entre convives</strong> : indiquez le nombre de personnes pour diviser equitablement l&apos;addition et le pourboire.</li>
+                  <li><strong className="text-[var(--foreground)]">Option d&apos;arrondi</strong> : activez l&apos;arrondi au-dessus pour simplifier le paiement par personne.</li>
+                </ul>
+              </div>
+            </div>
+
+            {/* FAQ */}
+            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Questions frequentes</h2>
+              <div className="mt-6 space-y-5">
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Le pourboire est-il obligatoire en France ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Non, en France le service est inclus dans les prix affiches (15% du prix hors taxe). Le pourboire est un geste de remerciement facultatif. Il est toutefois courant de laisser entre 5% et 10% de l&apos;addition pour un service apprecie, surtout au restaurant.</p>
+                </div>
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Quel pourcentage de pourboire laisser au restaurant ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>En France, 5 a 10% est la norme pour un bon service. Pour un service exceptionnel, vous pouvez aller jusqu&apos;a 15%. Aux Etats-Unis, le pourboire standard est de 15 a 20%, car les serveurs dependent largement des pourboires pour leur revenu.</p>
+                </div>
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Comment partager equitablement l&apos;addition entre plusieurs personnes ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Indiquez le nombre de convives dans le champ prevu et notre outil divisera automatiquement le total (addition + pourboire) par personne. L&apos;option d&apos;arrondi permet d&apos;obtenir un montant entier par personne, ce qui facilite le paiement en especes.</p>
+                </div>
+              </div>
+            </div>
           </div>
           <aside className="space-y-6">
             <AdPlaceholder className="h-[250px]" />

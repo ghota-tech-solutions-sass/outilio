@@ -413,6 +413,52 @@ export default function ConvertisseurTailles() {
                 ))}
               </div>
             </div>
+
+            {/* SEO Content */}
+            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
+                Comment utiliser le convertisseur de tailles
+              </h2>
+              <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                <p>
+                  Ce convertisseur de tailles gratuit vous aide a trouver votre taille de vetements et de chaussures dans les differents systemes internationaux : Europe (EU/FR), Etats-Unis (US), Royaume-Uni (UK) et tailles internationales (S, M, L, XL).
+                </p>
+                <ul className="ml-4 list-disc space-y-1">
+                  <li><strong className="text-[var(--foreground)]">Choisissez la categorie</strong> : vetements ou chaussures, selon ce que vous recherchez.</li>
+                  <li><strong className="text-[var(--foreground)]">Selectionnez le genre</strong> : homme ou femme, car les grilles de tailles different.</li>
+                  <li><strong className="text-[var(--foreground)]">Indiquez votre systeme source</strong> : choisissez le systeme de taille que vous connaissez (EU, US, UK ou international).</li>
+                  <li><strong className="text-[var(--foreground)]">Selectionnez votre taille</strong> : l&apos;outil affiche instantanement les equivalences dans tous les autres systemes.</li>
+                </ul>
+                <p>
+                  Le tableau complet en bas de page presente toutes les correspondances. Cliquez sur une ligne pour la selectionner et voir les equivalences en detail. Cet outil est particulierement pratique pour les achats en ligne sur des sites etrangers.
+                </p>
+              </div>
+            </div>
+
+            {/* FAQ */}
+            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Questions frequentes</h2>
+              <div className="mt-6 space-y-5">
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Les tailles EU et FR sont-elles identiques ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    Oui, pour les vetements, les tailles europeennes (EU) correspondent aux tailles francaises (FR). Un EU 38 femme correspond bien a un 38 francais. Pour les chaussures, c&apos;est egalement le cas : un EU 42 correspond a un 42 francais. En revanche, les tailles italiennes peuvent varier legerement selon les marques.
+                  </p>
+                </div>
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Comment mesurer ma pointure exacte ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    Posez votre pied a plat sur une feuille de papier, tracez le contour avec un stylo vertical, puis mesurez la distance entre le talon et le bout de l&apos;orteil le plus long. Mesurez vos deux pieds (ils peuvent differer) et prenez la plus grande mesure. Ajoutez 0,5 a 1 cm pour le confort. Faites cette mesure en fin de journee, car les pieds gonflent legerement au cours de la journee.
+                  </p>
+                </div>
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Les tailles varient-elles selon les marques ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    Oui, les tableaux de correspondance sont des standards generaux, mais chaque marque peut avoir sa propre grille de tailles. Par exemple, les marques italiennes tendent a tailler plus petit, tandis que certaines marques americaines taillent plus grand. Consultez toujours le guide des tailles specifique du fabricant, surtout pour les achats en ligne.
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Sidebar */}

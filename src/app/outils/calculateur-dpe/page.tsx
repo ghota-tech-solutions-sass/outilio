@@ -343,6 +343,41 @@ export default function CalculateurDPE() {
                 </table>
               </div>
             </div>
+
+            {/* SEO Content */}
+            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
+                Comment utiliser le simulateur DPE
+              </h2>
+              <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                <p>Notre simulateur de Diagnostic de Performance Energetique (DPE) vous permet d&apos;estimer la classe energetique de votre logement selon l&apos;echelle officielle de A a G. Les seuils utilises correspondent a la reforme DPE 2024, qui introduit le double critere energie + CO2.</p>
+                <ul className="ml-4 list-disc space-y-1">
+                  <li><strong className="text-[var(--foreground)]">Mode manuel</strong> : saisissez la surface, le type d&apos;energie et votre consommation annuelle en kWh ou en euros pour obtenir une estimation precise.</li>
+                  <li><strong className="text-[var(--foreground)]">Mode simplifie</strong> : renseignez la surface, l&apos;annee de construction, le type de chauffage et le niveau d&apos;isolation pour une estimation rapide sans facture.</li>
+                  <li><strong className="text-[var(--foreground)]">Resultats detailles</strong> : classe DPE, consommation en kWh/m&sup2;/an (energie primaire), emissions CO2/m&sup2;/an, et cout annuel estime.</li>
+                </ul>
+                <p>Attention : cet outil fournit une estimation indicative. Seul un diagnostiqueur certifie peut etablir un DPE officiel, obligatoire pour toute vente ou mise en location en France depuis 2006.</p>
+              </div>
+            </div>
+
+            {/* FAQ */}
+            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Questions frequentes</h2>
+              <div className="mt-6 space-y-5">
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Qu&apos;est-ce qu&apos;une passoire thermique ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Une passoire thermique est un logement classe F ou G au DPE, c&apos;est-a-dire avec une consommation superieure a 330 kWh/m&sup2;/an en energie primaire. En France, cela concerne environ 5 millions de logements. Depuis le 1er janvier 2025, les logements classes G sont interdits a la location, les classes F le seront en 2028 et les classes E en 2034.</p>
+                </div>
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Combien coute un DPE officiel ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Le cout d&apos;un DPE realise par un diagnostiqueur certifie varie generalement entre 100 &euro; et 250 &euro; selon la taille du logement et la region. Ce diagnostic est valable 10 ans et doit obligatoirement etre fourni lors de la vente ou la mise en location d&apos;un bien immobilier en France.</p>
+                </div>
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Comment ameliorer la classe DPE de son logement ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Les travaux les plus efficaces sont l&apos;isolation des combles et des murs (gain de 1 a 2 classes), le remplacement des fenetres simple vitrage par du double vitrage, l&apos;installation d&apos;une pompe a chaleur ou d&apos;une chaudiere a condensation, et la mise en place d&apos;une VMC. Des aides comme MaPrimeRenov&apos; et les CEE peuvent financer une partie de ces travaux.</p>
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Sidebar */}

@@ -210,6 +210,52 @@ export default function ConvertisseurUnites() {
                 <p><strong className="text-[var(--foreground)]">Temperature</strong> : Celsius (point de congelation 0°, ebullition 100°), Fahrenheit (32° et 212°), Kelvin (echelle absolue, 0 K = -273,15°C).</p>
               </div>
             </div>
+
+            {/* SEO Content */}
+            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
+                Comment utiliser le convertisseur d&apos;unites
+              </h2>
+              <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                <p>
+                  Ce convertisseur d&apos;unites universel gratuit couvre 5 categories de mesure : longueur, poids, temperature, surface et volume. Il permet de convertir instantanement entre le systeme metrique et le systeme imperial.
+                </p>
+                <ul className="ml-4 list-disc space-y-1">
+                  <li><strong className="text-[var(--foreground)]">Selectionnez la categorie</strong> : choisissez parmi longueur, poids, temperature, surface ou volume.</li>
+                  <li><strong className="text-[var(--foreground)]">Definissez les unites</strong> : selectionnez l&apos;unite source et l&apos;unite cible dans les menus deroulants. Le bouton d&apos;inversion permet de changer le sens en un clic.</li>
+                  <li><strong className="text-[var(--foreground)]">Saisissez la valeur</strong> : entrez le nombre a convertir. Le resultat s&apos;affiche en temps reel.</li>
+                  <li><strong className="text-[var(--foreground)]">Consultez toutes les conversions</strong> : la section &laquo; Toutes les conversions &raquo; affiche simultanement l&apos;equivalent dans chaque unite de la categorie selectionnee.</li>
+                </ul>
+                <p>
+                  L&apos;outil est particulierement utile pour les achats internationaux, les recettes de cuisine anglo-saxonnes, les projets de bricolage ou les calculs scientifiques necessitant des conversions entre systeme metrique et imperial.
+                </p>
+              </div>
+            </div>
+
+            {/* FAQ */}
+            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Questions frequentes</h2>
+              <div className="mt-6 space-y-5">
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Quels pays utilisent encore le systeme imperial ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    Seuls trois pays n&apos;ont pas officiellement adopte le systeme metrique : les Etats-Unis, le Liberia et la Birmanie (Myanmar). Le Royaume-Uni utilise un melange des deux systemes : les distances routieres sont en miles, les poids corporels en stones, mais la plupart des mesures scientifiques et commerciales sont en metrique. En France, le systeme metrique est le seul systeme legal depuis 1840.
+                  </p>
+                </div>
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Comment convertir facilement des livres en kilogrammes ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    Pour une conversion rapide de tete, divisez le poids en livres (lb) par 2,2. Par exemple, 150 lb / 2,2 = environ 68 kg. Pour une valeur plus precise, utilisez le facteur exact : 1 livre = 0,453592 kg. Inversement, pour passer de kg en lb, multipliez par 2,2. Cet outil effectue le calcul exact pour vous.
+                  </p>
+                </div>
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Quelle est la difference entre un hectare et un acre ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    Un hectare (ha) vaut 10 000 m&sup2;, soit un carre de 100 m de cote. Un acre vaut environ 4 047 m&sup2;, soit environ 0,4 hectare. L&apos;hectare est l&apos;unite standard en France pour les surfaces agricoles et foncieres. L&apos;acre est encore utilise dans les pays anglo-saxons, notamment pour l&apos;immobilier aux Etats-Unis et au Royaume-Uni.
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
           <aside className="space-y-6">
             <AdPlaceholder className="h-[250px]" />

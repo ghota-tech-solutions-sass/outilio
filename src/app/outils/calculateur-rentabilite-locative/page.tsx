@@ -138,6 +138,41 @@ export default function CalculateurRentabilite() {
                 )}
               </div>
             </div>
+
+            {/* SEO Content */}
+            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
+                Comment utiliser le calculateur de rentabilite locative
+              </h2>
+              <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                <p>Ce simulateur vous aide a evaluer la performance d&apos;un investissement immobilier locatif en France. Il calcule la rentabilite brute, la rentabilite nette et le cashflow mensuel en tenant compte de tous les parametres reels.</p>
+                <ul className="ml-4 list-disc space-y-1">
+                  <li><strong className="text-[var(--foreground)]">Renseignez l&apos;acquisition</strong> : prix d&apos;achat, frais de notaire (environ 7-8% dans l&apos;ancien, 2-3% dans le neuf) et cout des travaux eventuels.</li>
+                  <li><strong className="text-[var(--foreground)]">Indiquez les revenus et charges</strong> : loyer mensuel, vacance locative estimee, charges de copropriete, taxe fonciere et assurance proprietaire non occupant (PNO).</li>
+                  <li><strong className="text-[var(--foreground)]">Parametrez le financement</strong> : montant de l&apos;apport, taux du credit immobilier, duree de l&apos;emprunt et appreciation annuelle estimee du bien.</li>
+                  <li><strong className="text-[var(--foreground)]">Analysez les indicateurs</strong> : rendement brut, rendement net, cashflow mensuel, cash-on-cash return et plus-value estimee.</li>
+                </ul>
+              </div>
+            </div>
+
+            {/* FAQ */}
+            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Questions frequentes</h2>
+              <div className="mt-6 space-y-5">
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Quelle est la difference entre rentabilite brute et rentabilite nette ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>La rentabilite brute se calcule en divisant les loyers annuels par le cout total d&apos;acquisition, sans deduire les charges. La rentabilite nette prend en compte la vacance locative, les charges de copropriete, la taxe fonciere et l&apos;assurance PNO. C&apos;est un indicateur plus realiste de la performance de votre investissement.</p>
+                </div>
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Qu&apos;est-ce qu&apos;un bon rendement locatif en France ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Une rentabilite brute superieure a 7% est consideree comme excellente, entre 5% et 7% comme correcte, et en dessous de 5% comme faible. Cependant, ces seuils varient selon les villes : a Paris, un rendement de 3-4% est courant, tandis qu&apos;en province, il est possible d&apos;atteindre 8-10% dans certaines villes moyennes.</p>
+                </div>
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Qu&apos;est-ce que le cash-on-cash return ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Le cash-on-cash return (ou rendement sur fonds propres) mesure le rapport entre le cashflow annuel net et le montant de votre apport personnel. Il permet d&apos;evaluer la performance reelle de l&apos;argent que vous avez investi, en tenant compte de l&apos;effet de levier du credit immobilier. Un cash-on-cash de 10% ou plus est generalement considere comme tres attractif.</p>
+                </div>
+              </div>
+            </div>
           </div>
 
           <aside className="space-y-6">

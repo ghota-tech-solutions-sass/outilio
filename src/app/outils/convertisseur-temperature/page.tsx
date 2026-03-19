@@ -147,6 +147,52 @@ export default function ConvertisseurTemperature() {
                 <p><strong className="text-[var(--foreground)]">K &rarr; \u00B0C</strong> : C = K - 273,15</p>
               </div>
             </div>
+
+            {/* SEO Content */}
+            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
+                Comment utiliser le convertisseur de temperature
+              </h2>
+              <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                <p>
+                  Ce convertisseur de temperature gratuit permet de passer instantanement entre les echelles Celsius, Fahrenheit et Kelvin. Il est utile au quotidien pour comprendre la meteo americaine, pour les recettes de cuisine anglo-saxonnes ou pour les calculs scientifiques.
+                </p>
+                <ul className="ml-4 list-disc space-y-1">
+                  <li><strong className="text-[var(--foreground)]">Selectionnez l&apos;echelle source</strong> : choisissez Celsius (&deg;C), Fahrenheit (&deg;F) ou Kelvin (K).</li>
+                  <li><strong className="text-[var(--foreground)]">Saisissez la temperature</strong> : entrez la valeur a convertir. Les resultats s&apos;affichent en temps reel dans les trois echelles.</li>
+                  <li><strong className="text-[var(--foreground)]">Consultez le thermometre visuel</strong> : une representation graphique colore indique si la temperature est froide, agreable ou chaude.</li>
+                  <li><strong className="text-[var(--foreground)]">Utilisez les reperes</strong> : le tableau de temperatures de reference (congelation de l&apos;eau, temperature corporelle, etc.) vous aide a contextualiser les valeurs.</li>
+                </ul>
+                <p>
+                  En France, le Celsius est l&apos;echelle standard. Le Fahrenheit est utilise aux Etats-Unis et dans quelques autres pays. Le Kelvin est l&apos;unite du Systeme international, utilisee principalement en physique et en chimie.
+                </p>
+              </div>
+            </div>
+
+            {/* FAQ */}
+            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Questions frequentes</h2>
+              <div className="mt-6 space-y-5">
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Comment convertir rapidement des Fahrenheit en Celsius ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    La formule exacte est : &deg;C = (&deg;F - 32) &times; 5/9. Pour une estimation rapide de tete, soustrayez 30 puis divisez par 2. Par exemple, 80 &deg;F donne environ (80-30)/2 = 25 &deg;C (la valeur exacte est 26,67 &deg;C). Cette astuce fonctionne bien pour les temperatures courantes.
+                  </p>
+                </div>
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>A quoi correspond 0 Kelvin ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    0 Kelvin (-273,15 &deg;C) est le zero absolu, la temperature la plus basse theoriquement atteignable. A cette temperature, les atomes cessent tout mouvement thermique. C&apos;est la raison pour laquelle l&apos;echelle Kelvin ne comporte pas de valeurs negatives. Elle est utilisee en physique car elle permet des calculs plus simples en thermodynamique.
+                  </p>
+                </div>
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Quelle temperature pour les recettes en Fahrenheit ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    Les recettes americaines utilisent le Fahrenheit. Voici les equivalences les plus courantes en cuisine : 350 &deg;F = 177 &deg;C (four modere), 375 &deg;F = 190 &deg;C, 400 &deg;F = 204 &deg;C (four chaud), 425 &deg;F = 218 &deg;C, 450 &deg;F = 232 &deg;C (four tres chaud). Utilisez cet outil pour obtenir la conversion exacte de n&apos;importe quelle temperature de recette.
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
           <aside className="space-y-6">
             <AdPlaceholder className="h-[250px]" />

@@ -183,6 +183,41 @@ export default function CalculateurRemise() {
                 <p><strong className="text-[var(--foreground)]">Montant fixe</strong> : Les reductions en montant fixe (bons d&apos;achat, coupons) se deduisent directement du prix courant.</p>
               </div>
             </div>
+
+            {/* SEO Content */}
+            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
+                Comment utiliser le calculateur de remise
+              </h2>
+              <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                <p>Ce calculateur de remise vous permet de connaitre instantanement le prix final d&apos;un article apres une ou plusieurs reductions. Ideal pendant les soldes, le Black Friday ou pour verifier une promotion en magasin.</p>
+                <ul className="ml-4 list-disc space-y-1">
+                  <li><strong className="text-[var(--foreground)]">Entrez le prix original</strong> : saisissez le prix de depart de l&apos;article en euros avant toute reduction.</li>
+                  <li><strong className="text-[var(--foreground)]">Ajoutez une ou plusieurs reductions</strong> : choisissez entre un pourcentage (ex : -20%) ou un montant fixe (ex : -10 &euro;) pour chaque remise.</li>
+                  <li><strong className="text-[var(--foreground)]">Cumulez les promotions</strong> : ajoutez autant de reductions que necessaire. Elles s&apos;appliquent en cascade sur le prix deja reduit.</li>
+                  <li><strong className="text-[var(--foreground)]">Consultez le detail</strong> : visualisez l&apos;economie totale, le pourcentage de reduction reel et le detail etape par etape.</li>
+                </ul>
+              </div>
+            </div>
+
+            {/* FAQ */}
+            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Questions frequentes</h2>
+              <div className="mt-6 space-y-5">
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Pourquoi deux remises de 20% et 10% ne font-elles pas 30% ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Lorsque plusieurs remises se cumulent, chaque reduction s&apos;applique sur le prix deja reduit, pas sur le prix initial. Par exemple, sur 100 &euro; : la premiere remise de 20% donne 80 &euro;, puis la seconde de 10% s&apos;applique sur 80 &euro; (soit -8 &euro;), pour un total de 72 &euro; &mdash; ce qui correspond a 28% de reduction reelle.</p>
+                </div>
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Quelle est la reglementation des soldes en France ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>En France, les soldes se deroulent deux fois par an sur des periodes de 4 semaines fixees par arrete prefectoral. Les commercants doivent afficher clairement le prix de reference (le prix le plus bas pratique dans les 30 jours precedents) et le nouveau prix solde, conformement a la directive europeenne Omnibus.</p>
+                </div>
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Peut-on cumuler un code promo avec une remise en magasin ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Cela depend de la politique du commercant. Certaines enseignes autorisent le cumul d&apos;un code promotionnel avec les soldes ou les remises en cours, tandis que d&apos;autres l&apos;interdisent. Utilisez notre calculateur pour simuler le resultat final quel que soit le scenario.</p>
+                </div>
+              </div>
+            </div>
           </div>
 
           <aside className="space-y-6">

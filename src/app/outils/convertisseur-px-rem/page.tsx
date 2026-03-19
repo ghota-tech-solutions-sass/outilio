@@ -263,6 +263,52 @@ export default function ConvertisseurPxRem() {
                 <p><strong className="text-[var(--foreground)]">Bonne pratique</strong> : Utilisez rem pour les tailles de police, marges et paddings. Gardez px pour les bordures et les dimensions fixes.</p>
               </div>
             </div>
+
+            {/* SEO Content */}
+            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
+                Comment utiliser le convertisseur PX / REM
+              </h2>
+              <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                <p>
+                  Ce convertisseur PX/REM gratuit est concu pour les developpeurs web et integrateurs qui souhaitent passer rapidement entre pixels et unites rem. Il inclut un tableau de correspondance complet et des boutons de copie CSS.
+                </p>
+                <ul className="ml-4 list-disc space-y-1">
+                  <li><strong className="text-[var(--foreground)]">Definissez la taille de base</strong> : ajustez la valeur de font-size racine (par defaut 16px). Cela affecte tous les calculs de conversion.</li>
+                  <li><strong className="text-[var(--foreground)]">Choisissez le sens de conversion</strong> : PX vers REM ou REM vers PX selon votre besoin.</li>
+                  <li><strong className="text-[var(--foreground)]">Saisissez la valeur</strong> : entrez la taille en pixels ou en rem. Le resultat s&apos;affiche instantanement.</li>
+                  <li><strong className="text-[var(--foreground)]">Copiez le CSS</strong> : cliquez sur &laquo; Copier en CSS &raquo; pour obtenir directement la propriete <code style={{ fontFamily: "monospace", background: "var(--surface-alt)", padding: "2px 6px", borderRadius: "4px" }}>font-size: 1rem;</code> prete a coller.</li>
+                </ul>
+                <p>
+                  Le tableau de correspondance en bas de page liste les 18 valeurs de pixels les plus courantes en CSS avec leur equivalent rem. Il s&apos;adapte automatiquement si vous modifiez la taille de base.
+                </p>
+              </div>
+            </div>
+
+            {/* FAQ */}
+            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Questions frequentes</h2>
+              <div className="mt-6 space-y-5">
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Pourquoi utiliser rem plutot que px en CSS ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    L&apos;unite rem est relative a la taille de police definie sur l&apos;element racine (&lt;html&gt;). Quand un utilisateur modifie la taille de texte dans les parametres de son navigateur (souvent pour des raisons d&apos;accessibilite), les elements dimensionnes en rem s&apos;adaptent automatiquement, contrairement aux pixels qui restent fixes. C&apos;est une bonne pratique recommandee par le W3C.
+                  </p>
+                </div>
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Quelle est la difference entre rem et em ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    Le rem (root em) est toujours relatif a la taille de police de l&apos;element &lt;html&gt;. L&apos;em est relatif a la taille de police de l&apos;element parent. Avec des imbrications multiples, les em se multiplient (effet &laquo; cascade &raquo;), ce qui peut creer des tailles imprevues. Le rem est plus previsible car il reference toujours la meme valeur de base.
+                  </p>
+                </div>
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Dois-je toujours utiliser 16px comme taille de base ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    16px est la valeur par defaut de tous les navigateurs, et la plupart des frameworks CSS (Tailwind, Bootstrap) s&apos;appuient dessus. Certains developpeurs definissent 10px (font-size: 62.5 %) pour simplifier les calculs (1rem = 10px), mais cela peut poser des problemes d&apos;accessibilite. La pratique la plus recommandee est de garder 16px et d&apos;utiliser cet outil pour calculer les conversions.
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
 
           <aside className="space-y-6">

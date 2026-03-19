@@ -283,6 +283,41 @@ export default function CalculateurVitesse() {
                 <p><strong className="text-[var(--foreground)]">Conversions</strong> : 1 km/h = 0,2778 m/s = 0,6214 mph</p>
               </div>
             </div>
+
+            {/* SEO Content */}
+            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
+                Comment utiliser le calculateur de vitesse
+              </h2>
+              <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                <p>Ce calculateur de vitesse, distance et temps vous permet de retrouver la valeur manquante a partir des deux autres. Il s&apos;appuie sur la formule fondamentale V = D / T et gere automatiquement les conversions d&apos;unites.</p>
+                <ul className="ml-4 list-disc space-y-1">
+                  <li><strong className="text-[var(--foreground)]">Choisissez ce que vous cherchez</strong> : selectionnez le mode &laquo; Vitesse &raquo;, &laquo; Distance &raquo; ou &laquo; Temps &raquo; selon la valeur inconnue.</li>
+                  <li><strong className="text-[var(--foreground)]">Entrez les valeurs connues</strong> : saisissez les deux valeurs disponibles dans les unites de votre choix (km, miles, m/s, km/h, mph, secondes, minutes, heures).</li>
+                  <li><strong className="text-[var(--foreground)]">Obtenez le resultat</strong> : la valeur recherchee s&apos;affiche instantanement avec toutes les conversions d&apos;unites disponibles.</li>
+                  <li><strong className="text-[var(--foreground)]">Cas pratiques</strong> : estimation du temps de trajet, calcul de la vitesse moyenne d&apos;un parcours sportif, conversion km/h en m/s pour la physique.</li>
+                </ul>
+              </div>
+            </div>
+
+            {/* FAQ */}
+            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Questions frequentes</h2>
+              <div className="mt-6 space-y-5">
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Comment convertir des km/h en m/s ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Pour convertir des km/h en m/s, divisez la valeur par 3,6. Par exemple, 90 km/h = 25 m/s. Inversement, pour passer de m/s a km/h, multipliez par 3,6. Cette conversion est frequemment utilisee en physique et en meteorologie.</p>
+                </div>
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Quelles sont les limitations de vitesse en France ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>En France, les limitations de vitesse sont : 50 km/h en agglomeration, 80 km/h sur les routes a double sens sans separateur central, 110 km/h sur les voies rapides et 130 km/h sur les autoroutes. Par temps de pluie, ces limites sont reduites respectivement a 50, 80, 100 et 110 km/h.</p>
+                </div>
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Quelle est la difference entre vitesse moyenne et vitesse instantanee ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>La vitesse moyenne correspond a la distance totale parcourue divisee par le temps total du trajet, pauses comprises. La vitesse instantanee est celle affichee a un instant precis sur le compteur. En pratique, la vitesse moyenne est toujours inferieure a la vitesse de croisiere car elle inclut les arrets, ralentissements et accelerations.</p>
+                </div>
+              </div>
+            </div>
           </div>
 
           <aside className="space-y-6">

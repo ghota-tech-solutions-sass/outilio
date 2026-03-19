@@ -281,6 +281,44 @@ export default function GenerateurRobotsTxt() {
                 <p><strong className="text-[var(--foreground)]">Sitemap</strong> : Indique l&apos;emplacement du sitemap XML pour faciliter l&apos;indexation.</p>
               </div>
             </div>
+
+            {/* SEO Content */}
+            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
+                Comment creer un fichier robots.txt pour votre site
+              </h2>
+              <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                <p>
+                  Le fichier robots.txt indique aux moteurs de recherche quelles pages de votre site peuvent etre explorees.
+                  C&apos;est un element cle du referencement technique (SEO) qui doit etre place a la racine de votre site.
+                </p>
+                <ul className="ml-4 list-disc space-y-1">
+                  <li><strong className="text-[var(--foreground)]">Utilisez un preset</strong> : choisissez parmi 4 configurations courantes (standard, WordPress, tout autoriser, tout bloquer)</li>
+                  <li><strong className="text-[var(--foreground)]">Ajoutez des regles</strong> : definissez les chemins a bloquer (Disallow) ou autoriser (Allow) par user-agent</li>
+                  <li><strong className="text-[var(--foreground)]">Configurez le sitemap</strong> : indiquez l&apos;URL de votre sitemap XML pour faciliter l&apos;indexation</li>
+                  <li><strong className="text-[var(--foreground)]">Bloquez les robots IA</strong> : GPTBot, CCBot et autres crawlers d&apos;intelligence artificielle</li>
+                </ul>
+              </div>
+            </div>
+
+            {/* FAQ */}
+            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Questions frequentes</h2>
+              <div className="mt-6 space-y-5">
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Ou placer le fichier robots.txt ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Le fichier robots.txt doit etre place a la racine de votre domaine, accessible a l&apos;URL <code style={{ color: "var(--primary)" }}>https://votresite.com/robots.txt</code>. Il doit etre en texte brut (pas de HTML) et accessible publiquement.</p>
+                </div>
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Le robots.txt empeche-t-il l&apos;indexation ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Le robots.txt empeche l&apos;exploration (crawling) mais pas necessairement l&apos;indexation. Google peut indexer une URL bloquee par robots.txt s&apos;il la trouve via des liens. Pour empecher l&apos;indexation, utilisez la balise meta <code style={{ color: "var(--primary)" }}>noindex</code> ou l&apos;en-tete HTTP X-Robots-Tag.</p>
+                </div>
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Faut-il bloquer les robots d&apos;IA comme GPTBot ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>C&apos;est un choix editorial. Bloquer GPTBot (OpenAI) ou CCBot (Common Crawl) empeche l&apos;utilisation de votre contenu pour entrainer des modeles d&apos;IA. Cela n&apos;affecte pas votre referencement sur Google ou Bing.</p>
+                </div>
+              </div>
+            </div>
           </div>
 
           <aside className="space-y-6">

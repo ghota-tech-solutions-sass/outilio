@@ -206,6 +206,44 @@ export default function GenerateurMotDePasseWifi() {
                 <p><strong className="text-[var(--foreground)]">QR Code</strong> : Le QR code genere utilise le format standard WIFI: reconnu par iOS et Android pour une connexion automatique.</p>
               </div>
             </div>
+
+            {/* SEO Content */}
+            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
+                Comment generer un mot de passe WiFi securise
+              </h2>
+              <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                <p>
+                  Protegez votre reseau WiFi domestique ou professionnel avec un mot de passe robuste.
+                  Notre outil genere des cles WiFi securisees avec option prononcable et QR code de partage.
+                </p>
+                <ul className="ml-4 list-disc space-y-1">
+                  <li><strong className="text-[var(--foreground)]">Nommez votre reseau</strong> : entrez votre SSID (nom du reseau WiFi)</li>
+                  <li><strong className="text-[var(--foreground)]">Choisissez le mode</strong> : aleatoire (securite maximale) ou prononcable (facile a communiquer)</li>
+                  <li><strong className="text-[var(--foreground)]">Ajustez la longueur</strong> : de 8 a 32 caracteres (16+ recommande)</li>
+                  <li><strong className="text-[var(--foreground)]">Partagez via QR code</strong> : les invites scannent le QR code pour se connecter instantanement</li>
+                </ul>
+              </div>
+            </div>
+
+            {/* FAQ */}
+            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Questions frequentes</h2>
+              <div className="mt-6 space-y-5">
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Quel protocole de securite WiFi utiliser ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Utilisez WPA3 si votre routeur et vos appareils le supportent. Sinon, WPA2-PSK (AES) reste securise avec un mot de passe de 16 caracteres ou plus. Evitez WEP et WPA qui sont obsoletes et vulnerables.</p>
+                </div>
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Le QR code fonctionne-t-il sur tous les telephones ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Oui, le format WIFI: utilise dans le QR code est reconnu nativement par iOS (depuis iOS 11) et Android. Il suffit de scanner le QR code avec l&apos;appareil photo pour se connecter automatiquement au reseau.</p>
+                </div>
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>A quelle frequence changer son mot de passe WiFi ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Il est recommande de changer votre mot de passe WiFi tous les 6 a 12 mois, ou immediatement si vous suspectez un acces non autorise. Creez egalement un reseau invite separe pour vos visiteurs afin de proteger votre reseau principal.</p>
+                </div>
+              </div>
+            </div>
           </div>
 
           <aside className="space-y-6">

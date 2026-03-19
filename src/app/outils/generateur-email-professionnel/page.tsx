@@ -272,6 +272,44 @@ export default function GenerateurEmailProfessionnel() {
                 <p><strong className="text-[var(--foreground)]">Relecture</strong> : Relisez toujours votre email avant envoi, personnalisez les elements entre crochets.</p>
               </div>
             </div>
+
+            {/* SEO Content */}
+            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
+                Comment utiliser le generateur d&apos;email professionnel
+              </h2>
+              <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                <p>
+                  Cet outil genere des emails professionnels prets a envoyer pour les situations courantes du monde du travail en France.
+                  Choisissez un modele, personnalisez les champs et copiez le resultat.
+                </p>
+                <ul className="ml-4 list-disc space-y-1">
+                  <li><strong className="text-[var(--foreground)]">Selectionnez le type d&apos;email</strong> : relance, remerciement, prise de contact, demande de reunion ou demission</li>
+                  <li><strong className="text-[var(--foreground)]">Remplissez les champs</strong> : nom du destinataire, contexte, votre nom et les details specifiques</li>
+                  <li><strong className="text-[var(--foreground)]">Previsualisation instantanee</strong> : l&apos;email se genere en temps reel avec l&apos;objet et le corps du message</li>
+                  <li><strong className="text-[var(--foreground)]">Copiez et personnalisez</strong> : adaptez le ton et les details avant l&apos;envoi</li>
+                </ul>
+              </div>
+            </div>
+
+            {/* FAQ */}
+            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Questions frequentes</h2>
+              <div className="mt-6 space-y-5">
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Les emails generes respectent-ils les conventions francaises ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Oui, les modeles utilisent les formules de politesse et les conventions epistolaires francaises : &laquo; salutations distinguees &raquo;, vouvoiement, formules de cloture formelles. Vous pouvez les adapter selon le contexte.</p>
+                </div>
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>La lettre de demission generee a-t-elle une valeur juridique ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Le modele genere respecte les elements essentiels d&apos;une lettre de demission en droit du travail francais (intention claire, mention du preavis). Toutefois, il est recommande de verifier votre convention collective et de consulter un professionnel pour les cas complexes.</p>
+                </div>
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Puis-je modifier les modeles apres generation ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Absolument. Les emails generes sont un point de depart. Copiez le texte, collez-le dans votre client email et personnalisez-le selon vos besoins. Il est toujours recommande de relire et d&apos;adapter le contenu avant l&apos;envoi.</p>
+                </div>
+              </div>
+            </div>
           </div>
 
           <aside className="space-y-6">

@@ -346,6 +346,44 @@ export default function GenerateurGradient() {
                 })}
               </div>
             </div>
+
+            {/* SEO Content */}
+            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
+                Comment creer un degrade CSS personnalise
+              </h2>
+              <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                <p>
+                  Notre generateur de gradient CSS vous permet de creer des degrades lineaires et radiaux visuellement,
+                  puis de copier le code CSS pret a integrer dans vos projets web.
+                </p>
+                <ul className="ml-4 list-disc space-y-1">
+                  <li><strong className="text-[var(--foreground)]">Choisissez le type</strong> : degrade lineaire (avec angle) ou radial (cercle ou ellipse)</li>
+                  <li><strong className="text-[var(--foreground)]">Ajoutez des color stops</strong> : jusqu&apos;a plusieurs couleurs avec position precise en pourcentage</li>
+                  <li><strong className="text-[var(--foreground)]">Utilisez les presets</strong> : 8 degrades predefinies (Coucher de soleil, Ocean, Foret...)</li>
+                  <li><strong className="text-[var(--foreground)]">Copiez le code CSS</strong> : un clic pour copier la propriete <code style={{ color: "var(--primary)" }}>background</code> complete</li>
+                </ul>
+              </div>
+            </div>
+
+            {/* FAQ */}
+            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Questions frequentes</h2>
+              <div className="mt-6 space-y-5">
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Quelle est la difference entre un degrade lineaire et radial ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Un degrade lineaire suit une direction droite (definie par un angle), tandis qu&apos;un degrade radial part du centre vers l&apos;exterieur en forme de cercle ou d&apos;ellipse. Les degrades lineaires sont plus courants pour les fonds de section, les radiaux pour les boutons et badges.</p>
+                </div>
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Le CSS genere est-il compatible avec tous les navigateurs ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Oui, la syntaxe <code style={{ color: "var(--primary)" }}>linear-gradient()</code> et <code style={{ color: "var(--primary)" }}>radial-gradient()</code> est supportee par tous les navigateurs modernes (Chrome, Firefox, Safari, Edge). Les prefixes vendeurs ne sont plus necessaires.</p>
+                </div>
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Combien de color stops puis-je utiliser ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Il n&apos;y a pas de limite technique. Le CSS supporte autant de color stops que necessaire. En pratique, 2 a 4 couleurs suffisent pour la plupart des designs. Au-dela, le degrade risque de paraitre charge.</p>
+                </div>
+              </div>
+            </div>
           </div>
 
           <aside className="space-y-6">

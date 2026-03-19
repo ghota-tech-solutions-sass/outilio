@@ -137,6 +137,41 @@ export default function CalculateurCO2() {
                 <p>Les facteurs d&apos;emission utilises sont des moyennes issues de la Base Carbone de l&apos;ADEME. Les resultats sont indicatifs et ne remplacent pas un bilan carbone complet.</p>
               </div>
             </div>
+
+            {/* SEO Content */}
+            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
+                Comment utiliser le calculateur d&apos;empreinte CO2
+              </h2>
+              <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                <p>Ce calculateur vous permet d&apos;estimer vos emissions annuelles de dioxyde de carbone liees a vos deplacements et a votre consommation d&apos;energie domestique. Les facteurs d&apos;emission utilises proviennent de la Base Carbone de l&apos;ADEME, reference officielle en France.</p>
+                <ul className="ml-4 list-disc space-y-1">
+                  <li><strong className="text-[var(--foreground)]">Renseignez vos transports</strong> : indiquez les kilometres parcourus par an en voiture, avion, train et bus.</li>
+                  <li><strong className="text-[var(--foreground)]">Ajoutez votre energie domestique</strong> : consommation annuelle d&apos;electricite (kWh), de gaz naturel (kWh) et de fioul (litres).</li>
+                  <li><strong className="text-[var(--foreground)]">Consultez vos resultats</strong> : total en tonnes de CO2 par an, repartition transports/energie et equivalences parlantes (arbres, trajets TGV).</li>
+                </ul>
+                <p>L&apos;objectif de l&apos;Accord de Paris est de limiter l&apos;empreinte carbone individuelle a environ 2 tonnes de CO2 par an d&apos;ici 2050. La moyenne francaise actuelle est d&apos;environ 9 tonnes, dont pres de la moitie provient des transports et du logement.</p>
+              </div>
+            </div>
+
+            {/* FAQ */}
+            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Questions frequentes</h2>
+              <div className="mt-6 space-y-5">
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Quelle est l&apos;empreinte carbone moyenne d&apos;un Francais ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>En France, l&apos;empreinte carbone moyenne est d&apos;environ 9 tonnes de CO2 equivalent par personne et par an. Ce chiffre inclut les emissions directes (transports, chauffage) et indirectes (alimentation, biens de consommation, services publics). L&apos;objectif pour respecter l&apos;Accord de Paris est de descendre a 2 tonnes par personne d&apos;ici 2050.</p>
+                </div>
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Pourquoi l&apos;electricite francaise emet-elle peu de CO2 ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>L&apos;electricite en France est principalement produite par le nucleaire (environ 70%) et les energies renouvelables (hydraulique, eolien, solaire). Son facteur d&apos;emission est d&apos;environ 52 g CO2/kWh, soit 4 a 10 fois moins que dans les pays qui dependent du charbon ou du gaz pour leur production electrique.</p>
+                </div>
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Comment reduire efficacement son empreinte carbone ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Les leviers les plus efficaces sont : reduire les trajets en avion (un aller-retour Paris-New York = ~1,8 tonne de CO2), privilegier le train a la voiture, isoler son logement pour diminuer le chauffage, et passer a une pompe a chaleur ou un chauffage bois. Au quotidien, le covoiturage, le velo et la reduction de la consommation de viande rouge ont aussi un impact significatif.</p>
+                </div>
+              </div>
+            </div>
           </div>
           <aside className="space-y-6">
             <AdPlaceholder className="h-[250px]" />

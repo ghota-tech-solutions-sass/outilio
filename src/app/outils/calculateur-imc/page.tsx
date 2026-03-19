@@ -98,6 +98,41 @@ export default function CalculateurIMC() {
                 <p>L&apos;OMS considere qu&apos;un IMC entre 18,5 et 25 correspond a un poids normal. Cet indicateur ne prend pas en compte la masse musculaire ni la repartition des graisses.</p>
               </div>
             </div>
+
+            {/* SEO Content */}
+            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
+                Comment utiliser le calculateur d&apos;IMC
+              </h2>
+              <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                <p>Ce calculateur d&apos;Indice de Masse Corporelle (IMC) vous permet d&apos;evaluer rapidement votre corpulence selon la classification de l&apos;Organisation Mondiale de la Sante (OMS). Il calcule aussi la fourchette de poids ideal correspondant a votre taille.</p>
+                <ul className="ml-4 list-disc space-y-1">
+                  <li><strong className="text-[var(--foreground)]">Entrez votre poids en kilogrammes</strong> : pesez-vous de preference le matin a jeun pour obtenir une valeur fiable.</li>
+                  <li><strong className="text-[var(--foreground)]">Entrez votre taille en centimetres</strong> : par exemple 175 pour 1,75 m.</li>
+                  <li><strong className="text-[var(--foreground)]">Interpretez le resultat</strong> : l&apos;IMC s&apos;affiche avec sa categorie OMS (denutrition, maigreur, poids normal, surpoids, obesite) et la fourchette de poids ideal pour votre taille.</li>
+                </ul>
+                <p>L&apos;IMC est un indicateur de depistage, pas un diagnostic. Il ne distingue pas la masse grasse de la masse musculaire et ne tient pas compte de l&apos;age, du sexe ou de la morphologie. Consultez un professionnel de sante pour une evaluation complete.</p>
+              </div>
+            </div>
+
+            {/* FAQ */}
+            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Questions frequentes</h2>
+              <div className="mt-6 space-y-5">
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Quel est l&apos;IMC ideal pour un adulte ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Selon l&apos;OMS, un IMC compris entre 18,5 et 25 correspond a un poids normal chez l&apos;adulte. En dessous de 18,5, on parle de maigreur, et au-dessus de 25, de surpoids. L&apos;obesite commence a partir d&apos;un IMC de 30. Toutefois, cet indicateur ne prend pas en compte la composition corporelle : un sportif tres muscle peut avoir un IMC eleve sans etre en surpoids.</p>
+                </div>
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>L&apos;IMC est-il fiable pour les sportifs ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>L&apos;IMC peut etre trompeur pour les sportifs, notamment les pratiquants de musculation ou les rugbymen, car le muscle pese plus lourd que la graisse. Un individu tres muscle peut avoir un IMC superieur a 25 tout en ayant un taux de masse grasse tres faible. Dans ce cas, l&apos;impedancemetrie ou la mesure du tour de taille sont des indicateurs complementaires plus adaptes.</p>
+                </div>
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>A partir de quel IMC faut-il consulter un medecin ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Il est recommande de consulter un medecin si votre IMC est inferieur a 16,5 (denutrition) ou superieur a 30 (obesite). Un IMC superieur a 35 correspond a une obesite severe qui augmente significativement les risques cardiovasculaires, de diabete de type 2 et de certains cancers. Votre medecin pourra vous orienter vers un suivi nutritionnel adapte.</p>
+                </div>
+              </div>
+            </div>
           </div>
           <aside className="space-y-6">
             <AdPlaceholder className="h-[250px]" />

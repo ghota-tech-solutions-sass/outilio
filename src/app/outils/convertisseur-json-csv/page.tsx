@@ -166,6 +166,52 @@ export default function ConvertisseurJsonCsv() {
                 </div>
               )}
             </div>
+
+            {/* SEO Content */}
+            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
+                Comment utiliser le convertisseur JSON / CSV
+              </h2>
+              <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                <p>
+                  Cet outil gratuit convertit vos donnees entre les formats JSON et CSV en un clic. Il est ideal pour les developpeurs, les analystes de donnees et tous ceux qui travaillent avec des fichiers de donnees structurees.
+                </p>
+                <ul className="ml-4 list-disc space-y-1">
+                  <li><strong className="text-[var(--foreground)]">Choisissez le sens de conversion</strong> : JSON vers CSV ou CSV vers JSON, selon votre besoin.</li>
+                  <li><strong className="text-[var(--foreground)]">Collez vos donnees</strong> : entrez ou collez votre contenu JSON (tableau d&apos;objets) ou CSV (avec en-tetes) dans la zone de texte.</li>
+                  <li><strong className="text-[var(--foreground)]">Cliquez sur Convertir</strong> : le resultat s&apos;affiche instantanement dans la zone de sortie.</li>
+                  <li><strong className="text-[var(--foreground)]">Telechargez le fichier</strong> : exportez le resultat en .csv ou .json directement sur votre ordinateur.</li>
+                </ul>
+                <p>
+                  La conversion s&apos;effectue entierement dans votre navigateur. Aucune donnee n&apos;est transmise a un serveur, ce qui garantit la confidentialite de vos informations.
+                </p>
+              </div>
+            </div>
+
+            {/* FAQ */}
+            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Questions frequentes</h2>
+              <div className="mt-6 space-y-5">
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Quel format JSON est accepte ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    L&apos;outil accepte un tableau d&apos;objets JSON (ex : [&#123;&quot;nom&quot;: &quot;Dupont&quot;&#125;, &#123;&quot;nom&quot;: &quot;Martin&quot;&#125;]) ou un objet unique qui sera automatiquement converti en tableau a une ligne. Chaque cle de l&apos;objet devient un en-tete de colonne dans le CSV genere.
+                  </p>
+                </div>
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Le CSV genere est-il compatible avec Excel ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    Oui. Le CSV produit utilise la virgule comme separateur et echappe correctement les valeurs contenant des virgules, des guillemets ou des sauts de ligne. Il s&apos;ouvre directement dans Excel, Google Sheets ou LibreOffice Calc. Si Excel n&apos;affiche pas les colonnes correctement, utilisez la fonction &laquo; Donnees &raquo; &gt; &laquo; Convertir &raquo; avec le separateur virgule.
+                  </p>
+                </div>
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Puis-je convertir des fichiers CSV volumineux ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    L&apos;outil fonctionne dans votre navigateur, ce qui signifie que la taille est limitee par la memoire disponible. En pratique, il gere sans probleme des fichiers de plusieurs milliers de lignes. Pour des fichiers tres volumineux (au-dela de 100 000 lignes), un traitement cote serveur ou un outil specialise comme Python (pandas) sera plus adapte.
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
 
           <aside className="space-y-6">

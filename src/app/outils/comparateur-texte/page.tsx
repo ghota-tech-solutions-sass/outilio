@@ -324,6 +324,44 @@ export default function ComparateurTexte() {
                 <p><strong className="text-[var(--foreground)]">100% local</strong> : Tout le traitement se fait dans votre navigateur. Aucune donnee n&apos;est envoyee.</p>
               </div>
             </div>
+
+            {/* SEO Content */}
+            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
+                Comment utiliser le comparateur de texte en ligne
+              </h2>
+              <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                <p>
+                  Notre comparateur de texte vous permet de detecter rapidement les differences entre deux versions d&apos;un document.
+                  Que vous compariez du code source, des articles ou des contrats, l&apos;outil met en evidence chaque modification ligne par ligne.
+                </p>
+                <ul className="ml-4 list-disc space-y-1">
+                  <li><strong className="text-[var(--foreground)]">Collez vos deux textes</strong> : dans les champs &laquo; Texte original &raquo; et &laquo; Texte modifie &raquo;</li>
+                  <li><strong className="text-[var(--foreground)]">Cliquez sur Comparer</strong> : les ajouts apparaissent en vert, les suppressions en rouge</li>
+                  <li><strong className="text-[var(--foreground)]">Activez le diff inline</strong> : pour voir les changements au niveau des caracteres a l&apos;interieur de chaque ligne</li>
+                  <li><strong className="text-[var(--foreground)]">Statistiques en temps reel</strong> : nombre de lignes ajoutees, supprimees et identiques</li>
+                </ul>
+              </div>
+            </div>
+
+            {/* FAQ */}
+            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Questions frequentes</h2>
+              <div className="mt-6 space-y-5">
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Le comparateur fonctionne-t-il avec du code source ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Oui, l&apos;outil compare n&apos;importe quel type de texte, y compris du code HTML, JavaScript, Python ou CSS. L&apos;algorithme LCS detecte les differences avec precision, meme sur des fichiers volumineux.</p>
+                </div>
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Mes donnees sont-elles envoyees a un serveur ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Non. Le traitement est effectue entierement dans votre navigateur grace a JavaScript. Aucune donnee ne quitte votre ordinateur, ce qui garantit la confidentialite de vos documents.</p>
+                </div>
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Quelle est la difference entre le diff par ligne et le diff inline ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Le diff par ligne montre les lignes ajoutees ou supprimees. Le diff inline va plus loin en surlignant les caracteres precis qui ont change a l&apos;interieur d&apos;une ligne modifiee, ce qui est utile pour reperer de petites corrections.</p>
+                </div>
+              </div>
+            </div>
           </div>
 
           <aside className="space-y-6">

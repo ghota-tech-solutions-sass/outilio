@@ -119,6 +119,49 @@ export default function ConvertisseurNumeration() {
                 <p><strong className="text-[var(--foreground)]">Hexadecimal (base 16)</strong> : chiffres 0-9 et lettres A-F, utilise pour les couleurs CSS et les adresses memoire.</p>
               </div>
             </div>
+
+            {/* SEO Content */}
+            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
+                Comment utiliser le convertisseur de numeration
+              </h2>
+              <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                <p>
+                  Ce convertisseur de bases numeriques gratuit vous permet de convertir instantanement un nombre entre les systemes decimal, binaire, octal et hexadecimal. Il est indispensable pour les etudiants en informatique, les developpeurs et les passionnes d&apos;electronique.
+                </p>
+                <ul className="ml-4 list-disc space-y-1">
+                  <li><strong className="text-[var(--foreground)]">Selectionnez la base source</strong> : choisissez decimal, binaire, octal ou hexadecimal selon le format de votre nombre d&apos;entree.</li>
+                  <li><strong className="text-[var(--foreground)]">Saisissez votre nombre</strong> : entrez la valeur a convertir. L&apos;outil verifie automatiquement que les caracteres sont valides pour la base choisie.</li>
+                  <li><strong className="text-[var(--foreground)]">Lisez les resultats</strong> : les equivalents dans les 4 bases s&apos;affichent en temps reel. Pour les valeurs de 0 a 255, une representation binaire sur 8 bits est egalement proposee.</li>
+                  <li><strong className="text-[var(--foreground)]">Copiez en un clic</strong> : utilisez le bouton Copier pour recuperer la valeur dans le format souhaite.</li>
+                </ul>
+              </div>
+            </div>
+
+            {/* FAQ */}
+            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Questions frequentes</h2>
+              <div className="mt-6 space-y-5">
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Pourquoi le binaire est-il utilise en informatique ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    Les ordinateurs fonctionnent avec des circuits electriques qui ne connaissent que deux etats : allume (1) et eteint (0). Le systeme binaire (base 2) correspond directement a ces deux etats, ce qui en fait le langage natif de toute l&apos;electronique numerique. Chaque chiffre binaire s&apos;appelle un &laquo; bit &raquo; et 8 bits forment un &laquo; octet &raquo; (byte).
+                  </p>
+                </div>
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>A quoi sert l&apos;hexadecimal en developpement web ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    L&apos;hexadecimal est omnipresent en developpement : les couleurs CSS sont exprimees en hexa (#FF5733), les adresses memoire, les codes Unicode et les hash de commits Git utilisent aussi cette notation. Sa compacite (2 chiffres hexa = 1 octet) le rend beaucoup plus lisible que le binaire pour les humains.
+                  </p>
+                </div>
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Comment convertir manuellement du decimal en binaire ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    Divisez le nombre par 2 de maniere repetee et notez le reste a chaque etape. Lisez ensuite les restes de bas en haut pour obtenir le resultat binaire. Par exemple, 42 en decimal donne : 42/2=21 r0, 21/2=10 r1, 10/2=5 r0, 5/2=2 r1, 2/2=1 r0, 1/2=0 r1 soit 101010 en binaire.
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
           <aside className="space-y-6">
             <AdPlaceholder className="h-[250px]" />

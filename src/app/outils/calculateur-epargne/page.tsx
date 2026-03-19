@@ -171,6 +171,41 @@ export default function CalculateurEpargne() {
                 <p><strong className="text-[var(--foreground)]">Formule</strong> : Capital final = CI x (1+r)^n + VM x ((1+r)^n - 1) / r, ou CI est le capital initial, r le taux mensuel et n le nombre de mois.</p>
               </div>
             </div>
+
+            {/* SEO Content */}
+            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
+                Comment utiliser le calculateur d&apos;epargne
+              </h2>
+              <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                <p>Ce simulateur d&apos;epargne vous permet de projeter la croissance de votre capital sur la duree grace aux interets composes. Ideal pour comparer differents placements ou planifier votre epargne a long terme.</p>
+                <ul className="ml-4 list-disc space-y-1">
+                  <li><strong className="text-[var(--foreground)]">Capital initial</strong> : le montant que vous investissez au depart (par exemple, 5 000 &euro; sur un livret ou un PEA).</li>
+                  <li><strong className="text-[var(--foreground)]">Versement mensuel</strong> : la somme que vous epargnez chaque mois. Meme 50 &euro; par mois font une vraie difference sur 10 ou 20 ans.</li>
+                  <li><strong className="text-[var(--foreground)]">Taux annuel et duree</strong> : choisissez un taux realiste (3% pour un Livret A, 7-8% pour un PEA long terme) et la duree de votre placement.</li>
+                </ul>
+                <p>Le graphique et le tableau detaille vous montrent annee par annee la part des versements et celle des interets dans votre capital final. C&apos;est la meilleure facon de visualiser l&apos;effet &laquo; boule de neige &raquo; des interets composes.</p>
+              </div>
+            </div>
+
+            {/* FAQ */}
+            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Questions frequentes</h2>
+              <div className="mt-6 space-y-5">
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Quel est le taux du Livret A en 2025 ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Le taux du Livret A est de 3,0% depuis fevrier 2023. Ce taux est fixe par la Banque de France et revise tous les semestres. Le plafond du Livret A est de 22 950 &euro; pour les particuliers. Les interets sont exoneres d&apos;impot sur le revenu et de prelevements sociaux, ce qui en fait le placement le plus populaire en France.</p>
+                </div>
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Comment fonctionnent les interets composes ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Les interets composes signifient que les interets gagnes sont reinvestis et produisent eux-memes des interets. Par exemple, 10 000 &euro; places a 5% rapportent 500 &euro; la premiere annee. La deuxieme annee, les interets sont calcules sur 10 500 &euro;, soit 525 &euro;. Cet effet s&apos;accelere avec le temps : c&apos;est pourquoi on parle d&apos;effet &laquo; boule de neige &raquo;.</p>
+                </div>
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Quelle est la difference entre Livret A, LDDS, LEP et PEA ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Le Livret A et le LDDS sont des livrets reglementes a 3%, sans impot, avec un plafond de 22 950 &euro; et 12 000 &euro; respectivement. Le LEP (Livret d&apos;Epargne Populaire) offre un taux de 4% mais est reserve aux revenus modestes. Le PEA (Plan d&apos;Epargne en Actions) permet d&apos;investir en bourse avec une fiscalite avantageuse apres 5 ans, avec un rendement historique moyen de 7 a 8% par an.</p>
+                </div>
+              </div>
+            </div>
           </div>
 
           <aside className="space-y-6">

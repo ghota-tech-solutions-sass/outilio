@@ -689,6 +689,52 @@ export default function ConvertisseurAudio() {
                 </p>
               </div>
             </div>
+
+            {/* SEO Content */}
+            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
+                Comment utiliser le convertisseur audio en ligne
+              </h2>
+              <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                <p>
+                  Notre convertisseur audio gratuit vous permet de transformer vos fichiers sonores d&apos;un format a un autre directement depuis votre navigateur, sans installation ni inscription. L&apos;outil prend en charge les formats les plus courants : MP3, WAV, OGG, AAC, FLAC et bien d&apos;autres.
+                </p>
+                <ul className="ml-4 list-disc space-y-1">
+                  <li><strong className="text-[var(--foreground)]">Deposez votre fichier</strong> : glissez un fichier audio dans la zone de depot ou cliquez pour le selectionner depuis votre ordinateur.</li>
+                  <li><strong className="text-[var(--foreground)]">Choisissez le format de sortie</strong> : selectionnez parmi MP3, WAV, OGG ou AAC selon votre besoin.</li>
+                  <li><strong className="text-[var(--foreground)]">Ajustez le bitrate</strong> : pour les formats compresses, choisissez entre 128 kbps (taille reduite) et 320 kbps (qualite maximale).</li>
+                  <li><strong className="text-[var(--foreground)]">Lancez la conversion</strong> : cliquez sur le bouton de conversion et attendez quelques secondes. Telechargez ensuite le fichier converti.</li>
+                </ul>
+                <p>
+                  La conversion s&apos;effectue entierement dans votre navigateur grace a la technologie FFmpeg WebAssembly. Aucun fichier n&apos;est envoye sur un serveur distant, garantissant la confidentialite totale de vos donnees audio.
+                </p>
+              </div>
+            </div>
+
+            {/* FAQ */}
+            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Questions frequentes</h2>
+              <div className="mt-6 space-y-5">
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Quelle est la difference entre MP3 et WAV ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    Le MP3 est un format compresse avec perte : il reduit la taille du fichier en supprimant certaines frequences inaudibles. Le WAV est un format non compresse (PCM 16 bits) qui conserve toute la qualite audio d&apos;origine, mais produit des fichiers beaucoup plus volumineux. Pour la musique et les podcasts, le MP3 a 192 ou 320 kbps offre un excellent compromis qualite/taille.
+                  </p>
+                </div>
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Mes fichiers audio sont-ils envoyes sur un serveur ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    Non. La conversion est realisee a 100 % dans votre navigateur grace a FFmpeg compile en WebAssembly. Vos fichiers ne quittent jamais votre appareil. C&apos;est ideal pour les enregistrements confidentiels ou les fichiers volumineux que vous ne souhaitez pas telecharger vers un service tiers.
+                  </p>
+                </div>
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Quel bitrate choisir pour une bonne qualite ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    Pour une ecoute standard (podcasts, musique de fond), 128 kbps est suffisant. Pour une bonne qualite musicale, 192 kbps est recommande. Pour une qualite audiophile ou un archivage, choisissez 320 kbps. Le format WAV n&apos;utilise pas de compression et offre la meilleure fidelite, mais les fichiers seront nettement plus lourds.
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
 
           <aside className="space-y-6">

@@ -174,6 +174,44 @@ export default function GenerateurMdpPrononcable() {
                 <p>Pour une securite optimale, utilisez un <strong className="text-[var(--foreground)]">gestionnaire de mots de passe</strong> et activez l&apos;authentification a deux facteurs (2FA) quand c&apos;est possible.</p>
               </div>
             </div>
+
+            {/* SEO Content */}
+            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
+                Comment generer un mot de passe prononcable
+              </h2>
+              <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                <p>
+                  Notre generateur cree des mots de passe bases sur des syllabes (consonne + voyelle) qui sont faciles a lire et a retenir.
+                  Contrairement aux mots de passe totalement aleatoires, ils restent securises grace a l&apos;ajout de majuscules, chiffres et symboles.
+                </p>
+                <ul className="ml-4 list-disc space-y-1">
+                  <li><strong className="text-[var(--foreground)]">Ajustez le nombre de syllabes</strong> : de 2 (court) a 8 (tres long) pour controler la longueur</li>
+                  <li><strong className="text-[var(--foreground)]">Activez les options</strong> : majuscules, chiffres et caracteres speciaux pour renforcer la securite</li>
+                  <li><strong className="text-[var(--foreground)]">6 suggestions a la fois</strong> : choisissez celui qui vous convient le mieux</li>
+                  <li><strong className="text-[var(--foreground)]">Indicateur de force</strong> : chaque mot de passe est evalue en temps reel</li>
+                </ul>
+              </div>
+            </div>
+
+            {/* FAQ */}
+            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Questions frequentes</h2>
+              <div className="mt-6 space-y-5">
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Un mot de passe prononcable est-il vraiment securise ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Oui, la securite d&apos;un mot de passe depend principalement de sa longueur et de la variete des caracteres utilises. Un mot de passe prononcable de 16 caracteres avec majuscules, chiffres et symboles est extremement difficile a craquer par force brute.</p>
+                </div>
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Combien de syllabes faut-il choisir ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Pour un usage quotidien, 4 a 5 syllabes (environ 12 a 16 caracteres) offrent un bon equilibre entre securite et facilite de memorisation. Pour des comptes critiques (banque, email principal), choisissez 6 a 8 syllabes.</p>
+                </div>
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>L&apos;ANSSI recommande-t-elle les mots de passe prononcables ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>L&apos;ANSSI (Agence nationale de la securite des systemes d&apos;information) recommande des mots de passe d&apos;au moins 12 caracteres avec un melange de types de caracteres. Les mots de passe prononcables respectent ces recommandations tout en etant plus faciles a retenir.</p>
+                </div>
+              </div>
+            </div>
           </div>
           <aside className="space-y-6">
             <AdPlaceholder className="h-[250px]" />

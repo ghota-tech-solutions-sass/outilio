@@ -292,6 +292,52 @@ export default function ConvertisseurImage() {
                 <p><strong>BMP</strong> : format non compresse, fichiers tres lourds. Utile uniquement pour des cas specifiques.</p>
               </div>
             </div>
+
+            {/* SEO Content */}
+            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
+                Comment utiliser le convertisseur d&apos;images en ligne
+              </h2>
+              <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                <p>
+                  Ce convertisseur d&apos;images gratuit transforme vos fichiers entre les formats PNG, JPEG, WebP et BMP en quelques secondes. Tout se passe dans votre navigateur : aucune image n&apos;est envoyee sur un serveur.
+                </p>
+                <ul className="ml-4 list-disc space-y-1">
+                  <li><strong className="text-[var(--foreground)]">Deposez votre image</strong> : glissez-la dans la zone de depot ou cliquez pour la selectionner sur votre appareil.</li>
+                  <li><strong className="text-[var(--foreground)]">Selectionnez le format cible</strong> : choisissez PNG, JPEG, WebP ou BMP selon votre besoin.</li>
+                  <li><strong className="text-[var(--foreground)]">Ajustez la qualite</strong> : pour JPEG et WebP, un curseur permet de regler la qualite de compression (1 a 100 %).</li>
+                  <li><strong className="text-[var(--foreground)]">Comparez et telechargez</strong> : visualisez l&apos;apercu cote a cote avec la difference de taille, puis telechargez le resultat.</li>
+                </ul>
+                <p>
+                  L&apos;outil est particulierement utile pour optimiser vos images avant de les publier sur un site web. Convertir en WebP peut reduire la taille de 25 a 50 % par rapport au JPEG, ce qui ameliore les temps de chargement et le referencement naturel.
+                </p>
+              </div>
+            </div>
+
+            {/* FAQ */}
+            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Questions frequentes</h2>
+              <div className="mt-6 space-y-5">
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Pourquoi convertir mes images en WebP ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    Le format WebP, developpe par Google, offre une compression superieure au JPEG et au PNG. A qualite visuelle equivalente, un fichier WebP est en moyenne 25 a 35 % plus leger qu&apos;un JPEG. Tous les navigateurs modernes (Chrome, Firefox, Edge, Safari) le supportent. C&apos;est le format recommande par Google pour ameliorer les performances web et le score PageSpeed.
+                  </p>
+                </div>
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>La conversion conserve-t-elle la transparence ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    Cela depend du format cible. Le PNG et le WebP supportent la transparence (canal alpha). En revanche, le JPEG ne gere pas la transparence : les zones transparentes seront remplies en blanc. Le BMP ne supporte pas non plus la transparence dans la plupart des implementations.
+                  </p>
+                </div>
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Quelle qualite de compression choisir pour JPEG ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    Pour les photos destinees au web, une qualite entre 75 et 85 % offre un bon equilibre entre taille de fichier et rendu visuel. Pour l&apos;impression ou l&apos;archivage, montez a 90-95 %. En dessous de 60 %, les artefacts de compression deviennent visibles, surtout sur les zones de texte et les bords nets.
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
 
           <aside className="space-y-6">

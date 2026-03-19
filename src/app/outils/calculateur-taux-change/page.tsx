@@ -199,6 +199,41 @@ export default function CalculateurTauxChange() {
                 <p><strong className="text-[var(--foreground)]">Frais de change</strong> : Les banques appliquent generalement une marge de 1-3% sur le taux interbancaire. Pour les meilleurs taux, comparez les services de transfert en ligne.</p>
               </div>
             </div>
+
+            {/* SEO Content */}
+            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
+                Comment utiliser le convertisseur de devises
+              </h2>
+              <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                <p>Notre convertisseur de devises vous permet de calculer instantanement la valeur d&apos;un montant dans une autre monnaie. Ideal pour preparer un voyage, verifier un prix en ligne ou comparer des offres internationales.</p>
+                <ul className="ml-4 list-disc space-y-1">
+                  <li><strong className="text-[var(--foreground)]">Selectionnez les devises</strong> : choisissez la devise de depart et la devise d&apos;arrivee parmi EUR, USD, GBP, CHF, CAD, JPY, MAD et XOF.</li>
+                  <li><strong className="text-[var(--foreground)]">Entrez le montant</strong> : saisissez la somme a convertir. Le resultat s&apos;affiche en temps reel.</li>
+                  <li><strong className="text-[var(--foreground)]">Inversez en un clic</strong> : utilisez le bouton d&apos;inversion pour echanger les devises instantanement.</li>
+                  <li><strong className="text-[var(--foreground)]">Vue d&apos;ensemble</strong> : consultez le tableau complet pour voir votre montant converti dans toutes les devises disponibles.</li>
+                </ul>
+              </div>
+            </div>
+
+            {/* FAQ */}
+            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Questions frequentes</h2>
+              <div className="mt-6 space-y-5">
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Pourquoi les taux de change varient-ils selon les banques ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Les banques et bureaux de change appliquent une marge (spread) sur le taux interbancaire, qui est le taux de reference entre banques. Cette marge, generalement de 1 a 3%, constitue leur remuneration. Les services de transfert en ligne comme Wise ou Revolut proposent souvent des marges plus faibles que les banques traditionnelles.</p>
+                </div>
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Qu&apos;est-ce que le taux fixe EUR/XOF ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Le Franc CFA (XOF) de la zone BCEAO (Afrique de l&apos;Ouest) a un taux de change fixe avec l&apos;euro : 1 &euro; = 655,957 XOF. Ce taux est garanti par le Tresor francais depuis la creation de la zone franc. Cela signifie que ce taux ne fluctue pas sur les marches, contrairement aux autres devises.</p>
+                </div>
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Comment obtenir le meilleur taux de change pour un voyage ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Evitez les bureaux de change des aeroports qui pratiquent des marges elevees. Privilegiez le paiement par carte bancaire sans frais de change (type Revolut, N26 ou Boursorama Ultim), ou retirez dans des distributeurs locaux. Comparez toujours plusieurs options et refusez la &laquo; conversion dynamique &raquo; (DCC) proposee par certains terminaux de paiement a l&apos;etranger.</p>
+                </div>
+              </div>
+            </div>
           </div>
 
           <aside className="space-y-6">

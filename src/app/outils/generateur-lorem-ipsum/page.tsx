@@ -107,6 +107,44 @@ export default function GenerateurLoremIpsum() {
                 {text}
               </div>
             </div>
+
+            {/* SEO Content */}
+            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
+                Comment utiliser le generateur Lorem Ipsum
+              </h2>
+              <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                <p>
+                  Le Lorem Ipsum est un texte factice utilise dans l&apos;industrie de l&apos;impression et du design depuis le XVIe siecle.
+                  Notre generateur vous permet de creer rapidement du faux texte pour vos maquettes, prototypes et projets web.
+                </p>
+                <ul className="ml-4 list-disc space-y-1">
+                  <li><strong className="text-[var(--foreground)]">Choisissez l&apos;unite</strong> : paragraphes, phrases ou mots selon vos besoins</li>
+                  <li><strong className="text-[var(--foreground)]">Ajustez la quantite</strong> : de 1 a 500 mots, 50 phrases ou 20 paragraphes</li>
+                  <li><strong className="text-[var(--foreground)]">Copiez en un clic</strong> : le texte genere est pret a etre colle dans votre maquette</li>
+                  <li><strong className="text-[var(--foreground)]">Texte standard</strong> : utilise le Lorem Ipsum classique, reconnu par les designers du monde entier</li>
+                </ul>
+              </div>
+            </div>
+
+            {/* FAQ */}
+            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Questions frequentes</h2>
+              <div className="mt-6 space-y-5">
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>D&apos;ou vient le Lorem Ipsum ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Le Lorem Ipsum est derive d&apos;un texte de Ciceron datant de 45 av. J.-C., &laquo; De Finibus Bonorum et Malorum &raquo;. Il a ete utilise comme texte de remplissage dans l&apos;imprimerie depuis les annees 1500 et reste le standard dans le design graphique et le web.</p>
+                </div>
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Pourquoi utiliser du faux texte plutot que du vrai contenu ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Le Lorem Ipsum permet de se concentrer sur le design sans etre distrait par le contenu. Les lecteurs ont tendance a lire le texte reel, ce qui detourne l&apos;attention de la mise en page, de la typographie et des couleurs.</p>
+                </div>
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Combien de paragraphes utiliser pour une maquette ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Pour une page de blog, 3 a 5 paragraphes suffisent. Pour une landing page, 1 a 2 paragraphes par section. L&apos;objectif est de simuler la longueur reelle du contenu final pour valider la mise en page.</p>
+                </div>
+              </div>
+            </div>
           </div>
           <aside className="space-y-6">
             <AdPlaceholder className="h-[250px]" />
