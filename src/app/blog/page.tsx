@@ -2,6 +2,15 @@ import Link from "next/link";
 
 const ARTICLES = [
   {
+    slug: "simulateur-auto-entrepreneur-2026",
+    title: "Auto-entrepreneur 2026 : charges, plafonds et revenu net",
+    description:
+      "Plafonds CA, taux de cotisations, versement liberatoire, ACRE : tout savoir pour calculer votre revenu net en micro-entreprise en 2026.",
+    date: "20 mars 2026",
+    category: "Business",
+    readTime: "6 min",
+  },
+  {
     slug: "simulateur-impot-societes-2026",
     title: "Simulateur IS 2026 : calculer l'impot sur les societes",
     description:
