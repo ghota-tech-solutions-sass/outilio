@@ -2,6 +2,15 @@ import Link from "next/link";
 
 const ARTICLES = [
   {
+    slug: "simulateur-apl-2026",
+    title: "APL 2026 : comment estimer vos aides au logement",
+    description:
+      "Baremes 2026, plafonds par zone, calcul en temps reel et exemple concret pour un etudiant a Lyon. Tout comprendre pour estimer vos APL.",
+    date: "20 mars 2026",
+    category: "Logement",
+    readTime: "5 min",
+  },
+  {
     slug: "simulateur-auto-entrepreneur-2026",
     title: "Auto-entrepreneur 2026 : charges, plafonds et revenu net",
     description:
