@@ -2,6 +2,15 @@ import Link from "next/link";
 
 const ARTICLES = [
   {
+    slug: "simulateur-impot-societes-2026",
+    title: "Simulateur IS 2026 : calculer l'impot sur les societes",
+    description:
+      "Bareme IS 2026, taux reduit PME a 15 %, taux normal a 25 %, acomptes trimestriels et comparaison IS vs IR. Exemple concret avec 80 000 euros de benefice.",
+    date: "20 mars 2026",
+    category: "Fiscalite",
+    readTime: "5 min",
+  },
+  {
     slug: "calculer-salaire-net-2026",
     title: "Comment calculer son salaire net en 2026",
     description:
