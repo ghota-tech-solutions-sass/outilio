@@ -698,4 +698,94 @@ export const tools: Tool[] = [
     badge: "Nouveau",
     category: "Video",
   },
+  {
+    title: "Calculateur TJM Freelance",
+    description:
+      "Calculez votre Taux Journalier Moyen ideal. Salaire net, charges, conges, frais pro. TJM et taux horaire.",
+    href: "/outils/calculateur-tjm-freelance",
+    icon: "\u{1F4B8}",
+    badge: "Nouveau",
+    category: "Business",
+  },
+  {
+    title: "Partage de frais",
+    description:
+      "Qui doit combien a qui ? Ajoutez les depenses du groupe, l'outil calcule les remboursements optimaux.",
+    href: "/outils/calculateur-partage-frais",
+    icon: "\u{1F91D}",
+    badge: "Nouveau",
+    category: "Quotidien",
+  },
+  {
+    title: "Calculateur TDEE / Calories",
+    description:
+      "Depense energetique totale, metabolisme de base (Mifflin-St Jeor), objectifs perte/prise de poids, repartition macros.",
+    href: "/outils/calculateur-tdee-calories",
+    icon: "\u{1F525}",
+    badge: "Nouveau",
+    category: "Sante",
+  },
+  {
+    title: "Simulateur Flat Tax Crypto",
+    description:
+      "Plus-values crypto, flat tax 30% (IR 12,8% + PS 17,2%), seuil 305\u20AC. Fiscalite crypto France 2026.",
+    href: "/outils/simulateur-flat-tax-crypto",
+    icon: "\u{1FA99}",
+    badge: "Nouveau",
+    category: "Finance",
+  },
+  {
+    title: "Simulateur allocation chomage (ARE)",
+    description:
+      "Estimez votre ARE : salaire journalier de reference, duree d'indemnisation, montant mensuel et total.",
+    href: "/outils/simulateur-allocation-chomage",
+    icon: "\u{1F4BC}",
+    badge: "Nouveau",
+    category: "Emploi",
+  },
+  {
+    title: "Simulateur droits de succession",
+    description:
+      "Calculez les droits de succession : abattements par lien de parente, bareme progressif, net herite.",
+    href: "/outils/simulateur-droits-succession",
+    icon: "\u{1F4DC}",
+    badge: "Nouveau",
+    category: "Finance",
+  },
+  {
+    title: "Simulateur plus-value immobiliere",
+    description:
+      "Calculez l'impot sur la plus-value de votre bien : abattements IR/PS par duree de detention, surtaxe, impot total et plus-value nette.",
+    href: "/outils/simulateur-plus-value-immobiliere",
+    icon: "\u{1F3E0}",
+    badge: "Nouveau",
+    category: "Immobilier",
+  },
+  {
+    title: "Simulateur prime d'activite",
+    description:
+      "Estimez votre prime d'activite 2026. Montant forfaitaire, majorations, bonification, forfait logement. Calcul selon votre situation.",
+    href: "/outils/simulateur-prime-activite",
+    icon: "\u{1F4B6}",
+    badge: "Nouveau",
+    category: "Emploi",
+  },
+  {
+    title: "Indemnite rupture conventionnelle",
+    description:
+      "Calculez votre indemnite de rupture conventionnelle. Indemnite legale, fiscalite, CSG/CRDS, montant net estime.",
+    href: "/outils/simulateur-rupture-conventionnelle",
+    icon: "\u{1F4CB}",
+    badge: "Nouveau",
+    category: "Emploi",
+  },
+  {
+    title: "Simulateur PTZ 2026",
+    description:
+      "Eligibilite au Pret a Taux Zero 2026. Montant PTZ, duree, differe, mensualites par zone et revenus.",
+    href: "/outils/simulateur-ptz-2026",
+    icon: "\u{1F3E0}",
+    badge: "Nouveau",
+    category: "Immobilier",
+  },
 ];
