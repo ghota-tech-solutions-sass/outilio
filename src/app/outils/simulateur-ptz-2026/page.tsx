@@ -70,10 +70,6 @@ export default function SimulateurPTZ2026() {
     const plafondRevenu = PLAFONDS_REVENUS[zone][nb - 1];
     const eligible = rev <= plafondRevenu;
 
-    if (!eligible) {
-      return { eligible: false, plafondRevenu, revenus: rev };
-    }
-
     const plafondOperation = PLAFONDS_OPERATION[zone];
     const montantRetenu = Math.min(prix, plafondOperation);
     const quotite = QUOTITE[typeBien][zone];
@@ -84,7 +80,7 @@ export default function SimulateurPTZ2026() {
     const mensualite = montantPTZ / (dureeRemboursement * 12);
 
     return {
-      eligible: true,
+      eligible,
       plafondRevenu,
       revenus: rev,
       plafondOperation,
