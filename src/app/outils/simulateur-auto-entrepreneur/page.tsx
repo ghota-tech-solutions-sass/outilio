@@ -905,7 +905,7 @@ export default function SimulateurAutoEntrepreneur() {
                 <li className="pt-1" style={{ borderTop: "1px solid var(--border)" }}>
                   RFR max/part :{" "}
                   <strong className="text-[var(--foreground)]">29 315 &euro;</strong>{" "}
-                  (2024)
+                  (RFR 2024, avis 2025)
                 </li>
               </ul>
             </div>

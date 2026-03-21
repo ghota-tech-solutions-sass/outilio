@@ -168,7 +168,7 @@ export default function CalculateurRetraite() {
                     </p>
                     <p>
                       Le montant de votre complementaire depend du <strong style={{ color: "var(--foreground)" }}>nombre de points accumules</strong> tout au long de votre carriere,
-                      multiplie par la valeur du point (1,4159 &euro; en 2024). Consultez votre releve de carriere sur{" "}
+                      multiplie par la valeur du point (1,4386 &euro; en 2026). Consultez votre releve de carriere sur{" "}
                       <span style={{ color: "var(--primary)", fontWeight: 600 }}>info-retraite.fr</span> pour une estimation personnalisee.
                     </p>
                   </div>

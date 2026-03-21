@@ -143,7 +143,7 @@ export default function CalculateurPret() {
               <h2 style={{ fontFamily: "var(--font-display)", color: "var(--foreground)" }}>Quel taux pour un pret immobilier en 2026 ?</h2>
               <p style={{ color: "var(--foreground)" }}>
                 Les taux immobiliers varient selon la duree du pret et votre profil emprunteur.
-                En 2024, les taux moyens oscillent entre 3% et 4% sur 20 ans.
+                En 2026, les taux moyens oscillent entre 3% et 3,5% sur 20 ans.
                 Utilisez notre simulateur pour estimer vos mensualites selon differents scenarios.
               </p>
             </div>

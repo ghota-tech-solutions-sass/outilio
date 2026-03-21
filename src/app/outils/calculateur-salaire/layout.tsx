@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Calculateur salaire net / brut 2024 - Gratuit",
+  title: "Calculateur salaire net / brut 2026 - Gratuit",
   description:
     "Convertissez votre salaire brut en net instantanement. Cadre, non-cadre, fonction publique. Estimation de l'impot sur le revenu incluse. 100% gratuit.",
   keywords: [
