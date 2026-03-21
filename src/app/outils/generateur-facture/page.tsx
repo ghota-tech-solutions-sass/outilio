@@ -18,6 +18,13 @@ export default function GenerateurFacture() {
     { description: "", quantite: 1, prixUnitaire: 0 },
   ]);
   const [tva, setTva] = useState("20");
+  const [echeance, setEcheance] = useState(() => {
+    const d = new Date();
+    d.setDate(d.getDate() + 30);
+    return d.toISOString().split("T")[0];
+  });
+  const [conditionsPaiement, setConditionsPaiement] = useState("Virement bancaire a 30 jours");
+  const [penalitesRetard, setPenalitesRetard] = useState("3");
   const printRef = useRef<HTMLDivElement>(null);
 
   const addLigne = () => setLignes([...lignes, { description: "", quantite: 1, prixUnitaire: 0 }]);
@@ -46,7 +53,7 @@ export default function GenerateurFacture() {
             Generateur de <span style={{ color: "var(--primary)" }}>factures</span> gratuit
           </h1>
           <p className="animate-fade-up stagger-2 mt-3 max-w-xl text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-            Creez des factures professionnelles et imprimez-les en PDF. Conforme a la legislation francaise.
+            Creez des factures professionnelles et imprimez-les en PDF. Mentions legales obligatoires incluses.
           </p>
         </div>
       </section>
@@ -79,8 +86,16 @@ export default function GenerateurFacture() {
               <h2 className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--accent)" }}>Details de la facture</h2>
               <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
                 <Input label="Numero de facture" value={numero} onChange={setNumero} />
-                <Input label="Date" value={date} onChange={setDate} type="date" />
+                <Input label="Date d'emission" value={date} onChange={setDate} type="date" />
                 <Input label="TVA (%)" value={tva} onChange={setTva} type="number" />
+                <Input label="Date d'echeance" value={echeance} onChange={setEcheance} type="date" />
+                <Input label="Conditions de paiement" value={conditionsPaiement} onChange={setConditionsPaiement} className="sm:col-span-2" />
+              </div>
+              <div className="mt-3">
+                <Input label="Taux penalites de retard (%)" value={penalitesRetard} onChange={setPenalitesRetard} type="number" />
+                <p className="mt-1 text-xs" style={{ color: "var(--muted)" }}>
+                  Minimum legal : 3x le taux d&apos;interet legal. L&apos;indemnite forfaitaire de recouvrement de 40 &euro; est ajoutee automatiquement.
+                </p>
               </div>
             </div>
 
@@ -154,16 +169,19 @@ export default function GenerateurFacture() {
               </h2>
               <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
                 <p>
-                  En France, une facture doit obligatoirement contenir certaines mentions legales pour etre valide.
-                  Notre generateur prend en charge toutes ces exigences automatiquement.
+                  En France, une facture doit obligatoirement contenir certaines mentions legales pour etre valide
+                  (article L441-9 du Code de commerce). Notre generateur inclut les champs necessaires, mais il vous
+                  appartient de verifier que vos factures sont completes selon votre situation.
                 </p>
                 <ul className="ml-4 list-disc space-y-1">
                   <li><strong className="text-[var(--foreground)]">Identite de l&apos;emetteur</strong> : nom ou raison sociale, adresse, SIRET</li>
                   <li><strong className="text-[var(--foreground)]">Identite du client</strong> : nom ou raison sociale, adresse</li>
                   <li><strong className="text-[var(--foreground)]">Numero de facture</strong> : unique et sequentiel</li>
-                  <li><strong className="text-[var(--foreground)]">Date d&apos;emission</strong> et date de la prestation</li>
+                  <li><strong className="text-[var(--foreground)]">Date d&apos;emission</strong> et date d&apos;echeance</li>
                   <li><strong className="text-[var(--foreground)]">Detail des prestations</strong> : designation, quantite, prix unitaire HT</li>
                   <li><strong className="text-[var(--foreground)]">Montants</strong> : total HT, taux et montant de TVA, total TTC</li>
+                  <li><strong className="text-[var(--foreground)]">Conditions de paiement</strong> : delai, mode de reglement</li>
+                  <li><strong className="text-[var(--foreground)]">Penalites de retard</strong> : taux applicable et indemnite forfaitaire de recouvrement (40 &euro;)</li>
                 </ul>
                 <p>
                   Depuis le 1er juillet 2024, la facturation electronique est progressivement obligatoire
@@ -218,8 +236,9 @@ export default function GenerateurFacture() {
             <div className="rounded-2xl border p-6" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
               <h3 className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--accent)" }}>A propos</h3>
               <p className="mt-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                Ce generateur cree des factures conformes a la legislation francaise.
+                Ce generateur inclut les mentions legales obligatoires (art. L441-9 Code de commerce).
                 Vos donnees restent dans votre navigateur et ne sont jamais transmises a un serveur.
+                Verifiez toujours vos factures avant envoi.
               </p>
             </div>
             <AdPlaceholder className="h-[600px]" />
@@ -239,6 +258,7 @@ export default function GenerateurFacture() {
               <h1 className="text-2xl font-bold" style={{ color: "var(--primary)" }}>FACTURE</h1>
               <p className="text-sm">{numero}</p>
               <p className="text-sm">Date : {date}</p>
+              <p className="text-sm">Echeance : {echeance}</p>
             </div>
           </div>
 
@@ -282,6 +302,16 @@ export default function GenerateurFacture() {
               <p className="mt-1 text-sm font-mono tracking-wide">{emetteur.iban}</p>
             </div>
           )}
+
+          <div className="mt-6 rounded-xl p-4" style={{ background: "var(--surface-alt)" }}>
+            <h3 className="font-semibold">Conditions de paiement</h3>
+            <p className="mt-1 text-sm">{conditionsPaiement}</p>
+            <p className="mt-1 text-sm">Date d&apos;echeance : {echeance}</p>
+          </div>
+
+          <div className="mt-4 text-xs leading-relaxed" style={{ color: "var(--muted)" }}>
+            <p>En cas de retard de paiement, une penalite de {penalitesRetard}% par mois sera appliquee (taux annuel), conformement a l&apos;article L.441-10 du Code de commerce. Une indemnite forfaitaire de 40 &euro; pour frais de recouvrement est due de plein droit (art. D.441-5 du Code de commerce).</p>
+          </div>
         </div>
       </div>
     </>

@@ -21,8 +21,8 @@ export default function SimulateurFlatTaxCrypto() {
     const exonere = totalCessions < 305;
 
     const tauxIR = 0.128;
-    const tauxPS = 0.172;
-    const tauxTotal = 0.30;
+    const tauxPS = 0.186;
+    const tauxTotal = 0.314;
 
     const montantIR = exonere ? 0 : Math.max(0, plusValue * tauxIR);
     const montantPS = exonere ? 0 : Math.max(0, plusValue * tauxPS);
@@ -52,7 +52,7 @@ export default function SimulateurFlatTaxCrypto() {
             Simulateur <span style={{ color: "var(--primary)" }}>Flat Tax Crypto</span>
           </h1>
           <p className="animate-fade-up stagger-2 mt-3 max-w-xl text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-            Calculez l&apos;impot sur vos plus-values de cession de cryptomonnaies en France. Flat tax 30% (PFU).
+            Calculez l&apos;impot sur vos plus-values de cession de cryptomonnaies en France. Flat tax 31,4% (PFU) depuis 2026.
           </p>
         </div>
       </section>
@@ -127,12 +127,12 @@ export default function SimulateurFlatTaxCrypto() {
                   <div className="rounded-2xl border p-5 text-center" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
                     <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>Prelevements sociaux</p>
                     <p className="mt-2 text-xl font-bold" style={{ fontFamily: "var(--font-display)" }}>{fmt(results.montantPS)} &euro;</p>
-                    <p className="text-xs" style={{ color: "var(--muted)" }}>17,2%</p>
+                    <p className="text-xs" style={{ color: "var(--muted)" }}>18,6%</p>
                   </div>
                   <div className="rounded-2xl border p-5 text-center" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
                     <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>Impot total (PFU)</p>
                     <p className="mt-2 text-xl font-bold" style={{ fontFamily: "var(--font-display)", color: "#dc2626" }}>{fmt(results.impotTotal)} &euro;</p>
-                    <p className="text-xs" style={{ color: "var(--muted)" }}>30%</p>
+                    <p className="text-xs" style={{ color: "var(--muted)" }}>31,4%</p>
                   </div>
                   <div className="rounded-2xl border p-5 text-center" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
                     <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>Net apres impot</p>
@@ -180,11 +180,11 @@ export default function SimulateurFlatTaxCrypto() {
             <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
               <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Flat Tax crypto : comment ca marche ?</h2>
               <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                <p>En France, les plus-values realisees lors de la cession d&apos;actifs numeriques (Bitcoin, Ethereum, etc.) sont soumises au Prelevement Forfaitaire Unique (PFU), communement appele &laquo; flat tax &raquo;, au taux de 30%.</p>
-                <p><strong className="text-[var(--foreground)]">Decomposition de la flat tax</strong> :</p>
+                <p>En France, les plus-values realisees lors de la cession d&apos;actifs numeriques (Bitcoin, Ethereum, etc.) sont soumises au Prelevement Forfaitaire Unique (PFU), communement appele &laquo; flat tax &raquo;, au taux de 31,4% depuis 2026 (contre 30% auparavant).</p>
+                <p><strong className="text-[var(--foreground)]">Decomposition de la flat tax 2026</strong> :</p>
                 <ul className="ml-4 list-disc space-y-1">
                   <li><strong className="text-[var(--foreground)]">12,8%</strong> d&apos;impot sur le revenu (IR)</li>
-                  <li><strong className="text-[var(--foreground)]">17,2%</strong> de prelevements sociaux (PS)</li>
+                  <li><strong className="text-[var(--foreground)]">18,6%</strong> de prelevements sociaux (PS) — hausse de 1,4 point en 2026</li>
                 </ul>
                 <p><strong className="text-[var(--foreground)]">Calcul de la plus-value</strong> : Plus-value = Prix de cession - (Prix total d&apos;acquisition x Montant de la cession / Valeur globale du portefeuille). Cette formule prend en compte la quote-part d&apos;acquisition proportionnelle au montant cede.</p>
                 <p><strong className="text-[var(--foreground)]">Seuil d&apos;exoneration</strong> : si le total de vos cessions annuelles est inferieur a 305 &euro;, vous etes exonere d&apos;impot sur les plus-values crypto.</p>
