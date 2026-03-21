@@ -11,19 +11,21 @@ const RATES: Record<string, { label: string; rate: number }> = {
 
 // Bareme IR 2026 sur revenus 2025 (LF 2026, +0.9%)
 const TAX_BRACKETS = [
-  { min: 0, max: 11600, rate: 0 },
-  { min: 11601, max: 29579, rate: 0.11 },
-  { min: 29580, max: 84577, rate: 0.3 },
-  { min: 84578, max: 181917, rate: 0.41 },
-  { min: 181918, max: Infinity, rate: 0.45 },
+  { max: 11600, rate: 0 },
+  { max: 29579, rate: 0.11 },
+  { max: 84577, rate: 0.3 },
+  { max: 181917, rate: 0.41 },
+  { max: Infinity, rate: 0.45 },
 ];
 
 function calcTax(annualNet: number) {
   let tax = 0;
+  let prev = 0;
   for (const b of TAX_BRACKETS) {
-    if (annualNet <= b.min) break;
-    const taxable = Math.min(annualNet, b.max) - b.min;
+    if (annualNet <= prev) break;
+    const taxable = Math.min(annualNet, b.max) - prev;
     tax += taxable * b.rate;
+    prev = b.max;
   }
   return tax;
 }
@@ -33,8 +35,10 @@ export default function CalculateurSalaire() {
   const [mode, setMode] = useState<"brut-to-net" | "net-to-brut">("brut-to-net");
   const [status, setStatus] = useState<string>("non-cadre");
   const [parts, setParts] = useState<string>("1");
+  const [period, setPeriod] = useState<"mensuel" | "annuel">("mensuel");
 
-  const val = parseFloat(amount) || 0;
+  const rawVal = parseFloat(amount) || 0;
+  const val = period === "annuel" ? rawVal / 12 : rawVal;
   const rate = RATES[status]?.rate ?? 0.22;
 
   let brut: number, net: number;
@@ -45,6 +49,8 @@ export default function CalculateurSalaire() {
     net = val;
     brut = val / (1 - rate);
   }
+
+  const isHighMonthly = val > 15000;
 
   const annualNet = net * 12;
   const nbParts = parseFloat(parts) || 1;
@@ -106,9 +112,45 @@ export default function CalculateurSalaire() {
               </div>
 
               <div className="mt-5">
-                <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>
-                  Salaire {mode === "brut-to-net" ? "brut" : "net"} mensuel
-                </label>
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>
+                    Salaire {mode === "brut-to-net" ? "brut" : "net"} {period}
+                  </label>
+                  <div className="flex gap-1 rounded-lg p-0.5 text-xs" style={{ background: "var(--surface-alt)" }}>
+                    <button
+                      onClick={() => {
+                        if (period === "annuel") {
+                          const v = parseFloat(amount) || 0;
+                          setAmount(String(Math.round(v / 12)));
+                        }
+                        setPeriod("mensuel");
+                      }}
+                      className="rounded-md px-2.5 py-1 font-semibold transition-all"
+                      style={{
+                        background: period === "mensuel" ? "var(--primary)" : "transparent",
+                        color: period === "mensuel" ? "white" : "var(--muted)",
+                      }}
+                    >
+                      Mois
+                    </button>
+                    <button
+                      onClick={() => {
+                        if (period === "mensuel") {
+                          const v = parseFloat(amount) || 0;
+                          setAmount(String(Math.round(v * 12)));
+                        }
+                        setPeriod("annuel");
+                      }}
+                      className="rounded-md px-2.5 py-1 font-semibold transition-all"
+                      style={{
+                        background: period === "annuel" ? "var(--primary)" : "transparent",
+                        color: period === "annuel" ? "white" : "var(--muted)",
+                      }}
+                    >
+                      Annuel
+                    </button>
+                  </div>
+                </div>
                 <div className="relative mt-2">
                   <input
                     type="number"
@@ -116,10 +158,23 @@ export default function CalculateurSalaire() {
                     onChange={(e) => setAmount(e.target.value)}
                     className="w-full rounded-xl border px-4 py-4 text-2xl font-bold tracking-tight"
                     style={{ borderColor: "var(--border)", fontFamily: "var(--font-display)" }}
-                    placeholder="3000"
+                    placeholder={period === "mensuel" ? "3000" : "36000"}
                   />
                   <span className="absolute right-4 top-1/2 -translate-y-1/2 text-lg" style={{ color: "var(--muted)" }}>&euro;</span>
                 </div>
+                {isHighMonthly && period === "mensuel" && (
+                  <button
+                    onClick={() => {
+                      setAmount(String(Math.round(rawVal)));
+                      setPeriod("annuel");
+                    }}
+                    className="mt-2 w-full rounded-lg px-3 py-2 text-left text-xs"
+                    style={{ background: "#fef3cd", color: "#856404" }}
+                  >
+                    💡 {fmt(rawVal)} &euro;/mois semble eleve. Vous vouliez dire{" "}
+                    <strong>{fmt(rawVal)} &euro;/an</strong> ? Cliquez ici pour corriger.
+                  </button>
+                )}
               </div>
 
               <div className="mt-4 grid grid-cols-2 gap-4">
