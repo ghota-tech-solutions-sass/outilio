@@ -119,9 +119,9 @@ function calcSASU(p: SASUParams) {
   const is = calcIS(beneficeAvantIS);
   const beneficeApresIS = beneficeAvantIS - is;
 
-  // Dividendes : flat tax 30% (PFU)
+  // Dividendes : flat tax 31,4% (PFU 2026 : 12,8% IR + 18,6% PS)
   const dividendesBruts = Math.max(0, beneficeApresIS);
-  const pfuDividendes = dividendesBruts * 0.30;
+  const pfuDividendes = dividendesBruts * 0.314;
   const dividendesNets = dividendesBruts - pfuDividendes;
 
   // Taxe PUMa : si remuneration < 20% du PASS (~9 273€), taxe 6.5% sur revenus du capital
@@ -157,7 +157,7 @@ function calcSASU(p: SASUParams) {
     netMensuel: totalNet / 12,
     avantages: [
       "Optimisation remuneration/dividendes",
-      "Dividendes a flat tax 30%",
+      "Dividendes a flat tax 31,4%",
       "Protection sociale president",
       "Credibilite aupres des clients",
       "Deduction des frais reels",
@@ -193,7 +193,7 @@ function calcEURL(p: EURLParams) {
   const beneficeApresIS = beneficeAvantIS - is;
 
   // Dividendes EURL IS :
-  // - Part <= 10% du (capital social + CCA) : flat tax 30% (PFU)
+  // - Part <= 10% du (capital social + CCA) : flat tax 31,4% (PFU 2026)
   // - Part > 10% : soumise aux cotisations TNS (~45%) au lieu de la part CSG/CRDS
   //   En pratique : ~45% de cotisations TNS + 12.8% d'IR = ~57.8% de prelevements
   // Avec un capital faible (ex: 1000€), quasi tout est soumis aux cotisations TNS
@@ -202,8 +202,8 @@ function calcEURL(p: EURLParams) {
   const partSousFranchise = Math.min(dividendesBruts, seuil10pct);
   const partAuDessus = Math.max(0, dividendesBruts - seuil10pct);
 
-  // Part sous franchise : flat tax 30%
-  const prelFranchise = partSousFranchise * 0.30;
+  // Part sous franchise : flat tax 31,4% (PFU 2026)
+  const prelFranchise = partSousFranchise * 0.314;
   // Part au-dessus : cotisations TNS (~45%) + IR residuel (12.8%)
   const cotisationsTNSDividendes = partAuDessus * p.tauxCotisationsTNS;
   const irDividendesAuDessus = partAuDessus * 0.128;
@@ -442,7 +442,7 @@ export default function FreelanceVsCDI() {
         ["Benefice avant IS", `${fmt(sasu.beneficeAvantIS)} \u20ac`],
         ["Impot sur les societes", `- ${fmt(sasu.is)} \u20ac`],
         ["Dividendes bruts", `${fmt(sasu.dividendesBruts)} \u20ac`],
-        ["Flat tax (30%)", `- ${fmt(sasu.pfuDividendes)} \u20ac`],
+        ["Flat tax (31,4%)", `- ${fmt(sasu.pfuDividendes)} \u20ac`],
         ["Dividendes nets", `${fmt(sasu.dividendesNets)} \u20ac`],
         ...(sasu.taxePuma > 0 ? [["Taxe PUMa (6,5%)", `- ${fmt(sasu.taxePuma)} \u20ac`] as [string, string]] : []),
         ["\u2500\u2500 Total \u2500\u2500", ""],
@@ -1019,7 +1019,7 @@ export default function FreelanceVsCDI() {
                 <p>Les trois statuts freelance les plus courants en France :</p>
                 <ul className="ml-4 list-disc space-y-1">
                   <li><strong className="text-[var(--foreground)]">Micro-entreprise</strong> : simplicite maximale, cotisations de 25,6% du CA (BNC 2026), plafond 77 700 &euro;/an</li>
-                  <li><strong className="text-[var(--foreground)]">SASU</strong> : president assimile salarie, optimisation possible via dividendes (flat tax 30%), charges patronales ~45%</li>
+                  <li><strong className="text-[var(--foreground)]">SASU</strong> : president assimile salarie, optimisation possible via dividendes (flat tax 31,4%), charges patronales ~45%</li>
                   <li><strong className="text-[var(--foreground)]">EURL (IS)</strong> : gerant TNS, cotisations ~45% mais base plus avantageuse, dividendes soumis a cotisations au-dela de 10% du capital</li>
                 </ul>
                 <p>
@@ -1064,7 +1064,7 @@ export default function FreelanceVsCDI() {
                   <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
                     En micro-entreprise, le revenu imposable est le CA apres abattement forfaitaire (34% pour BNC).
                     En SASU et EURL a l&apos;IS, la remuneration du dirigeant est imposee au bareme progressif de l&apos;IR,
-                    et les dividendes sont soumis au prelevement forfaitaire unique (PFU) de 30% (12,8% d&apos;IR + 17,2% de
+                    et les dividendes sont soumis au prelevement forfaitaire unique (PFU) de 31,4% depuis 2026 (12,8% d&apos;IR + 18,6% de
                     prelevements sociaux).
                   </p>
                 </div>
