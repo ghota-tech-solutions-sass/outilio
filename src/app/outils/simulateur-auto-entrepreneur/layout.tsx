@@ -1,16 +1,18 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Simulateur charges auto-entrepreneur 2026 - Calcul gratuit",
+  title: "Simulateur Auto-Entrepreneur 2026 - Charges et Revenu Net",
   description:
-    "Calculez vos charges de micro-entrepreneur : cotisations sociales, impot sur le revenu, CFP, CFE. Taux 2025-2026 a jour, ACRE, versement liberatoire. Resultat instantane.",
+    "Calculez vos charges auto-entrepreneur 2026 : cotisations, impot, CFP, CFE. Taux a jour, ACRE, versement liberatoire. Gratuit et sans inscription.",
   keywords: [
+    "simulateur auto entrepreneur",
+    "simulation auto entrepreneur",
     "simulateur auto-entrepreneur",
+    "charges auto entrepreneur",
+    "calculatrice auto entrepreneur",
+    "simulateur micro entreprise",
     "charges micro-entreprise",
-    "cotisations sociales auto-entrepreneur",
     "ACRE",
-    "versement liberatoire",
-    "simulateur micro-entreprise",
     "revenu net auto-entrepreneur",
   ],
 };

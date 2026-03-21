@@ -1,16 +1,19 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Calculateur de surface - Aire en m2 pour toutes les formes",
+  title: "Calcul Surface en m2 - Calculateur d'Aire Gratuit",
   description:
-    "Calculez la surface en m2 de rectangles, cercles, triangles et trapezoides. Conversion en autres unites de surface. Gratuit et instantane.",
+    "Calculez la surface en m2 de toutes les formes : rectangle, cercle, triangle, trapeze. Conversion d'unites incluse. Gratuit et sans inscription.",
   keywords: [
+    "calcul surface",
+    "calcul m2",
+    "calcule m2",
+    "surface aire",
+    "calcul surface m2",
     "calculateur surface",
-    "calcul aire",
+    "calcul metre carre",
+    "calculer surface en m2",
     "surface en m2",
-    "calculateur aire piece",
-    "surface rectangle cercle triangle",
-    "conversion surface",
   ],
 };
 

@@ -1,17 +1,18 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Calculateur de rachat de credit - Simulation gratuite",
+  title: "Simulation Rachat de Credit Gratuit - Calculateur en Ligne",
   description:
-    "Simulez votre rachat de credit : comparez vos mensualites actuelles avec un nouveau credit unique. Calculez l'economie mensuelle, le cout total et les frais de rachat.",
+    "Simulez votre rachat de credit gratuitement. Comparez mensualites, economie totale et frais de rachat. Resultat instantane, sans inscription ni engagement.",
   keywords: [
+    "simulation rachat de credit",
+    "rachat de credit simulation",
+    "simulateur rachat credit",
     "rachat de credit",
     "regroupement de credits",
-    "simulation rachat credit",
-    "restructuration dette",
-    "rachat pret",
-    "calculateur rachat credit",
-    "indemnites remboursement anticipe",
+    "calculatrice rachat de credit",
+    "rachat credit simulation",
+    "simulation rachat credit gratuit",
   ],
 };
 

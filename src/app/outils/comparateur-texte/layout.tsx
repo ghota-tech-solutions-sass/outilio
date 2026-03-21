@@ -1,14 +1,16 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Comparateur de texte - Diff en ligne gratuit",
+  title: "Comparateur de Texte en Ligne Gratuit - Diff Online",
   description:
-    "Comparez deux textes et visualisez les differences ligne par ligne. Ajouts en vert, suppressions en rouge. Algorithme LCS. Outil gratuit sans inscription.",
+    "Comparez deux textes et visualisez les differences instantanement. Ajouts en vert, suppressions en rouge. Diff en ligne gratuit, sans inscription.",
   keywords: [
-    "comparateur texte",
+    "comparateur de texte",
+    "comparateur de texte gratuit",
     "diff en ligne",
+    "diff online",
     "comparer deux textes",
-    "differences texte",
+    "comparer texte en ligne",
     "text diff",
     "outil diff gratuit",
   ],

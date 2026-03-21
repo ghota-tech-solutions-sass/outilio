@@ -1,10 +1,20 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Simulateur impot sur le revenu - Calcul gratuit",
+  title: "Simulateur Impot sur le Revenu 2026 - Calcul Gratuit",
   description:
-    "Simulez votre impot sur le revenu gratuitement. Baremes mis a jour chaque annee, quotient familial, taux marginal d'imposition. Calcul instantane et detaille.",
-  keywords: ["simulateur impot", "impot sur le revenu", "calcul impot", "bareme impot", "taux imposition"],
+    "Simulez votre impot sur le revenu 2026 gratuitement. Baremes a jour, quotient familial, TMI, decote. Resultat detaille et instantane, sans inscription.",
+  keywords: [
+    "simulateur impot",
+    "simulateur impot gratuit",
+    "calcul impot",
+    "simulation impot 2026",
+    "impot sur le revenu",
+    "calcul impot revenu",
+    "simulateur impot revenu",
+    "bareme impot",
+    "taux imposition",
+  ],
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {

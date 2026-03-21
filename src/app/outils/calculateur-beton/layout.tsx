@@ -1,10 +1,20 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Calculateur Volume de Beton - Gratuit",
+  title: "Calcul Beton - Volume m3 et Nombre de Sacs Gratuit",
   description:
-    "Calculez le volume de beton necessaire en m3. Dalle, fondation, poteau. Nombre de sacs 25kg et 35kg. Outil gratuit pour vos travaux.",
-  keywords: ["calculateur beton", "volume beton", "nombre sacs beton", "dalle beton", "quantite beton"],
+    "Calculez le volume de beton en m3 pour dalle, fondation ou poteau. Nombre de sacs 25kg et 35kg. Outil gratuit pour vos travaux, sans inscription.",
+  keywords: [
+    "calcul beton",
+    "cubage beton",
+    "calcul m3 beton",
+    "calcul volume beton",
+    "quantite beton",
+    "calculer beton",
+    "calcul dalle beton",
+    "calculateur beton",
+    "nombre sacs beton",
+  ],
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {

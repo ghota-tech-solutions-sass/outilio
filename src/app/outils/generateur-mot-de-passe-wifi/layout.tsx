@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Generateur de mot de passe WiFi - Securise et lisible",
+  title: "Generateur de Mot de Passe WiFi Gratuit et Securise",
   description:
-    "Generez des mots de passe WiFi securises et faciles a retenir. Option prononcable, QR code pour partager facilement. 100% gratuit.",
+    "Generez un mot de passe WiFi securise en 1 clic. Option prononcable, QR code pour partager avec vos invites. 100% gratuit, sans inscription.",
   keywords: [
+    "generateur de mot de passe wifi",
     "generateur mot de passe wifi",
+    "mot de passe wifi",
     "mot de passe wifi securise",
     "qr code wifi",
     "password wifi generator",

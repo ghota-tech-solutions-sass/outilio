@@ -1,10 +1,18 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Calculateur IMC (Indice de Masse Corporelle) - Gratuit",
+  title: "Calcul IMC en Ligne Gratuit - Indice de Masse Corporelle",
   description:
-    "Calculez votre IMC gratuitement. Interpretez votre indice de masse corporelle selon les normes OMS. Outil rapide et sans inscription.",
-  keywords: ["calculateur IMC", "IMC", "indice masse corporelle", "poids ideal", "calcul IMC"],
+    "Calculez votre IMC (Indice de Masse Corporelle) gratuitement. Interpretation selon les normes OMS, conseils personnalises. Rapide et sans inscription.",
+  keywords: [
+    "calcul imc",
+    "calculateur imc",
+    "imc calcul",
+    "calculer imc",
+    "imc gratuit",
+    "indice masse corporelle",
+    "calcul imc en ligne",
+  ],
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {

@@ -1,16 +1,19 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Calculateur salaire net / brut 2026 - Gratuit",
+  title: "Salaire Brut en Net 2026 - Convertisseur Gratuit",
   description:
-    "Convertissez votre salaire brut en net instantanement. Cadre, non-cadre, fonction publique. Estimation de l'impot sur le revenu incluse. 100% gratuit.",
+    "Convertissez votre salaire brut en net en 1 clic. Cadre, non-cadre, fonction publique. Cotisations detaillees et impot sur le revenu inclus. Gratuit, sans inscription.",
   keywords: [
+    "brut en net",
     "salaire brut net",
+    "salaire brut",
     "calculateur salaire",
     "convertir brut en net",
     "salaire net",
+    "convertisseur salaire",
     "simulation salaire",
-    "charges salariales",
+    "simulateur salaire brut en net",
   ],
 };
 

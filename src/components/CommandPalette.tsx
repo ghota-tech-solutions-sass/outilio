@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { tools } from "@/data/tools";
+import { trackSearch } from "@/lib/analytics";
 
 export default function CommandPalette() {
   const [open, setOpen] = useState(false);
@@ -35,10 +36,11 @@ export default function CommandPalette() {
 
   const navigateToTool = useCallback(
     (href: string) => {
+      if (query.trim()) trackSearch(query.trim());
       closePalette();
       router.push(href);
     },
-    [closePalette, router]
+    [closePalette, router, query]
   );
 
   // Listen for Ctrl+K / Cmd+K and custom event

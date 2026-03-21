@@ -8,6 +8,10 @@ const BASE_URL = "https://outilis.fr";
 const HIGH_PRIORITY_TOOLS = new Set([
   "/outils/calculateur-salaire",
   "/outils/simulateur-impot",
+  "/outils/simulateur-apl",
+  "/outils/calculateur-imc",
+  "/outils/comparateur-texte",
+  "/outils/simulateur-auto-entrepreneur",
 ]);
 
 const MEDIUM_PRIORITY_TOOLS = new Set([
@@ -17,6 +21,17 @@ const MEDIUM_PRIORITY_TOOLS = new Set([
   "/outils/generateur-facture",
   "/outils/calculateur-rentabilite-locative",
   "/outils/calculateur-retraite",
+  "/outils/calculateur-rachat-credit",
+  "/outils/calculateur-surface",
+  "/outils/editeur-video",
+  "/outils/redimensionneur-image",
+  "/outils/generateur-signature-email",
+  "/outils/compresseur-image",
+  "/outils/generateur-cv",
+  "/outils/calculateur-dpe",
+  "/outils/calculateur-beton",
+  "/outils/compresseur-video",
+  "/outils/generateur-mot-de-passe-wifi",
 ]);
 
 function getToolPriority(href: string): number {
@@ -43,7 +58,7 @@ function getUniqueCategories(): string[] {
 }
 
 // Date of last major update (used as lastmod for all pages)
-const LAST_UPDATE = new Date("2026-03-18").toISOString();
+const LAST_UPDATE = new Date("2026-03-21").toISOString();
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const staticPages: MetadataRoute.Sitemap = [

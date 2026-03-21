@@ -1,19 +1,19 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Calculateur DPE - Diagnostic Performance Energetique Gratuit",
+  title: "Simulateur DPE Gratuit en Ligne - Diagnostic Energetique 2026",
   description:
-    "Estimez la classe energetique de votre logement (DPE A a G). Consommation kWh/m2/an, emissions CO2, cout annuel. Simulateur DPE gratuit en ligne.",
+    "Estimez la classe energetique de votre logement (DPE A a G). Consommation kWh/m2/an, emissions CO2, cout annuel. Gratuit et sans inscription.",
   keywords: [
-    "DPE",
+    "simulateur dpe",
+    "simulateur dpe gratuit",
+    "dpe gratuit en ligne",
+    "simulateur dpe en ligne",
+    "simulation dpe",
+    "dpe gratuit",
     "diagnostic performance energetique",
     "classe energetique",
-    "consommation energetique",
-    "passoire thermique",
-    "etiquette energie",
-    "kWh m2 an",
-    "emission CO2 logement",
-    "calculateur DPE gratuit",
+    "calculateur dpe gratuit",
   ],
 };
 

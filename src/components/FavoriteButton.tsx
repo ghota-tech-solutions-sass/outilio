@@ -3,6 +3,7 @@
 import { usePathname } from "next/navigation";
 import { useFavorite, trackRecentTool } from "./RecentAndFavorites";
 import { useEffect } from "react";
+import { trackToolView, trackFavorite } from "@/lib/analytics";
 
 export default function FavoriteButton() {
   const pathname = usePathname();
@@ -10,11 +11,15 @@ export default function FavoriteButton() {
 
   useEffect(() => {
     trackRecentTool(pathname);
+    trackToolView(pathname);
   }, [pathname]);
 
   return (
     <button
-      onClick={toggle}
+      onClick={() => {
+        toggle();
+        trackFavorite(pathname, !isFav);
+      }}
       className="flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-medium transition-all hover:shadow-sm"
       style={{
         borderColor: isFav ? "var(--accent)" : "var(--border)",

@@ -1,15 +1,17 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Generateur de factures gratuit - PDF en ligne",
+  title: "Generateur de Facture Gratuit en Ligne - PDF Instantane",
   description:
-    "Creez des factures professionnelles gratuitement. Conforme a la legislation francaise. Generez et telechargez vos factures en PDF sans inscription.",
+    "Creez des factures professionnelles en PDF gratuitement. Conforme a la legislation francaise, auto-entrepreneur et societe. Sans inscription.",
   keywords: [
+    "generateur de facture",
+    "generateur de facture gratuit",
     "generateur facture",
     "facture gratuite",
     "creer facture",
     "facture PDF",
-    "modele facture",
+    "facture en ligne gratuite",
     "auto-entrepreneur facture",
   ],
 };

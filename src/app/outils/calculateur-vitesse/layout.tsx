@@ -1,15 +1,17 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Calculateur vitesse / distance / temps",
+  title: "Calcul Vitesse Distance Temps - Calculateur Gratuit",
   description:
-    "Calculez la vitesse, la distance ou le temps a partir de deux valeurs connues. Conversions km/h, m/s, mph. Gratuit et instantane.",
+    "Calculez vitesse, distance ou temps a partir de 2 valeurs. Conversions km/h, m/s, mph incluses. Gratuit et instantane, sans inscription.",
   keywords: [
+    "calcul vitesse",
+    "calcul vitesse km/h",
     "calculateur vitesse",
-    "calcul distance temps",
+    "distance vitesse",
+    "calcul de vitesse",
+    "calculateur vitesse distance",
     "vitesse moyenne",
-    "conversion km/h m/s",
-    "calculateur trajet",
     "temps de parcours",
   ],
 };

@@ -1,10 +1,18 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Redimensionneur d'Image en Ligne - Gratuit",
+  title: "Redimensionner Image en Ligne Gratuit - Sans Inscription",
   description:
-    "Redimensionnez vos images en pixels ou pourcentage. Verrouillez le ratio, previsualisation en direct, telechargement instantane. 100% gratuit.",
-  keywords: ["redimensionner image", "resize image", "changer taille image", "reduire image", "agrandir image"],
+    "Redimensionnez vos images en pixels ou pourcentage. Ratio verrouillable, previsualisation en direct, telechargement instantane. 100% gratuit.",
+  keywords: [
+    "redimensionner image en ligne",
+    "redimensionner une image",
+    "redimensionner image",
+    "redimensionner image gratuit",
+    "changer taille image",
+    "reduire taille image en ligne",
+    "redimensionner photo",
+  ],
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {

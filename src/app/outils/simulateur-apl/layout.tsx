@@ -1,18 +1,21 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Simulateur APL 2026 - Estimation aide au logement gratuite",
+  title: "Simulation APL 2026 - Simulateur Aide au Logement Gratuit",
   description:
-    "Estimez votre aide personnalisee au logement (APL) gratuitement. Calcul par zone, composition du foyer et revenus. Baremes officiels 2025-2026 mis a jour.",
+    "Estimez vos APL 2026 gratuitement. Calcul selon votre zone, loyer, revenus et composition du foyer. Baremes CAF officiels a jour. Sans inscription.",
   keywords: [
-    "simulateur APL",
-    "aide personnalisee au logement",
-    "calcul APL",
-    "APL 2026",
-    "estimation APL",
-    "CAF APL",
+    "simulation apl",
+    "simulateur apl",
+    "simulation apl 2026",
+    "apl simulation",
+    "simulateur apl 2026",
+    "estimation apl",
+    "calcul apl",
     "aide au logement",
-    "plafond loyer APL",
+    "CAF APL",
+    "apl 2026 montant",
+    "aide personnalisee au logement",
   ],
 };
 
