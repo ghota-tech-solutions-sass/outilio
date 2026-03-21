@@ -90,7 +90,7 @@ export default function SimulateurPlusValueImmobiliere() {
     const pvNettePS = pvBrute * (1 - abattementPSPct / 100);
 
     const ir = pvNetteIR * 0.19;
-    const ps = pvNettePS * 0.186;
+    const ps = pvNettePS * 0.172;
     const surtaxe = calcSurtaxe(pvNetteIR);
 
     const impotTotal = ir + ps + surtaxe;
@@ -240,7 +240,7 @@ export default function SimulateurPlusValueImmobiliere() {
               <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-4">
                 {[
                   { label: "IR (19%)", value: fmt(resultats.ir), color: "#ea580c" },
-                  { label: "PS (18,6%)", value: fmt(resultats.ps), color: "#ea580c" },
+                  { label: "PS (17,2%)", value: fmt(resultats.ps), color: "#ea580c" },
                   { label: "Surtaxe", value: fmt(resultats.surtaxe), color: resultats.surtaxe > 0 ? "#dc2626" : "var(--muted)" },
                   { label: "Total impot", value: fmt(resultats.impotTotal), color: "#dc2626" },
                 ].map((item) => (
@@ -290,7 +290,7 @@ export default function SimulateurPlusValueImmobiliere() {
                 Comment calculer la plus-value immobiliere
               </h2>
               <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                <p>La plus-value immobiliere correspond a la difference entre le prix de vente et le prix d&apos;acquisition d&apos;un bien immobilier. Elle est soumise a l&apos;impot sur le revenu (19%) et aux prelevements sociaux (18,6% depuis 2026), avec des abattements progressifs selon la duree de detention.</p>
+                <p>La plus-value immobiliere correspond a la difference entre le prix de vente et le prix d&apos;acquisition d&apos;un bien immobilier. Elle est soumise a l&apos;impot sur le revenu (19%) et aux prelevements sociaux (17,2%), avec des abattements progressifs selon la duree de detention.</p>
                 <ul className="ml-4 list-disc space-y-1">
                   <li><strong className="text-[var(--foreground)]">Prix d&apos;acquisition</strong> : prix d&apos;achat + frais d&apos;acquisition (forfait 7,5% ou frais reels) + travaux (forfait 15% apres 5 ans ou montant reel).</li>
                   <li><strong className="text-[var(--foreground)]">Abattements IR</strong> : exoneration totale apres 22 ans de detention. 6% par an de la 6e a la 21e annee, puis 4% la 22e annee.</li>
