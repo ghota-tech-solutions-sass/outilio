@@ -1,6 +1,6 @@
 # Outilis.fr
 
-> **78 outils en ligne gratuits** pour simplifier votre quotidien. 100% client-side, sans inscription, respectueux de la vie privee.
+> **88 outils en ligne gratuits** pour simplifier votre quotidien. 100% client-side, sans inscription, respectueux de la vie privee.
 
 [![Deploy](https://github.com/ghota-tech-solutions-sass/outilio/actions/workflows/deploy.yml/badge.svg)](https://github.com/ghota-tech-solutions-sass/outilio/actions/workflows/deploy.yml)
 
@@ -18,9 +18,9 @@
 | Hosting | GitHub Pages |
 | CI/CD | GitHub Actions |
 
-## Outils (78)
+## Outils (88)
 
-### Finance (9)
+### Finance (11)
 
 | Outil | Description |
 |---|---|
@@ -33,6 +33,8 @@
 | [Calculateur d'inflation](https://outilis.fr/outils/calculateur-inflation) | Pouvoir d'achat dans le temps. Donnees IPC francaises de 1970 a 2025. |
 | [Simulateur APL](https://outilis.fr/outils/simulateur-apl) | Estimez votre aide au logement. Zones 1/2/3, loyer, revenus, composition du foyer. |
 | [Rachat de credit](https://outilis.fr/outils/calculateur-rachat-credit) | Comparez vos credits actuels vs un rachat unique. Economie mensuelle, cout total, verdict. |
+| [Simulateur Flat Tax Crypto](https://outilis.fr/outils/simulateur-flat-tax-crypto) | Plus-values crypto, flat tax 30% (IR 12,8% + PS 17,2%), seuil 305\u20AC. Fiscalite crypto France 2026. |
+| [Simulateur droits de succession](https://outilis.fr/outils/simulateur-droits-succession) | Calculez les droits de succession : abattements par lien de parente, bareme progressif, net herite. |
 
 ### Dev (9)
 
@@ -61,7 +63,7 @@
 | [Scanner QR Code](https://outilis.fr/outils/scanner-qr-code) | Scannez un QR code via camera ou image. Detection automatique, historique des scans. |
 | [Timer Pomodoro](https://outilis.fr/outils/pomodoro) | Methode Pomodoro : 25min travail, 5min pause. Timer circulaire, notifications, statistiques. |
 
-### Business (6)
+### Business (7)
 
 | Outil | Description |
 |---|---|
@@ -71,8 +73,9 @@
 | [Signature email HTML](https://outilis.fr/outils/generateur-signature-email) | Creez une signature email pro : nom, poste, reseaux sociaux. Copiez le HTML en un clic. |
 | [Simulateur auto-entrepreneur](https://outilis.fr/outils/simulateur-auto-entrepreneur) | Cotisations, IR, CFE, revenu net. Taux 2025-2026 par activite. ACRE et versement liberatoire. |
 | [Generateur de CV](https://outilis.fr/outils/generateur-cv) | Creez votre CV en ligne. 2 templates (classique, moderne), preview live, export PDF gratuit. |
+| [Calculateur TJM Freelance](https://outilis.fr/outils/calculateur-tjm-freelance) | Calculez votre Taux Journalier Moyen ideal. Salaire net, charges, conges, frais pro. TJM et taux horaire. |
 
-### Immobilier (4)
+### Immobilier (6)
 
 | Outil | Description |
 |---|---|
@@ -80,8 +83,10 @@
 | [Rentabilite locative](https://outilis.fr/outils/calculateur-rentabilite-locative) | Rendement brut/net, cashflow, effort d'epargne. Simulateur investissement immobilier. |
 | [Frais de notaire](https://outilis.fr/outils/calculateur-frais-notaire) | Estimez les frais de notaire pour votre achat immobilier. Ancien, neuf, 101 departements. Detail complet. |
 | [Calculateur DPE](https://outilis.fr/outils/calculateur-dpe) | Estimez la classe energetique de votre logement. Jauge A-G, emissions CO2, cout annuel. |
+| [Simulateur plus-value immobiliere](https://outilis.fr/outils/simulateur-plus-value-immobiliere) | Calculez l'impot sur la plus-value de votre bien : abattements IR/PS par duree de detention, surtaxe, impot total et plus-value nette. |
+| [Simulateur PTZ 2026](https://outilis.fr/outils/simulateur-ptz-2026) | Eligibilite au Pret a Taux Zero 2026. Montant PTZ, duree, differe, mensualites par zone et revenus. |
 
-### Sante (4)
+### Sante (5)
 
 | Outil | Description |
 |---|---|
@@ -89,6 +94,7 @@
 | [Calories brulees](https://outilis.fr/outils/calculateur-calories) | Estimez les calories depensees par activite : course, velo, natation, marche et plus. |
 | [Calculateur grossesse](https://outilis.fr/outils/calculateur-grossesse) | Date prevue d'accouchement, semaine, trimestre et etapes cles de la grossesse. |
 | [Calculateur alcoolemie](https://outilis.fr/outils/calculateur-alcoolemie) | Taux d'alcoolemie estime, temps de retour a zero. Outil educatif base sur Widmark. |
+| [Calculateur TDEE / Calories](https://outilis.fr/outils/calculateur-tdee-calories) | Depense energetique totale, metabolisme de base (Mifflin-St Jeor), objectifs perte/prise de poids, repartition macros. |
 
 ### Conversion (4)
 
@@ -131,6 +137,14 @@
 | [Convertisseur couleurs](https://outilis.fr/outils/convertisseur-couleurs) | HEX, RGB, HSL. Color picker, sliders, copie en un clic. Pour designers et devs. |
 | [Generateur d'avatar](https://outilis.fr/outils/generateur-avatar) | Creez un avatar avec vos initiales. Cercle colore, styles varies. Telechargez en PNG. |
 | [Generateur de gradient](https://outilis.fr/outils/generateur-gradient) | Creez des degrades CSS : lineaire, radial, couleurs, angle. Apercu et code CSS pret a copier. |
+
+### Emploi (3)
+
+| Outil | Description |
+|---|---|
+| [Simulateur allocation chomage (ARE)](https://outilis.fr/outils/simulateur-allocation-chomage) | Estimez votre ARE : salaire journalier de reference, duree d'indemnisation, montant mensuel et total. |
+| [Simulateur prime d'activite](https://outilis.fr/outils/simulateur-prime-activite) | Estimez votre prime d'activite 2026. Montant forfaitaire, majorations, bonification, forfait logement. Calcul selon votre situation. |
+| [Indemnite rupture conventionnelle](https://outilis.fr/outils/simulateur-rupture-conventionnelle) | Calculez votre indemnite de rupture conventionnelle. Indemnite legale, fiscalite, CSG/CRDS, montant net estime. |
 
 ### Maths (2)
 
@@ -222,6 +236,12 @@
 | Outil | Description |
 |---|---|
 | [Calculateur pourboire](https://outilis.fr/outils/calculateur-pourboire) | Pourboire ideal, partage de l'addition. Comparaison des taux et arrondi. |
+
+### Quotidien (1)
+
+| Outil | Description |
+|---|---|
+| [Partage de frais](https://outilis.fr/outils/calculateur-partage-frais) | Qui doit combien a qui ? Ajoutez les depenses du groupe, l'outil calcule les remboursements optimaux. |
 
 ## Developpement
 
