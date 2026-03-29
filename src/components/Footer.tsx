@@ -119,6 +119,27 @@ export default function Footer() {
             >
               A propos
             </h4>
+            <div className="mt-8">
+              <h4
+                className="text-[11px] font-semibold uppercase tracking-[0.15em]"
+                style={{ color: "var(--muted)" }}
+              >
+                Nos autres produits
+              </h4>
+              <ul className="mt-4 space-y-2.5 text-sm">
+                <li>
+                  <a
+                    href="https://lettrio.app"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="transition-colors hover:text-[#0d4f3c] hover:underline underline-offset-4"
+                    style={{ color: "var(--foreground)" }}
+                  >
+                    Lettrio &mdash; Courriers officiels par IA
+                  </a>
+                </li>
+              </ul>
+            </div>
             <ul className="mt-4 space-y-2.5 text-sm" style={{ color: "var(--muted)" }}>
               <li><Link href="/comment-ca-marche" className="transition-colors hover:text-[#0d4f3c] hover:underline underline-offset-4" style={{ color: "var(--foreground)" }}>Comment ca marche</Link></li>
               <li><Link href="/contribuer" className="transition-colors hover:text-[#0d4f3c] hover:underline underline-offset-4" style={{ color: "var(--foreground)" }}>Contribuer</Link></li>
