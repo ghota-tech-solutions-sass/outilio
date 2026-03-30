@@ -1,4 +1,5 @@
 import { tools } from "@/data/tools";
+import { categoryContent } from "@/data/category-content";
 import type { Metadata } from "next";
 import Link from "next/link";
 
@@ -39,14 +40,18 @@ export async function generateMetadata({
   const category = categories.find((c) => c.slug === slug);
   const name = category?.name ?? slug;
   const count = category?.count ?? 0;
+  const content = categoryContent[slug];
 
   return {
-    title: `Outils ${name} gratuits en ligne (${count} outils)`,
-    description: `Decouvrez nos ${count} outils ${name.toLowerCase()} gratuits : calculateurs, simulateurs et generateurs. 100% en ligne, sans inscription.`,
+    title: `Outils ${name} gratuits en ligne (${count} outils) — Guide et conseils`,
+    description: content
+      ? content.intro
+      : `Decouvrez nos ${count} outils ${name.toLowerCase()} gratuits : calculateurs, simulateurs et generateurs. 100% en ligne, sans inscription.`,
     keywords: [
       `outils ${name.toLowerCase()}`,
       `${name.toLowerCase()} en ligne`,
       `calculateur ${name.toLowerCase()}`,
+      `guide ${name.toLowerCase()}`,
       "outils gratuits",
     ],
   };
@@ -64,6 +69,7 @@ export default async function CategoryPage({
     (t) => slugify(t.category) === slug
   );
   const otherCategories = categories.filter((c) => c.slug !== slug);
+  const content = categoryContent[slug];
 
   return (
     <>
@@ -97,24 +103,57 @@ export default async function CategoryPage({
             className="mt-3 text-4xl tracking-tight md:text-5xl"
             style={{ fontFamily: "var(--font-display)" }}
           >
+            {content?.icon && <span className="mr-3">{content.icon}</span>}
             Outils{" "}
             <span style={{ color: "var(--primary)" }}>
               {category?.name ?? slug}
             </span>
           </h1>
           <p
-            className="mt-3 max-w-xl text-sm leading-relaxed"
+            className="mt-4 max-w-2xl text-[15px] leading-relaxed"
             style={{ color: "var(--muted)" }}
           >
-            {categoryTools.length} outil{categoryTools.length > 1 ? "s" : ""}{" "}
-            gratuit{categoryTools.length > 1 ? "s" : ""} dans cette categorie.
-            100% en ligne, aucune inscription requise.
+            {content
+              ? content.intro
+              : `${categoryTools.length} outil${categoryTools.length > 1 ? "s" : ""} gratuit${categoryTools.length > 1 ? "s" : ""} dans cette categorie. 100% en ligne, aucune inscription requise.`}
+          </p>
+          <p className="mt-2 text-sm font-medium" style={{ color: "var(--primary)" }}>
+            {categoryTools.length} outil{categoryTools.length > 1 ? "s" : ""} disponible{categoryTools.length > 1 ? "s" : ""} &middot; Mis a jour en mars 2026
           </p>
         </div>
       </section>
 
+      {/* Use cases */}
+      {content?.useCases && (
+        <section className="py-10" style={{ background: "var(--surface-alt)", borderBottom: "1px solid var(--border)" }}>
+          <div className="mx-auto max-w-7xl px-6 2xl:max-w-[1400px]">
+            <h2 className="text-xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
+              A quoi servent ces outils ?
+            </h2>
+            <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
+              {content.useCases.map((uc, i) => (
+                <div
+                  key={i}
+                  className="flex items-start gap-3 rounded-xl border p-4"
+                  style={{ background: "var(--surface)", borderColor: "var(--border)" }}
+                >
+                  <svg className="mt-0.5 shrink-0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/>
+                    <polyline points="22 4 12 14.01 9 11.01"/>
+                  </svg>
+                  <span className="text-sm leading-relaxed">{uc}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* Tools grid */}
       <section className="mx-auto max-w-7xl px-6 2xl:max-w-[1400px] py-10">
+        <h2 className="mb-6 text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
+          Tous les outils {(category?.name ?? slug).toLowerCase()}
+        </h2>
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {categoryTools.map((tool) => (
             <Link
@@ -137,12 +176,12 @@ export default async function CategoryPage({
               <div className="flex items-start justify-between">
                 <span className="text-3xl">{tool.icon}</span>
               </div>
-              <h2
+              <h3
                 className="mt-4 text-lg font-semibold tracking-tight transition-colors group-hover:text-[#0d4f3c]"
                 style={{ fontFamily: "var(--font-display)" }}
               >
                 {tool.title}
-              </h2>
+              </h3>
               <p
                 className="mt-2 text-[13px] leading-relaxed"
                 style={{ color: "var(--muted)" }}
@@ -171,6 +210,53 @@ export default async function CategoryPage({
           ))}
         </div>
       </section>
+
+      {/* Editorial guide */}
+      {content?.guide && (
+        <section className="py-12" style={{ background: "var(--surface-alt)", borderTop: "1px solid var(--border)" }}>
+          <div className="mx-auto max-w-7xl px-6 2xl:max-w-[1400px]">
+            <div className="mx-auto max-w-3xl">
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
+                Guide : tout savoir sur les outils{" "}
+                <span style={{ color: "var(--primary)" }}>{(category?.name ?? slug).toLowerCase()}</span>
+              </h2>
+              <div
+                className="mt-6 space-y-4 text-[15px] leading-[1.8]"
+                style={{ color: "var(--foreground)" }}
+              >
+                {content.guide.split("\n\n").map((paragraph, i) => (
+                  <p key={i}>{paragraph}</p>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* FAQ */}
+      {content?.faqItems && content.faqItems.length > 0 && (
+        <section className="py-12" style={{ borderTop: "1px solid var(--border)" }}>
+          <div className="mx-auto max-w-7xl px-6 2xl:max-w-[1400px]">
+            <div className="mx-auto max-w-3xl">
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
+                Questions frequentes
+              </h2>
+              <div className="mt-6 space-y-6">
+                {content.faqItems.map((faq, i) => (
+                  <div key={i} className="rounded-xl border p-6" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+                    <h3 className="text-base font-semibold" style={{ fontFamily: "var(--font-display)" }}>
+                      {faq.question}
+                    </h3>
+                    <p className="mt-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                      {faq.answer}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Other categories */}
       <section
@@ -209,7 +295,7 @@ export default async function CategoryPage({
         </div>
       </section>
 
-      {/* JSON-LD */}
+      {/* JSON-LD with FAQ */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
@@ -217,7 +303,7 @@ export default async function CategoryPage({
             "@context": "https://schema.org",
             "@type": "CollectionPage",
             name: `Outils ${category?.name ?? slug} - Outilis.fr`,
-            description: `${categoryTools.length} outils ${(category?.name ?? slug).toLowerCase()} gratuits en ligne`,
+            description: content?.intro ?? `${categoryTools.length} outils ${(category?.name ?? slug).toLowerCase()} gratuits en ligne`,
             url: `https://outilis.fr/categories/${slug}`,
             isPartOf: {
               "@type": "WebSite",
@@ -228,6 +314,25 @@ export default async function CategoryPage({
           }),
         }}
       />
+      {content?.faqItems && content.faqItems.length > 0 && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "FAQPage",
+              mainEntity: content.faqItems.map((faq) => ({
+                "@type": "Question",
+                name: faq.question,
+                acceptedAnswer: {
+                  "@type": "Answer",
+                  text: faq.answer,
+                },
+              })),
+            }),
+          }}
+        />
+      )}
     </>
   );
 }

@@ -9,7 +9,7 @@ const NAV_ITEMS = [
   { href: "/outils/generateur-facture", label: "Factures" },
   { href: "/outils/generateur-qr-code", label: "QR Code" },
   { href: "/outils/generateur-mot-de-passe", label: "Securite" },
-  { href: "/outils/compteur-mots", label: "Texte" },
+  { href: "/blog", label: "Blog" },
 ];
 
 export default function Header() {

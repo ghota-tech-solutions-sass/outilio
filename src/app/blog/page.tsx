@@ -2,6 +2,96 @@ import Link from "next/link";
 
 const ARTICLES = [
   {
+    slug: "guide-immobilier-2026",
+    title: "Guide complet achat immobilier 2026 : pret, frais de notaire, PTZ et rentabilite",
+    description:
+      "Taux 2026, frais de notaire par departement, PTZ reforme, rentabilite locative, DPE et plus-value. Le guide complet pour votre projet immobilier.",
+    date: "30 mars 2026",
+    category: "Immobilier",
+    readTime: "7 min",
+  },
+  {
+    slug: "guide-freelance-2026",
+    title: "Devenir freelance en 2026 : TJM, charges, statut et outils",
+    description:
+      "Calcul du TJM ideal, comparaison micro vs SASU, charges sociales, facturation conforme et mentions legales. Tout pour lancer votre activite.",
+    date: "30 mars 2026",
+    category: "Business",
+    readTime: "7 min",
+  },
+  {
+    slug: "guide-creation-entreprise-2026",
+    title: "Creer son entreprise en 2026 : micro, EURL, SASU — le comparatif",
+    description:
+      "Cotisations, IS vs IR, obligations LCEN/RGPD, facturation electronique, calcul de marge. Comparatif complet des statuts pour entrepreneurs.",
+    date: "30 mars 2026",
+    category: "Business",
+    readTime: "7 min",
+  },
+  {
+    slug: "guide-impots-revenus-2026",
+    title: "Tout comprendre sur l'impot sur le revenu 2026",
+    description:
+      "Bareme progressif, quotient familial, prelevement a la source, flat tax, prime d'activite. 5 astuces legales pour optimiser votre impot.",
+    date: "30 mars 2026",
+    category: "Finance",
+    readTime: "6 min",
+  },
+  {
+    slug: "guide-epargne-investissement-2026",
+    title: "Epargne et investissement en 2026 : simuler, comparer, optimiser",
+    description:
+      "Interets composes, inflation, flat tax crypto, rentabilite locative, succession. Strategies d'epargne pour tous les profils.",
+    date: "30 mars 2026",
+    category: "Finance",
+    readTime: "6 min",
+  },
+  {
+    slug: "guide-budget-quotidien",
+    title: "Gerer son budget au quotidien : les outils essentiels",
+    description:
+      "Salaire net, TVA, remises, pourboire, partage de frais, budget carburant, frais kilometriques. Tous les calculs du quotidien au meme endroit.",
+    date: "30 mars 2026",
+    category: "Finance",
+    readTime: "6 min",
+  },
+  {
+    slug: "guide-outils-developpeur",
+    title: "10 outils indispensables pour les developpeurs web",
+    description:
+      "JSON, regex, base64, PX/REM, couleurs, slug, gradients CSS, markdown, comparateur de texte. Des outils dev gratuits directement dans le navigateur.",
+    date: "30 mars 2026",
+    category: "Dev",
+    readTime: "5 min",
+  },
+  {
+    slug: "guide-sante-bien-etre",
+    title: "Sante et bien-etre : calculateurs pour suivre vos objectifs",
+    description:
+      "IMC, calories, TDEE, grossesse, alcoolemie. Des outils de sante bases sur les formules et seuils officiels (OMS, Mifflin-St Jeor, Widmark).",
+    date: "30 mars 2026",
+    category: "Sante",
+    readTime: "5 min",
+  },
+  {
+    slug: "guide-outils-image-video",
+    title: "Retouche photo, compression et montage video gratuits",
+    description:
+      "Compresser, redimensionner, convertir vos images. Couper, compresser vos videos. Extraire l'audio. Tout sans logiciel, 100% dans le navigateur.",
+    date: "30 mars 2026",
+    category: "Multimedia",
+    readTime: "5 min",
+  },
+  {
+    slug: "guide-securite-numerique",
+    title: "Securite numerique : proteger ses comptes et donnees en ligne",
+    description:
+      "Mots de passe forts, entropie, gestionnaires, WiFi securise, recommandations ANSSI 2026 et bonnes pratiques pour le quotidien.",
+    date: "30 mars 2026",
+    category: "Securite",
+    readTime: "5 min",
+  },
+  {
     slug: "simulateur-apl-2026",
     title: "APL 2026 : comment estimer vos aides au logement",
     description:

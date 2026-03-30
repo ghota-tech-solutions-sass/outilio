@@ -7,7 +7,10 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Outilis.fr - Outils en ligne gratuits pour le quotidien",
   description:
-    "Calculateur salaire net/brut, simulateur pret immobilier, generateur de factures, QR codes, mots de passe securises. 100% gratuit, sans inscription.",
+    "Calculateur salaire net/brut, simulateur pret immobilier, generateur de factures, QR codes, mots de passe securises. 100% gratuit, sans inscription. Plus de 88 outils dans votre navigateur.",
+  other: {
+    "article:modified_time": "2026-03-30",
+  },
 };
 
 const FEATURES = [
@@ -358,6 +361,155 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Why Outilis — Editorial SEO section */}
+      <section className="py-16" style={{ borderTop: "1px solid var(--border)" }}>
+        <div className="mx-auto max-w-7xl px-6 2xl:max-w-[1400px]">
+          <div className="mx-auto max-w-3xl">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: "var(--accent)" }}>
+              Pourquoi Outilis.fr
+            </p>
+            <h2 className="mt-2 text-3xl tracking-tight md:text-4xl" style={{ fontFamily: "var(--font-display)" }}>
+              Des outils en ligne <span style={{ color: "var(--primary)" }}>vraiment gratuits</span>, sans compromis
+            </h2>
+            <div className="mt-6 space-y-4 text-[15px] leading-[1.8]" style={{ color: "var(--foreground)" }}>
+              <p>
+                Outilis.fr rassemble plus de {tools.length} outils en ligne gratuits pour le quotidien des particuliers et des professionnels en France.
+                Calculateurs financiers, simulateurs fiscaux, generateurs de documents, outils pour developpeurs, convertisseurs et bien plus :
+                chaque outil est concu pour repondre a un besoin precis, avec des donnees a jour et une interface simple.
+              </p>
+              <p>
+                Contrairement a la plupart des sites d&apos;outils en ligne, Outilis.fr fonctionne a 100% dans votre navigateur.
+                Aucune donnee n&apos;est envoyee a un serveur, aucun compte n&apos;est necessaire, aucun cookie de tracking n&apos;est depose.
+                Vos calculs de salaire, vos simulations d&apos;impot, vos mots de passe generes : tout reste sur votre appareil.
+                C&apos;est un choix technique delibere pour garantir votre vie privee.
+              </p>
+              <p>
+                Nos outils financiers integrent les baremes officiels 2026 : impot sur le revenu, cotisations sociales,
+                taux de CSG/CRDS, plafonds de la Securite sociale, aides au logement (APL) et dispositifs comme le PTZ.
+                Pour les professionnels, nos simulateurs couvrent l&apos;auto-entrepreneur, la comparaison freelance vs CDI, le calcul du TJM
+                et la generation de factures conformes. Pour les developpeurs, une suite d&apos;outils couvre le JSON, les regex, le Base64,
+                les conversions PX/REM et la generation de gradients CSS.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Use cases */}
+      <section className="py-16" style={{ background: "var(--surface-alt)", borderTop: "1px solid var(--border)" }}>
+        <div className="mx-auto max-w-7xl px-6 2xl:max-w-[1400px]">
+          <div className="text-center">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: "var(--accent)" }}>
+              Cas d&apos;usage
+            </p>
+            <h2 className="mt-2 text-3xl tracking-tight md:text-4xl" style={{ fontFamily: "var(--font-display)" }}>
+              Qui utilise Outilis.fr ?
+            </h2>
+          </div>
+          <div className="mt-10 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {[
+              {
+                title: "Salaries et demandeurs d\u0027emploi",
+                desc: "Calculez votre salaire net, simulez votre impot sur le revenu, estimez vos droits au chomage (ARE) ou a la prime d\u0027activite. Verifiez que votre bulletin de paie est correct.",
+                icon: "\u{1F4BC}",
+              },
+              {
+                title: "Freelances et entrepreneurs",
+                desc: "Comparez micro-entreprise vs SASU, calculez votre TJM ideal, generez des factures conformes et estimez vos cotisations sociales. Tout pour piloter votre activite.",
+                icon: "\u{1F680}",
+              },
+              {
+                title: "Investisseurs immobiliers",
+                desc: "Simulez votre pret, calculez les frais de notaire, evaluez la rentabilite locative et estimez la plus-value a la revente. Tout un parcours d\u0027investissement en un clic.",
+                icon: "\u{1F3E0}",
+              },
+              {
+                title: "Developpeurs web",
+                desc: "Formatez du JSON, testez vos regex, convertissez PX en REM, generez des gradients CSS et des slugs SEO-friendly. Des outils qui font gagner du temps au quotidien.",
+                icon: "\u{1F4BB}",
+              },
+              {
+                title: "Etudiants et particuliers",
+                desc: "Calculez votre IMC, estimez vos APL, convertissez des unites, partagez une addition entre amis ou generez un QR code. Des outils simples pour la vie de tous les jours.",
+                icon: "\u{1F393}",
+              },
+              {
+                title: "Createurs de contenu",
+                desc: "Compressez vos images, editez vos photos, fusionnez des PDF, generez des avatars et des signatures email. Des outils creatifs sans logiciel a installer.",
+                icon: "\u{1F3A8}",
+              },
+            ].map((uc, i) => (
+              <div
+                key={i}
+                className="rounded-2xl border p-6"
+                style={{ background: "var(--surface)", borderColor: "var(--border)" }}
+              >
+                <span className="text-2xl">{uc.icon}</span>
+                <h3 className="mt-3 text-lg tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
+                  {uc.title}
+                </h3>
+                <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                  {uc.desc}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ — Homepage */}
+      <section className="py-16" style={{ borderTop: "1px solid var(--border)" }}>
+        <div className="mx-auto max-w-7xl px-6 2xl:max-w-[1400px]">
+          <div className="mx-auto max-w-3xl">
+            <div className="text-center">
+              <p className="text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: "var(--accent)" }}>
+                FAQ
+              </p>
+              <h2 className="mt-2 text-3xl tracking-tight md:text-4xl" style={{ fontFamily: "var(--font-display)" }}>
+                Questions frequentes
+              </h2>
+            </div>
+            <div className="mt-8 space-y-5">
+              {[
+                {
+                  q: "Outilis.fr est-il vraiment 100% gratuit ?",
+                  a: "Oui, tous les outils sont gratuits, sans limite d\u0027utilisation et sans inscription. Le site est finance par la publicite non intrusive. Aucune fonctionnalite n\u0027est cachee derriere un paywall.",
+                },
+                {
+                  q: "Mes donnees sont-elles en securite ?",
+                  a: "Absolument. Tous les calculs sont effectues localement dans votre navigateur. Aucune donnee personnelle, financiere ou autre n\u0027est envoyee a un serveur. Vous pouvez meme utiliser la plupart des outils hors ligne une fois la page chargee.",
+                },
+                {
+                  q: "Les baremes et taux sont-ils a jour ?",
+                  a: "Oui. Nos outils financiers et fiscaux integrent les baremes officiels 2026 (impot sur le revenu, cotisations sociales, PASS, CSG/CRDS, taux de TVA). Chaque outil est mis a jour des que les nouveaux taux sont publies par l\u0027administration.",
+                },
+                {
+                  q: "Puis-je utiliser ces outils sur mobile ?",
+                  a: "Tous les outils sont responsive et fonctionnent sur smartphone, tablette et ordinateur. L\u0027interface s\u0027adapte automatiquement a la taille de votre ecran pour une experience optimale.",
+                },
+                {
+                  q: "Comment suggerer un nouvel outil ?",
+                  a: "Rendez-vous sur la page Contribuer ou ouvrez une issue sur notre depot GitHub. Nous ajoutons regulierement de nouveaux outils en fonction des demandes les plus populaires.",
+                },
+              ].map((faq, i) => (
+                <div
+                  key={i}
+                  className="rounded-xl border p-6"
+                  style={{ background: "var(--surface)", borderColor: "var(--border)" }}
+                >
+                  <h3 className="text-base font-semibold" style={{ fontFamily: "var(--font-display)" }}>
+                    {faq.q}
+                  </h3>
+                  <p className="mt-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    {faq.a}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Privacy Banner */}
       <PrivacyBanner />
 
@@ -418,6 +570,59 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* FAQ JSON-LD */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            mainEntity: [
+              {
+                "@type": "Question",
+                name: "Outilis.fr est-il vraiment 100% gratuit ?",
+                acceptedAnswer: {
+                  "@type": "Answer",
+                  text: "Oui, tous les outils sont gratuits, sans limite d'utilisation et sans inscription. Le site est finance par la publicite non intrusive. Aucune fonctionnalite n'est cachee derriere un paywall.",
+                },
+              },
+              {
+                "@type": "Question",
+                name: "Mes donnees sont-elles en securite ?",
+                acceptedAnswer: {
+                  "@type": "Answer",
+                  text: "Absolument. Tous les calculs sont effectues localement dans votre navigateur. Aucune donnee personnelle, financiere ou autre n'est envoyee a un serveur.",
+                },
+              },
+              {
+                "@type": "Question",
+                name: "Les baremes et taux sont-ils a jour ?",
+                acceptedAnswer: {
+                  "@type": "Answer",
+                  text: "Oui. Nos outils financiers et fiscaux integrent les baremes officiels 2026 (impot sur le revenu, cotisations sociales, PASS, CSG/CRDS, taux de TVA).",
+                },
+              },
+              {
+                "@type": "Question",
+                name: "Puis-je utiliser ces outils sur mobile ?",
+                acceptedAnswer: {
+                  "@type": "Answer",
+                  text: "Tous les outils sont responsive et fonctionnent sur smartphone, tablette et ordinateur.",
+                },
+              },
+              {
+                "@type": "Question",
+                name: "Comment suggerer un nouvel outil ?",
+                acceptedAnswer: {
+                  "@type": "Answer",
+                  text: "Rendez-vous sur la page Contribuer ou ouvrez une issue sur notre depot GitHub.",
+                },
+              },
+            ],
+          }),
+        }}
+      />
     </>
   );
 }

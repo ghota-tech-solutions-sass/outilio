@@ -58,7 +58,26 @@ function getUniqueCategories(): string[] {
 }
 
 // Date of last major update (used as lastmod for all pages)
-const LAST_UPDATE = new Date("2026-03-21").toISOString();
+const LAST_UPDATE = new Date("2026-03-30").toISOString();
+
+const BLOG_SLUGS = [
+  "calculer-salaire-net-2026",
+  "declaration-impots-2026",
+  "freelance-sasu-micro-2026",
+  "simulateur-apl-2026",
+  "simulateur-auto-entrepreneur-2026",
+  "simulateur-impot-societes-2026",
+  "guide-immobilier-2026",
+  "guide-freelance-2026",
+  "guide-epargne-investissement-2026",
+  "guide-impots-revenus-2026",
+  "guide-outils-developpeur",
+  "guide-sante-bien-etre",
+  "guide-creation-entreprise-2026",
+  "guide-outils-image-video",
+  "guide-securite-numerique",
+  "guide-budget-quotidien",
+];
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const staticPages: MetadataRoute.Sitemap = [
@@ -104,5 +123,21 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: getToolPriority(tool.href),
   }));
 
-  return [...staticPages, ...categoryPages, ...toolPages];
+  const blogIndex: MetadataRoute.Sitemap = [
+    {
+      url: `${BASE_URL}/blog`,
+      lastModified: LAST_UPDATE,
+      changeFrequency: "weekly",
+      priority: 0.8,
+    },
+  ];
+
+  const blogPages: MetadataRoute.Sitemap = BLOG_SLUGS.map((slug) => ({
+    url: `${BASE_URL}/blog/${slug}`,
+    lastModified: LAST_UPDATE,
+    changeFrequency: "monthly",
+    priority: 0.7,
+  }));
+
+  return [...staticPages, ...blogIndex, ...blogPages, ...categoryPages, ...toolPages];
 }
