@@ -60,23 +60,23 @@ function getUniqueCategories(): string[] {
 // Date of last major update (used as lastmod for all pages)
 const LAST_UPDATE = new Date("2026-03-30").toISOString();
 
-const BLOG_SLUGS = [
-  "calculer-salaire-net-2026",
-  "declaration-impots-2026",
-  "freelance-sasu-micro-2026",
-  "simulateur-apl-2026",
-  "simulateur-auto-entrepreneur-2026",
-  "simulateur-impot-societes-2026",
-  "guide-immobilier-2026",
-  "guide-freelance-2026",
-  "guide-epargne-investissement-2026",
-  "guide-impots-revenus-2026",
-  "guide-outils-developpeur",
-  "guide-sante-bien-etre",
-  "guide-creation-entreprise-2026",
-  "guide-outils-image-video",
-  "guide-securite-numerique",
-  "guide-budget-quotidien",
+const BLOG_ARTICLES: { slug: string; date: string }[] = [
+  { slug: "declaration-impots-2026", date: "2026-02-03" },
+  { slug: "freelance-sasu-micro-2026", date: "2026-02-06" },
+  { slug: "calculer-salaire-net-2026", date: "2026-02-10" },
+  { slug: "simulateur-impot-societes-2026", date: "2026-02-13" },
+  { slug: "simulateur-auto-entrepreneur-2026", date: "2026-02-17" },
+  { slug: "simulateur-apl-2026", date: "2026-02-20" },
+  { slug: "guide-securite-numerique", date: "2026-02-24" },
+  { slug: "guide-outils-image-video", date: "2026-02-27" },
+  { slug: "guide-sante-bien-etre", date: "2026-03-03" },
+  { slug: "guide-outils-developpeur", date: "2026-03-06" },
+  { slug: "guide-budget-quotidien", date: "2026-03-10" },
+  { slug: "guide-epargne-investissement-2026", date: "2026-03-13" },
+  { slug: "guide-impots-revenus-2026", date: "2026-03-17" },
+  { slug: "guide-creation-entreprise-2026", date: "2026-03-20" },
+  { slug: "guide-freelance-2026", date: "2026-03-24" },
+  { slug: "guide-immobilier-2026", date: "2026-03-27" },
 ];
 
 export default function sitemap(): MetadataRoute.Sitemap {
@@ -132,9 +132,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
     },
   ];
 
-  const blogPages: MetadataRoute.Sitemap = BLOG_SLUGS.map((slug) => ({
+  const blogPages: MetadataRoute.Sitemap = BLOG_ARTICLES.map(({ slug, date }) => ({
     url: `${BASE_URL}/blog/${slug}`,
-    lastModified: LAST_UPDATE,
+    lastModified: new Date(date).toISOString(),
     changeFrequency: "monthly",
     priority: 0.7,
   }));

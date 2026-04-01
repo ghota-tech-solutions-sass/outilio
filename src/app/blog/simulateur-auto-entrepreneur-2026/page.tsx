@@ -37,7 +37,7 @@ export default function ArticleAutoEntrepreneur2026() {
             className="animate-fade-up stagger-2 mt-4 flex items-center gap-4 text-xs font-medium"
             style={{ color: "var(--muted)" }}
           >
-            <span>20 mars 2026</span>
+            <span>17 fevrier 2026</span>
             <span className="h-1 w-1 rounded-full" style={{ background: "var(--border)" }} />
             <span>6 min de lecture</span>
           </div>
@@ -166,6 +166,10 @@ export default function ArticleAutoEntrepreneur2026() {
               27 478 &euro; par part de quotient familial. C&apos;est generalement avantageux si vous avez
               d&apos;autres revenus (conjoint salarie, revenus fonciers).
             </p>
+            <p>
+              Pour fixer un tarif qui couvre vos charges, utilisez notre{" "}
+              <Link href="/outils/calculateur-tjm-freelance" className="font-medium underline underline-offset-4 transition-colors hover:text-[#0d4f3c]" style={{ color: "var(--primary)" }}>calculateur de TJM freelance</Link>.
+            </p>
 
             <h2
               className="!mt-10 text-2xl tracking-tight"
@@ -179,6 +183,11 @@ export default function ArticleAutoEntrepreneur2026() {
               les cotisations passent de 21,1 % a environ 10,6 %, ce qui augmente significativement le revenu
               net la premiere annee. L&apos;ACRE est accordee automatiquement a la creation de la
               micro-entreprise.
+            </p>
+            <p>
+              Cote administratif, notre{" "}
+              <Link href="/outils/generateur-facture" className="font-medium underline underline-offset-4 transition-colors hover:text-[#0d4f3c]" style={{ color: "var(--primary)" }}>generateur de factures</Link>{" "}
+              cree des documents conformes aux obligations legales en quelques clics.
             </p>
 
             <h3

@@ -37,7 +37,7 @@ export default function ArticleGuideFreelance2026() {
             className="animate-fade-up stagger-2 mt-4 flex items-center gap-4 text-xs font-medium"
             style={{ color: "var(--muted)" }}
           >
-            <span>30 mars 2026</span>
+            <span>24 mars 2026</span>
             <span className="h-1 w-1 rounded-full" style={{ background: "var(--border)" }} />
             <span>7 min de lecture</span>
           </div>

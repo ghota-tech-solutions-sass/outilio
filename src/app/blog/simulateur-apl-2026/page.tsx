@@ -37,7 +37,7 @@ export default function ArticleSimulateurAPL2026() {
             className="animate-fade-up stagger-2 mt-4 flex items-center gap-4 text-xs font-medium"
             style={{ color: "var(--muted)" }}
           >
-            <span>20 mars 2026</span>
+            <span>20 fevrier 2026</span>
             <span className="h-1 w-1 rounded-full" style={{ background: "var(--border)" }} />
             <span>5 min de lecture</span>
           </div>
@@ -91,6 +91,11 @@ export default function ArticleSimulateurAPL2026() {
               <li><strong>La composition du foyer</strong> : personne seule, couple, nombre d&apos;enfants</li>
               <li><strong>La zone geographique</strong> : Paris et region parisienne (zone 1), grandes villes (zone 2), reste de la France (zone 3)</li>
             </ul>
+            <p>
+              Si vous etes salarie, estimez d&apos;abord votre{" "}
+              <Link href="/outils/calculateur-salaire" className="font-medium underline underline-offset-4 transition-colors hover:text-[#0d4f3c]" style={{ color: "var(--primary)" }}>salaire net mensuel</Link>{" "}
+              pour renseigner vos revenus avec precision.
+            </p>
 
             <h2
               className="!mt-10 text-2xl tracking-tight"
@@ -185,6 +190,11 @@ export default function ArticleSimulateurAPL2026() {
               <li><strong>Calcul en temps reel</strong> : vos APL sont recalculees tous les 3 mois sur la base de vos revenus des 12 derniers mois</li>
               <li><strong>Seuil minimal</strong> : si le montant calcule est inferieur a 10 &euro;/mois, l&apos;aide n&apos;est pas versee</li>
             </ul>
+            <p>
+              Si vous envisagez d&apos;acheter plutot que de louer, notre{" "}
+              <Link href="/outils/calculateur-pret-immobilier" className="font-medium underline underline-offset-4 transition-colors hover:text-[#0d4f3c]" style={{ color: "var(--primary)" }}>simulateur de pret immobilier</Link>{" "}
+              estime vos mensualites et votre capacite d&apos;emprunt.
+            </p>
 
             <h3
               className="!mt-8 text-xl tracking-tight"

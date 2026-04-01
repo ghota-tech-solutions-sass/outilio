@@ -38,7 +38,7 @@ export default function ArticleSalaireNet2026() {
             className="animate-fade-up stagger-2 mt-4 flex items-center gap-4 text-xs font-medium"
             style={{ color: "var(--muted)" }}
           >
-            <span>18 mars 2026</span>
+            <span>10 fevrier 2026</span>
             <span className="h-1 w-1 rounded-full" style={{ background: "var(--border)" }} />
             <span>4 min de lecture</span>
           </div>
@@ -126,7 +126,7 @@ export default function ArticleSalaireNet2026() {
 
             <p>
               Apres prelevement a la source de l&apos;impot sur le revenu (dont le taux depend de votre
-              situation personnelle et du bareme IR 2026), le salaire net effectivement verse sur votre
+              situation personnelle et du <Link href="/outils/simulateur-impot" className="font-medium underline underline-offset-4 transition-colors hover:text-[#0d4f3c]" style={{ color: "var(--primary)" }}>bareme IR 2026</Link>), le salaire net effectivement verse sur votre
               compte bancaire est encore inferieur. Pour un celibataire sans enfant, comptez environ
               130 euros d&apos;impot mensuel, soit un net apres impot d&apos;environ <strong>2 210 euros</strong>.
             </p>

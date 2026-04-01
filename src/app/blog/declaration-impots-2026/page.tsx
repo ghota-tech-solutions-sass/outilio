@@ -38,7 +38,7 @@ export default function ArticleDeclarationImpots2026() {
             className="animate-fade-up stagger-2 mt-4 flex items-center gap-4 text-xs font-medium"
             style={{ color: "var(--muted)" }}
           >
-            <span>18 mars 2026</span>
+            <span>3 fevrier 2026</span>
             <span className="h-1 w-1 rounded-full" style={{ background: "var(--border)" }} />
             <span>5 min de lecture</span>
           </div>
@@ -120,6 +120,11 @@ export default function ArticleDeclarationImpots2026() {
                 </tbody>
               </table>
             </div>
+
+            <p>
+              Pour connaitre votre revenu net imposable, calculez d&apos;abord votre{" "}
+              <Link href="/outils/calculateur-salaire" className="font-medium underline underline-offset-4 transition-colors hover:text-[#0d4f3c]" style={{ color: "var(--primary)" }}>salaire net a partir du brut</Link>.
+            </p>
 
             <h2
               className="!mt-10 text-2xl tracking-tight"

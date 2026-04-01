@@ -38,7 +38,7 @@ export default function ArticleSimulateurIS2026() {
             className="animate-fade-up stagger-2 mt-4 flex items-center gap-4 text-xs font-medium"
             style={{ color: "var(--muted)" }}
           >
-            <span>20 mars 2026</span>
+            <span>13 fevrier 2026</span>
             <span className="h-1 w-1 rounded-full" style={{ background: "var(--border)" }} />
             <span>5 min de lecture</span>
           </div>
@@ -141,9 +141,14 @@ export default function ArticleSimulateurIS2026() {
               <li><strong>Benefice &gt; 80 000 &euro;</strong> : l&apos;IS est quasi systematiquement preferable (25 % vs 41 % ou 45 % a l&apos;IR)</li>
             </ul>
             <p>
+              Si vous hesitez entre le salariat et l&apos;independance, notre{" "}
+              <Link href="/outils/freelance-vs-cdi" className="font-medium underline underline-offset-4 transition-colors hover:text-[#0d4f3c]" style={{ color: "var(--primary)" }}>comparateur freelance vs CDI</Link>{" "}
+              vous aide a trancher.
+            </p>
+            <p>
               N&apos;oubliez pas qu&apos;avec l&apos;IS, les benefices reinvestis dans l&apos;entreprise ne sont
               pas soumis a l&apos;IR. Vous ne payez l&apos;IR que sur les dividendes que vous vous versez, apres
-              application de la flat tax de 30 % (PFU) ou du bareme progressif si c&apos;est plus avantageux.
+              application de la <Link href="/outils/simulateur-flat-tax-crypto" className="font-medium underline underline-offset-4 transition-colors hover:text-[#0d4f3c]" style={{ color: "var(--primary)" }}>flat tax de 30 %</Link> (PFU) ou du bareme progressif si c&apos;est plus avantageux.
             </p>
 
             <h2

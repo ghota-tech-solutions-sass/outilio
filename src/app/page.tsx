@@ -138,7 +138,7 @@ export default function Home() {
                   ))}
                 </div>
                 <p className="text-sm" style={{ color: "var(--muted)" }}>
-                  Utilise par des <strong style={{ color: "var(--foreground)" }}>milliers</strong> de Francais chaque mois
+                  Plus de <strong style={{ color: "var(--foreground)" }}>90 outils gratuits</strong>, 100&nbsp;% en ligne
                 </p>
               </div>
             </div>
@@ -536,8 +536,8 @@ export default function Home() {
             Commencez a simplifier votre quotidien
           </h2>
           <p className="mx-auto mt-4 max-w-md text-[15px] leading-relaxed text-white/60">
-            Rejoignez des milliers de Francais qui utilisent nos outils chaque jour.
-            Gratuit, sans inscription, sans cookies.
+            Plus de 90 outils gratuits, accessibles instantanement.
+            Sans inscription, sans cookies.
           </p>
           <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
             <a

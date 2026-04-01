@@ -38,7 +38,7 @@ export default function ArticleSasuMicro2026() {
             className="animate-fade-up stagger-2 mt-4 flex items-center gap-4 text-xs font-medium"
             style={{ color: "var(--muted)" }}
           >
-            <span>18 mars 2026</span>
+            <span>6 fevrier 2026</span>
             <span className="h-1 w-1 rounded-full" style={{ background: "var(--border)" }} />
             <span>5 min de lecture</span>
           </div>
@@ -83,13 +83,17 @@ export default function ArticleSasuMicro2026() {
             <p>
               L&apos;un des grands atouts de la SASU est la possibilite de se remunerer en dividendes. Depuis
               2018, les dividendes sont soumis au <strong>prelevement forfaitaire unique (PFU)</strong>, aussi
-              appele flat tax, au taux global de <strong>30 %</strong> (12,8 % d&apos;impot sur le revenu + 17,2 %
+              appele <Link href="/outils/simulateur-flat-tax-crypto" className="font-medium underline underline-offset-4 transition-colors hover:text-[#0d4f3c]" style={{ color: "var(--primary)" }}>flat tax</Link>, au taux global de <strong>30 %</strong> (12,8 % d&apos;impot sur le revenu + 17,2 %
               de prelevements sociaux). Ce taux reste inchange en 2026.
             </p>
             <p>
               La strategie classique consiste a se verser un salaire minimum pour valider quatre trimestres
               de retraite (environ 7 200 euros brut annuels en 2026) et a distribuer le reste en dividendes.
               Cela permet de reduire considerablement le poids des cotisations sociales.
+            </p>
+            <p>
+              Pour fixer le bon tarif en fonction de vos charges, utilisez notre{" "}
+              <Link href="/outils/calculateur-tjm-freelance" className="font-medium underline underline-offset-4 transition-colors hover:text-[#0d4f3c]" style={{ color: "var(--primary)" }}>calculateur de TJM freelance</Link>.
             </p>
 
             <h2
@@ -131,6 +135,11 @@ export default function ArticleSasuMicro2026() {
               Notre simulateur auto-entrepreneur vous permet d&apos;estimer vos revenus nets selon votre statut,
               votre chiffre d&apos;affaires et vos charges. Testez differents scenarios pour prendre la meilleure
               decision.
+            </p>
+            <p>
+              Notre{" "}
+              <Link href="/outils/freelance-vs-cdi" className="font-medium underline underline-offset-4 transition-colors hover:text-[#0d4f3c]" style={{ color: "var(--primary)" }}>comparateur freelance vs CDI</Link>{" "}
+              vous aide egalement a evaluer l&apos;interet financier de quitter le salariat.
             </p>
             {/* CTA */}
             <div className="mt-10 rounded-2xl border p-8 text-center" style={{ background: "var(--surface-alt)", borderColor: "var(--border)" }}>
