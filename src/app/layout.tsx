@@ -72,6 +72,8 @@ export default function RootLayout({
   return (
     <html lang="fr">
       <head>
+        <link rel="alternate" type="text/markdown" href="/llms.txt" title="Index pour LLMs (llms.txt)" />
+        <link rel="alternate" type="text/markdown" href="/llms-full.txt" title="Documentation complete pour LLMs" />
         <script
           async
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2869830072536269"
@@ -86,15 +88,47 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{
             __html: JSON.stringify({
               "@context": "https://schema.org",
-              "@type": "WebSite",
-              "name": "Outilis.fr",
-              "url": "https://outilis.fr",
-              "description": "Outils en ligne gratuits : calculateurs, generateurs et convertisseurs.",
-              "potentialAction": {
-                "@type": "SearchAction",
-                "target": "https://outilis.fr/?q={search_term_string}",
-                "query-input": "required name=search_term_string"
-              }
+              "@graph": [
+                {
+                  "@type": "WebSite",
+                  "@id": "https://outilis.fr/#website",
+                  "name": "Outilis.fr",
+                  "url": "https://outilis.fr",
+                  "inLanguage": "fr-FR",
+                  "description":
+                    "88 outils en ligne 100 % gratuits, sans inscription : calculateurs, simulateurs, generateurs, convertisseurs. Tout dans le navigateur, donnees a jour 2026.",
+                  "publisher": { "@id": "https://outilis.fr/#organization" },
+                  "potentialAction": {
+                    "@type": "SearchAction",
+                    "target": {
+                      "@type": "EntryPoint",
+                      "urlTemplate": "https://outilis.fr/?q={search_term_string}",
+                    },
+                    "query-input": "required name=search_term_string",
+                  },
+                },
+                {
+                  "@type": "Organization",
+                  "@id": "https://outilis.fr/#organization",
+                  "name": "Outilis.fr",
+                  "url": "https://outilis.fr",
+                  "logo": "https://outilis.fr/og-image.svg",
+                  "founder": {
+                    "@type": "Person",
+                    "name": "Mickael Villers",
+                  },
+                  "parentOrganization": {
+                    "@type": "Organization",
+                    "name": "Ghota Tech Solutions",
+                    "address": {
+                      "@type": "PostalAddress",
+                      "addressLocality": "Lyon",
+                      "addressCountry": "FR",
+                    },
+                  },
+                  "sameAs": ["https://x.com/MickaelV79228"],
+                },
+              ],
             }),
           }}
         />

@@ -1,0 +1,151 @@
+# Outilis.fr
+
+> Outilis.fr propose 88 outils en ligne 100 % gratuits, sans inscription : calculateurs, simulateurs, generateurs et convertisseurs. Tout fonctionne dans le navigateur, aucune donnee saisie n'est envoyee a un serveur.
+
+Outilis.fr est un site francais (langue : fr-FR) edite par Ghota Tech Solutions (Lyon, France). Reference 2026 pour la fiscalite, l'immobilier, le droit du travail et le quotidien francais. Donnees a jour : baremes 2026, regles HCSF, lois Lemoine, ANSES, OMS, Securite Routiere, DGFiP, ADEME.
+
+## Finance et fiscalite
+
+- [Calculateur salaire net / brut](https://outilis.fr/outils/calculateur-salaire) : Conversion brut <-> net en France (cadre, non-cadre, fonction publique). Taux 2026.
+- [Simulateur impot sur le revenu 2026](https://outilis.fr/outils/simulateur-impot) : Bareme 2026, TMI, decote, quotient familial, plafonnement.
+- [Simulateur pret immobilier](https://outilis.fr/outils/calculateur-pret-immobilier) : Mensualite, assurance, tableau d'amortissement annuel. Reperes HCSF 35 % et taux moyens 2026.
+- [Calculateur de TVA](https://outilis.fr/outils/calculateur-tva) : Conversion HT <-> TTC. Taux 20 %, 10 %, 5,5 %, 2,1 %. Franchise en base, autoliquidation.
+- [Calculateur pret auto](https://outilis.fr/outils/calculateur-pret-auto) : Mensualite, cout total, amortissement. TAEG 2026, retractation 14 jours.
+- [Calculateur de pourcentage](https://outilis.fr/outils/calculateur-pourcentage) : 3 modes (X % de Y, variation, part). Pieges classiques expliques.
+- [Calculateur d'epargne](https://outilis.fr/outils/calculateur-epargne) : Interets composes, projection graphique.
+- [Convertisseur de devises](https://outilis.fr/outils/calculateur-taux-change) : EUR, USD, GBP, CHF, CAD, JPY, MAD, XOF.
+- [Calculateur d'inflation](https://outilis.fr/outils/calculateur-inflation) : IPC francais 1970-2025, pouvoir d'achat.
+- [Rachat de credit](https://outilis.fr/outils/calculateur-rachat-credit) : Comparaison plusieurs credits vs un seul, avec frais IRA et dossier.
+- [Simulateur APL](https://outilis.fr/outils/simulateur-apl) : Aide au logement, zones 1/2/3, composition du foyer.
+- [Frais kilometriques](https://outilis.fr/outils/calculateur-frais-kilometriques) : Bareme fiscal officiel DGFiP, majoration VE +20 %.
+- [Simulateur Flat Tax Crypto](https://outilis.fr/outils/simulateur-flat-tax-crypto) : Plus-values crypto, 30 % (12,8 % IR + 17,2 % PS), seuil 305 EUR.
+- [Simulateur droits de succession](https://outilis.fr/outils/simulateur-droits-succession) : Abattements par lien de parente, bareme progressif.
+- [Simulateur prime d'activite](https://outilis.fr/outils/simulateur-prime-activite) : Montant forfaitaire 2026, bonification, forfait logement.
+
+## Immobilier
+
+- [Frais de notaire](https://outilis.fr/outils/calculateur-frais-notaire) : Ancien (~7,5 %) vs neuf (~2,5 %), 101 departements.
+- [Simulateur PTZ 2026](https://outilis.fr/outils/simulateur-ptz-2026) : Pret a Taux Zero, eligibilite, montant, duree par zone et revenus.
+- [Calculateur DPE](https://outilis.fr/outils/calculateur-dpe) : Classe energetique A-G, emissions CO2, cout annuel estime.
+- [Rentabilite locative](https://outilis.fr/outils/calculateur-rentabilite-locative) : Rendement brut/net, cashflow, effort d'epargne.
+- [Simulateur plus-value immobiliere](https://outilis.fr/outils/simulateur-plus-value-immobiliere) : Abattements IR/PS par duree de detention, surtaxe.
+
+## Carriere et emploi
+
+- [Freelance vs CDI](https://outilis.fr/outils/freelance-vs-cdi) : Comparatif net reel : Micro, EURL, SASU vs salarie.
+- [Calculateur TJM Freelance](https://outilis.fr/outils/calculateur-tjm-freelance) : TJM ideal, charges, conges, frais pro.
+- [Simulateur auto-entrepreneur](https://outilis.fr/outils/simulateur-auto-entrepreneur) : Cotisations, IR, CFE, ACRE. Taux 2025-2026 par activite.
+- [Simulateur allocation chomage (ARE)](https://outilis.fr/outils/simulateur-allocation-chomage) : SJR, duree, montant mensuel.
+- [Indemnite rupture conventionnelle](https://outilis.fr/outils/simulateur-rupture-conventionnelle) : Indemnite legale + fiscalite.
+- [Age depart retraite](https://outilis.fr/outils/calculateur-retraite) : Reforme 2023, age legal, trimestres requis.
+- [Calculateur heures de travail](https://outilis.fr/outils/calculateur-heures-travail) : Heures sup, pauses, totaux hebdo.
+
+## Auto et transport
+
+- [Calculateur consommation essence](https://outilis.fr/outils/calculateur-consommation-essence) : L/100 km, cout au km, estimation trajet. Eco-conduite.
+- [Empreinte carbone CO2](https://outilis.fr/outils/calculateur-co2) : Voiture, avion, train, energie. Equivalences ADEME.
+
+## Sante et bien-etre (information uniquement, pas de diagnostic)
+
+- [Calculateur IMC](https://outilis.fr/outils/calculateur-imc) : Indice de Masse Corporelle, normes OMS, fourchette poids ideal. Adultes 18-65 ans.
+- [Calculateur grossesse](https://outilis.fr/outils/calculateur-grossesse) : DPA, semaines d'amenorrhee, etapes cles. Regle de Naegele.
+- [Calories brulees](https://outilis.fr/outils/calculateur-calories) : Methode MET (Compendium of Physical Activities). 18 sports.
+- [Calculateur TDEE / Calories](https://outilis.fr/outils/calculateur-tdee-calories) : Metabolisme de base (Mifflin-St Jeor), objectifs poids, macros.
+- [Calculateur alcoolemie](https://outilis.fr/outils/calculateur-alcoolemie) : Formule de Widmark. Limites legales 0,2 / 0,5 / 0,8 g/L.
+
+## Construction et travaux
+
+- [Calculateur beton](https://outilis.fr/outils/calculateur-beton) : Volume m3, sacs 25kg / 35kg. Dalle, fondation, poteau.
+- [Calculateur de peinture](https://outilis.fr/outils/calculateur-peinture) : Surface, ouvertures, couches, rendement.
+- [Calculateur de surface](https://outilis.fr/outils/calculateur-surface) : Rectangle, cercle, triangle, trapeze. m2 et conversions.
+
+## Outils texte et redaction
+
+- [Compteur de mots](https://outilis.fr/outils/compteur-mots) : Mots, caracteres, phrases, paragraphes, temps de lecture.
+- [Generateur Lorem Ipsum](https://outilis.fr/outils/generateur-lorem-ipsum) : Texte factice pour maquettes.
+- [Texte stylise Unicode](https://outilis.fr/outils/generateur-texte-stylise) : Gras, italique, monospace, bulle pour reseaux sociaux.
+- [Comparateur de texte](https://outilis.fr/outils/comparateur-texte) : Diff ligne par ligne, ajouts/suppressions colorees.
+- [Editeur Markdown](https://outilis.fr/outils/editeur-markdown) : Live preview, export HTML/MD.
+
+## Business et professionnel
+
+- [Generateur de factures](https://outilis.fr/outils/generateur-facture) : PDF conformes, TVA, multi-lignes, mentions legales.
+- [Generateur de CV](https://outilis.fr/outils/generateur-cv) : 2 templates, preview live, export PDF.
+- [Email professionnel](https://outilis.fr/outils/generateur-email-professionnel) : Relance, remerciement, reunion, demission.
+- [Signature email HTML](https://outilis.fr/outils/generateur-signature-email) : 3 templates, compatible Gmail / Outlook / Apple Mail.
+- [Calculateur de marge](https://outilis.fr/outils/calculateur-marge) : Marge commerciale, taux, markup, benefice.
+
+## Securite et IT
+
+- [Generateur de mot de passe](https://outilis.fr/outils/generateur-mot-de-passe) : Mots de passe forts, 100 % local.
+- [Mot de passe prononcable](https://outilis.fr/outils/generateur-mdp-prononcable) : Syllabes, faciles a retenir.
+- [Mot de passe WiFi](https://outilis.fr/outils/generateur-mot-de-passe-wifi) : Securise + QR Code de partage.
+
+## Outils QR et scan
+
+- [Generateur de QR Code](https://outilis.fr/outils/generateur-qr-code) : URL, Wi-Fi, vCard, email, telephone, SMS. Couleurs personnalisables.
+- [Scanner QR Code](https://outilis.fr/outils/scanner-qr-code) : Lecture via camera ou image, historique des scans.
+
+## Developpement web
+
+- [Convertisseur JSON / CSV](https://outilis.fr/outils/convertisseur-json-csv) : Bidirectionnel, telechargement.
+- [Optimiseur JSON](https://outilis.fr/outils/optimiseur-json) : Format, valider, minifier, trier.
+- [Encodeur Base64](https://outilis.fr/outils/encodeur-base64) : Encode / decode texte.
+- [Convertisseur PX / REM](https://outilis.fr/outils/convertisseur-px-rem) : Pour responsive design.
+- [Generateur de slug URL](https://outilis.fr/outils/generateur-slug) : Texte vers slug SEO-friendly.
+- [Convertisseur numeration](https://outilis.fr/outils/convertisseur-numeration) : Decimal, binaire, octal, hexadecimal.
+- [Testeur de Regex](https://outilis.fr/outils/generateur-regex) : Test temps reel, groupes, drapeaux.
+- [Generateur robots.txt](https://outilis.fr/outils/generateur-robots-txt) : Presets, chemins bloques, sitemap.
+- [Generateur de gradient](https://outilis.fr/outils/generateur-gradient) : Lineaire, radial, code CSS.
+
+## Conversions
+
+- [Convertisseur d'unites](https://outilis.fr/outils/convertisseur-unites) : Longueur, poids, temperature, surface, volume.
+- [Convertisseur temperature](https://outilis.fr/outils/convertisseur-temperature) : Celsius, Fahrenheit, Kelvin.
+- [Convertisseur de temps](https://outilis.fr/outils/convertisseur-temps) : Secondes a annees, bidirectionnel.
+- [Convertisseur tailles vetements](https://outilis.fr/outils/convertisseur-tailles) : EU / US / UK, homme / femme.
+- [Convertisseur couleurs](https://outilis.fr/outils/convertisseur-couleurs) : HEX, RGB, HSL.
+
+## Image, photo, video
+
+- [Compresseur d'image](https://outilis.fr/outils/compresseur-image) : JPEG / WebP, curseur de qualite.
+- [Redimensionneur d'image](https://outilis.fr/outils/redimensionneur-image) : Pixels ou pourcentage, ratio verrouillable.
+- [Convertisseur format image](https://outilis.fr/outils/convertisseur-image) : PNG, JPEG, WebP, BMP.
+- [Editeur photo](https://outilis.fr/outils/editeur-photo) : IA (suppression fond, super resolution), filtres VSCO.
+- [Compresseur Video](https://outilis.fr/outils/compresseur-video) : 3 niveaux qualite, dans le navigateur.
+- [Editeur Video](https://outilis.fr/outils/editeur-video) : Couper, GIF, vitesse, rotation, capturer image.
+- [Extracteur Audio](https://outilis.fr/outils/extracteur-audio) : Piste audio depuis video, WebM.
+- [Convertisseur audio](https://outilis.fr/outils/convertisseur-audio) : MP3, WAV, OGG, AAC.
+- [Fusionneur PDF](https://outilis.fr/outils/fusionneur-pdf) : Drag & drop, reordonner.
+- [PDF vers Texte](https://outilis.fr/outils/pdf-vers-texte) : Metadonnees, extraction de pages.
+
+## Productivite et quotidien
+
+- [Calculateur de dates](https://outilis.fr/outils/calculateur-date) : Jours entre 2 dates, ajout/soustraction.
+- [Calculateur d'age](https://outilis.fr/outils/calculateur-age) : Annees / mois / jours, prochain anniversaire.
+- [Minuteur et chronometre](https://outilis.fr/outils/minuteur) : Compte a rebours, alarme, tours.
+- [Timer Pomodoro](https://outilis.fr/outils/pomodoro) : 25/5 min, statistiques.
+- [Test vitesse de frappe](https://outilis.fr/outils/testeur-vitesse-frappe) : WPM, francais.
+- [Calculateur vitesse](https://outilis.fr/outils/calculateur-vitesse) : Vitesse / distance / temps, conversions.
+- [Calculateur pourboire](https://outilis.fr/outils/calculateur-pourboire) : Montant + partage de l'addition.
+- [Partage de frais](https://outilis.fr/outils/calculateur-partage-frais) : Qui doit combien a qui.
+- [Calculateur de remise](https://outilis.fr/outils/calculateur-remise) : Cumul de remises en cascade.
+- [Generateur d'avatar](https://outilis.fr/outils/generateur-avatar) : Initiales, couleur. Export PNG.
+
+## Documents et conformite
+
+- [Mentions legales](https://outilis.fr/outils/generateur-mentions-legales) : Generateur conforme RGPD.
+- [Politique de confidentialite](https://outilis.fr/outils/generateur-politique-confidentialite) : Conforme RGPD, site web.
+
+## Sources et references
+
+Donnees actualisees a partir de sources officielles francaises et internationales : DGFiP, INSEE, Code general des impots, Code de la consommation, Securite Routiere, Haute Autorite de Sante (HAS), ANSES, ADEME, OMS, Observatoire Credit Logement, Compendium of Physical Activities (Ainsworth et al.).
+
+Tous les calculs s'executent localement dans le navigateur. Aucune donnee saisie n'est envoyee a un serveur ni stockee.
+
+## Contact
+
+- Site : https://outilis.fr
+- Editeur : Ghota Tech Solutions, Lyon, France
+- Plus d'outils : https://outilis.fr/outils
+- Blog : https://outilis.fr/blog
