@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import AdPlaceholder from "@/components/AdPlaceholder";
 import ToolFaqSection from "@/components/ToolFaqSection";
 import ToolHowToSection from "@/components/ToolHowToSection";
@@ -8,13 +8,25 @@ import ToolHowToSection from "@/components/ToolHowToSection";
 const CONSONANTS = "bcdfghjklmnprstvwxz";
 const VOWELS = "aeiouy";
 
+// Cryptographically secure random in [0, 1)
+function secureRandom(): number {
+  const arr = new Uint32Array(1);
+  crypto.getRandomValues(arr);
+  return arr[0] / (0xffffffff + 1);
+}
+
+// Cryptographically secure integer in [0, max)
+function secureRandomInt(max: number): number {
+  return Math.floor(secureRandom() * max);
+}
+
 function randomChar(chars: string): string {
-  return chars[Math.floor(Math.random() * chars.length)];
+  return chars[secureRandomInt(chars.length)];
 }
 
 function generateSyllable(): string {
   const patterns = ["cv", "cvc", "cv", "cvv"];
-  const pattern = patterns[Math.floor(Math.random() * patterns.length)];
+  const pattern = patterns[secureRandomInt(patterns.length)];
   return pattern
     .split("")
     .map((p) => (p === "c" ? randomChar(CONSONANTS) : randomChar(VOWELS)))
@@ -32,11 +44,11 @@ function generatePassword(syllables: number, includeNumbers: boolean, includeSpe
   }
   let pwd = parts.join("");
   if (includeNumbers) {
-    pwd += Math.floor(Math.random() * 90 + 10).toString();
+    pwd += (secureRandomInt(90) + 10).toString();
   }
   if (includeSpecial) {
     const specials = "!@#$%&*?";
-    pwd += specials[Math.floor(Math.random() * specials.length)];
+    pwd += specials[secureRandomInt(specials.length)];
   }
   return pwd;
 }
@@ -74,13 +86,14 @@ export default function GenerateurMdpPrononcable() {
   }, [syllables, includeNumbers, includeSpecial, capitalize]);
 
   // Generate on first render
-  if (passwords.length === 0) {
+  useEffect(() => {
     const initial: string[] = [];
     for (let i = 0; i < 6; i++) {
       initial.push(generatePassword(syllables, includeNumbers, includeSpecial, capitalize));
     }
     setPasswords(initial);
-  }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleCopy = (pwd: string, idx: number) => {
     navigator.clipboard.writeText(pwd);

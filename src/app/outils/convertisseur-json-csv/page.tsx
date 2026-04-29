@@ -20,12 +20,52 @@ function jsonToCsv(json: string): string {
   return [headers.join(","), ...rows].join("\n");
 }
 
+function parseCSVLine(line: string): string[] {
+  const result: string[] = [];
+  let current = "";
+  let inQuotes = false;
+  let i = 0;
+  while (i < line.length) {
+    const char = line[i];
+    if (inQuotes) {
+      if (char === '"') {
+        if (line[i + 1] === '"') {
+          current += '"';
+          i += 2;
+          continue;
+        }
+        inQuotes = false;
+        i++;
+        continue;
+      }
+      current += char;
+      i++;
+    } else {
+      if (char === '"' && current === "") {
+        inQuotes = true;
+        i++;
+        continue;
+      }
+      if (char === ",") {
+        result.push(current);
+        current = "";
+        i++;
+        continue;
+      }
+      current += char;
+      i++;
+    }
+  }
+  result.push(current);
+  return result;
+}
+
 function csvToJson(csv: string): string {
   const lines = csv.trim().split("\n");
   if (lines.length < 2) return "[]";
-  const headers = lines[0].split(",").map((h) => h.trim().replace(/^"|"$/g, ""));
+  const headers = parseCSVLine(lines[0]).map((h) => h.trim());
   const result = lines.slice(1).map((line) => {
-    const values = line.split(",").map((v) => v.trim().replace(/^"|"$/g, ""));
+    const values = parseCSVLine(line).map((v) => v.trim());
     const obj: Record<string, string> = {};
     headers.forEach((h, i) => {
       obj[h] = values[i] ?? "";

@@ -12,14 +12,42 @@ function escapeHtml(str: string): string {
     .replace(/"/g, "&quot;");
 }
 
+// Reject dangerous URL schemes that can execute scripts.
+// Allows http(s), mailto, tel, ftp, relative URLs, anchors, and image data URIs.
+function sanitizeUrl(url: string): string {
+  const trimmed = url.trim();
+  const lower = trimmed.toLowerCase();
+  // Strip control characters / tabs that could be used to obfuscate the scheme
+  // e.g. "java\tscript:" -> "javascript:"
+  const stripped = lower.replace(/[\u0000-\u0020\u007F]/g, "");
+  if (
+    stripped.startsWith("javascript:") ||
+    stripped.startsWith("vbscript:") ||
+    stripped.startsWith("file:")
+  ) {
+    return "#";
+  }
+  if (stripped.startsWith("data:") && !stripped.startsWith("data:image/")) {
+    return "#";
+  }
+  return trimmed;
+}
+
 function parseInline(text: string): string {
   let result = text;
 
   // Images ![alt](url)
-  result = result.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1" style="max-width:100%;border-radius:8px;margin:8px 0" />');
+  result = result.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (_m, alt: string, url: string) => {
+    const safeUrl = escapeHtml(sanitizeUrl(url));
+    const safeAlt = escapeHtml(alt);
+    return `<img src="${safeUrl}" alt="${safeAlt}" style="max-width:100%;border-radius:8px;margin:8px 0" />`;
+  });
 
   // Links [text](url)
-  result = result.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" style="color:var(--primary);text-decoration:underline">$1</a>');
+  result = result.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_m, label: string, url: string) => {
+    const safeUrl = escapeHtml(sanitizeUrl(url));
+    return `<a href="${safeUrl}" target="_blank" rel="noopener noreferrer" style="color:var(--primary);text-decoration:underline">${label}</a>`;
+  });
 
   // Bold + Italic ***text*** or ___text___
   result = result.replace(/\*\*\*(.+?)\*\*\*/g, "<strong><em>$1</em></strong>");

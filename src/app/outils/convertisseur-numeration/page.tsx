@@ -100,7 +100,7 @@ export default function ConvertisseurNumeration() {
                 <div className="mt-4 flex gap-1 justify-center">
                   {bits.map((bit, i) => (
                     <div key={i} className="flex flex-col items-center gap-1">
-                      <span className="text-[10px] font-medium" style={{ color: "var(--muted)" }}>2{"\u{207B}" + "\u{2070}\u{00B9}\u{00B2}\u{00B3}\u{2074}\u{2075}\u{2076}\u{2077}"[7 - i]}</span>
+                      <span className="text-[10px] font-medium" style={{ color: "var(--muted)" }}>2{"\u{2070}\u{00B9}\u{00B2}\u{00B3}\u{2074}\u{2075}\u{2076}\u{2077}"[7 - i]}</span>
                       <div className="w-10 h-10 rounded-lg flex items-center justify-center text-lg font-bold"
                         style={{ background: bit === "1" ? "var(--primary)" : "var(--surface-alt)", color: bit === "1" ? "#fff" : "var(--muted)" }}>
                         {bit}

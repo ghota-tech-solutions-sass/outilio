@@ -124,7 +124,8 @@ export default function OptimiseurJson() {
     setError("");
     try {
       const parsed = JSON.parse(input);
-      const formatted = JSON.stringify(parsed, null, indent);
+      const indentValue: string | number = indent === 0 ? "\t" : indent;
+      const formatted = JSON.stringify(parsed, null, indentValue);
       setOutput(formatted);
       updateStats(formatted);
     } catch (e) {
@@ -151,7 +152,8 @@ export default function OptimiseurJson() {
     try {
       const parsed = JSON.parse(input);
       const sorted = sortKeysDeep(parsed);
-      const formatted = JSON.stringify(sorted, null, indent);
+      const indentValue: string | number = indent === 0 ? "\t" : indent;
+      const formatted = JSON.stringify(sorted, null, indentValue);
       setOutput(formatted);
       updateStats(formatted);
     } catch (e) {

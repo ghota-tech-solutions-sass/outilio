@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -l \"Questions frequentes\\\\|FAQ\\\\|Comment\" /c/Users/Ghota/Project/claude/outilis/src/app/outils/*/page.tsx)",
+      "Bash(grep -l \"<h2\\\\|<h3\" /c/Users/Ghota/Project/claude/outilis/src/app/outils/*/page.tsx)",
+      "Bash(npx tsc:*)",
+      "Bash(rtk npx:*)",
+      "Bash(rtk git:*)",
+      "Bash(rtk npm:*)",
+      "Bash(rtk gh:*)"
+    ]
+  }
+}

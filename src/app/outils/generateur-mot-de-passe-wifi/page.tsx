@@ -1,21 +1,34 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
+import QRCode from "qrcode";
 import AdPlaceholder from "@/components/AdPlaceholder";
 
 const CONSONANTS = "bcdfghjklmnprstvwxz";
 const VOWELS = "aeiou";
 
+// Cryptographically secure random in [0, 1)
+function secureRandom(): number {
+  const arr = new Uint32Array(1);
+  crypto.getRandomValues(arr);
+  return arr[0] / (0xffffffff + 1);
+}
+
+// Cryptographically secure integer in [0, max)
+function secureRandomInt(max: number): number {
+  return Math.floor(secureRandom() * max);
+}
+
 function generatePronounceable(length: number): string {
   let result = "";
   for (let i = 0; i < length; i++) {
     const pool = i % 2 === 0 ? CONSONANTS : VOWELS;
-    result += pool[Math.floor(Math.random() * pool.length)];
+    result += pool[secureRandomInt(pool.length)];
   }
   // Capitalize some letters and add a digit
-  const pos = Math.floor(Math.random() * (result.length - 2)) + 1;
+  const pos = secureRandomInt(result.length - 2) + 1;
   result = result.slice(0, pos) + result[pos].toUpperCase() + result.slice(pos + 1);
-  result += Math.floor(Math.random() * 90 + 10);
+  result += secureRandomInt(90) + 10;
   return result;
 }
 
@@ -28,49 +41,15 @@ function generateRandom(length: number, options: { upper: boolean; lower: boolea
   if (!chars) chars = "abcdefghijklmnopqrstuvwxyz";
   let result = "";
   for (let i = 0; i < length; i++) {
-    result += chars[Math.floor(Math.random() * chars.length)];
+    result += chars[secureRandomInt(chars.length)];
   }
   return result;
 }
 
-function generateQRSvg(text: string): string {
-  // Simple QR code placeholder using a data matrix visual representation
-  // For a real QR we'd use a library, but we create a visual representation
-  const size = 200;
-  const modules = 21;
-  const moduleSize = size / modules;
-
-  // Simple hash-based pattern
-  const bits: boolean[][] = [];
-  for (let r = 0; r < modules; r++) {
-    bits[r] = [];
-    for (let c = 0; c < modules; c++) {
-      // Finder patterns (top-left, top-right, bottom-left)
-      const inFinderTL = r < 7 && c < 7;
-      const inFinderTR = r < 7 && c >= modules - 7;
-      const inFinderBL = r >= modules - 7 && c < 7;
-
-      if (inFinderTL || inFinderTR || inFinderBL) {
-        const lr = inFinderTL ? r : inFinderBL ? r - (modules - 7) : r;
-        const lc = inFinderTL ? c : inFinderTR ? c - (modules - 7) : c;
-        bits[r][c] = lr === 0 || lr === 6 || lc === 0 || lc === 6 || (lr >= 2 && lr <= 4 && lc >= 2 && lc <= 4);
-      } else {
-        const hash = ((r * 31 + c * 17 + text.charCodeAt(Math.abs(r + c) % text.length)) * 7) % 13;
-        bits[r][c] = hash < 6;
-      }
-    }
-  }
-
-  let rects = "";
-  for (let r = 0; r < modules; r++) {
-    for (let c = 0; c < modules; c++) {
-      if (bits[r][c]) {
-        rects += `<rect x="${c * moduleSize}" y="${r * moduleSize}" width="${moduleSize}" height="${moduleSize}" fill="#000"/>`;
-      }
-    }
-  }
-
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${size} ${size}" width="${size}" height="${size}"><rect width="${size}" height="${size}" fill="#fff"/>${rects}</svg>`;
+// Escape special characters in WiFi QR string per the WIFI: format spec.
+// See https://github.com/zxing/zxing/wiki/Barcode-Contents#wi-fi-network-config
+function escapeWifiField(value: string): string {
+  return value.replace(/([\\;,":])/g, "\\$1");
 }
 
 export default function GenerateurMotDePasseWifi() {
@@ -83,6 +62,7 @@ export default function GenerateurMotDePasseWifi() {
   const [ssid, setSsid] = useState("MonWiFi");
   const [password, setPassword] = useState("");
   const [copied, setCopied] = useState(false);
+  const [qrDataUrl, setQrDataUrl] = useState("");
 
   const generate = useCallback(() => {
     const pwd = mode === "pronounceable"
@@ -100,8 +80,26 @@ export default function GenerateurMotDePasseWifi() {
     }
   };
 
-  const qrString = password ? `WIFI:T:WPA;S:${ssid};P:${password};;` : "";
-  const qrSvg = password ? generateQRSvg(qrString) : "";
+  // Generate a real, scannable WiFi QR code via the qrcode library.
+  useEffect(() => {
+    if (!password) {
+      setQrDataUrl("");
+      return;
+    }
+    const wifiString = `WIFI:T:WPA;S:${escapeWifiField(ssid)};P:${escapeWifiField(password)};;`;
+    let cancelled = false;
+    QRCode.toDataURL(wifiString, { width: 256, margin: 2, errorCorrectionLevel: "M" })
+      .then((url) => {
+        if (!cancelled) setQrDataUrl(url);
+      })
+      .catch((err) => {
+        console.error("QR code generation failed", err);
+        if (!cancelled) setQrDataUrl("");
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [ssid, password]);
 
   return (
     <>
@@ -189,7 +187,12 @@ export default function GenerateurMotDePasseWifi() {
                   <h2 className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--accent)" }}>QR Code WiFi</h2>
                   <p className="mt-2 text-xs" style={{ color: "var(--muted)" }}>Scannez ce QR code pour vous connecter au reseau WiFi.</p>
                   <div className="mt-4 flex justify-center rounded-xl p-6" style={{ background: "#fff" }}>
-                    <div dangerouslySetInnerHTML={{ __html: qrSvg }} />
+                    {qrDataUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={qrDataUrl} alt={`QR code WiFi pour ${ssid}`} width={256} height={256} />
+                    ) : (
+                      <div className="text-xs" style={{ color: "var(--muted)" }}>Generation du QR code...</div>
+                    )}
                   </div>
                   <p className="mt-3 text-center text-xs font-semibold" style={{ color: "var(--muted)" }}>
                     Reseau : <strong className="text-[var(--foreground)]">{ssid}</strong>

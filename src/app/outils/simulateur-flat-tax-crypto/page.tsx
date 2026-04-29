@@ -23,8 +23,8 @@ export default function SimulateurFlatTaxCrypto() {
     const exonere = totalCessions < 305;
 
     const tauxIR = 0.128;
-    const tauxPS = 0.186;
-    const tauxTotal = 0.314;
+    const tauxPS = 0.172;
+    const tauxTotal = 0.30;
 
     const montantIR = exonere ? 0 : Math.max(0, plusValue * tauxIR);
     const montantPS = exonere ? 0 : Math.max(0, plusValue * tauxPS);
@@ -54,7 +54,7 @@ export default function SimulateurFlatTaxCrypto() {
             Simulateur <span style={{ color: "var(--primary)" }}>Flat Tax Crypto</span>
           </h1>
           <p className="animate-fade-up stagger-2 mt-3 max-w-xl text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-            Calculez l&apos;impot sur vos plus-values de cession de cryptomonnaies en France. Flat tax 31,4% (PFU) depuis 2026.
+            Calculez l&apos;impot sur vos plus-values de cession de cryptomonnaies en France. Flat tax 30% (PFU) depuis 2026.
           </p>
         </div>
       </section>
@@ -129,12 +129,12 @@ export default function SimulateurFlatTaxCrypto() {
                   <div className="rounded-2xl border p-5 text-center" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
                     <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>Prelevements sociaux</p>
                     <p className="mt-2 text-xl font-bold" style={{ fontFamily: "var(--font-display)" }}>{fmt(results.montantPS)} &euro;</p>
-                    <p className="text-xs" style={{ color: "var(--muted)" }}>18,6%</p>
+                    <p className="text-xs" style={{ color: "var(--muted)" }}>17,2%</p>
                   </div>
                   <div className="rounded-2xl border p-5 text-center" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
                     <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>Impot total (PFU)</p>
                     <p className="mt-2 text-xl font-bold" style={{ fontFamily: "var(--font-display)", color: "#dc2626" }}>{fmt(results.impotTotal)} &euro;</p>
-                    <p className="text-xs" style={{ color: "var(--muted)" }}>31,4%</p>
+                    <p className="text-xs" style={{ color: "var(--muted)" }}>30%</p>
                   </div>
                   <div className="rounded-2xl border p-5 text-center" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
                     <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>Net apres impot</p>

@@ -6,7 +6,7 @@ import ToolFaqSection from "@/components/ToolFaqSection";
 import ToolHowToSection from "@/components/ToolHowToSection";
 
 const TRANSPORT = [
-  { id: "voiture", label: "Voiture", icon: "\u{1F697}", unit: "km", factor: 0.193 },
+  { id: "voiture", label: "Voiture", icon: "\u{1F697}", unit: "km", factor: 0.218 },
   { id: "avion", label: "Avion", icon: "\u{2708}\uFE0F", unit: "km", factor: 0.255 },
   { id: "train", label: "Train", icon: "\u{1F686}", unit: "km", factor: 0.006 },
   { id: "bus", label: "Bus", icon: "\u{1F68C}", unit: "km", factor: 0.089 },
@@ -139,7 +139,7 @@ export default function CalculateurCO2() {
                 {
                   name: "Renseignez vos transports annuels",
                   text:
-                    "Indiquez le nombre de kilometres parcourus chaque annee en voiture (facteur 0,193 kgCO2/km), avion (0,255 kgCO2/km), train (0,006 kgCO2/km) et bus (0,089 kgCO2/km). Cumulez les trajets domicile-travail, vacances et deplacements pro pour un total realiste.",
+                    "Indiquez le nombre de kilometres parcourus chaque annee en voiture (facteur 0,218 kgCO2/km, ADEME Base Carbone v23.1), avion (0,255 kgCO2/km), train (0,006 kgCO2/km) et bus (0,089 kgCO2/km). Cumulez les trajets domicile-travail, vacances et deplacements pro pour un total realiste.",
                 },
                 {
                   name: "Ajoutez votre energie domestique",
@@ -171,9 +171,9 @@ export default function CalculateurCO2() {
                     Trajet vacances : voiture ou train ?
                   </h3>
                   <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                    Paris-Marseille (775 km) en voiture thermique = 150 kg CO2 (1 personne). En TGV =
-                    seulement 4,6 kg, soit 32 fois moins. Sur un aller-retour annuel, le train evite
-                    plus de 290 kg de CO2 — l&apos;equivalent de 12 arbres absorbes en un an.
+                    Paris-Marseille (775 km) en voiture thermique = 169 kg CO2 (1 personne). En TGV =
+                    seulement 4,6 kg, soit 36 fois moins. Sur un aller-retour annuel, le train evite
+                    plus de 330 kg de CO2 — l&apos;equivalent de 13 arbres absorbes en un an.
                   </p>
                 </div>
                 <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
@@ -226,10 +226,10 @@ export default function CalculateurCO2() {
               <div className="mt-4 space-y-4 leading-relaxed" style={{ color: "var(--foreground)" }}>
                 <p>
                   <strong>Les facteurs d&apos;emission viennent de la Base Carbone ADEME.</strong> Voiture
-                  thermique 0,193 a 0,218 kgCO2/km selon la motorisation, avion long-courrier 0,255
-                  kgCO2/km, train SNCF 0,006 kgCO2/km, bus interurbain 0,089 kgCO2/km. Ces facteurs
-                  evoluent : verifiez la version la plus recente sur le site officiel ADEME pour un
-                  bilan reglementaire.
+                  thermique 0,218 kgCO2/km en moyenne (ADEME Base Carbone v23.1, 2024), avion
+                  long-courrier 0,255 kgCO2/km, train SNCF 0,006 kgCO2/km, bus interurbain 0,089
+                  kgCO2/km. Ces facteurs evoluent : verifiez la version la plus recente sur le
+                  site officiel ADEME pour un bilan reglementaire.
                 </p>
                 <p>
                   <strong>L&apos;empreinte moyenne francaise est d&apos;environ 9 a 10 tCO2/an</strong>,
@@ -275,7 +275,7 @@ export default function CalculateurCO2() {
                 {
                   question: "Quels facteurs d'emission sont utilises dans cet outil ?",
                   answer:
-                    "Les facteurs proviennent de la Base Carbone ADEME : voiture 0,193 kgCO2/km, avion 0,255 kgCO2/km, train 0,006 kgCO2/km, bus 0,089 kgCO2/km, electricite 0,052 kgCO2/kWh, gaz naturel 0,227 kgCO2/kWh, fioul 3,25 kgCO2/litre. Ces valeurs sont des moyennes nationales.",
+                    "Les facteurs proviennent de la Base Carbone ADEME (v23.1, 2024) : voiture 0,218 kgCO2/km, avion 0,255 kgCO2/km, train 0,006 kgCO2/km, bus 0,089 kgCO2/km, electricite 0,052 kgCO2/kWh, gaz naturel 0,227 kgCO2/kWh, fioul 3,25 kgCO2/litre. Ces valeurs sont des moyennes nationales.",
                 },
                 {
                   question: "Combien d'arbres faut-il planter pour compenser 1 tCO2 ?",

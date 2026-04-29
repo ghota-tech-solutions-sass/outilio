@@ -80,15 +80,15 @@ for (let i = 0; i < 26; i++) {
 }
 
 function applyMap(text: string, map: Record<string, string>): string {
-  return text.split("").map((ch) => map[ch] || ch).join("");
+  return Array.from(text).map((ch) => map[ch] || ch).join("");
 }
 
 function strikethrough(text: string): string {
-  return text.split("").map((ch) => ch + "\u0336").join("");
+  return Array.from(text).map((ch) => ch + "\u0336").join("");
 }
 
 function underline(text: string): string {
-  return text.split("").map((ch) => ch + "\u0332").join("");
+  return Array.from(text).map((ch) => ch + "\u0332").join("");
 }
 
 function upsideDown(text: string): string {
@@ -98,7 +98,7 @@ function upsideDown(text: string): string {
     m: "\u026F", n: "u", o: "o", p: "d", q: "b", r: "\u0279",
     s: "s", t: "\u0287", u: "n", v: "\u028C", w: "\u028D", x: "x",
     y: "\u028E", z: "z",
-    A: "\u2200", B: "\u10412", C: "\u0186", D: "\u15E1", E: "\u018E", F: "\u2132",
+    A: "\u2200", B: "\u{10412}", C: "\u0186", D: "\u15E1", E: "\u018E", F: "\u2132",
     G: "\u2141", H: "H", I: "I", J: "\u017F", K: "\u22CA", L: "\u2142",
     M: "W", N: "N", O: "O", P: "\u0500", Q: "\u038C", R: "\u1D1A",
     S: "S", T: "\u22A5", U: "\u2229", V: "\u039B", W: "M", X: "X",
@@ -108,7 +108,7 @@ function upsideDown(text: string): string {
     ".": "\u02D9", ",": "\u02BB", "?": "\u00BF", "!": "\u00A1",
     "'": ",", '"': "\u201E",
   };
-  return text.split("").reverse().map((ch) => map[ch] || ch).join("");
+  return Array.from(text).reverse().map((ch) => map[ch] || ch).join("");
 }
 
 function smallCaps(text: string): string {
@@ -119,7 +119,7 @@ function smallCaps(text: string): string {
     s: "\u0455", t: "\u1D1B", u: "\u1D1C", v: "\u1D20", w: "\u1D21", x: "\u0078",
     y: "\u028F", z: "\u1D22",
   };
-  return text.split("").map((ch) => map[ch] || ch).join("");
+  return Array.from(text).map((ch) => map[ch] || ch).join("");
 }
 
 const STYLES: Style[] = [

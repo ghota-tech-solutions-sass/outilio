@@ -186,7 +186,7 @@ export default function CalculateurEpargne() {
                 {
                   name: "Taux annuel realiste selon le support",
                   text:
-                    "Livret A et LDDS : 3 pourcent (defiscalise, plafond 22 950 / 12 000 EUR). LEP (revenus modestes) : 4 a 5 pourcent. Assurance-vie fonds euros : 2,5 a 3,5 pourcent. Assurance-vie unites de compte : 4 a 7 pourcent (mais volatilite). PEA actions : 7 a 8 pourcent en moyenne historique long terme. Plus la duree est longue, plus on peut accepter de volatilite pour viser un rendement superieur.",
+                    "Livret A et LDDS : 1,7 pourcent depuis fevrier 2025 (defiscalise, plafond 22 950 / 12 000 EUR). LEP (revenus modestes) : 2,7 pourcent. Assurance-vie fonds euros : 2,5 a 3,5 pourcent. Assurance-vie unites de compte : 4 a 7 pourcent (mais volatilite). PEA actions : 7 a 8 pourcent en moyenne historique long terme. Plus la duree est longue, plus on peut accepter de volatilite pour viser un rendement superieur.",
                 },
                 {
                   name: "Visualiser l&apos;effet boule de neige",
@@ -214,7 +214,7 @@ export default function CalculateurEpargne() {
                   </h3>
                   <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
                     Objectif : 6 mois de depenses (10 000-20 000 EUR pour un cadre). 200 EUR/mois
-                    sur Livret A a 3 pourcent : objectif atteint en 4-5 ans. Ce coussin est
+                    sur Livret A a 1,7 pourcent : objectif atteint en 4-5 ans. Ce coussin est
                     indispensable avant de prendre du risque sur PEA ou immobilier locatif. Il
                     couvre une perte d&apos;emploi, un imprevu medical, une grosse reparation.
                   </p>
@@ -225,9 +225,9 @@ export default function CalculateurEpargne() {
                   </h3>
                   <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
                     Pour un achat a 250 000 EUR, viser 10 a 20 pourcent d&apos;apport (25 000-
-                    50 000 EUR). Avec 400 EUR/mois sur 5 ans a 3 pourcent : 25 800 EUR. Avec
-                    600 EUR/mois sur 7 ans a 3 pourcent : 56 200 EUR. Le PEL (1,75-2,25 pourcent)
-                    et le CEL ne sont generalement plus competitifs face au Livret A.
+                    50 000 EUR). Avec 400 EUR/mois sur 5 ans a 1,7 pourcent : 25 100 EUR. Avec
+                    600 EUR/mois sur 7 ans a 1,7 pourcent : 53 700 EUR. Le PEL (1,75-2,25 pourcent)
+                    et le CEL sont desormais competitifs face au Livret A redescendu a 1,7 pourcent.
                   </p>
                 </div>
                 <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
@@ -246,8 +246,8 @@ export default function CalculateurEpargne() {
                     Epargne enfants pour etudes
                   </h3>
                   <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                    Livret A enfant des la naissance + 100 EUR/mois pendant 18 ans a 3 pourcent =
-                    28 600 EUR pour les etudes superieures. Sur PEA jeunes (creation 2024,
+                    Livret A enfant des la naissance + 100 EUR/mois pendant 18 ans a 1,7 pourcent =
+                    25 100 EUR pour les etudes superieures. Sur PEA jeunes (creation 2024,
                     plafond 20 000 EUR) ou assurance-vie enfant a 6 pourcent moyen : pres de
                     40 000 EUR sur la meme periode.
                   </p>
@@ -268,8 +268,9 @@ export default function CalculateurEpargne() {
 
               <div className="mt-4 space-y-4 leading-relaxed" style={{ color: "var(--foreground)" }}>
                 <p>
-                  <strong>Livret A vs assurance-vie vs PEA.</strong> Livret A : 3 pourcent
-                  defiscalise total, liquidite immediate, plafond 22 950 EUR. Assurance-vie :
+                  <strong>Livret A vs assurance-vie vs PEA.</strong> Livret A : 1,7 pourcent
+                  defiscalise total (taux Banque de France depuis fevrier 2025), liquidite
+                  immediate, plafond 22 950 EUR. Assurance-vie :
                   fiscalite tres favorable apres 8 ans (abattement annuel 4 600 EUR / 9 200 EUR
                   pour un couple, art. 125-0 A CGI), succession privilegiee. PEA : 7-8 pourcent
                   moyen long terme, exoneration totale d&apos;IR apres 5 ans (sauf prelevements
@@ -290,8 +291,9 @@ export default function CalculateurEpargne() {
                   10-15 pourcent. Au-dela de 25 pourcent durable, vous etes dans le top decile.
                 </p>
                 <p>
-                  <strong>Inflation : ennemi silencieux.</strong> Un taux nominal de 3 pourcent
-                  avec 2 pourcent d&apos;inflation = 1 pourcent reel seulement. Sur 30 ans, c&apos;est
+                  <strong>Inflation : ennemi silencieux.</strong> Un taux nominal de 1,7 pourcent
+                  avec 2 pourcent d&apos;inflation = -0,3 pourcent reel : votre Livret A perd du
+                  pouvoir d&apos;achat. Sur 30 ans, c&apos;est
                   presque rien. Le PEA et l&apos;assurance-vie en unites de compte permettent
                   historiquement de battre l&apos;inflation grace aux actions (rendement reel
                   long terme actions monde : 5-6 pourcent par an). C&apos;est pourquoi
@@ -306,7 +308,7 @@ export default function CalculateurEpargne() {
                 {
                   question: "Quel est le taux du Livret A en 2026 ?",
                   answer:
-                    "Le Livret A est a 3 pourcent depuis fevrier 2023, taux gele jusqu&apos;a fin janvier 2025 par decret gouvernemental. Revision semestrielle par la Banque de France selon une formule basee sur l&apos;inflation hors tabac et taux interbancaire. Plafond 22 950 EUR. Interets exoneres d&apos;IR et de prelevements sociaux : c&apos;est le placement le plus simple et populaire en France.",
+                    "Le Livret A est a 1,7 pourcent depuis fevrier 2025, en baisse apres avoir ete a 3 pourcent (gele 2023-2024) puis a 2,4 pourcent au second semestre 2025. Revision semestrielle par la Banque de France selon une formule basee sur l&apos;inflation hors tabac et taux interbancaire. Plafond 22 950 EUR. Interets exoneres d&apos;IR et de prelevements sociaux : c&apos;est le placement le plus simple et populaire en France.",
                 },
                 {
                   question: "Comment fonctionnent les interets composes ?",
@@ -316,12 +318,12 @@ export default function CalculateurEpargne() {
                 {
                   question: "Difference entre Livret A, LDDS, LEP et PEA ?",
                   answer:
-                    "Livret A et LDDS : taux 3 pourcent, exoneres d&apos;impot, plafonds 22 950 / 12 000 EUR. LEP (Livret Epargne Populaire) : 4-5 pourcent, plafond 10 000 EUR, reserve aux revenus modestes (sous le plafond fiscal de l&apos;art. L221-15 CMF). PEA (Plan Epargne en Actions) : actions europeennes uniquement, plafond 150 000 EUR, exoneration IR apres 5 ans (PS 17,2 pourcent du), rendement historique 7-8 pourcent.",
+                    "Livret A et LDDS : taux 1,7 pourcent depuis fevrier 2025, exoneres d&apos;impot, plafonds 22 950 / 12 000 EUR. LEP (Livret Epargne Populaire) : 2,7 pourcent, plafond 10 000 EUR, reserve aux revenus modestes (sous le plafond fiscal de l&apos;art. L221-15 CMF). PEA (Plan Epargne en Actions) : actions europeennes uniquement, plafond 150 000 EUR, exoneration IR apres 5 ans (PS 17,2 pourcent du), rendement historique 7-8 pourcent.",
                 },
                 {
                   question: "Quel taux annuel realiste pour mes simulations ?",
                   answer:
-                    "Livret A / LDDS : 3 pourcent. LEP : 4-5 pourcent. PEL : 1,75-2,25 pourcent (peu attractif aujourd&apos;hui). Assurance-vie fonds euros : 2,5-3,5 pourcent. Assurance-vie en UC mixte (60/40) : 4-5 pourcent. PEA / CTO 100 pourcent actions monde : 7-8 pourcent en moyenne tres long terme (avec volatilite annuelle de +/- 30 pourcent). Pour une simulation prudente, prenez 4-5 pourcent.",
+                    "Livret A / LDDS : 1,7 pourcent (depuis fevrier 2025). LEP : 2,7 pourcent. PEL : 1,75-2,25 pourcent (a nouveau competitif). Assurance-vie fonds euros : 2,5-3,5 pourcent. Assurance-vie en UC mixte (60/40) : 4-5 pourcent. PEA / CTO 100 pourcent actions monde : 7-8 pourcent en moyenne tres long terme (avec volatilite annuelle de +/- 30 pourcent). Pour une simulation prudente, prenez 3-4 pourcent.",
                 },
                 {
                   question: "Quel placement choisir selon mon horizon ?",
@@ -336,7 +338,7 @@ export default function CalculateurEpargne() {
                 {
                   question: "Comment integrer l&apos;inflation dans mes calculs d&apos;epargne ?",
                   answer:
-                    "Calculez en taux reel = taux nominal - taux d&apos;inflation. A 3 pourcent nominal et 2 pourcent inflation : 1 pourcent reel seulement. Sur 30 ans, 100 EUR aujourd&apos;hui valent environ 55 EUR en pouvoir d&apos;achat avec 2 pourcent inflation annuelle. C&apos;est pourquoi l&apos;epargne longue (retraite) doit chercher des supports qui battent l&apos;inflation : actions monde, immobilier locatif, ou or sur tres long terme.",
+                    "Calculez en taux reel = taux nominal - taux d&apos;inflation. A 1,7 pourcent nominal et 2 pourcent inflation : -0,3 pourcent reel, autrement dit votre Livret A perd du pouvoir d&apos;achat. Sur 30 ans, 100 EUR aujourd&apos;hui valent environ 55 EUR en pouvoir d&apos;achat avec 2 pourcent inflation annuelle. C&apos;est pourquoi l&apos;epargne longue (retraite) doit chercher des supports qui battent l&apos;inflation : actions monde, immobilier locatif, ou or sur tres long terme.",
                 },
               ]}
             />
@@ -348,9 +350,9 @@ export default function CalculateurEpargne() {
               <h3 className="text-sm font-semibold" style={{ fontFamily: "var(--font-display)" }}>Placements courants</h3>
               <div className="mt-3 space-y-2">
                 {[
-                  { nom: "Livret A", taux: "3,0%" },
-                  { nom: "LDDS", taux: "3,0%" },
-                  { nom: "LEP", taux: "4,0%" },
+                  { nom: "Livret A", taux: "1,7%" },
+                  { nom: "LDDS", taux: "1,7%" },
+                  { nom: "LEP", taux: "2,7%" },
                   { nom: "Assurance-vie fonds €", taux: "2,5%" },
                   { nom: "PEA (actions)", taux: "7-8%" },
                   { nom: "SCPI", taux: "4-5%" },
