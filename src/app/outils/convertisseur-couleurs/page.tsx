@@ -2,6 +2,8 @@
 
 import { useState, useMemo } from "react";
 import AdPlaceholder from "@/components/AdPlaceholder";
+import ToolFaqSection from "@/components/ToolFaqSection";
+import ToolHowToSection from "@/components/ToolHowToSection";
 
 function hexToRgb(hex: string): [number, number, number] | null {
   const m = hex.replace("#", "").match(/^([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i);
@@ -176,51 +178,172 @@ export default function ConvertisseurCouleurs() {
                 ))}
               </div>
             </div>
-            {/* SEO Content */}
-            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
-                Comment utiliser le convertisseur de couleurs
-              </h2>
-              <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                <p>
-                  Ce convertisseur de couleurs gratuit vous permet de passer instantanement entre les formats HEX, RGB et HSL. Que vous soyez designer, developpeur web ou simplement curieux, l&apos;outil vous donne toutes les valeurs dont vous avez besoin en un clic.
-                </p>
-                <ul className="ml-4 list-disc space-y-1">
-                  <li><strong className="text-[var(--foreground)]">Utilisez le color picker</strong> : cliquez sur le selecteur de couleur pour choisir visuellement la teinte souhaitee.</li>
-                  <li><strong className="text-[var(--foreground)]">Saisissez un code HEX</strong> : entrez directement un code hexadecimal comme #0d4f3c pour obtenir ses equivalents RGB et HSL.</li>
-                  <li><strong className="text-[var(--foreground)]">Ajustez via les curseurs</strong> : modifiez les composantes Rouge, Vert, Bleu (RGB) ou Teinte, Saturation, Luminosite (HSL) avec les curseurs interactifs.</li>
-                  <li><strong className="text-[var(--foreground)]">Copiez les valeurs</strong> : chaque format dispose d&apos;un bouton de copie pour coller directement la valeur dans votre code CSS ou votre logiciel de design.</li>
-                </ul>
-                <p>
-                  L&apos;apercu en temps reel affiche la couleur selectionnee avec le code correspondant, ce qui facilite le choix exact de la teinte pour vos projets web, graphiques ou d&apos;impression.
-                </p>
-              </div>
-            </div>
+            <ToolHowToSection
+              title="Comment utiliser le convertisseur de couleurs"
+              description="Choisissez visuellement ou saisissez un code, et obtenez instantanement les equivalents HEX, RGB et HSL prets a copier dans votre CSS ou votre logiciel de design."
+              steps={[
+                {
+                  name: "Choisir la couleur source",
+                  text:
+                    "Trois methodes au choix : cliquez sur le color picker pour la selectionner visuellement, tapez un code hexadecimal comme #0d4f3c, ou ajustez les curseurs RGB ou HSL pour affiner. La preview en haut de page se met a jour en temps reel.",
+                },
+                {
+                  name: "Comparer les trois formats",
+                  text:
+                    "La carte HEX, RGB et HSL affiche simultanement les trois representations de la meme couleur. Chaque format est utile dans un contexte different : HEX pour le HTML, RGB pour la transparence avec rgba, HSL pour generer des variations harmonieuses.",
+                },
+                {
+                  name: "Copier la valeur dans son projet",
+                  text:
+                    "Chaque format dispose d&apos;un bouton Copier qui place la valeur formatee dans le presse-papiers : par exemple rgb(13, 79, 60) ou hsl(160, 72%, 18%). Collez directement dans votre fichier CSS, Tailwind config, Figma ou Photoshop.",
+                },
+              ]}
+            />
 
-            {/* FAQ */}
-            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Questions frequentes</h2>
-              <div className="mt-6 space-y-5">
-                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
-                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Quelle est la difference entre HEX, RGB et HSL ?</h3>
-                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                    HEX (hexadecimal) represente une couleur avec 6 caracteres precedee d&apos;un # (ex : #0d4f3c). RGB definit une couleur par ses composantes Rouge, Vert et Bleu (0-255). HSL utilise la Teinte (0-360&deg;), la Saturation (0-100 %) et la Luminosite (0-100 %). Les trois formats sont interchangeables et representent les memes couleurs.
+            <section
+              className="rounded-xl border p-6 md:p-8 shadow-sm"
+              style={{ background: "var(--surface)", borderColor: "var(--border)" }}
+            >
+              <h2
+                className="text-2xl md:text-3xl font-extrabold"
+                style={{ fontFamily: "var(--font-display)", color: "var(--foreground)" }}
+              >
+                Cas d&apos;usage du convertisseur de couleurs
+              </h2>
+
+              <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
+                  <h3 className="font-semibold" style={{ color: "var(--foreground)" }}>
+                    Designer web et UI
+                  </h3>
+                  <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    Vous recevez une charte graphique en HEX mais Figma exporte en RGB. Le
+                    convertisseur unifie tout en un clic. Pour creer des variations (hover,
+                    focus, disabled), ajustez la luminosite HSL de 10 % en plus ou en moins,
+                    sans toucher a la teinte. Plus rapide qu&apos;un selecteur visuel.
                   </p>
                 </div>
-                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
-                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Quel format de couleur utiliser en CSS ?</h3>
-                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                    Les trois formats sont valides en CSS. Le HEX est le plus repandu et le plus compact. Le RGB est pratique quand vous devez ajouter de la transparence (rgba). Le HSL est ideal pour creer des palettes harmonieuses car il suffit de modifier la teinte tout en gardant la meme saturation et luminosite.
+                <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
+                  <h3 className="font-semibold" style={{ color: "var(--foreground)" }}>
+                    Developpeur Tailwind ou CSS variables
+                  </h3>
+                  <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    Tailwind v4 supporte les couleurs en HSL pour des manipulations runtime
+                    (theming dark mode). Le convertisseur transforme un brand color HEX en hsl()
+                    pret a coller dans tailwind.config ou globals.css. Pour les CSS variables :
+                    --color-primary: 160 72% 18% permet de moduler l&apos;alpha sans dupliquer.
                   </p>
                 </div>
-                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
-                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Comment trouver la couleur complementaire ?</h3>
-                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                    En utilisant le format HSL, ajoutez 180&deg; a la valeur de teinte (H) pour obtenir la couleur complementaire. Par exemple, si votre couleur a une teinte de 150&deg;, sa complementaire sera a 330&deg;. Les couleurs complementaires creent un contraste fort et sont tres utilisees en design graphique.
+                <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
+                  <h3 className="font-semibold" style={{ color: "var(--foreground)" }}>
+                    Print et impression
+                  </h3>
+                  <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    L&apos;impression utilise CMJN (cyan, magenta, jaune, noir), pas RGB.
+                    Attention : un rouge eclatant a l&apos;ecran (RGB 255,0,0) sortira terne en
+                    print. Le convertisseur donne une indication CMJN approximative pour estimer
+                    le rendu, mais validez toujours avec un BAT (bon a tirer) chez l&apos;imprimeur.
+                  </p>
+                </div>
+                <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
+                  <h3 className="font-semibold" style={{ color: "var(--foreground)" }}>
+                    Verification de contraste accessibilite
+                  </h3>
+                  <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    Pour le respect des criteres WCAG AA, le ratio de contraste texte/fond doit
+                    etre superieur a 4,5:1 (3:1 pour les grands titres). Le convertisseur HSL
+                    aide a moduler la luminosite jusqu&apos;a obtenir un contraste conforme,
+                    sans perdre l&apos;identite chromatique de la marque.
                   </p>
                 </div>
               </div>
-            </div>
+            </section>
+
+            <section
+              className="rounded-xl border p-6 md:p-8 shadow-sm"
+              style={{ background: "var(--surface-alt)", borderColor: "var(--border)" }}
+            >
+              <h2
+                className="text-2xl md:text-3xl font-extrabold"
+                style={{ fontFamily: "var(--font-display)", color: "var(--foreground)" }}
+              >
+                A savoir sur les couleurs en design numerique
+              </h2>
+
+              <div className="mt-4 space-y-4 leading-relaxed" style={{ color: "var(--foreground)" }}>
+                <p>
+                  <strong>HEX, RGB et HSL representent strictement la meme couleur.</strong>
+                  Ce sont juste trois notations differentes du meme point dans l&apos;espace
+                  colorimetrique sRGB. HEX est compact (#0d4f3c, 7 caracteres). RGB est lisible
+                  par humain (rouge/vert/bleu sur 0-255). HSL est manipulable intuitivement (la
+                  teinte, la saturation et la luminosite correspondent a la perception visuelle).
+                </p>
+                <p>
+                  <strong>WCAG impose un contraste minimal pour l&apos;accessibilite.</strong>
+                  Le ratio doit etre superieur a 4,5:1 entre texte normal et fond (niveau AA),
+                  et superieur a 7:1 pour le niveau AAA. Pour les titres de plus de 18px, la
+                  barre tombe a 3:1. Plus de 60 % des sites webs francais sont non conformes :
+                  c&apos;est une obligation legale (loi Handicap 2005, RGAA) pour les services
+                  publics et les entreprises de plus de 250 millions de chiffre d&apos;affaires.
+                </p>
+                <p>
+                  <strong>Web et print n&apos;utilisent pas le meme espace colorimetrique.</strong>
+                  Le web travaille en sRGB additif (lumiere). L&apos;impression travaille en
+                  CMJN soustractif (encre). Certaines couleurs sRGB (tres saturees, fluo) sont
+                  hors gamut CMJN et sortiront ternes a l&apos;impression. C&apos;est pourquoi
+                  les chartes graphiques pro fournissent toujours les deux equivalents.
+                </p>
+                <p>
+                  <strong>Le format HSL est ideal pour generer des palettes.</strong> Pour
+                  obtenir une couleur complementaire, ajoutez 180 a la teinte. Pour des
+                  triadiques, espacez par 120. Pour creer une variation plus claire, augmentez
+                  la luminosite. Cette logique geometrique est reproductible et evite les choix
+                  esthetiques arbitraires, ce qui plait aussi bien aux designers qu&apos;aux
+                  developpeurs qui generent des themes par script.
+                </p>
+              </div>
+            </section>
+
+            <ToolFaqSection
+              intro="Les questions les plus posees sur la conversion de couleurs."
+              items={[
+                {
+                  question: "Quelle est la difference entre HEX, RGB et HSL ?",
+                  answer:
+                    "HEX represente une couleur en 6 caracteres precedes d'un # (ex : #0d4f3c). RGB definit une couleur par ses composantes Rouge, Vert, Bleu (0-255). HSL utilise la Teinte (0-360 deg), la Saturation (0-100 %) et la Luminosite (0-100 %). Les trois formats sont interchangeables et representent strictement les memes couleurs.",
+                },
+                {
+                  question: "Quel format de couleur utiliser en CSS ?",
+                  answer:
+                    "Les trois sont valides. HEX est le plus repandu et le plus compact. RGB est pratique quand vous devez ajouter de la transparence (rgba). HSL est ideal pour creer des palettes harmonieuses car il suffit de modifier la teinte en gardant la meme saturation et luminosite. Tailwind v4 utilise HSL pour le theming runtime (dark mode dynamique).",
+                },
+                {
+                  question: "Comment trouver la couleur complementaire ?",
+                  answer:
+                    "En utilisant le format HSL, ajoutez 180 deg a la valeur de teinte (H). Par exemple, si votre couleur a une teinte de 150 deg, sa complementaire sera a 330 deg. Les couleurs complementaires creent un contraste fort et sont tres utilisees en design graphique pour des CTA visibles ou des accents qui se detachent du fond.",
+                },
+                {
+                  question: "Comment savoir si mon contraste est accessible ?",
+                  answer:
+                    "Le ratio de contraste WCAG AA exige superieur a 4,5:1 entre texte normal et fond. Niveau AAA : superieur a 7:1. Pour des grands titres : superieur a 3:1. Modifiez la luminosite HSL jusqu'a respecter le seuil. Des outils dedies comme WebAIM Contrast Checker calculent automatiquement le ratio entre deux couleurs.",
+                },
+                {
+                  question: "Pourquoi mon ecran et mon impression n'affichent pas la meme couleur ?",
+                  answer:
+                    "L'ecran travaille en sRGB additif (lumiere emise), l'impression en CMJN soustractif (encre absorbante). Certaines couleurs vives sont hors gamut CMJN et perdent leur eclat a l'impression. Pour des projets print, demandez toujours un BAT papier a l'imprimeur avant validation finale, surtout pour des rouges purs ou des bleus tres satures.",
+                },
+                {
+                  question: "Comment integrer une couleur HEX dans Tailwind ?",
+                  answer:
+                    "Dans tailwind.config (v3) ou directement dans une CSS variable (v4), declarez votre couleur : '--color-primary: #0d4f3c'. Pour utiliser HSL et permettre des manipulations runtime (alpha, dark mode), preferez '--color-primary: 160 72% 18%' puis utilisez hsl(var(--color-primary) / 0.5) pour la transparence.",
+                },
+                {
+                  question: "Mes couleurs sont-elles confidentielles ?",
+                  answer:
+                    "Oui. Toutes les conversions sont effectuees localement dans votre navigateur en JavaScript. Aucun code couleur n'est envoye a un serveur. L'outil fonctionne sans inscription, sans cookie de tracking et sans connexion internet active une fois la page chargee.",
+                },
+              ]}
+            />
           </div>
 
           <aside className="space-y-6">

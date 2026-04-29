@@ -2,6 +2,8 @@
 
 import { useState, useRef, useCallback } from "react";
 import AdPlaceholder from "@/components/AdPlaceholder";
+import ToolFaqSection from "@/components/ToolFaqSection";
+import ToolHowToSection from "@/components/ToolHowToSection";
 
 const COLORS = [
   "#0d4f3c", "#16785c", "#e8963e", "#3b82f6", "#8b5cf6",
@@ -160,51 +162,162 @@ export default function GenerateurAvatar() {
               <canvas ref={canvasRef} className="hidden" />
             </div>
 
-            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>A quoi sert un avatar initiales ?</h2>
-              <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                <p>Les avatars a initiales sont utilises dans de nombreuses applications : messageries, listes de contacts, CRM, forums. Ils permettent d&apos;identifier rapidement un utilisateur sans photo.</p>
-                <p>Cet outil genere une image PNG que vous pouvez utiliser comme photo de profil, icone d&apos;application ou placeholder dans vos maquettes.</p>
-              </div>
-            </div>
+            <ToolHowToSection
+              title="Comment creer un avatar a initiales en 3 etapes"
+              description="Tout est rendu en local par Canvas2D. Aucun upload, aucun compte, aucun watermark. Vous quittez la page avec un PNG pret pour vos profils ou maquettes."
+              steps={[
+                {
+                  name: "Saisir le nom complet",
+                  text:
+                    "Tapez le nom complet (Prenom + Nom) : l&apos;outil extrait automatiquement les deux premieres initiales en majuscules. Pour un nom compose, ecrivez-le tel quel : Anne-Sophie Martin donne AM. Si vous ne tapez qu&apos;un seul mot, seule la premiere lettre est utilisee.",
+                },
+                {
+                  name: "Choisir couleur et forme",
+                  text:
+                    "12 couleurs predefinies couvrent les palettes pro classiques. Pour une cohesion graphique, alignez la couleur sur votre charte (hex code de votre logo). Cote forme, le cercle est le format standard des avatars web (Slack, Notion, Gmail), le carre arrondi est plus moderne (App Store), le carre pur est utilise sur certains CMS internes.",
+                },
+                {
+                  name: "Ajuster taille et telecharger",
+                  text:
+                    "64 ou 128 px pour des listes denses (CRM, forum), 256 px pour un profil web standard, 512 px pour les ecrans haute densite (Retina, 4K) ou les supports imprimes. Cliquez sur Telecharger en PNG : le fichier porte automatiquement les initiales et la taille, pret a uploader sur votre service.",
+                },
+              ]}
+            />
 
-            {/* SEO Content */}
-            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
-                Comment creer un avatar avec initiales
+            <section
+              className="rounded-xl border p-6 md:p-8 shadow-sm"
+              style={{ background: "var(--surface)", borderColor: "var(--border)" }}
+            >
+              <h2
+                className="text-2xl md:text-3xl font-extrabold"
+                style={{ fontFamily: "var(--font-display)", color: "var(--foreground)" }}
+              >
+                Cas d&apos;usage de l&apos;avatar a initiales
               </h2>
-              <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                <p>
-                  Generez un avatar professionnel avec vos initiales en quelques secondes. Personnalisez la couleur, la forme et la taille
-                  pour obtenir un resultat adapte a votre usage.
-                </p>
-                <ul className="ml-4 list-disc space-y-1">
-                  <li><strong className="text-[var(--foreground)]">Entrez votre nom</strong> : les initiales sont extraites automatiquement (2 lettres max)</li>
-                  <li><strong className="text-[var(--foreground)]">Choisissez une couleur</strong> : parmi 12 couleurs predefinies ou personnalisez</li>
-                  <li><strong className="text-[var(--foreground)]">Selectionnez le style</strong> : cercle, carre arrondi ou carre</li>
-                  <li><strong className="text-[var(--foreground)]">Telechargez en PNG</strong> : en 64, 128, 256 ou 512 pixels</li>
-                </ul>
-              </div>
-            </div>
 
-            {/* FAQ */}
-            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Questions frequentes</h2>
-              <div className="mt-6 space-y-5">
-                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
-                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Quelle taille choisir pour mon avatar ?</h3>
-                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Pour un usage web (profil de site, CRM, messagerie), 128 ou 256 pixels suffisent. Pour l&apos;impression ou les applications haute resolution, choisissez 512 pixels. Les reseaux sociaux recommandent generalement 256x256 px minimum.</p>
+              <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
+                  <h3 className="font-semibold" style={{ color: "var(--foreground)" }}>
+                    Equipe SaaS sans photos pro
+                  </h3>
+                  <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    Page &quot;A propos&quot; ou trombinoscope client : tous les membres n&apos;ont pas de photo prete. Generez 5 a 10 avatars
+                    coherents (meme palette, meme forme) pour eviter le mix &quot;photo HD + selfie pixelise&quot; et garder une presentation
+                    pro homogene.
+                  </p>
                 </div>
-                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
-                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Puis-je utiliser cet avatar a des fins commerciales ?</h3>
-                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Oui, les avatars generes sont libres de droits. Vous pouvez les utiliser pour vos projets personnels, vos applications, vos maquettes ou vos supports marketing sans restriction.</p>
+                <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
+                  <h3 className="font-semibold" style={{ color: "var(--foreground)" }}>
+                    Maquette Figma ou Sketch
+                  </h3>
+                  <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    Ne plus utiliser des stock photos genantes pour vos demos client : generez 20 avatars en 30 secondes (Anna L,
+                    Bertrand M, Clara P...) et glissez-les dans vos composants Card, ListItem, Comment. Plus rapide qu&apos;Unsplash et
+                    sans probleme de droit d&apos;image.
+                  </p>
                 </div>
-                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
-                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>L&apos;avatar a-t-il un fond transparent ?</h3>
-                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>L&apos;image PNG generee possede un fond transparent autour de la forme (cercle, carre arrondi). Seule la forme de l&apos;avatar contient la couleur de fond, ce qui facilite l&apos;integration dans vos designs.</p>
+                <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
+                  <h3 className="font-semibold" style={{ color: "var(--foreground)" }}>
+                    Avatar par defaut d&apos;app
+                  </h3>
+                  <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    Quand un nouvel utilisateur s&apos;inscrit sans uploader de photo, generez cote backend un avatar a initiales avec
+                    une couleur deterministe (hash sur l&apos;email). Le rendu reste personnalise et evite le silhouette anonyme. Code
+                    open source dispo en JS / Python pour reproduire la logique en serveur.
+                  </p>
+                </div>
+                <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
+                  <h3 className="font-semibold" style={{ color: "var(--foreground)" }}>
+                    Compte pro sans photo personnelle
+                  </h3>
+                  <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    Slack, Notion, Linear, GitHub : pour les utilisateurs qui prefèrent ne pas afficher leur visage (consultants
+                    externes, profils pseudonymes), l&apos;avatar a initiales est la seule alternative pro qui evite l&apos;avatar par
+                    defaut generique sans creer un avatar AI fake.
+                  </p>
                 </div>
               </div>
-            </div>
+            </section>
+
+            <section
+              className="rounded-xl border p-6 md:p-8 shadow-sm"
+              style={{ background: "var(--surface-alt)", borderColor: "var(--border)" }}
+            >
+              <h2
+                className="text-2xl md:text-3xl font-extrabold"
+                style={{ fontFamily: "var(--font-display)", color: "var(--foreground)" }}
+              >
+                A savoir : design, performance et droit
+              </h2>
+
+              <div className="mt-4 space-y-4 leading-relaxed" style={{ color: "var(--foreground)" }}>
+                <p>
+                  <strong>Monogramme vs initials.</strong> Le mot anglais &quot;monogram&quot; designe historiquement un entrelacement
+                  artistique de plusieurs lettres (signature noble, broderie). Les &quot;initials avatars&quot; modernes (Slack, Gmail, Asana)
+                  sont plus simples : 1 ou 2 lettres dans une forme colorisee. Notre outil produit ce format moderne, qui s&apos;integre
+                  naturellement dans toutes les UI web et mobiles standards.
+                </p>
+                <p>
+                  <strong>SVG vs PNG : performance.</strong> Cet outil exporte en PNG pour la compatibilite maximale (uploadable
+                  partout : Slack, GitHub, LinkedIn, CRM). Pour vos propres apps, generer du SVG inline cote serveur est plus
+                  performant : un avatar SVG pese 200 a 500 octets contre 5 a 20 ko pour un PNG, et reste vectoriel donc parfait
+                  sur ecran Retina sans surcout de bande passante.
+                </p>
+                <p>
+                  <strong>RGPD et droit a l&apos;image.</strong> Un avatar a initiales ne contient aucune donnee biometrique : il
+                  n&apos;est donc pas soumis aux regles strictes du RGPD sur les images de visage. Vous pouvez l&apos;afficher
+                  publiquement, le commercialiser, l&apos;inclure dans une newsletter sans recueillir de consentement specifique
+                  (contrairement a une photo de visage). C&apos;est aussi une option pour les enfants ou les ados sur les apps grand
+                  public.
+                </p>
+                <p>
+                  <strong>Confidentialite locale.</strong> Le rendu est effectue par Canvas2D dans votre navigateur. Aucune
+                  initiale, aucun nom saisi n&apos;est envoye sur internet, journalise ou stocke. L&apos;outil fonctionne hors ligne
+                  une fois la page chargee. Aucun watermark, aucune limite, libre de droits commerciaux.
+                </p>
+              </div>
+            </section>
+
+            <ToolFaqSection
+              intro="Les questions les plus posees sur la generation d&apos;avatars a initiales."
+              items={[
+                {
+                  question: "Quelle taille choisir pour mon avatar ?",
+                  answer:
+                    "64 ou 128 px pour des listes denses (CRM, forum, table d&apos;utilisateurs). 256 px pour un profil web standard ou les reseaux sociaux. 512 px pour les ecrans haute densite Retina, 4K, ou pour de l&apos;impression. Le PNG genere reste net jusqu&apos;a doubler la taille d&apos;affichage cible.",
+                },
+                {
+                  question: "PNG ou SVG, lequel est mieux ?",
+                  answer:
+                    "Le PNG est universellement compatible (Slack, LinkedIn, GitHub, CRM acceptent tous PNG ; certains refusent SVG pour raisons de securite). Le SVG est plus leger (200 a 500 octets contre 5 a 20 ko) et reste net a toute taille. Pour vos propres apps, generez SVG cote backend ; pour uploader sur un service tiers, restez en PNG.",
+                },
+                {
+                  question: "Puis-je utiliser l&apos;avatar a des fins commerciales ?",
+                  answer:
+                    "Oui sans restriction. Les avatars generes sont libres de droits, sans watermark, sans tracking. Vous pouvez les utiliser dans des produits payants, des supports marketing, des packagings, des t-shirts. Les couleurs et formes sont des elements graphiques basiques non protegeables.",
+                },
+                {
+                  question: "L&apos;avatar a-t-il un fond transparent ?",
+                  answer:
+                    "Le PNG genere possede un fond transparent autour de la forme (cercle ou carre arrondi). Seule la forme contient la couleur. Pour un carre simple, toute la surface est coloree. Vous pouvez integrer l&apos;avatar sur n&apos;importe quel arriere-plan sans ressautes visibles.",
+                },
+                {
+                  question: "Avatar a initiales et RGPD ?",
+                  answer:
+                    "Un avatar a initiales n&apos;est pas une donnee biometrique : il n&apos;est donc pas soumis aux contraintes strictes du RGPD sur les images de visage. Vous pouvez l&apos;afficher publiquement sans consentement specifique. C&apos;est une bonne pratique pour les enfants, les comptes pseudonymes ou les apps qui veulent eviter tout traitement de visage.",
+                },
+                {
+                  question: "Comment generer plusieurs avatars d&apos;un coup ?",
+                  answer:
+                    "L&apos;outil produit un avatar a la fois. Pour batcher (creer 50 avatars d&apos;equipe par exemple), reproduisez la logique en SVG dans un script Node.js : 30 lignes de code suffisent (canvas Node + parameters par utilisateur). Pour un trombinoscope ponctuel, dupliquer rapidement via la page reste la voie la plus simple.",
+                },
+                {
+                  question: "Mes donnees (nom, email) sont-elles envoyees ?",
+                  answer:
+                    "Non. Tout le rendu est effectue par Canvas2D dans votre navigateur. Aucune information n&apos;est transmise au serveur. Vous pouvez ouvrir l&apos;onglet Reseau des outils developpeur pour le verifier : aucune requete reseau n&apos;est emise lorsque vous tapez un nom ou cliquez sur Telecharger.",
+                },
+              ]}
+            />
           </div>
           <aside className="space-y-6">
             <AdPlaceholder className="h-[250px]" />

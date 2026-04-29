@@ -2,6 +2,8 @@
 
 import { useState, useMemo } from "react";
 import AdPlaceholder from "@/components/AdPlaceholder";
+import ToolFaqSection from "@/components/ToolFaqSection";
+import ToolHowToSection from "@/components/ToolHowToSection";
 
 export default function CalculateurEpargne() {
   const [capitalInitial, setCapitalInitial] = useState("5000");
@@ -172,40 +174,172 @@ export default function CalculateurEpargne() {
               </div>
             </div>
 
-            {/* SEO Content */}
-            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
-                Comment utiliser le calculateur d&apos;epargne
-              </h2>
-              <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                <p>Ce simulateur d&apos;epargne vous permet de projeter la croissance de votre capital sur la duree grace aux interets composes. Ideal pour comparer differents placements ou planifier votre epargne a long terme.</p>
-                <ul className="ml-4 list-disc space-y-1">
-                  <li><strong className="text-[var(--foreground)]">Capital initial</strong> : le montant que vous investissez au depart (par exemple, 5 000 &euro; sur un livret ou un PEA).</li>
-                  <li><strong className="text-[var(--foreground)]">Versement mensuel</strong> : la somme que vous epargnez chaque mois. Meme 50 &euro; par mois font une vraie difference sur 10 ou 20 ans.</li>
-                  <li><strong className="text-[var(--foreground)]">Taux annuel et duree</strong> : choisissez un taux realiste (3% pour un Livret A, 7-8% pour un PEA long terme) et la duree de votre placement.</li>
-                </ul>
-                <p>Le graphique et le tableau detaille vous montrent annee par annee la part des versements et celle des interets dans votre capital final. C&apos;est la meilleure facon de visualiser l&apos;effet &laquo; boule de neige &raquo; des interets composes.</p>
-              </div>
-            </div>
+            <ToolHowToSection
+              title="Comment simuler la croissance de votre epargne"
+              description="Trois etapes pour projeter le capital obtenu via versements reguliers et interets composes sur le long terme."
+              steps={[
+                {
+                  name: "Capital initial et versement mensuel",
+                  text:
+                    "Capital initial : le montant deja disponible au depart (epargne de precaution, prime, heritage). Versement mensuel : ce que vous arrivez vraiment a mettre de cote chaque mois apres impots et charges fixes. Conseil pratique : automatisez via virement permanent en debut de mois (paie + 1 jour) pour eviter de &laquo; consommer &raquo; l&apos;epargne avant qu&apos;elle ne parte.",
+                },
+                {
+                  name: "Taux annuel realiste selon le support",
+                  text:
+                    "Livret A et LDDS : 3 pourcent (defiscalise, plafond 22 950 / 12 000 EUR). LEP (revenus modestes) : 4 a 5 pourcent. Assurance-vie fonds euros : 2,5 a 3,5 pourcent. Assurance-vie unites de compte : 4 a 7 pourcent (mais volatilite). PEA actions : 7 a 8 pourcent en moyenne historique long terme. Plus la duree est longue, plus on peut accepter de volatilite pour viser un rendement superieur.",
+                },
+                {
+                  name: "Visualiser l&apos;effet boule de neige",
+                  text:
+                    "Le graphique et le tableau decomposent annee par annee la part des versements et la part des interets composes. Sur 30 ans a 5 pourcent avec 200 EUR/mois, plus de 60 pourcent du capital final provient des interets. C&apos;est l&apos;effet de la capitalisation : plus l&apos;horizon est long, plus le temps fait le travail a votre place.",
+                },
+              ]}
+            />
 
-            {/* FAQ */}
-            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Questions frequentes</h2>
-              <div className="mt-6 space-y-5">
-                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
-                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Quel est le taux du Livret A en 2025 ?</h3>
-                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Le taux du Livret A est de 3,0% depuis fevrier 2023. Ce taux est fixe par la Banque de France et revise tous les semestres. Le plafond du Livret A est de 22 950 &euro; pour les particuliers. Les interets sont exoneres d&apos;impot sur le revenu et de prelevements sociaux, ce qui en fait le placement le plus populaire en France.</p>
+            <section
+              className="rounded-xl border p-6 md:p-8 shadow-sm"
+              style={{ background: "var(--surface)", borderColor: "var(--border)" }}
+            >
+              <h2
+                className="text-2xl md:text-3xl font-extrabold"
+                style={{ fontFamily: "var(--font-display)", color: "var(--foreground)" }}
+              >
+                Cas d&apos;usage du simulateur d&apos;epargne
+              </h2>
+
+              <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
+                  <h3 className="font-semibold" style={{ color: "var(--foreground)" }}>
+                    Constituer une epargne de precaution
+                  </h3>
+                  <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    Objectif : 6 mois de depenses (10 000-20 000 EUR pour un cadre). 200 EUR/mois
+                    sur Livret A a 3 pourcent : objectif atteint en 4-5 ans. Ce coussin est
+                    indispensable avant de prendre du risque sur PEA ou immobilier locatif. Il
+                    couvre une perte d&apos;emploi, un imprevu medical, une grosse reparation.
+                  </p>
                 </div>
-                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
-                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Comment fonctionnent les interets composes ?</h3>
-                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Les interets composes signifient que les interets gagnes sont reinvestis et produisent eux-memes des interets. Par exemple, 10 000 &euro; places a 5% rapportent 500 &euro; la premiere annee. La deuxieme annee, les interets sont calcules sur 10 500 &euro;, soit 525 &euro;. Cet effet s&apos;accelere avec le temps : c&apos;est pourquoi on parle d&apos;effet &laquo; boule de neige &raquo;.</p>
+                <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
+                  <h3 className="font-semibold" style={{ color: "var(--foreground)" }}>
+                    Apport pour achat immobilier
+                  </h3>
+                  <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    Pour un achat a 250 000 EUR, viser 10 a 20 pourcent d&apos;apport (25 000-
+                    50 000 EUR). Avec 400 EUR/mois sur 5 ans a 3 pourcent : 25 800 EUR. Avec
+                    600 EUR/mois sur 7 ans a 3 pourcent : 56 200 EUR. Le PEL (1,75-2,25 pourcent)
+                    et le CEL ne sont generalement plus competitifs face au Livret A.
+                  </p>
                 </div>
-                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
-                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Quelle est la difference entre Livret A, LDDS, LEP et PEA ?</h3>
-                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Le Livret A et le LDDS sont des livrets reglementes a 3%, sans impot, avec un plafond de 22 950 &euro; et 12 000 &euro; respectivement. Le LEP (Livret d&apos;Epargne Populaire) offre un taux de 4% mais est reserve aux revenus modestes. Le PEA (Plan d&apos;Epargne en Actions) permet d&apos;investir en bourse avec une fiscalite avantageuse apres 5 ans, avec un rendement historique moyen de 7 a 8% par an.</p>
+                <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
+                  <h3 className="font-semibold" style={{ color: "var(--foreground)" }}>
+                    Preparer la retraite via PEA / PER
+                  </h3>
+                  <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    300 EUR/mois sur 30 ans a 7 pourcent (PEA actions monde via ETF) : capital
+                    final environ 366 000 EUR pour 108 000 EUR verses. Plus de 250 000 EUR
+                    d&apos;interets composes. PER si vous etes en TMI elevee (30 pourcent +) :
+                    deduction des versements du revenu imposable, sortie en capital ou rente.
+                  </p>
+                </div>
+                <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
+                  <h3 className="font-semibold" style={{ color: "var(--foreground)" }}>
+                    Epargne enfants pour etudes
+                  </h3>
+                  <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    Livret A enfant des la naissance + 100 EUR/mois pendant 18 ans a 3 pourcent =
+                    28 600 EUR pour les etudes superieures. Sur PEA jeunes (creation 2024,
+                    plafond 20 000 EUR) ou assurance-vie enfant a 6 pourcent moyen : pres de
+                    40 000 EUR sur la meme periode.
+                  </p>
                 </div>
               </div>
-            </div>
+            </section>
+
+            <section
+              className="rounded-xl border p-6 md:p-8 shadow-sm"
+              style={{ background: "var(--surface-alt)", borderColor: "var(--border)" }}
+            >
+              <h2
+                className="text-2xl md:text-3xl font-extrabold"
+                style={{ fontFamily: "var(--font-display)", color: "var(--foreground)" }}
+              >
+                A savoir : enveloppes fiscales et fiscalite de l&apos;epargne
+              </h2>
+
+              <div className="mt-4 space-y-4 leading-relaxed" style={{ color: "var(--foreground)" }}>
+                <p>
+                  <strong>Livret A vs assurance-vie vs PEA.</strong> Livret A : 3 pourcent
+                  defiscalise total, liquidite immediate, plafond 22 950 EUR. Assurance-vie :
+                  fiscalite tres favorable apres 8 ans (abattement annuel 4 600 EUR / 9 200 EUR
+                  pour un couple, art. 125-0 A CGI), succession privilegiee. PEA : 7-8 pourcent
+                  moyen long terme, exoneration totale d&apos;IR apres 5 ans (sauf prelevements
+                  sociaux 17,2 pourcent), plafond 150 000 EUR, art. L221-30 CMF.
+                </p>
+                <p>
+                  <strong>Interets composes : la formule.</strong> Capital final = CI x (1+r)^n
+                  + VM x ((1+r)^n - 1) / r, ou CI est le capital initial, r le taux periodique
+                  (mensuel = annuel / 12), n le nombre de periodes. Exemple intuitif : 1 EUR
+                  place a 7 pourcent double tous les 10 ans environ (regle des 72 : 72 / 7 =
+                  10,3 ans). Sur 40 ans, 1 EUR devient 15 EUR ; sur 50 ans, 30 EUR.
+                </p>
+                <p>
+                  <strong>Capacite d&apos;epargne realiste.</strong> Regle d&apos;or des
+                  budgetistes : 50 pourcent depenses essentielles, 30 pourcent loisirs, 20
+                  pourcent epargne (regle 50/30/20). Sur un net de 2 500 EUR = 500 EUR
+                  d&apos;epargne mensuelle theorique. En realite, beaucoup de Francais epargnent
+                  10-15 pourcent. Au-dela de 25 pourcent durable, vous etes dans le top decile.
+                </p>
+                <p>
+                  <strong>Inflation : ennemi silencieux.</strong> Un taux nominal de 3 pourcent
+                  avec 2 pourcent d&apos;inflation = 1 pourcent reel seulement. Sur 30 ans, c&apos;est
+                  presque rien. Le PEA et l&apos;assurance-vie en unites de compte permettent
+                  historiquement de battre l&apos;inflation grace aux actions (rendement reel
+                  long terme actions monde : 5-6 pourcent par an). C&apos;est pourquoi
+                  l&apos;epargne longue ne peut pas rester 100 pourcent en livrets.
+                </p>
+              </div>
+            </section>
+
+            <ToolFaqSection
+              intro="Les questions frequentes sur les placements d&apos;epargne et les interets composes en France."
+              items={[
+                {
+                  question: "Quel est le taux du Livret A en 2026 ?",
+                  answer:
+                    "Le Livret A est a 3 pourcent depuis fevrier 2023, taux gele jusqu&apos;a fin janvier 2025 par decret gouvernemental. Revision semestrielle par la Banque de France selon une formule basee sur l&apos;inflation hors tabac et taux interbancaire. Plafond 22 950 EUR. Interets exoneres d&apos;IR et de prelevements sociaux : c&apos;est le placement le plus simple et populaire en France.",
+                },
+                {
+                  question: "Comment fonctionnent les interets composes ?",
+                  answer:
+                    "Les interets gagnes une periode rapportent eux-memes des interets la periode suivante. 10 000 EUR a 5 pourcent : annee 1 = 500 EUR d&apos;interets ; annee 2 = 525 EUR (calcules sur 10 500 EUR). Effet boule de neige : sur 20 ans, ce capital atteint 26 533 EUR sans aucun versement supplementaire, soit +165 pourcent. La duree est plus puissante que le taux pour les petits patrimoines.",
+                },
+                {
+                  question: "Difference entre Livret A, LDDS, LEP et PEA ?",
+                  answer:
+                    "Livret A et LDDS : taux 3 pourcent, exoneres d&apos;impot, plafonds 22 950 / 12 000 EUR. LEP (Livret Epargne Populaire) : 4-5 pourcent, plafond 10 000 EUR, reserve aux revenus modestes (sous le plafond fiscal de l&apos;art. L221-15 CMF). PEA (Plan Epargne en Actions) : actions europeennes uniquement, plafond 150 000 EUR, exoneration IR apres 5 ans (PS 17,2 pourcent du), rendement historique 7-8 pourcent.",
+                },
+                {
+                  question: "Quel taux annuel realiste pour mes simulations ?",
+                  answer:
+                    "Livret A / LDDS : 3 pourcent. LEP : 4-5 pourcent. PEL : 1,75-2,25 pourcent (peu attractif aujourd&apos;hui). Assurance-vie fonds euros : 2,5-3,5 pourcent. Assurance-vie en UC mixte (60/40) : 4-5 pourcent. PEA / CTO 100 pourcent actions monde : 7-8 pourcent en moyenne tres long terme (avec volatilite annuelle de +/- 30 pourcent). Pour une simulation prudente, prenez 4-5 pourcent.",
+                },
+                {
+                  question: "Quel placement choisir selon mon horizon ?",
+                  answer:
+                    "Court terme (0-2 ans, epargne de precaution) : Livret A et LDDS exclusivement, pour la liquidite et la securite. Moyen terme (2-8 ans, projets) : assurance-vie fonds euros + UC moderees. Long terme (8 ans +, retraite, patrimoine) : assurance-vie en UC dynamiques, PEA, immobilier locatif. La cle est l&apos;adequation horizon / risque : plus c&apos;est long, plus le risque actions devient acceptable et rentable.",
+                },
+                {
+                  question: "Faut-il privilegier les versements mensuels ou un capital initial ?",
+                  answer:
+                    "Mathematiquement, plus le capital est en place tot, plus les interets composes ont le temps de jouer. 10 000 EUR places aujourd&apos;hui a 5 pourcent rapporteront plus que 200 EUR/mois pendant 50 mois (meme cumul total). Mais en pratique, l&apos;essentiel est de commencer : un versement automatise mensuel evite de procrastiner et lisse les points d&apos;entree (DCA) sur les supports volatils.",
+                },
+                {
+                  question: "Comment integrer l&apos;inflation dans mes calculs d&apos;epargne ?",
+                  answer:
+                    "Calculez en taux reel = taux nominal - taux d&apos;inflation. A 3 pourcent nominal et 2 pourcent inflation : 1 pourcent reel seulement. Sur 30 ans, 100 EUR aujourd&apos;hui valent environ 55 EUR en pouvoir d&apos;achat avec 2 pourcent inflation annuelle. C&apos;est pourquoi l&apos;epargne longue (retraite) doit chercher des supports qui battent l&apos;inflation : actions monde, immobilier locatif, ou or sur tres long terme.",
+                },
+              ]}
+            />
           </div>
 
           <aside className="space-y-6">

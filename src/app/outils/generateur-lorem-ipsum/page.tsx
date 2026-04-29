@@ -2,6 +2,8 @@
 
 import { useState, useMemo } from "react";
 import AdPlaceholder from "@/components/AdPlaceholder";
+import ToolFaqSection from "@/components/ToolFaqSection";
+import ToolHowToSection from "@/components/ToolHowToSection";
 
 const LOREM = [
   "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
@@ -108,43 +110,164 @@ export default function GenerateurLoremIpsum() {
               </div>
             </div>
 
-            {/* SEO Content */}
-            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
-                Comment utiliser le generateur Lorem Ipsum
-              </h2>
-              <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                <p>
-                  Le Lorem Ipsum est un texte factice utilise dans l&apos;industrie de l&apos;impression et du design depuis le XVIe siecle.
-                  Notre generateur vous permet de creer rapidement du faux texte pour vos maquettes, prototypes et projets web.
-                </p>
-                <ul className="ml-4 list-disc space-y-1">
-                  <li><strong className="text-[var(--foreground)]">Choisissez l&apos;unite</strong> : paragraphes, phrases ou mots selon vos besoins</li>
-                  <li><strong className="text-[var(--foreground)]">Ajustez la quantite</strong> : de 1 a 500 mots, 50 phrases ou 20 paragraphes</li>
-                  <li><strong className="text-[var(--foreground)]">Copiez en un clic</strong> : le texte genere est pret a etre colle dans votre maquette</li>
-                  <li><strong className="text-[var(--foreground)]">Texte standard</strong> : utilise le Lorem Ipsum classique, reconnu par les designers du monde entier</li>
-                </ul>
-              </div>
-            </div>
+            <ToolHowToSection
+              title="Comment utiliser le generateur Lorem Ipsum"
+              description="Trois reglages pour generer le faux texte adapte a votre maquette en quelques secondes."
+              steps={[
+                {
+                  name: "Choisissez l'unite de generation",
+                  text:
+                    "Selectionnez Paragraphes pour remplir des blocs d'article, Phrases pour des blocs courts comme des cartes ou des descriptions, Mots pour les titres et les boutons. Le bon choix evite les debordements de mise en page et reflete le contenu reel attendu.",
+                },
+                {
+                  name: "Ajustez la quantite avec le curseur",
+                  text:
+                    "Le curseur s'adapte automatiquement a l'unite choisie : jusqu'a 20 paragraphes, 50 phrases ou 500 mots. Visez la longueur du contenu final que vous prevoyez : si l'article reel fera environ 800 mots, generez 8 a 10 paragraphes pour une simulation realiste.",
+                },
+                {
+                  name: "Copiez et collez dans votre maquette",
+                  text:
+                    "Le bouton Copier transfere le texte dans le presse-papier. Collez ensuite dans Figma, Sketch, votre CMS, votre editeur HTML ou directement dans une slide. Le Lorem Ipsum est compatible avec tous les outils de design et plateformes web.",
+                },
+              ]}
+            />
 
-            {/* FAQ */}
-            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Questions frequentes</h2>
-              <div className="mt-6 space-y-5">
-                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
-                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>D&apos;ou vient le Lorem Ipsum ?</h3>
-                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Le Lorem Ipsum est derive d&apos;un texte de Ciceron datant de 45 av. J.-C., &laquo; De Finibus Bonorum et Malorum &raquo;. Il a ete utilise comme texte de remplissage dans l&apos;imprimerie depuis les annees 1500 et reste le standard dans le design graphique et le web.</p>
+            <section
+              className="rounded-xl border p-6 md:p-8 shadow-sm"
+              style={{ background: "var(--surface)", borderColor: "var(--border)" }}
+            >
+              <h2
+                className="text-2xl md:text-3xl font-extrabold"
+                style={{ fontFamily: "var(--font-display)", color: "var(--foreground)" }}
+              >
+                Cas d&apos;usage du Lorem Ipsum
+              </h2>
+
+              <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
+                  <h3 className="font-semibold" style={{ color: "var(--foreground)" }}>
+                    UI/UX designer en phase mockup
+                  </h3>
+                  <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    Remplir des wireframes Figma ou Adobe XD avec un texte calibre evite les
+                    debats sur la copie pendant la revue design. Le client se concentre sur la
+                    structure, la typographie et la hierarchie visuelle plutot que sur le wording.
+                  </p>
                 </div>
-                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
-                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Pourquoi utiliser du faux texte plutot que du vrai contenu ?</h3>
-                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Le Lorem Ipsum permet de se concentrer sur le design sans etre distrait par le contenu. Les lecteurs ont tendance a lire le texte reel, ce qui detourne l&apos;attention de la mise en page, de la typographie et des couleurs.</p>
+                <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
+                  <h3 className="font-semibold" style={{ color: "var(--foreground)" }}>
+                    Developpeur front-end
+                  </h3>
+                  <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    Tester les composants React, Vue ou Angular avec du contenu variable :
+                    long, court, multi-paragraphes. Detecter les bugs de troncature, de
+                    debordement et de wrapping responsive avant l&apos;integration du contenu reel.
+                  </p>
                 </div>
-                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
-                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Combien de paragraphes utiliser pour une maquette ?</h3>
-                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Pour une page de blog, 3 a 5 paragraphes suffisent. Pour une landing page, 1 a 2 paragraphes par section. L&apos;objectif est de simuler la longueur reelle du contenu final pour valider la mise en page.</p>
+                <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
+                  <h3 className="font-semibold" style={{ color: "var(--foreground)" }}>
+                    Print designer et editeur
+                  </h3>
+                  <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    Maquetter une brochure, un magazine ou une affiche dans InDesign avant que
+                    le texte definitif ne soit valide. Le Lorem Ipsum permet de figer la grille
+                    typographique, le rythme des paragraphes et les colonnes.
+                  </p>
+                </div>
+                <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
+                  <h3 className="font-semibold" style={{ color: "var(--foreground)" }}>
+                    Theme WordPress et template
+                  </h3>
+                  <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    Pre-remplir des demos de themes ou des templates email afin que les acheteurs
+                    visualisent immediatement le rendu. Idem pour les modeles ThemeForest, Webflow
+                    ou Notion : le faux contenu sert de placeholder esthetique.
+                  </p>
                 </div>
               </div>
-            </div>
+            </section>
+
+            <section
+              className="rounded-xl border p-6 md:p-8 shadow-sm"
+              style={{ background: "var(--surface-alt)", borderColor: "var(--border)" }}
+            >
+              <h2
+                className="text-2xl md:text-3xl font-extrabold"
+                style={{ fontFamily: "var(--font-display)", color: "var(--foreground)" }}
+              >
+                A savoir avant d&apos;utiliser du Lorem Ipsum
+              </h2>
+
+              <div className="mt-4 space-y-4 leading-relaxed" style={{ color: "var(--foreground)" }}>
+                <p>
+                  <strong>Ne jamais publier en production.</strong> Le Lorem Ipsum laisse en ligne
+                  est devenu un meme : on en trouve sur des sites de marques connues, parfois en
+                  page d&apos;accueil. Avant le go-live, lancez un Ctrl+F sur &laquo; lorem &raquo;
+                  dans votre CMS pour traquer les oublis. Google peut aussi penaliser un site qui
+                  a beaucoup de contenu de placeholder.
+                </p>
+                <p>
+                  <strong>Lorem Ipsum vs vrai contenu : les surprises.</strong> Le faux texte a une
+                  densite uniforme, alors que le contenu reel alterne paragraphes courts et longs.
+                  Une fois le contenu integre, certains designs &laquo; cassent &raquo; car les
+                  vraies sections sont 30 % plus courtes ou plus longues que prevu. Mieux vaut
+                  recevoir un draft du copywriter avant de finaliser la maquette.
+                </p>
+                <p>
+                  <strong>Accessibilite et tests.</strong> Le Lorem Ipsum n&apos;est pas du francais
+                  ni de l&apos;anglais, donc inutilisable pour tester un screen reader, un correcteur
+                  orthographique ou une analyse SEO. Utilisez des outils comme cupcake-ipsum ou
+                  bacon-ipsum pour des tests qui necessitent une langue reelle.
+                </p>
+                <p>
+                  <strong>Longueur a calibrer.</strong> Pour une carte produit, 1-2 phrases. Pour
+                  une description e-commerce, 1 paragraphe. Pour un article de blog, 5-10
+                  paragraphes. Tester votre maquette avec une longueur tres differente (deliberement
+                  trop court ou trop long) revele aussi les bugs de mise en page edge-case.
+                </p>
+              </div>
+            </section>
+
+            <ToolFaqSection
+              intro="Tout savoir sur le Lorem Ipsum et son usage en design web."
+              items={[
+                {
+                  question: "D'ou vient le Lorem Ipsum ?",
+                  answer:
+                    "Le Lorem Ipsum est derive d'un texte de Ciceron datant de 45 av. J.-C., De Finibus Bonorum et Malorum (Des termes extremes du Bien et du Mal). Il a ete utilise comme texte de remplissage dans l'imprimerie depuis les annees 1500 et reste le standard dans le design graphique et le web.",
+                },
+                {
+                  question: "Pourquoi utiliser du faux texte plutot que du vrai contenu ?",
+                  answer:
+                    "Le Lorem Ipsum permet de se concentrer sur le design sans etre distrait par le contenu. Les lecteurs ont tendance a lire le texte reel, ce qui detourne l'attention de la mise en page, de la typographie et des couleurs. Un texte factice mais lisible (sans drole de sens) garde l'oeil sur la forme.",
+                },
+                {
+                  question: "Combien de paragraphes utiliser pour une maquette ?",
+                  answer:
+                    "Pour une page de blog, 3 a 5 paragraphes suffisent. Pour une landing page, 1 a 2 paragraphes par section. L'objectif est de simuler la longueur reelle du contenu final pour valider la mise en page. Un paragraphe Lorem Ipsum standard fait environ 50 mots.",
+                },
+                {
+                  question: "Le Lorem Ipsum est-il SEO-friendly ?",
+                  answer:
+                    "Non, et il ne doit jamais etre indexable. Le Lorem Ipsum est en latin abime et n'a aucun sens, Google le detecte comme contenu de faible qualite. En production, remplacez-le par du vrai contenu et bloquez les pages staging dans le robots.txt pour eviter qu'elles soient crawlees.",
+                },
+                {
+                  question: "Y a-t-il des alternatives au Lorem Ipsum ?",
+                  answer:
+                    "Oui : Cupcake Ipsum (gourmandises), Bacon Ipsum (charcuterie), Hipster Ipsum (start-up), Corporate Ipsum (jargon entreprise), Samuel L. Jackson Ipsum, etc. Ces alternatives apportent une touche d'humour mais peuvent distraire les clients serieux. Le classique reste le plus neutre.",
+                },
+                {
+                  question: "Le texte genere est-il copyright ?",
+                  answer:
+                    "Non. Le Lorem Ipsum est dans le domaine public depuis des siecles. Vous pouvez l'utiliser librement dans vos projets commerciaux, personnels, prints ou web, sans citer de source ni payer de licence. C'est l'une des raisons de sa popularite mondiale.",
+                },
+                {
+                  question: "Mes donnees sont-elles envoyees sur un serveur ?",
+                  answer:
+                    "Non, le generateur fonctionne entierement dans votre navigateur. Aucun appel reseau n'est effectue, aucun texte ni reglage n'est stocke ou transmis. L'outil reste disponible meme hors ligne une fois la page chargee.",
+                },
+              ]}
+            />
           </div>
           <aside className="space-y-6">
             <AdPlaceholder className="h-[250px]" />

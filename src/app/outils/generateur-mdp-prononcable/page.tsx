@@ -2,6 +2,8 @@
 
 import { useState, useCallback } from "react";
 import AdPlaceholder from "@/components/AdPlaceholder";
+import ToolFaqSection from "@/components/ToolFaqSection";
+import ToolHowToSection from "@/components/ToolHowToSection";
 
 const CONSONANTS = "bcdfghjklmnprstvwxz";
 const VOWELS = "aeiouy";
@@ -166,52 +168,163 @@ export default function GenerateurMdpPrononcable() {
               })}
             </div>
 
-            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Pourquoi des mots de passe prononcables ?</h2>
-              <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                <p>Les mots de passe totalement aleatoires (comme &quot;xK9$mZ!q&quot;) sont difficiles a retenir. Les mots de passe prononcables utilisent des <strong className="text-[var(--foreground)]">patterns de syllabes</strong> qui les rendent plus faciles a memoriser tout en gardant un bon niveau de securite.</p>
-                <p>Un mot de passe prononcable de 16 caracteres avec chiffres et symboles offre une excellente resistance aux attaques par force brute, tout en etant facile a communiquer oralement si necessaire.</p>
-                <p>Pour une securite optimale, utilisez un <strong className="text-[var(--foreground)]">gestionnaire de mots de passe</strong> et activez l&apos;authentification a deux facteurs (2FA) quand c&apos;est possible.</p>
-              </div>
-            </div>
+            <ToolHowToSection
+              title="Comment generer un mot de passe prononcable et sur"
+              description="Le compromis : retrouver la facilite de memorisation des mots reels, sans sacrifier l&apos;entropie necessaire face aux attaques modernes."
+              steps={[
+                {
+                  name: "Choisir 4 a 6 syllabes",
+                  text:
+                    "4 syllabes produisent environ 10 a 14 caracteres : un bon point d&apos;equilibre pour un compte courant. 6 syllabes (15 a 20 caracteres) sont conseillees pour un mot de passe maitre, un compte bancaire ou un email principal. Plus de syllabes equivalent a plus d&apos;entropie : chaque syllabe ajoute environ 9 bits.",
+                },
+                {
+                  name: "Activer majuscules + chiffres + caracteres speciaux",
+                  text:
+                    "Les 3 options renforcent la diversite des caracteres et empechent les dictionnaires specialises sur le pattern consonne-voyelle de craquer le mot de passe. Avec les 3 options actives, un mot de passe prononcable de 16 caracteres atteint une entropie d&apos;environ 70 a 80 bits.",
+                },
+                {
+                  name: "Choisir parmi les 6 suggestions et le memoriser",
+                  text:
+                    "L&apos;outil affiche 6 suggestions simultanement : selectionnez celle qui vous parait la plus &quot;naturelle&quot; a prononcer. Lisez-la a haute voix 3 ou 4 fois pour l&apos;ancrer dans la memoire phonologique. C&apos;est l&apos;avantage principal sur un mot de passe purement aleatoire : votre cerveau retient la prononciation, pas la suite de symboles.",
+                },
+              ]}
+            />
 
-            {/* SEO Content */}
-            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
-                Comment generer un mot de passe prononcable
+            <section
+              className="rounded-xl border p-6 md:p-8 shadow-sm"
+              style={{ background: "var(--surface)", borderColor: "var(--border)" }}
+            >
+              <h2
+                className="text-2xl md:text-3xl font-extrabold"
+                style={{ fontFamily: "var(--font-display)", color: "var(--foreground)" }}
+              >
+                Cas d&apos;usage du generateur prononcable
               </h2>
-              <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                <p>
-                  Notre generateur cree des mots de passe bases sur des syllabes (consonne + voyelle) qui sont faciles a lire et a retenir.
-                  Contrairement aux mots de passe totalement aleatoires, ils restent securises grace a l&apos;ajout de majuscules, chiffres et symboles.
-                </p>
-                <ul className="ml-4 list-disc space-y-1">
-                  <li><strong className="text-[var(--foreground)]">Ajustez le nombre de syllabes</strong> : de 2 (court) a 8 (tres long) pour controler la longueur</li>
-                  <li><strong className="text-[var(--foreground)]">Activez les options</strong> : majuscules, chiffres et caracteres speciaux pour renforcer la securite</li>
-                  <li><strong className="text-[var(--foreground)]">6 suggestions a la fois</strong> : choisissez celui qui vous convient le mieux</li>
-                  <li><strong className="text-[var(--foreground)]">Indicateur de force</strong> : chaque mot de passe est evalue en temps reel</li>
-                </ul>
-              </div>
-            </div>
 
-            {/* FAQ */}
-            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Questions frequentes</h2>
-              <div className="mt-6 space-y-5">
-                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
-                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Un mot de passe prononcable est-il vraiment securise ?</h3>
-                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Oui, la securite d&apos;un mot de passe depend principalement de sa longueur et de la variete des caracteres utilises. Un mot de passe prononcable de 16 caracteres avec majuscules, chiffres et symboles est extremement difficile a craquer par force brute.</p>
+              <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
+                  <h3 className="font-semibold" style={{ color: "var(--foreground)" }}>
+                    Mot de passe maitre du gestionnaire
+                  </h3>
+                  <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    C&apos;est LE mot de passe que vous DEVEZ retenir : il deverrouille tous les autres dans Bitwarden, 1Password ou
+                    KeePass. 6 a 8 syllabes (18 a 22 caracteres) avec chiffres et symboles vous donnent un mot de passe maitre qui
+                    tient face a une attaque hors-ligne sur le coffre.
+                  </p>
                 </div>
-                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
-                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Combien de syllabes faut-il choisir ?</h3>
-                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Pour un usage quotidien, 4 a 5 syllabes (environ 12 a 16 caracteres) offrent un bon equilibre entre securite et facilite de memorisation. Pour des comptes critiques (banque, email principal), choisissez 6 a 8 syllabes.</p>
+                <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
+                  <h3 className="font-semibold" style={{ color: "var(--foreground)" }}>
+                    Wi-Fi domestique ou bureau
+                  </h3>
+                  <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    Vous le donnez a la voix a un visiteur ou un nouveau collegue : un mot de passe prononcable evite les
+                    &quot;c&apos;est un i majuscule ou un L minuscule ?&quot;. 4 a 5 syllabes + 2 chiffres + 1 symbole offrent une securite WPA2
+                    suffisante tout en restant communicables sans erreur.
+                  </p>
                 </div>
-                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
-                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>L&apos;ANSSI recommande-t-elle les mots de passe prononcables ?</h3>
-                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>L&apos;ANSSI (Agence nationale de la securite des systemes d&apos;information) recommande des mots de passe d&apos;au moins 12 caracteres avec un melange de types de caracteres. Les mots de passe prononcables respectent ces recommandations tout en etant plus faciles a retenir.</p>
+                <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
+                  <h3 className="font-semibold" style={{ color: "var(--foreground)" }}>
+                    Compte temporaire client
+                  </h3>
+                  <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    Vous creez un acces temporaire pour un client (extranet, espace de partage de fichiers) qu&apos;il devra changer a
+                    la premiere connexion. Un mot de passe prononcable se dicte plus facilement par telephone qu&apos;un
+                    Xz9!kQ@2mNvP, sans sacrifier la securite a l&apos;envoi initial.
+                  </p>
+                </div>
+                <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
+                  <h3 className="font-semibold" style={{ color: "var(--foreground)" }}>
+                    Pin parental ou code partage en famille
+                  </h3>
+                  <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    Code de coffre-fort numerique familial, controle parental, compte Netflix partage entre adultes : un mot de
+                    passe prononcable de 4 syllabes est plus simple a transmettre verbalement et restera dans la memoire de chaque
+                    membre du foyer.
+                  </p>
                 </div>
               </div>
-            </div>
+            </section>
+
+            <section
+              className="rounded-xl border p-6 md:p-8 shadow-sm"
+              style={{ background: "var(--surface-alt)", borderColor: "var(--border)" }}
+            >
+              <h2
+                className="text-2xl md:text-3xl font-extrabold"
+                style={{ fontFamily: "var(--font-display)", color: "var(--foreground)" }}
+              >
+                Securite et compromis memorisation
+              </h2>
+
+              <div className="mt-4 space-y-4 leading-relaxed" style={{ color: "var(--foreground)" }}>
+                <p>
+                  <strong>Le compromis securite / memorisation.</strong> Un mot de passe purement aleatoire de 12 caracteres
+                  (xK9$mZ!qP2vL) est theoriquement plus dense en entropie qu&apos;un mot de passe prononcable de meme longueur
+                  (Korabu7! par exemple). Mais en pratique, il est si peu memorisable que les utilisateurs le notent quelque part :
+                  l&apos;entropie effective tombe alors a celle d&apos;un Post-it. Le prononcable est superieur des qu&apos;il sert de mot de
+                  passe maitre ou est partage verbalement.
+                </p>
+                <p>
+                  <strong>Methode XKCD vs syllabes.</strong> La methode XKCD (correct-horse-battery-staple) combine 4 mots de
+                  dictionnaire et atteint une entropie d&apos;environ 44 a 50 bits. La methode par syllabes generee aleatoirement
+                  (notre outil) produit des chaines hors-dictionnaire et atteint plus facilement 70 a 80 bits a longueur egale,
+                  car les attaques par dictionnaire de mots ne fonctionnent pas. Les deux methodes sont valables ; la notre
+                  est plus dense en entropie par caractere.
+                </p>
+                <p>
+                  <strong>Longueur minimale recommandee.</strong> Pour un mot de passe prononcable, visez au minimum 14 a 16
+                  caracteres avec chiffres et symboles. En-dessous, l&apos;entropie devient insuffisante face aux GPU modernes
+                  (une RTX 4090 teste plusieurs centaines de milliards de hashes MD5 par seconde). L&apos;ANSSI maintient son
+                  seuil minimal de 12 caracteres, le NIST 800-63B aussi, mais pour des secrets a vie longue, montez plus haut.
+                </p>
+                <p>
+                  <strong>Generation locale et confidentialite.</strong> Cet outil cree les mots de passe directement dans votre
+                  navigateur, sans aucune requete reseau. Aucune syllabe, aucun mot de passe propose ou copie n&apos;est journalise,
+                  envoye ou stocke. Vous pouvez ouvrir l&apos;onglet Reseau des DevTools pour le verifier avant utilisation.
+                </p>
+              </div>
+            </section>
+
+            <ToolFaqSection
+              intro="Les questions les plus posees sur les mots de passe prononcables."
+              items={[
+                {
+                  question: "Un mot de passe prononcable est-il aussi sur qu&apos;un mot de passe aleatoire ?",
+                  answer:
+                    "A longueur egale, un peu moins en theorie : l&apos;alphabet effectif est plus restreint car les patterns consonne-voyelle reduisent les combinaisons. En pratique, vous compensez en allongeant : 16 caracteres prononcables avec chiffres et symboles depassent 70 bits d&apos;entropie, ce qui est largement suffisant face aux attaques modernes.",
+                },
+                {
+                  question: "Combien de syllabes choisir ?",
+                  answer:
+                    "4 syllabes (10 a 14 caracteres) pour un compte courant, 5 a 6 (14 a 20 caracteres) pour un compte sensible, 7 a 8 (20+ caracteres) pour un mot de passe maitre. Chaque syllabe supplementaire ajoute environ 9 bits d&apos;entropie. Au-dela de 8 syllabes, la memorisation devient plus dure que la sortie aleatoire.",
+                },
+                {
+                  question: "L&apos;ANSSI valide-t-elle les mots de passe prononcables ?",
+                  answer:
+                    "Oui. L&apos;ANSSI exige au minimum 12 caracteres avec un melange de types. Les mots de passe prononcables generes ici, avec majuscules, chiffres et symboles actives, respectent et depassent ces recommandations a partir de 4 syllabes. Le NIST 800-63B est sur la meme ligne et ne fait aucune distinction entre prononcable et aleatoire.",
+                },
+                {
+                  question: "Quel gestionnaire de mots de passe utiliser ?",
+                  answer:
+                    "Bitwarden (open source, gratuit, plan famille a 40 USD par an) ou 1Password (payant, ergonomique) sont les deux references. KeePassXC est une alternative 100 % locale sans cloud. Le mot de passe prononcable est ideal comme mot de passe maitre du gestionnaire, les mots de passe individuels des sites peuvent rester totalement aleatoires.",
+                },
+                {
+                  question: "Comparaison avec la methode XKCD (correct-horse-battery-staple) ?",
+                  answer:
+                    "La methode XKCD utilise 4 mots de dictionnaire (entropie environ 44 bits avec un dictionnaire de 7 776 mots EFF). Notre methode par syllabes aleatoires hors-dictionnaire atteint plus facilement 70 a 80 bits a longueur similaire, car aucune attaque par dictionnaire de mots ne fonctionne. Les deux sont valides, la methode syllabique est plus dense.",
+                },
+                {
+                  question: "Puis-je l&apos;utiliser pour un mot de passe maitre ?",
+                  answer:
+                    "Oui, c&apos;est meme un cas d&apos;usage ideal. Pour un mot de passe maitre (gestionnaire, chiffrement de disque, cle PGP), choisissez 7 a 8 syllabes avec chiffres et symboles. Repetez-le a haute voix, ecrivez-le 5 fois sur papier (que vous detruirez ensuite), puis utilisez-le quotidiennement pour ancrer la memoire musculaire au clavier.",
+                },
+                {
+                  question: "Mes mots de passe sont-ils transmis a un serveur ?",
+                  answer:
+                    "Non. La generation est entierement locale dans votre navigateur en JavaScript. Aucune syllabe, aucune suggestion ne sort de votre machine. Vous pouvez fermer l&apos;onglet immediatement apres avoir copie le mot de passe choisi dans votre gestionnaire.",
+                },
+              ]}
+            />
           </div>
           <aside className="space-y-6">
             <AdPlaceholder className="h-[250px]" />

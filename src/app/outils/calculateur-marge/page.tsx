@@ -2,6 +2,8 @@
 
 import { useState, useMemo } from "react";
 import AdPlaceholder from "@/components/AdPlaceholder";
+import ToolFaqSection from "@/components/ToolFaqSection";
+import ToolHowToSection from "@/components/ToolHowToSection";
 
 type CalcMode = "forward" | "reverse";
 
@@ -169,40 +171,172 @@ export default function CalculateurMarge() {
               </div>
             </div>
 
-            {/* SEO Content */}
-            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
-                Comment utiliser le calculateur de marge commerciale
-              </h2>
-              <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                <p>Ce calculateur de marge vous aide a determiner votre marge commerciale, votre taux de marge et votre taux de markup. Il est concu pour les entrepreneurs, commercants et auto-entrepreneurs qui souhaitent fixer leurs prix de vente de maniere rentable.</p>
-                <ul className="ml-4 list-disc space-y-1">
-                  <li><strong className="text-[var(--foreground)]">Calcul direct</strong> : saisissez votre prix d&apos;achat HT et votre prix de vente HT pour connaitre le benefice, le taux de marge et le taux de markup.</li>
-                  <li><strong className="text-[var(--foreground)]">Calcul inverse</strong> : entrez votre prix d&apos;achat HT et la marge souhaitee (en %) pour obtenir le prix de vente recommande.</li>
-                  <li><strong className="text-[var(--foreground)]">Visualisation</strong> : la barre de repartition vous montre la proportion cout/marge dans votre prix de vente.</li>
-                </ul>
-                <p>Les calculs sont effectues en HT (hors taxes). Pour obtenir le prix TTC, ajoutez la TVA applicable a votre activite (20% en taux normal, 10% pour la restauration, 5,5% pour l&apos;alimentaire de base).</p>
-              </div>
-            </div>
+            <ToolHowToSection
+              title="Comment calculer votre marge commerciale"
+              description="Trois etapes pour fixer un prix de vente coherent avec votre rentabilite cible et votre marche."
+              steps={[
+                {
+                  name: "Renseigner le prix d&apos;achat HT",
+                  text:
+                    "Saisissez le prix de revient unitaire hors taxes : cout d&apos;achat fournisseur + frais d&apos;approche (transport, douane, conditionnement). En production, integrez aussi la matiere et la main-d&apos;oeuvre directe. C&apos;est la base sur laquelle se construit la marge.",
+                },
+                {
+                  name: "Choisir entre calcul direct ou inverse",
+                  text:
+                    "Calcul direct : vous connaissez votre prix de vente cible (positionnement marche, prix concurrents) et voulez verifier la rentabilite. Calcul inverse : vous fixez d&apos;abord la marge cible (objectif de rentabilite, marge plancher imposee par les couts fixes) et l&apos;outil deduit le prix de vente recommande.",
+                },
+                {
+                  name: "Comparer marge, markup et coefficient",
+                  text:
+                    "Le taux de marge se calcule sur le prix de vente, le markup sur le prix d&apos;achat. Un produit achete 60 EUR vendu 100 EUR a une marge de 40 pourcent et un markup (ou coefficient multiplicateur 1,67) de 66,7 pourcent. Confondre les deux est l&apos;erreur classique qui fait perdre de l&apos;argent.",
+                },
+              ]}
+            />
 
-            {/* FAQ */}
-            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Questions frequentes</h2>
-              <div className="mt-6 space-y-5">
-                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
-                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Quelle est la difference entre marge et markup ?</h3>
-                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>La marge est calculee par rapport au prix de vente (benefice / prix de vente x 100), tandis que le markup est calcule par rapport au prix d&apos;achat (benefice / prix d&apos;achat x 100). Exemple : un produit achete 60 &euro; et vendu 100 &euro; a une marge de 40% mais un markup de 66,7%. Les deux indicateurs sont utiles mais ne sont pas interchangeables.</p>
+            <section
+              className="rounded-xl border p-6 md:p-8 shadow-sm"
+              style={{ background: "var(--surface)", borderColor: "var(--border)" }}
+            >
+              <h2
+                className="text-2xl md:text-3xl font-extrabold"
+                style={{ fontFamily: "var(--font-display)", color: "var(--foreground)" }}
+              >
+                Cas d&apos;usage du calculateur de marge
+              </h2>
+
+              <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
+                  <h3 className="font-semibold" style={{ color: "var(--foreground)" }}>
+                    E-commerce et dropshipping
+                  </h3>
+                  <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    Un produit achete 18 EUR HT en Asie, vendu 49,90 EUR HT : marge de 63,9 pourcent,
+                    markup de 177 pourcent, coefficient 2,77. Sur cette marge, il reste a deduire le
+                    cout d&apos;acquisition client (souvent 15-25 pourcent du prix), les frais de
+                    livraison et les retours.
+                  </p>
                 </div>
-                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
-                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Quelle marge viser pour etre rentable ?</h3>
-                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>La marge necessaire varie fortement selon le secteur. En grande distribution, une marge de 2 a 5% est courante en raison des volumes. En restauration, on vise 60 a 70% sur les produits. En e-commerce, 20 a 40% est la norme. Pour un auto-entrepreneur, il faut aussi tenir compte des charges sociales (environ 22%) et de l&apos;impot sur le revenu dans le calcul de la rentabilite reelle.</p>
+                <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
+                  <h3 className="font-semibold" style={{ color: "var(--foreground)" }}>
+                    Prestation de service B2B
+                  </h3>
+                  <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    Une agence facture 800 EUR HT une journee de conseil dont 250 EUR de cout
+                    consultant : marge de 68,75 pourcent. Sur les services, on parle plus souvent
+                    de marge brute commerciale que de marge sur cout matiere : c&apos;est le ratio
+                    sain pour absorber overhead et benefice net.
+                  </p>
                 </div>
-                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
-                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Comment calculer un prix de vente a partir d&apos;un taux de marge ?</h3>
-                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>La formule est : Prix de vente = Prix d&apos;achat / (1 - Taux de marge / 100). Par exemple, pour un produit achete 60 &euro; avec une marge souhaitee de 40% : 60 / (1 - 0,40) = 100 &euro;. Utilisez le mode &laquo; Calcul inverse &raquo; de notre outil pour obtenir ce resultat automatiquement.</p>
+                <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
+                  <h3 className="font-semibold" style={{ color: "var(--foreground)" }}>
+                    Industrie et fabrication
+                  </h3>
+                  <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    En industrie, on calcule d&apos;abord le cout de revient complet (matiere +
+                    main-d&apos;oeuvre + amortissement) avant d&apos;appliquer une marge. Pour un
+                    produit revient 42 EUR vendu 70 EUR HT : marge brute industrielle de 40 pourcent,
+                    proche des standards mecanique-metallurgie (35-45 pourcent).
+                  </p>
+                </div>
+                <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
+                  <h3 className="font-semibold" style={{ color: "var(--foreground)" }}>
+                    Restauration et CHR
+                  </h3>
+                  <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    Un plat avec 8 EUR de food cost vendu 26 EUR HT : marge brute de 69,2 pourcent,
+                    coefficient 3,25. La regle empirique en restauration : un coefficient compris
+                    entre 3 et 4 sur la nourriture, entre 4 et 5 sur les boissons hors vins.
+                  </p>
                 </div>
               </div>
-            </div>
+            </section>
+
+            <section
+              className="rounded-xl border p-6 md:p-8 shadow-sm"
+              style={{ background: "var(--surface-alt)", borderColor: "var(--border)" }}
+            >
+              <h2
+                className="text-2xl md:text-3xl font-extrabold"
+                style={{ fontFamily: "var(--font-display)", color: "var(--foreground)" }}
+              >
+                A savoir : marge brute, marge nette, marge commerciale
+              </h2>
+
+              <div className="mt-4 space-y-4 leading-relaxed" style={{ color: "var(--foreground)" }}>
+                <p>
+                  <strong>Taux de marge vs taux de marque.</strong> Le taux de marge se calcule
+                  sur le prix d&apos;achat (synonyme de markup), le taux de marque se calcule sur
+                  le prix de vente (ce que cet outil affiche par defaut sous &laquo; taux de
+                  marge &raquo;, conforme a l&apos;usage commercial francais courant). Verifiez
+                  toujours quelle base utilise votre comptable ou votre logiciel ERP avant de
+                  comparer.
+                </p>
+                <p>
+                  <strong>Marge brute, marge commerciale, marge nette.</strong> La marge brute =
+                  ventes - cout d&apos;achat des marchandises (commerce) ou cout de production
+                  (industrie). La marge commerciale est le terme normalise par le PCG (Plan
+                  Comptable General) pour le negoce. La marge nette deduit toutes les charges
+                  d&apos;exploitation et financieres : c&apos;est elle qui reflete la rentabilite
+                  reelle.
+                </p>
+                <p>
+                  <strong>Coefficient multiplicateur.</strong> Tres utilise en commerce de detail
+                  et restauration. C&apos;est le ratio Prix de vente HT / Prix d&apos;achat HT.
+                  Coefficient de 2 = prix double = markup 100 pourcent = marge 50 pourcent. C&apos;est
+                  la facon la plus rapide de fixer un prix en magasin sans calcul mental
+                  complexe.
+                </p>
+                <p>
+                  <strong>Marge et fiscalite.</strong> Tous les calculs sont en HT. La TVA
+                  collectee a la vente (20 pourcent en taux normal, 10 pourcent en restauration,
+                  5,5 pourcent sur l&apos;alimentaire de base, art. 278 sexies du CGI) est neutre
+                  pour le commercant assujetti : elle se reverse a l&apos;Etat. En micro-entreprise
+                  sous franchise en base TVA (art. 293 B CGI), pensez a integrer ce 20 pourcent
+                  d&apos;ecart pour comparer vos prix avec un concurrent assujetti.
+                </p>
+              </div>
+            </section>
+
+            <ToolFaqSection
+              intro="Les questions les plus frequentes sur le calcul de marge commerciale en France."
+              items={[
+                {
+                  question: "Quelle est la difference entre marge et markup ?",
+                  answer:
+                    "La marge se calcule sur le prix de vente : benefice / prix de vente x 100. Le markup se calcule sur le prix d&apos;achat : benefice / prix d&apos;achat x 100. Exemple : un produit achete 60 EUR et vendu 100 EUR a une marge de 40 pourcent (40 EUR sur 100 EUR de vente) mais un markup de 66,7 pourcent (40 EUR sur 60 EUR d&apos;achat). Les deux indicateurs sont valides mais ne sont jamais interchangeables.",
+                },
+                {
+                  question: "Quelle marge viser pour etre rentable selon mon secteur ?",
+                  answer:
+                    "Grande distribution : 2-5 pourcent (volumes). Restauration : 60-70 pourcent (food cost). E-commerce : 20-40 pourcent. SaaS / logiciel : 70-90 pourcent (couts marginaux faibles). Artisanat : 30-50 pourcent. En micro-entreprise, n&apos;oubliez pas que les charges sociales (12,3 a 23,1 pourcent du CA selon l&apos;activite) et l&apos;IR s&apos;ajoutent : votre marge nette peut etre 30 a 40 pourcent inferieure a la marge brute affichee.",
+                },
+                {
+                  question: "Comment calculer un prix de vente a partir d&apos;une marge cible ?",
+                  answer:
+                    "Formule : Prix de vente = Prix d&apos;achat / (1 - Taux de marge / 100). Pour un produit a 60 EUR avec marge cible de 40 pourcent : 60 / (1 - 0,40) = 100 EUR. Utilisez le mode &laquo; Calcul inverse &raquo;. Erreur classique : faire 60 + 40 pourcent = 84 EUR, ce qui donne en realite seulement 28,5 pourcent de marge.",
+                },
+                {
+                  question: "Qu&apos;est-ce que le coefficient multiplicateur en commerce ?",
+                  answer:
+                    "C&apos;est le ratio Prix de vente HT / Prix d&apos;achat HT. Coefficient 2 = doublement du prix = marge 50 pourcent = markup 100 pourcent. En textile, le coefficient classique est 2,5 a 3,5. En bijouterie / luxe : 3 a 5. En grande distribution alimentaire : 1,15 a 1,30 sur les produits frais.",
+                },
+                {
+                  question: "Marge et TVA : comment integrer la TVA dans le prix de vente ?",
+                  answer:
+                    "La marge se calcule toujours en HT. Une fois le prix HT fixe, ajoutez la TVA applicable : 20 pourcent (taux normal), 10 pourcent (restauration, travaux logements +2 ans), 5,5 pourcent (alimentaire de base, livres) ou 2,1 pourcent (medicaments, presse, art. 281 ter CGI). Pour un prix HT de 100 EUR a 20 pourcent : prix TTC affiche client = 120 EUR, mais votre marge reste calculee sur le HT.",
+                },
+                {
+                  question: "Comment differencier marge commerciale et marge industrielle ?",
+                  answer:
+                    "La marge commerciale (PCG) = ventes - cout d&apos;achat des marchandises vendues : pour le negoce / distribution. La marge industrielle (ou marge brute de production) = ventes - cout de production (matieres, main-d&apos;oeuvre directe, amortissements machines) : pour la fabrication. Une entreprise mixte calcule les deux separement pour piloter chaque activite.",
+                },
+                {
+                  question: "Pourquoi ma marge brute baisse meme avec plus de ventes ?",
+                  answer:
+                    "Trois causes classiques. 1) Mix produit defavorable : vous vendez plus de references a faible marge. 2) Hausse du cout d&apos;achat non repercutee (inflation matiere premiere, fournisseur). 3) Promotions ou remises commerciales trop frequentes qui ecrasent le prix de vente moyen. Un suivi mensuel de la marge brute par categorie permet d&apos;identifier la cause en quelques clics.",
+                },
+              ]}
+            />
           </div>
 
           <aside className="space-y-6">

@@ -2,6 +2,8 @@
 
 import { useState, useMemo } from "react";
 import AdPlaceholder from "@/components/AdPlaceholder";
+import ToolFaqSection from "@/components/ToolFaqSection";
+import ToolHowToSection from "@/components/ToolHowToSection";
 
 export default function SimulateurFlatTaxCrypto() {
   const [prixAcquisition, setPrixAcquisition] = useState("5000");
@@ -176,58 +178,184 @@ export default function SimulateurFlatTaxCrypto() {
               </>
             )}
 
-            {/* SEO Content */}
-            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Flat Tax crypto : comment ca marche ?</h2>
-              <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                <p>En France, les plus-values realisees lors de la cession d&apos;actifs numeriques (Bitcoin, Ethereum, etc.) sont soumises au Prelevement Forfaitaire Unique (PFU), communement appele &laquo; flat tax &raquo;, au taux de 31,4% depuis 2026 (contre 30% auparavant).</p>
-                <p><strong className="text-[var(--foreground)]">Decomposition de la flat tax 2026</strong> :</p>
-                <ul className="ml-4 list-disc space-y-1">
-                  <li><strong className="text-[var(--foreground)]">12,8%</strong> d&apos;impot sur le revenu (IR)</li>
-                  <li><strong className="text-[var(--foreground)]">18,6%</strong> de prelevements sociaux (PS) — hausse de 1,4 point en 2026</li>
-                </ul>
-                <p><strong className="text-[var(--foreground)]">Calcul de la plus-value</strong> : Plus-value = Prix de cession - (Prix total d&apos;acquisition x Montant de la cession / Valeur globale du portefeuille). Cette formule prend en compte la quote-part d&apos;acquisition proportionnelle au montant cede.</p>
-                <p><strong className="text-[var(--foreground)]">Seuil d&apos;exoneration</strong> : si le total de vos cessions annuelles est inferieur a 305 &euro;, vous etes exonere d&apos;impot sur les plus-values crypto.</p>
-                <p>Les moins-values (pertes) ne sont pas deductibles des revenus d&apos;autres categories mais peuvent etre compensees avec les plus-values de meme nature sur la meme annee fiscale.</p>
-              </div>
-            </div>
+            <ToolHowToSection
+              title="Comment calculer l&apos;impot sur vos cessions crypto"
+              description="Trois etapes pour appliquer correctement la flat tax francaise sur les plus-values d&apos;actifs numeriques (PFU, art. 200 A et 150 VH bis du CGI)."
+              steps={[
+                {
+                  name: "Renseigner le cout d&apos;acquisition global",
+                  text:
+                    "Indiquez le prix total que vous avez paye pour l&apos;ensemble de votre portefeuille crypto (cumul de tous les achats historiques en EUR). C&apos;est la base utilisee par l&apos;administration via la formule de l&apos;art. 150 VH bis CGI : la plus-value se calcule sur la quote-part d&apos;acquisition proportionnelle au montant cede.",
+                },
+                {
+                  name: "Saisir la valeur portefeuille au moment de la cession",
+                  text:
+                    "Valeur globale = somme des valeurs de marche de toutes vos cryptomonnaies au moment ou vous convertissez en EUR (ou en bien/service). Le rapport montant cede / valeur globale donne la fraction d&apos;acquisition a deduire de la cession pour calculer la plus-value imposable.",
+                },
+                {
+                  name: "Verifier le seuil 305 EUR et appliquer le PFU 30 pourcent",
+                  text:
+                    "Si vos cessions cumulees sur l&apos;annee sont inferieures a 305 EUR : exoneration totale (art. 150 VH bis-II CGI). Au-dela, application du PFU : 12,8 pourcent IR + 17,2 pourcent prelevements sociaux = 30 pourcent total. Option bareme progressif possible (depuis loi de finances 2022) si votre TMI &lt; 12,8 pourcent.",
+                },
+              ]}
+            />
 
-            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
-                Regles fiscales crypto en France (2026)
+            <section
+              className="rounded-xl border p-6 md:p-8 shadow-sm"
+              style={{ background: "var(--surface)", borderColor: "var(--border)" }}
+            >
+              <h2
+                className="text-2xl md:text-3xl font-extrabold"
+                style={{ fontFamily: "var(--font-display)", color: "var(--foreground)" }}
+              >
+                Cas d&apos;usage du simulateur flat tax crypto
               </h2>
-              <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                <ul className="ml-4 list-disc space-y-1">
-                  <li><strong className="text-[var(--foreground)]">Fait generateur</strong> : la conversion de crypto en monnaie fiduciaire (EUR) ou le paiement d&apos;un bien/service declenche l&apos;imposition. Les echanges crypto-crypto ne sont pas imposables.</li>
-                  <li><strong className="text-[var(--foreground)]">Declaration obligatoire</strong> : tout compte sur une plateforme etrangere doit etre declare (formulaire 3916-bis). Les plus-values se declarent via le formulaire 2086.</li>
-                  <li><strong className="text-[var(--foreground)]">Option bareme progressif</strong> : vous pouvez opter pour le bareme progressif de l&apos;IR au lieu de la flat tax si c&apos;est plus avantageux (TMI inferieure a 12,8%).</li>
-                  <li><strong className="text-[var(--foreground)]">Activite professionnelle</strong> : les traders professionnels relevent des BIC (Benefices Industriels et Commerciaux) avec des regles differentes.</li>
-                </ul>
-              </div>
-            </div>
 
-            {/* FAQ */}
-            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Questions frequentes</h2>
-              <div className="mt-6 space-y-5">
-                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
-                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Les echanges crypto-crypto sont-ils imposables ?</h3>
-                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Non. En France, seules les conversions en monnaie fiduciaire (euros, dollars) ou les achats de biens/services avec des cryptomonnaies declenchent l&apos;imposition. Echanger du Bitcoin contre de l&apos;Ethereum, par exemple, n&apos;est pas un fait generateur d&apos;impot.</p>
+              <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
+                  <h3 className="font-semibold" style={{ color: "var(--foreground)" }}>
+                    Vente partielle BTC en plus-value
+                  </h3>
+                  <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    Achete pour 5 000 EUR, portefeuille valant 12 000 EUR, vente de 3 000 EUR :
+                    plus-value imposable 1 750 EUR. Impot : 525 EUR de PFU 30 pourcent (224 EUR
+                    IR + 301 EUR PS). Net dans la poche : 2 475 EUR sur les 3 000 EUR cedes. A
+                    declarer sur formulaire 2086 annexe a la 2042-C.
+                  </p>
                 </div>
-                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
-                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Que se passe-t-il si je fais une moins-value ?</h3>
-                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Une moins-value (perte) n&apos;entraine aucune imposition. Elle peut venir en deduction des plus-values realisees sur d&apos;autres cessions de la meme annee fiscale. En revanche, elle ne peut pas etre reportee sur les annees suivantes ni deduite de vos autres revenus.</p>
+                <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
+                  <h3 className="font-semibold" style={{ color: "var(--foreground)" }}>
+                    Petits arbitrages sous le seuil 305 EUR
+                  </h3>
+                  <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    Investisseur qui sort 280 EUR sur l&apos;annee : exoneration totale (art. 150
+                    VH bis-II CGI). Attention : c&apos;est le total annuel des cessions, pas la
+                    plus-value, qui est seuille. Au-dela de 305 EUR de cessions cumulees,
+                    l&apos;ensemble des plus-values devient imposable.
+                  </p>
                 </div>
-                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
-                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Puis-je choisir le bareme progressif plutot que la flat tax ?</h3>
-                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Oui, vous pouvez opter pour le bareme progressif de l&apos;impot sur le revenu lors de votre declaration. C&apos;est avantageux si votre tranche marginale d&apos;imposition (TMI) est inferieure a 12,8%. Attention : ce choix s&apos;applique a l&apos;ensemble de vos revenus soumis au PFU (dividendes, interets, etc.).</p>
+                <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
+                  <h3 className="font-semibold" style={{ color: "var(--foreground)" }}>
+                    Compensation moins-value sur l&apos;annee
+                  </h3>
+                  <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    Cession ETH avec +5 000 EUR de plus-value, cession SOL avec -2 000 EUR sur la
+                    meme annee fiscale : seul 3 000 EUR de plus-value nette est imposable, soit
+                    900 EUR de PFU. Les moins-values ne se reportent pas sur les annees
+                    suivantes : interet a optimiser le timing des ventes en fin d&apos;annee.
+                  </p>
                 </div>
-                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
-                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Dois-je declarer mes comptes crypto a l&apos;etranger ?</h3>
-                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Oui, tout compte ouvert sur une plateforme situee a l&apos;etranger (Binance, Kraken, Coinbase, etc.) doit etre declare chaque annee via le formulaire 3916-bis. Le non-respect de cette obligation peut entrainer une amende de 750 &euro; par compte non declare, portee a 1 500 &euro; pour les comptes d&apos;une valeur superieure a 50 000 &euro;.</p>
+                <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
+                  <h3 className="font-semibold" style={{ color: "var(--foreground)" }}>
+                    Achat de bien avec crypto
+                  </h3>
+                  <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    Payer une voiture 25 000 EUR en BTC est fiscalement equivalent a une vente :
+                    fait generateur de plus-value. Si vos BTC ont ete acquis a 8 000 EUR au total
+                    (portefeuille global 30 000 EUR), la plus-value imposable sur l&apos;achat
+                    est de 18 333 EUR : 5 500 EUR de PFU. A budgeter avant de cliquer sur
+                    &laquo; payer en crypto &raquo;.
+                  </p>
                 </div>
               </div>
-            </div>
+            </section>
+
+            <section
+              className="rounded-xl border p-6 md:p-8 shadow-sm"
+              style={{ background: "var(--surface-alt)", borderColor: "var(--border)" }}
+            >
+              <h2
+                className="text-2xl md:text-3xl font-extrabold"
+                style={{ fontFamily: "var(--font-display)", color: "var(--foreground)" }}
+              >
+                A savoir : fiscalite crypto en France 2026
+              </h2>
+
+              <div className="mt-4 space-y-4 leading-relaxed" style={{ color: "var(--foreground)" }}>
+                <p>
+                  <strong>Cadre legal : art. 150 VH bis et 200 A CGI.</strong> Les plus-values
+                  de cession d&apos;actifs numeriques par les particuliers releves de
+                  l&apos;art. 150 VH bis du Code general des impots (introduit par la loi de
+                  finances 2019). Le PFU de 30 pourcent (12,8 pourcent IR + 17,2 pourcent PS)
+                  s&apos;applique conformement a l&apos;art. 200 A du CGI. Option pour le
+                  bareme progressif de l&apos;IR depuis la loi de finances 2022.
+                </p>
+                <p>
+                  <strong>Fait generateur : conversion en monnaie fiduciaire ou bien.</strong>
+                  Imposable : echange crypto contre EUR/USD/CHF, paiement d&apos;un bien ou
+                  service en crypto. Non imposable : echange crypto contre crypto (BTC contre
+                  ETH, swap stablecoin), transfert entre wallets vous appartenant, staking
+                  rewards (mais imposables a la cession ulterieure du token recu).
+                </p>
+                <p>
+                  <strong>Declaration obligatoire des comptes etrangers.</strong> Tout compte
+                  ouvert sur une plateforme situee hors de France (Binance, Kraken, Coinbase,
+                  Bybit, etc.) doit etre declare chaque annee via le formulaire 3916-bis,
+                  meme si aucune cession n&apos;a eu lieu. Sanctions : 750 EUR par compte non
+                  declare, 1 500 EUR si valeur cumulee &gt; 50 000 EUR. Cette obligation
+                  s&apos;applique meme aux cold wallets non-custodial geres via une plateforme
+                  etrangere.
+                </p>
+                <p>
+                  <strong>Activite habituelle : passage en BIC.</strong> L&apos;administration
+                  fiscale (BOFiP BOI-RPPM-PVBMC-30-30) considere qu&apos;un volume eleve, des
+                  operations frequentes ou un usage de techniques sophistiquees (effet de
+                  levier, derives) peuvent requalifier l&apos;activite en exercice habituel,
+                  imposable au regime des Benefices Industriels et Commerciaux (BIC) au
+                  bareme progressif + cotisations sociales TNS. Critere flou : la
+                  jurisprudence se construit progressivement.
+                </p>
+                <p>
+                  <strong>NFT et DeFi : zone grise.</strong> Les NFT (Non Fungible Tokens) sont
+                  imposes au PFU au meme titre que les cryptos selon BOFiP. Les operations DeFi
+                  (yield farming, lending, liquidity providing) ne sont pas explicitement
+                  cadrees : prudence et conservation de toutes les preuves. Conseil pratique :
+                  utilisez un outil de tracking (Koinly, Waltio, Coin-Tracking) pour generer
+                  vos formulaires 2086 automatiquement.
+                </p>
+              </div>
+            </section>
+
+            <ToolFaqSection
+              intro="Les questions frequentes sur la fiscalite des plus-values crypto en France 2026."
+              items={[
+                {
+                  question: "Les echanges crypto-crypto sont-ils imposables ?",
+                  answer:
+                    "Non. Selon l&apos;art. 150 VH bis CGI, seules les conversions en monnaie fiduciaire (EUR, USD, CHF, GBP) ou les achats de biens et services avec des cryptomonnaies sont des faits generateurs d&apos;imposition. Echanger BTC contre ETH, swapper un stablecoin, deplacer entre wallets : aucun impot. Vous pouvez donc rebalancer un portefeuille crypto sans declencher d&apos;impot tant que vous restez en crypto.",
+                },
+                {
+                  question: "Que faire en cas de moins-value crypto ?",
+                  answer:
+                    "Une moins-value n&apos;entraine pas d&apos;imposition. Elle se compense uniquement avec des plus-values de meme nature sur la meme annee fiscale (art. 150 VH bis-VI CGI). Pas de report sur les annees suivantes, pas de deduction du revenu global. Strategie d&apos;optimisation : si vous avez des plus-values latentes en fin d&apos;annee, &laquo; cristalliser &raquo; vos pertes pour reduire l&apos;assiette imposable.",
+                },
+                {
+                  question: "Puis-je opter pour le bareme progressif au lieu du PFU ?",
+                  answer:
+                    "Oui, depuis la loi de finances 2022. L&apos;option bareme progressif s&apos;exerce a la declaration et concerne l&apos;ensemble des revenus du capital (interets, dividendes, plus-values mobilieres et crypto). Avantageuse uniquement si votre Tranche Marginale d&apos;Imposition (TMI) est inferieure a 12,8 pourcent (donc TMI 0 ou 11 pourcent). Au-dela, le PFU 12,8 pourcent IR reste plus interessant.",
+                },
+                {
+                  question: "Dois-je declarer mes comptes sur Binance, Kraken ou Coinbase ?",
+                  answer:
+                    "Oui, obligatoire chaque annee via le formulaire 3916-bis joint a la declaration de revenus. Cette obligation concerne TOUS les comptes ouverts sur une plateforme situee hors de France, meme si vous n&apos;avez rien retire. Sanctions : 750 EUR par compte non declare, 1 500 EUR si valeur cumulee depasse 50 000 EUR. Le non-respect peut aussi etendre le delai de reprise fiscale a 10 ans.",
+                },
+                {
+                  question: "Quel formulaire pour declarer mes plus-values crypto ?",
+                  answer:
+                    "Formulaire 2086 (annexe a la 2042-C) pour le detail des cessions de l&apos;annee. Reportez le total des plus-values nettes en case 3AN (PFU) ou 2OP (option bareme progressif) de la 2042. Si exonere car total cessions &lt; 305 EUR, vous n&apos;avez pas de 2086 a remplir mais devez quand meme cocher la case correspondante. Le formulaire 3916-bis declare les comptes etrangers separement.",
+                },
+                {
+                  question: "Le seuil 305 EUR concerne le total des ventes ou la plus-value ?",
+                  answer:
+                    "Le total des prix de cession sur l&apos;annee (somme de tous vos retraits crypto-vers-EUR), pas la plus-value. Si vous vendez 250 EUR de BTC et 200 EUR d&apos;ETH dans la meme annee, le total est 450 EUR : exoneration perdue, l&apos;ensemble des plus-values devient imposable. Le seuil 305 EUR (art. 150 VH bis-II CGI) est tres bas et tres facile a depasser.",
+                },
+                {
+                  question: "Le staking et le mining sont-ils imposables ?",
+                  answer:
+                    "Le staking : les recompenses recues sont imposees au moment de la cession ulterieure du token, dans le cadre de l&apos;art. 150 VH bis CGI (PFU 30 pourcent). Le mining : si occasionnel, idem. Si l&apos;activite est habituelle (volumes importants, materiel dedie), requalification en BNC ou BIC professionnels au bareme progressif IR + cotisations sociales TNS. La jurisprudence est en construction, prudence en cas de gros volumes.",
+                },
+              ]}
+            />
           </div>
           <aside className="space-y-6">
             <AdPlaceholder className="h-[250px]" />

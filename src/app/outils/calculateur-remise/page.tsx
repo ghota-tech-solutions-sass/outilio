@@ -2,6 +2,8 @@
 
 import { useState, useMemo } from "react";
 import AdPlaceholder from "@/components/AdPlaceholder";
+import ToolFaqSection from "@/components/ToolFaqSection";
+import ToolHowToSection from "@/components/ToolHowToSection";
 
 interface Discount {
   id: number;
@@ -184,40 +186,173 @@ export default function CalculateurRemise() {
               </div>
             </div>
 
-            {/* SEO Content */}
-            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
-                Comment utiliser le calculateur de remise
-              </h2>
-              <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                <p>Ce calculateur de remise vous permet de connaitre instantanement le prix final d&apos;un article apres une ou plusieurs reductions. Ideal pendant les soldes, le Black Friday ou pour verifier une promotion en magasin.</p>
-                <ul className="ml-4 list-disc space-y-1">
-                  <li><strong className="text-[var(--foreground)]">Entrez le prix original</strong> : saisissez le prix de depart de l&apos;article en euros avant toute reduction.</li>
-                  <li><strong className="text-[var(--foreground)]">Ajoutez une ou plusieurs reductions</strong> : choisissez entre un pourcentage (ex : -20%) ou un montant fixe (ex : -10 &euro;) pour chaque remise.</li>
-                  <li><strong className="text-[var(--foreground)]">Cumulez les promotions</strong> : ajoutez autant de reductions que necessaire. Elles s&apos;appliquent en cascade sur le prix deja reduit.</li>
-                  <li><strong className="text-[var(--foreground)]">Consultez le detail</strong> : visualisez l&apos;economie totale, le pourcentage de reduction reel et le detail etape par etape.</li>
-                </ul>
-              </div>
-            </div>
+            <ToolHowToSection
+              title="Comment calculer une remise en cascade"
+              description="Trois etapes pour valider qu&apos;une promotion annoncee correspond bien a la reduction reelle, et eviter les pieges marketing."
+              steps={[
+                {
+                  name: "Saisir le prix de reference",
+                  text:
+                    "Le prix de reference est, depuis la directive Omnibus 2022 transposee en France, le prix le plus bas pratique pendant les 30 jours precedant la promotion. C&apos;est ce prix qui doit servir de base au calcul de la remise affichee, pas un &laquo; prix conseille &raquo; gonfle artificiellement.",
+                },
+                {
+                  name: "Ajouter chaque reduction successivement",
+                  text:
+                    "Cumulez pourcentages (-20 pourcent) et montants fixes (-10 EUR, bons d&apos;achat). Chaque reduction s&apos;applique sur le prix deja reduit par la precedente. C&apos;est l&apos;ordre des reductions qui peut changer le resultat final si vous melez pourcentages et montants fixes.",
+                },
+                {
+                  name: "Comparer la reduction reelle vs annoncee",
+                  text:
+                    "Verifiez que le pourcentage total affiche est coherent. -20 pourcent + -10 pourcent ne fait pas -30 pourcent mais -28 pourcent (cascade). Une promo &laquo; jusqu&apos;a -70 pourcent &raquo; cache souvent une moyenne autour de -30 pourcent. L&apos;outil donne la reduction reelle finale.",
+                },
+              ]}
+            />
 
-            {/* FAQ */}
-            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Questions frequentes</h2>
-              <div className="mt-6 space-y-5">
-                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
-                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Pourquoi deux remises de 20% et 10% ne font-elles pas 30% ?</h3>
-                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Lorsque plusieurs remises se cumulent, chaque reduction s&apos;applique sur le prix deja reduit, pas sur le prix initial. Par exemple, sur 100 &euro; : la premiere remise de 20% donne 80 &euro;, puis la seconde de 10% s&apos;applique sur 80 &euro; (soit -8 &euro;), pour un total de 72 &euro; &mdash; ce qui correspond a 28% de reduction reelle.</p>
+            <section
+              className="rounded-xl border p-6 md:p-8 shadow-sm"
+              style={{ background: "var(--surface)", borderColor: "var(--border)" }}
+            >
+              <h2
+                className="text-2xl md:text-3xl font-extrabold"
+                style={{ fontFamily: "var(--font-display)", color: "var(--foreground)" }}
+              >
+                Cas d&apos;usage du calculateur de remise
+              </h2>
+
+              <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
+                  <h3 className="font-semibold" style={{ color: "var(--foreground)" }}>
+                    Soldes et Black Friday
+                  </h3>
+                  <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    Une veste affichee 199 EUR a -40 pourcent puis -10 pourcent supplementaires en
+                    caisse : prix final 107,46 EUR (soit -46 pourcent reels et non -50 pourcent).
+                    Pratique pour comparer rapidement deux enseignes pendant les soldes ou le
+                    Black Friday.
+                  </p>
                 </div>
-                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
-                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Quelle est la reglementation des soldes en France ?</h3>
-                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>En France, les soldes se deroulent deux fois par an sur des periodes de 4 semaines fixees par arrete prefectoral. Les commercants doivent afficher clairement le prix de reference (le prix le plus bas pratique dans les 30 jours precedents) et le nouveau prix solde, conformement a la directive europeenne Omnibus.</p>
+                <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
+                  <h3 className="font-semibold" style={{ color: "var(--foreground)" }}>
+                    Negociation B2B et grosses commandes
+                  </h3>
+                  <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    Un fournisseur propose 5 pourcent de remise quantitative, 2 pourcent de remise
+                    exceptionnelle de fin d&apos;exercice, plus 1,5 pourcent d&apos;escompte
+                    paiement comptant : reduction reelle 8,38 pourcent (et non 8,5 pourcent
+                    additionnels). Sur des achats annuels de 200 KEUR, l&apos;ecart vaut le calcul.
+                  </p>
                 </div>
-                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
-                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Peut-on cumuler un code promo avec une remise en magasin ?</h3>
-                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Cela depend de la politique du commercant. Certaines enseignes autorisent le cumul d&apos;un code promotionnel avec les soldes ou les remises en cours, tandis que d&apos;autres l&apos;interdisent. Utilisez notre calculateur pour simuler le resultat final quel que soit le scenario.</p>
+                <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
+                  <h3 className="font-semibold" style={{ color: "var(--foreground)" }}>
+                    Marge ecrasee chez le commercant
+                  </h3>
+                  <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    Un produit achete 60 EUR et vendu 100 EUR (40 pourcent de marge) auquel
+                    j&apos;applique -25 pourcent de remise : nouveau prix 75 EUR, marge restante
+                    20 pourcent. Une remise client de 25 pourcent ampute la marge brute du
+                    commercant de moitie : a calculer avant de promettre une promo.
+                  </p>
+                </div>
+                <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
+                  <h3 className="font-semibold" style={{ color: "var(--foreground)" }}>
+                    Bons d&apos;achat et codes promo cumules
+                  </h3>
+                  <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    Un panier de 120 EUR avec -15 pourcent code promo, puis bon d&apos;achat de
+                    -10 EUR fidelite : prix final 92 EUR (et non 92 EUR, attention a l&apos;ordre).
+                    L&apos;ordre d&apos;application change le total : un commercant honnete
+                    applique le pourcentage avant les montants fixes.
+                  </p>
                 </div>
               </div>
-            </div>
+            </section>
+
+            <section
+              className="rounded-xl border p-6 md:p-8 shadow-sm"
+              style={{ background: "var(--surface-alt)", borderColor: "var(--border)" }}
+            >
+              <h2
+                className="text-2xl md:text-3xl font-extrabold"
+                style={{ fontFamily: "var(--font-display)", color: "var(--foreground)" }}
+              >
+                A savoir : remise, ristourne, rabais, prix barre
+              </h2>
+
+              <div className="mt-4 space-y-4 leading-relaxed" style={{ color: "var(--foreground)" }}>
+                <p>
+                  <strong>Remise vs ristourne vs rabais.</strong> En droit commercial francais, la
+                  remise est une reduction commerciale accordee a la commande (volume, anciennete
+                  client). La ristourne est versee a posteriori sur un volume cumule (typiquement
+                  fin d&apos;annee). Le rabais est lie a un defaut produit ou un retard de
+                  livraison. Les trois figurent sur la facture sous des lignes distinctes pour
+                  des raisons comptables (PCG) et fiscales.
+                </p>
+                <p>
+                  <strong>Prix barre et loi Hamon / directive Omnibus.</strong> La directive
+                  europeenne Omnibus 2022 (transposee en droit francais par l&apos;ordonnance du
+                  22 decembre 2021) impose au commercant d&apos;afficher le prix le plus bas
+                  pratique au cours des 30 jours precedant la promotion comme prix de reference.
+                  Les anciennes pratiques de &laquo; prix conseille &raquo; gonfle pour faire
+                  apparaitre une fausse promo sont desormais sanctionnees par la DGCCRF.
+                </p>
+                <p>
+                  <strong>Soldes en France : encadrement strict.</strong> Code de commerce art.
+                  L310-3 : 2 periodes de soldes par an de 4 semaines (hiver fin janvier, ete fin
+                  juin). Pendant ces periodes, le commercant peut vendre a perte (sinon
+                  l&apos;art. L442-2 l&apos;interdit). Hors soldes, des promotions sont autorisees
+                  mais avec ce meme prix de reference 30 jours.
+                </p>
+                <p>
+                  <strong>Marge commerciale et remise.</strong> Une remise de 25 pourcent sur un
+                  produit vendu avec 40 pourcent de marge brute ramene la marge a 20 pourcent
+                  seulement. Au-dela de 30 pourcent de remise, beaucoup de produits passent en
+                  vente a perte. C&apos;est pourquoi les chaines preparent leurs operations soldes
+                  des juin/juillet en negociant des prix d&apos;achat soldes specifiques aupres
+                  des fournisseurs.
+                </p>
+              </div>
+            </section>
+
+            <ToolFaqSection
+              intro="Les questions les plus frequentes sur le calcul de remises et la reglementation des soldes en France."
+              items={[
+                {
+                  question: "Pourquoi deux remises de 20 pourcent et 10 pourcent ne font pas 30 pourcent ?",
+                  answer:
+                    "Les remises se cumulent en cascade : la seconde s&apos;applique sur le prix deja reduit. Sur 100 EUR : -20 pourcent donne 80 EUR, puis -10 pourcent sur 80 EUR donne 72 EUR. Soit une reduction reelle de 28 pourcent et non 30 pourcent. La formule generale : (1 - 0,20) x (1 - 0,10) = 0,72, soit 28 pourcent de reduction totale. C&apos;est mathematiquement normal mais souvent contre-intuitif pour les acheteurs.",
+                },
+                {
+                  question: "Quelle est la reglementation des soldes en France ?",
+                  answer:
+                    "Code de commerce art. L310-3 : deux periodes annuelles de 4 semaines (soldes d&apos;hiver fin janvier, soldes d&apos;ete fin juin), dates fixees par arrete prefectoral. Pendant les soldes, la vente a perte est legalement autorisee (par derogation a l&apos;art. L442-2). Le prix de reference (loi Hamon + directive Omnibus 2022) doit etre le prix le plus bas des 30 jours precedents.",
+                },
+                {
+                  question: "Que dit la directive Omnibus sur les prix barres ?",
+                  answer:
+                    "La directive europeenne 2019/2161 dite Omnibus, transposee en France en decembre 2021, oblige tout commercant qui annonce une reduction de prix a afficher comme reference le prix le plus bas pratique pendant les 30 jours precedant la promotion. Fini les &laquo; prix conseille fabricant &raquo; gonfles : la DGCCRF peut sanctionner jusqu&apos;a 4 pourcent du chiffre d&apos;affaires en cas d&apos;infraction.",
+                },
+                {
+                  question: "Peut-on cumuler un code promo avec une remise en magasin ?",
+                  answer:
+                    "Cela depend de la politique commerciale de l&apos;enseigne. La plupart des CGV stipulent &laquo; non-cumulable avec d&apos;autres promotions en cours &raquo;. Verifiez le fichier CGU/CGV avant utilisation. Quand le cumul est autorise, l&apos;ordre des reductions importe : un pourcentage applique avant un bon d&apos;achat fixe donne un resultat different.",
+                },
+                {
+                  question: "Quelle difference entre remise, ristourne et rabais ?",
+                  answer:
+                    "Remise : reduction commerciale accordee au moment de l&apos;achat (volume, fidelite, client preferentiel). Ristourne : reduction calculee a posteriori sur un volume annuel cumule, generalement versee fin decembre. Rabais : reduction exceptionnelle pour compenser un defaut produit, un retard de livraison ou un service degrade. Comptablement (PCG art. 521-1), ces trois types apparaissent sur des comptes distincts.",
+                },
+                {
+                  question: "Comment calculer la remise reelle d&apos;une promotion -50 pourcent puis -20 pourcent ?",
+                  answer:
+                    "Formule : reduction totale = 1 - (1 - 0,50) x (1 - 0,20) = 1 - 0,40 = 0,60 = 60 pourcent. Sur 100 EUR : -50 pourcent donne 50 EUR, puis -20 pourcent donne 40 EUR. La reduction reelle est de 60 pourcent (et non 70 pourcent qu&apos;on pourrait penser en additionnant naivement).",
+                },
+                {
+                  question: "Une remise reduit-elle ma marge en tant que commercant ?",
+                  answer:
+                    "Oui, et plus que la perception immediate ne le suggere. Sur un produit achete 60 EUR vendu 100 EUR (40 pourcent de marge brute), une remise de 20 pourcent ramene le prix a 80 EUR : la marge passe de 40 EUR a 20 EUR, soit -50 pourcent de marge brute. Les remises agressives (au-dela de 25-30 pourcent) ecrasent rapidement la rentabilite : a calibrer en fonction de votre marge initiale.",
+                },
+              ]}
+            />
           </div>
 
           <aside className="space-y-6">

@@ -2,6 +2,8 @@
 
 import { useState, useMemo } from "react";
 import AdPlaceholder from "@/components/AdPlaceholder";
+import ToolFaqSection from "@/components/ToolFaqSection";
+import ToolHowToSection from "@/components/ToolHowToSection";
 
 const DAYS = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"];
 
@@ -152,40 +154,175 @@ export default function CalculateurHeuresTravail() {
               </div>
             </div>
 
-            {/* SEO Content */}
-            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
-                Comment utiliser le calculateur d&apos;heures de travail
-              </h2>
-              <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                <p>Cet outil vous permet de calculer precisement vos heures de travail hebdomadaires, en tenant compte des pauses et du temps de repos. Il compare automatiquement le total a votre contrat pour detecter les heures supplementaires.</p>
-                <ul className="ml-4 list-disc space-y-1">
-                  <li><strong className="text-[var(--foreground)]">Definissez votre contrat</strong> : indiquez le nombre d&apos;heures hebdomadaires prevues par votre contrat de travail (35h par defaut en France).</li>
-                  <li><strong className="text-[var(--foreground)]">Remplissez vos horaires</strong> : pour chaque jour, saisissez l&apos;heure de debut, l&apos;heure de fin et la duree de votre pause dejeuner en minutes.</li>
-                  <li><strong className="text-[var(--foreground)]">Consultez le recapitulatif</strong> : total des heures travaillees, heures supplementaires, nombre de jours travailles et moyenne journaliere.</li>
-                </ul>
-                <p>Le calculateur gere automatiquement les semaines de 7 jours, y compris le samedi et le dimanche, pour les salaries qui travaillent le week-end.</p>
-              </div>
-            </div>
+            <ToolHowToSection
+              title="Comment utiliser le calculateur d&apos;heures de travail"
+              description="Saisissez vos horaires journaliers et le calculateur compare automatiquement votre temps effectif a votre contrat, pour detecter les heures supplementaires et leurs majorations."
+              steps={[
+                {
+                  name: "Definir le volume horaire contractuel",
+                  text:
+                    "Indiquez le nombre d&apos;heures hebdomadaires prevues par votre contrat (35h par defaut en France pour un temps plein, 24h pour un temps partiel courant, 28h pour un mi-temps majore). Cette base sert de reference pour calculer les heures supplementaires.",
+                },
+                {
+                  name: "Remplir les horaires de la semaine",
+                  text:
+                    "Pour chaque jour, saisissez l&apos;heure de debut, l&apos;heure de fin et la duree de pause dejeuner en minutes. Pour les jours non travailles (ex : samedi, dimanche), laissez les champs vides. Le total quotidien s&apos;affiche en temps reel a droite de chaque ligne.",
+                },
+                {
+                  name: "Consulter le recapitulatif et les heures supplementaires",
+                  text:
+                    "Le bloc recapitulatif donne le total hebdomadaire, le nombre d&apos;heures sup, les jours travailles et la moyenne par jour. La barre de progression indique si vous etes en dessous, conforme ou au-dessus de votre contrat. Si depassement, la valeur est affichee en orange.",
+                },
+              ]}
+            />
 
-            {/* FAQ */}
-            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Questions frequentes</h2>
-              <div className="mt-6 space-y-5">
-                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
-                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>La pause dejeuner est-elle comptee dans le temps de travail ?</h3>
-                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Non, en France la pause dejeuner n&apos;est generalement pas comptee comme du temps de travail effectif. Le Code du travail impose une pause minimale de 20 minutes pour toute periode de 6 heures consecutives de travail. La plupart des entreprises accordent entre 45 minutes et 1 heure de pause repas, qui est deduite du temps de presence.</p>
+            <section
+              className="rounded-xl border p-6 md:p-8 shadow-sm"
+              style={{ background: "var(--surface)", borderColor: "var(--border)" }}
+            >
+              <h2
+                className="text-2xl md:text-3xl font-extrabold"
+                style={{ fontFamily: "var(--font-display)", color: "var(--foreground)" }}
+              >
+                Cas d&apos;usage du calculateur d&apos;heures de travail
+              </h2>
+
+              <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
+                  <h3 className="font-semibold" style={{ color: "var(--foreground)" }}>
+                    Salarie qui controle son bulletin de paie
+                  </h3>
+                  <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    Votre fiche de paie affiche 7 heures sup payees ce mois mais vous estimez en
+                    avoir fait 12 : reconstituez vos horaires reels semaine par semaine pour
+                    detecter un ecart. En cas de litige, demandez le decompte officiel a votre
+                    employeur (obligation legale art L3171-1 du Code du travail).
+                  </p>
                 </div>
-                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
-                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Comment sont majorees les heures supplementaires ?</h3>
-                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>En France, les 8 premieres heures supplementaires (de la 36e a la 43e heure) sont majorees de 25%. Au-dela de 43 heures, la majoration passe a 50%. Le contingent annuel d&apos;heures supplementaires est de 220 heures par salarie, sauf accord de branche different. Un accord d&apos;entreprise peut aussi prevoir le remplacement de la majoration par un repos compensateur equivalent.</p>
+                <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
+                  <h3 className="font-semibold" style={{ color: "var(--foreground)" }}>
+                    Manager qui prepare un planning
+                  </h3>
+                  <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    Avant de valider les horaires de l&apos;equipe, simulez les volumes
+                    hebdomadaires de chacun pour verifier qu&apos;aucun salarie ne depasse les
+                    48h legales (ou 44h en moyenne sur 12 semaines). Anticipez les majorations
+                    pour mieux prevoir le budget paie de la periode.
+                  </p>
                 </div>
-                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
-                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Quelle est la duree maximale de travail par jour en France ?</h3>
-                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>La duree maximale quotidienne de travail est de 10 heures (12 heures sur derogation). La duree maximale hebdomadaire est de 48 heures sur une semaine isolee et de 44 heures en moyenne sur 12 semaines consecutives. Tout salarie doit beneficier d&apos;au moins 11 heures de repos consecutives entre deux journees de travail.</p>
+                <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
+                  <h3 className="font-semibold" style={{ color: "var(--foreground)" }}>
+                    Freelance ou independant en TJM
+                  </h3>
+                  <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    Pour evaluer si votre TJM est rentable, comparez votre temps de travail
+                    reel (incluant le commercial, l&apos;admin, la veille) au temps facture.
+                    Si vous travaillez 50h/semaine pour 35h facturees, votre TJM affiche est
+                    surevalue de 43 % par rapport au temps reel. Indispensable avant
+                    d&apos;ajuster ses tarifs.
+                  </p>
+                </div>
+                <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
+                  <h3 className="font-semibold" style={{ color: "var(--foreground)" }}>
+                    Service paie et RH PME
+                  </h3>
+                  <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    Pour des employes au forfait jours ou en modulation horaire, le
+                    calculateur sert de pre-calcul avant integration dans le SIRH (Sage,
+                    PayFit, Lucca). Particulierement utile pour les entreprises sans logiciel
+                    de gestion de temps qui pointent encore en Excel ou sur papier.
+                  </p>
                 </div>
               </div>
-            </div>
+            </section>
+
+            <section
+              className="rounded-xl border p-6 md:p-8 shadow-sm"
+              style={{ background: "var(--surface-alt)", borderColor: "var(--border)" }}
+            >
+              <h2
+                className="text-2xl md:text-3xl font-extrabold"
+                style={{ fontFamily: "var(--font-display)", color: "var(--foreground)" }}
+              >
+                A savoir sur le temps de travail en France
+              </h2>
+
+              <div className="mt-4 space-y-4 leading-relaxed" style={{ color: "var(--foreground)" }}>
+                <p>
+                  <strong>Article L3121-27 : 35 heures, c&apos;est la duree legale, pas la duree maximale.</strong>
+                  La duree legale de 35h/semaine est la base au-dela de laquelle les heures
+                  sont qualifiees de supplementaires. La duree maximale est de 48h/semaine et
+                  44h en moyenne sur 12 semaines consecutives. Au quotidien : 10h max par jour
+                  (12h sur derogation), avec 11h de repos consecutif obligatoire entre deux
+                  journees.
+                </p>
+                <p>
+                  <strong>Majorations des heures supplementaires.</strong> Sauf accord
+                  d&apos;entreprise different, les 8 premieres heures sup (36e a 43e heure) sont
+                  majorees de 25 %. Au-dela de la 43e heure, majoration de 50 %. Le contingent
+                  annuel par defaut est de 220 heures, au-dela il faut une contrepartie
+                  obligatoire en repos. Une convention de branche peut prevoir des taux plus
+                  favorables (10 % minimum legal en negociation collective).
+                </p>
+                <p>
+                  <strong>Repos compensateur equivalent.</strong> Une entreprise peut
+                  remplacer le paiement majore des heures sup par un repos compensateur (1h
+                  travaillee = 1h15 de repos pour 25 % de majoration). Ce dispositif doit etre
+                  prevu par un accord collectif. Avantage employe : preserve la trésorerie de
+                  la PME, donne plus de temps libre. Inconvenient : perte de remuneration
+                  immediate.
+                </p>
+                <p>
+                  <strong>Pause dejeuner : non comptee comme temps de travail.</strong> Le Code
+                  du travail impose au minimum 20 minutes de pause des 6 heures de travail
+                  consecutives (art L3121-16). Elle ne compte pas comme temps de travail
+                  effectif sauf si le salarie reste a disposition de l&apos;employeur. La
+                  plupart des conventions accordent entre 45 minutes et 1 heure non payee, qui
+                  doit etre deduite du temps de presence pour calculer le temps effectif.
+                </p>
+              </div>
+            </section>
+
+            <ToolFaqSection
+              intro="Les questions les plus posees sur le calcul des heures de travail."
+              items={[
+                {
+                  question: "La pause dejeuner est-elle comptee dans le temps de travail ?",
+                  answer:
+                    "Non, en France la pause dejeuner n'est pas comptee comme temps de travail effectif. Le Code du travail (art L3121-16) impose une pause minimale de 20 minutes pour toute periode de 6 heures consecutives. La plupart des entreprises accordent entre 45 minutes et 1 heure non payee, qui est deduite du temps de presence. Exception : si le salarie reste a disposition de l'employeur, la pause est requalifiee en temps de travail.",
+                },
+                {
+                  question: "Comment sont majorees les heures supplementaires ?",
+                  answer:
+                    "En France, les 8 premieres heures sup (36e a 43e heure de la semaine) sont majorees de 25 %. Au-dela de 43 heures, majoration de 50 %. Le contingent annuel par defaut est de 220 heures par salarie, modulable par accord de branche. Un accord d'entreprise peut remplacer la majoration en argent par un repos compensateur equivalent (par exemple 1h15 de repos pour 1h sup a 25 %).",
+                },
+                {
+                  question: "Quelle est la duree maximale de travail par jour en France ?",
+                  answer:
+                    "10 heures par jour maximum, avec une derogation possible jusqu'a 12 heures (accord de branche). Maximum hebdomadaire : 48h sur une semaine isolee et 44h en moyenne sur 12 semaines consecutives. Repos quotidien obligatoire : 11 heures consecutives. Repos hebdomadaire : 35 heures consecutives (24h + 11h). Ces seuils sont fixes par le Code du travail et l'art L3121-18 a L3121-22.",
+                },
+                {
+                  question: "Comment calculer mon salaire horaire net ?",
+                  answer:
+                    "Salaire mensuel net divise par le nombre d'heures travaillees dans le mois. Pour un 35h hebdomadaire : 35 x 52 / 12 = 151,67h/mois. Si net mensuel = 2 000 EUR, alors taux horaire net = 13,19 EUR/h. Pour le brut, comptez environ 23 % de charges salariales (variable selon convention) en plus pour reconstituer le salaire brut a partir du net.",
+                },
+                {
+                  question: "Comment sont decomptes les jours feries dans la semaine ?",
+                  answer:
+                    "Si le 1er mai tombe sur un jour normalement travaille, il est paye comme un jour normal (pas de perte de salaire). S'il est travaille (cas exceptionnel), majoration de 100 %. Pour les autres feries (8 mai, 14 juillet, etc.), majoration depend de la convention collective : variable de 0 a 100 %. La regle par defaut Code du travail : seul le 1er mai est obligatoirement majore.",
+                },
+                {
+                  question: "Quelle est la difference entre temps de presence et temps de travail effectif ?",
+                  answer:
+                    "Le temps de presence inclut tout le temps passe sur le lieu de travail (heure d'arrivee a heure de depart). Le temps de travail effectif est le temps ou le salarie est a la disposition de l'employeur, en deduisant les pauses non remunerees. C'est le temps effectif qui compte pour calculer les heures supplementaires et le salaire de base, comme le precise l'art L3121-1 du Code du travail.",
+                },
+                {
+                  question: "Mes donnees sont-elles confidentielles ?",
+                  answer:
+                    "Oui. Les horaires saisis restent dans votre navigateur et ne sont envoyes a aucun serveur. Le calcul est effectue 100 % localement en JavaScript. Aucun cookie de tracking, aucune connexion serveur, aucune inscription requise. La page peut fonctionner hors connexion une fois chargee.",
+                },
+              ]}
+            />
           </div>
           <aside className="space-y-6">
             <AdPlaceholder className="h-[250px]" />

@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import AdPlaceholder from "@/components/AdPlaceholder";
+import ToolFaqSection from "@/components/ToolFaqSection";
+import ToolHowToSection from "@/components/ToolHowToSection";
 
 export default function GenerateurMentionsLegales() {
   const [form, setForm] = useState({
@@ -102,43 +104,166 @@ export default function GenerateurMentionsLegales() {
               </div>
             </div>
 
-            {/* SEO Content */}
-            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
-                Comment generer vos mentions legales
-              </h2>
-              <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                <p>
-                  En France, la loi n&deg;2004-575 du 21 juin 2004 (LCEN) impose a tout editeur de site internet de publier des mentions legales.
-                  Notre generateur cree un texte conforme incluant les informations obligatoires et les clauses RGPD.
-                </p>
-                <ul className="ml-4 list-disc space-y-1">
-                  <li><strong className="text-[var(--foreground)]">Renseignez les informations du site</strong> : nom et URL de votre site web</li>
-                  <li><strong className="text-[var(--foreground)]">Choisissez votre statut</strong> : particulier ou entreprise (avec SIRET et raison sociale)</li>
-                  <li><strong className="text-[var(--foreground)]">Ajoutez l&apos;hebergeur</strong> : nom et adresse de votre hebergeur web</li>
-                  <li><strong className="text-[var(--foreground)]">Copiez le resultat</strong> : collez-le dans une page dediee de votre site</li>
-                </ul>
-              </div>
-            </div>
+            <ToolHowToSection
+              title="Comment generer vos mentions legales conformes LCEN"
+              description="Le generateur structure votre texte selon les articles 6-III et 19 de la loi LCEN du 21 juin 2004, plus une clause RGPD prete a publier."
+              steps={[
+                {
+                  name: "Renseigner l&apos;identite de l&apos;editeur",
+                  text:
+                    "Indiquez votre statut (particulier ou entreprise). En entreprise : raison sociale, SIRET, adresse du siege social, representant legal, telephone et email. En particulier pour un site non commercial : nom, prenom et email suffisent ; vous pouvez masquer votre adresse postale en cas de blog perso (article 6-III-2 LCEN).",
+                },
+                {
+                  name: "Ajouter les coordonnees de l&apos;hebergeur",
+                  text:
+                    "Nom et adresse complete de votre hebergeur (OVH, Vercel, Netlify, AWS, Scaleway, Hostinger...). Cette mention est obligatoire meme pour un site personnel. L&apos;information se trouve dans le contrat d&apos;hebergement ou sur le site de l&apos;hebergeur, rubrique &quot;Mentions legales&quot; ou &quot;Contact&quot;.",
+                },
+                {
+                  name: "Copier-coller dans une page dediee /mentions-legales",
+                  text:
+                    "Cliquez sur Copier puis collez dans une page accessible depuis le footer de votre site, sous le libelle &quot;Mentions legales&quot;. Cette page doit etre directement accessible (1 clic depuis n&apos;importe quelle page), conformement a l&apos;article 6-III-1 LCEN. Mettez a jour le texte des qu&apos;un element change (changement d&apos;hebergeur, demenagement).",
+                },
+              ]}
+            />
 
-            {/* FAQ */}
-            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Questions frequentes</h2>
-              <div className="mt-6 space-y-5">
-                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
-                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Les mentions legales sont-elles obligatoires en France ?</h3>
-                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Oui, la loi LCEN de 2004 oblige tout editeur de site internet professionnel a afficher des mentions legales. L&apos;absence de mentions legales est passible d&apos;une amende pouvant aller jusqu&apos;a 75 000 &euro; pour les personnes physiques et 375 000 &euro; pour les personnes morales.</p>
+            <section
+              className="rounded-xl border p-6 md:p-8 shadow-sm"
+              style={{ background: "var(--surface)", borderColor: "var(--border)" }}
+            >
+              <h2
+                className="text-2xl md:text-3xl font-extrabold"
+                style={{ fontFamily: "var(--font-display)", color: "var(--foreground)" }}
+              >
+                Cas d&apos;usage du generateur de mentions legales
+              </h2>
+
+              <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
+                  <h3 className="font-semibold" style={{ color: "var(--foreground)" }}>
+                    Site vitrine TPE / EURL / SASU
+                  </h3>
+                  <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    Indispensable des qu&apos;une activite professionnelle est presentee : le SIRET et le representant legal sont
+                    obligatoires. Ne negligez pas le numero de TVA intracommunautaire si vous etes assujetti, ainsi que le numero
+                    RCS si applicable.
+                  </p>
                 </div>
-                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
-                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Que doit contenir une page de mentions legales ?</h3>
-                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Les mentions legales doivent inclure : l&apos;identite de l&apos;editeur (nom, adresse, SIRET pour les entreprises), les coordonnees de contact, les informations de l&apos;hebergeur, une clause sur la propriete intellectuelle et les droits relatifs aux donnees personnelles (RGPD).</p>
+                <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
+                  <h3 className="font-semibold" style={{ color: "var(--foreground)" }}>
+                    Boutique e-commerce
+                  </h3>
+                  <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    Les mentions LCEN sont la base, mais une boutique en ligne doit y ajouter : CGV obligatoires (art. L221-1 a
+                    L221-29 Code de la consommation), politique de retours, conditions de livraison. Generez les mentions ici puis
+                    completez-les avec un avocat ou un modele LegalPlace.
+                  </p>
                 </div>
-                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
-                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Le texte genere est-il suffisant pour etre en conformite ?</h3>
-                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Le texte genere couvre les principales obligations legales. Cependant, selon votre activite (e-commerce, collecte de donnees sensibles), des clauses supplementaires peuvent etre necessaires. Il est recommande de faire valider vos mentions par un juriste.</p>
+                <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
+                  <h3 className="font-semibold" style={{ color: "var(--foreground)" }}>
+                    Blog perso ou portfolio
+                  </h3>
+                  <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    Meme un site non commercial doit afficher des mentions legales (art. 6-III LCEN). Vous pouvez choisir
+                    l&apos;option Particulier et masquer votre adresse personnelle en deposant ces informations chez l&apos;hebergeur
+                    (qui les communiquera sur requisition judiciaire). C&apos;est l&apos;option pseudonymat legal.
+                  </p>
+                </div>
+                <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
+                  <h3 className="font-semibold" style={{ color: "var(--foreground)" }}>
+                    Application SaaS B2B
+                  </h3>
+                  <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    Les mentions doivent indiquer l&apos;editeur (votre societe) et l&apos;hebergeur du SaaS (qui peut etre AWS,
+                    Cloudflare, Render). Couplez avec une politique de confidentialite RGPD detaillee, un DPA si vous traitez
+                    des donnees pour le compte de vos clients (sous-traitance article 28 RGPD), et un registre des traitements.
+                  </p>
                 </div>
               </div>
-            </div>
+            </section>
+
+            <section
+              className="rounded-xl border p-6 md:p-8 shadow-sm"
+              style={{ background: "var(--surface-alt)", borderColor: "var(--border)" }}
+            >
+              <h2
+                className="text-2xl md:text-3xl font-extrabold"
+                style={{ fontFamily: "var(--font-display)", color: "var(--foreground)" }}
+              >
+                Conformite legale : ce qu&apos;il faut savoir
+              </h2>
+
+              <div className="mt-4 space-y-4 leading-relaxed" style={{ color: "var(--foreground)" }}>
+                <p>
+                  <strong>LCEN article 6 : la base legale.</strong> La Loi pour la Confiance dans l&apos;Economie Numerique
+                  (n&deg;2004-575 du 21 juin 2004) impose a tout editeur de site web professionnel d&apos;afficher des mentions legales
+                  accessibles. L&apos;article 6-III liste les informations obligatoires : identification de l&apos;editeur, du
+                  directeur de publication, et de l&apos;hebergeur. L&apos;absence de mentions legales est sanctionnee par une
+                  amende pouvant atteindre 75 000 EUR (personnes physiques) ou 375 000 EUR (personnes morales).
+                </p>
+                <p>
+                  <strong>Site perso vs pro : l&apos;exception du pseudonymat.</strong> Un particulier qui edite un site non
+                  commercial peut s&apos;identifier sous pseudonyme dans les mentions, a condition d&apos;avoir communique son
+                  identite reelle a l&apos;hebergeur. C&apos;est l&apos;article 6-III-2 LCEN. Cette exception ne s&apos;applique pas des
+                  qu&apos;il y a une activite commerciale (vente, affiliation, sponsoring), meme occasionnelle.
+                </p>
+                <p>
+                  <strong>RGPD vs CNIL : ce ne sont pas des mentions legales.</strong> Les mentions legales (LCEN) et la
+                  politique de confidentialite (RGPD) sont deux documents distincts. Les mentions legales identifient
+                  l&apos;editeur. La politique de confidentialite explique quelles donnees personnelles sont collectees, pourquoi,
+                  combien de temps elles sont conservees, et comment exercer ses droits. Les deux sont obligatoires des qu&apos;un
+                  site collecte la moindre donnee (formulaire de contact, cookies analytics).
+                </p>
+                <p>
+                  <strong>Mentions obligatoires recapitulatif.</strong> Editeur (nom, adresse, SIRET pour entreprise),
+                  directeur de publication (par defaut le representant legal), email de contact, hebergeur (nom et adresse
+                  complete), numero RCS et TVA intracommunautaire si applicable, capital social pour les societes,
+                  coordonnees de la CNIL si traitement de donnees personnelles. Le generateur produit un texte qui couvre
+                  tous ces points pour les cas standards. Pour une activite reglementee (sante, finance, droit), faites
+                  valider par un avocat specialise.
+                </p>
+              </div>
+            </section>
+
+            <ToolFaqSection
+              intro="Les questions les plus posees sur les mentions legales obligatoires."
+              items={[
+                {
+                  question: "Les mentions legales sont-elles obligatoires en France ?",
+                  answer:
+                    "Oui pour tout site web edite depuis la France ou destine au public francais. La LCEN du 21 juin 2004 (article 6-III) le rend obligatoire pour les sites pro et perso. Sanction maximale : 75 000 EUR pour une personne physique, 375 000 EUR pour une personne morale, plus 1 an de prison en cas de defaut volontaire d&apos;identification.",
+                },
+                {
+                  question: "Que doit contenir une page de mentions legales ?",
+                  answer:
+                    "Identite de l&apos;editeur (nom, adresse, SIRET pour les entreprises), directeur de publication, coordonnees de contact (email obligatoire), informations de l&apos;hebergeur (nom et adresse complete), numero RCS et TVA si applicable, capital social pour les societes, clause de propriete intellectuelle, et la mention RGPD avec les modalites d&apos;exercice des droits.",
+                },
+                {
+                  question: "Quelle difference entre mentions legales et politique de confidentialite ?",
+                  answer:
+                    "Les mentions legales (LCEN) identifient l&apos;editeur du site et l&apos;hebergeur. La politique de confidentialite (RGPD) explique quelles donnees personnelles sont collectees, pourquoi, comment, combien de temps, et comment exercer ses droits. Les deux sont obligatoires et complementaires des qu&apos;un site collecte la moindre donnee personnelle.",
+                },
+                {
+                  question: "Le texte genere est-il suffisant pour la conformite ?",
+                  answer:
+                    "Pour un site vitrine ou un blog standard, oui. Pour une activite reglementee (sante, finance, droit, e-commerce avec collecte de donnees sensibles), le generateur fournit une base solide mais des clauses sectorielles supplementaires sont necessaires. Faites valider par un avocat ou utilisez un service comme LegalPlace pour les cas complexes.",
+                },
+                {
+                  question: "Particulier : dois-je afficher mon adresse personnelle ?",
+                  answer:
+                    "Non, pas obligatoirement. L&apos;article 6-III-2 LCEN permet a un particulier editant un site non commercial de masquer son adresse en deposant son identite et ses coordonnees chez son hebergeur. Vous mentionnez alors uniquement votre nom (ou pseudonyme), votre email et les coordonnees de l&apos;hebergeur. Cette exception tombe des qu&apos;une activite commerciale apparait.",
+                },
+                {
+                  question: "Faut-il un directeur de publication distinct ?",
+                  answer:
+                    "Pour une entreprise, le representant legal est par defaut le directeur de publication (gerant de SARL/EURL, president de SAS/SASU). Pour une association, c&apos;est le president. Pour un site perso, c&apos;est l&apos;editeur lui-meme. Une nomination distincte est obligatoire seulement pour les sites de presse en ligne (entreprises de presse au sens de la loi du 29 juillet 1881).",
+                },
+                {
+                  question: "Mes informations sont-elles envoyees a un serveur ?",
+                  answer:
+                    "Non. Toute la generation se fait localement dans votre navigateur. Aucune information saisie (nom, SIRET, adresse, email) n&apos;est transmise, journalisee ou stockee. Vous pouvez fermer l&apos;onglet immediatement apres avoir copie le texte, sans laisser de trace cote serveur.",
+                },
+              ]}
+            />
           </div>
           <aside className="space-y-6">
             <AdPlaceholder className="h-[250px]" />

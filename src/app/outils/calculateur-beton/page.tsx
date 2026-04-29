@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import AdPlaceholder from "@/components/AdPlaceholder";
+import ToolFaqSection from "@/components/ToolFaqSection";
+import ToolHowToSection from "@/components/ToolHowToSection";
 
 const FORMES = [
   { id: "dalle", label: "Dalle / Plancher", icon: "\u{1F7EB}" },
@@ -145,40 +147,169 @@ export default function CalculateurBeton() {
               </div>
             </div>
 
-            {/* SEO Content */}
-            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
-                Comment utiliser le calculateur de beton
-              </h2>
-              <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                <p>Notre calculateur de beton vous permet d&apos;estimer avec precision le volume de beton necessaire pour vos travaux de construction ou de renovation. Que vous couliez une dalle de terrasse, une fondation de maison ou un poteau, l&apos;outil calcule automatiquement le volume en m&sup3;, le nombre de sacs et le poids total.</p>
-                <ul className="ml-4 list-disc space-y-1">
-                  <li><strong className="text-[var(--foreground)]">Choisissez le type d&apos;ouvrage</strong> : dalle/plancher, fondation/semelle ou poteau/cylindre selon votre projet.</li>
-                  <li><strong className="text-[var(--foreground)]">Entrez les dimensions en metres</strong> : longueur, largeur et epaisseur pour une dalle, ou diametre et hauteur pour un poteau.</li>
-                  <li><strong className="text-[var(--foreground)]">Lisez les resultats</strong> : volume exact en m&sup3;, volume avec 10% de marge de securite, nombre de sacs de 25 kg et 35 kg, et poids total en tonnes.</li>
-                </ul>
-                <p>Les quantites incluent automatiquement une marge de 10% pour compenser les pertes liees au coulage, aux irregularites du sol et aux residus dans la betonniere. La densite utilisee est de 2 400 kg/m&sup3;, valeur standard pour le beton arme en France.</p>
-              </div>
-            </div>
+            <ToolHowToSection
+              title="Comment utiliser le calculateur de beton"
+              description="Estimez le volume de beton, le nombre de sacs et le poids pour dalle, fondation ou poteau."
+              steps={[
+                {
+                  name: "Choisissez le type d'ouvrage",
+                  text:
+                    "Selectionnez dalle/plancher, fondation/semelle ou poteau/cylindre selon votre projet. La fondation et la dalle utilisent un calcul rectangulaire (longueur x largeur x epaisseur), le poteau utilise un calcul cylindrique (Pi x rayon au carre x hauteur). Cela determine la formule appliquee automatiquement.",
+                },
+                {
+                  name: "Entrez les dimensions en metres",
+                  text:
+                    "Pour une dalle ou fondation : longueur, largeur, epaisseur (10-12 cm pour une dalle pieton, 15-20 cm carrossable, 30-40 cm pour fondation de maison). Pour un poteau : diametre et hauteur. Toutes les dimensions sont attendues en metres (0,15 m = 15 cm).",
+                },
+                {
+                  name: "Lisez les resultats : volume, sacs et poids",
+                  text:
+                    "L'outil affiche le volume exact en m3, le volume avec marge de 10% (recommandee), le nombre de sacs de 25 kg et 35 kg necessaires, et le poids total en tonnes. Pour plus de 1 m3, comparez avec un BPE livre en toupie : souvent plus economique et plus rapide.",
+                },
+              ]}
+            />
 
-            {/* FAQ */}
-            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Questions frequentes</h2>
-              <div className="mt-6 space-y-5">
-                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
-                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Combien de sacs de beton pour 1 m&sup3; ?</h3>
-                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Il faut environ 84 sacs de 25 kg (soit ~12 litres chacun) ou 59 sacs de 35 kg (~17 litres chacun) pour obtenir 1 m&sup3; de beton. Ces chiffres sont des estimations basees sur du beton pret a l&apos;emploi en sac. Pour les gros volumes, un camion toupie de beton pret a l&apos;emploi (BPE) est plus economique et pratique.</p>
+            <section
+              className="rounded-xl border p-6 md:p-8 shadow-sm"
+              style={{ background: "var(--surface)", borderColor: "var(--border)" }}
+            >
+              <h2
+                className="text-2xl md:text-3xl font-extrabold"
+                style={{ fontFamily: "var(--font-display)", color: "var(--foreground)" }}
+              >
+                Cas d&apos;usage du calculateur beton
+              </h2>
+
+              <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
+                  <h3 className="font-semibold" style={{ color: "var(--foreground)" }}>
+                    Dalle de terrasse maison
+                  </h3>
+                  <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    Une terrasse de 5 m x 4 m sur 12 cm d&apos;epaisseur = 2,4 m3 de beton, soit
+                    environ 220 sacs de 25 kg avec marge. Au-dela de 1 m3, le BPE livre en toupie
+                    devient plus rentable que les sacs (compter 110 a 140 EUR/m3 livre vs ~150 EUR
+                    en sacs).
+                  </p>
                 </div>
-                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
-                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Quelle epaisseur de beton pour une dalle de terrasse ?</h3>
-                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Pour une dalle de terrasse pietons, une epaisseur de 10 a 12 cm est generalement suffisante. Pour une dalle carrossable (passage de vehicules), prevoyez 15 a 20 cm. Dans tous les cas, le beton doit reposer sur un lit de gravier compacte de 10 a 15 cm pour assurer un drainage correct.</p>
+                <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
+                  <h3 className="font-semibold" style={{ color: "var(--foreground)" }}>
+                    Fondation chantier maison neuve
+                  </h3>
+                  <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    Une semelle filante de 10 m x 0,4 m x 0,4 m = 1,6 m3 par cote. Une maison de
+                    100 m2 au sol demande typiquement 4 a 6 m3 de beton de fondation au dosage 350
+                    kg/m3 ciment. Toujours prevoir l&apos;armature (treillis soude ou ferraillage)
+                    selon l&apos;etude de sol.
+                  </p>
                 </div>
-                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
-                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Quelle est la difference entre beton et mortier ?</h3>
-                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Le beton est compose de ciment, sable, gravier et eau. Il est utilise pour les ouvrages structurels (dalles, fondations, poteaux). Le mortier ne contient pas de gravier : il est compose uniquement de ciment, sable et eau. On l&apos;utilise pour la pose de briques, parpaings et enduits. Ce calculateur est concu pour le beton, pas le mortier.</p>
+                <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
+                  <h3 className="font-semibold" style={{ color: "var(--foreground)" }}>
+                    Plot pour cabane de jardin
+                  </h3>
+                  <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    Quatre plots beton de 30 cm de diametre et 60 cm de hauteur = 4 x 0,042 m3 =
+                    0,17 m3 au total. Soit environ 16 sacs de 25 kg. Ideal pour ancrer un abri de
+                    jardin, une terrasse en bois sur lambourdes ou un carport leger.
+                  </p>
+                </div>
+                <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
+                  <h3 className="font-semibold" style={{ color: "var(--foreground)" }}>
+                    Allee carrossable garage
+                  </h3>
+                  <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    Allee de 8 m x 3 m sur 15 cm d&apos;epaisseur = 3,6 m3. Une dalle carrossable
+                    necessite 15-20 cm minimum, sur lit de gravier compacte de 10-15 cm. Au-dela de
+                    3 m3, faites livrer par toupie et armer avec un treillis soude ST25C pour
+                    eviter la fissuration.
+                  </p>
                 </div>
               </div>
-            </div>
+            </section>
+
+            <section
+              className="rounded-xl border p-6 md:p-8 shadow-sm"
+              style={{ background: "var(--surface-alt)", borderColor: "var(--border)" }}
+            >
+              <h2
+                className="text-2xl md:text-3xl font-extrabold"
+                style={{ fontFamily: "var(--font-display)", color: "var(--foreground)" }}
+              >
+                A savoir sur le dosage du beton
+              </h2>
+
+              <div className="mt-4 space-y-4 leading-relaxed" style={{ color: "var(--foreground)" }}>
+                <p>
+                  <strong>La norme NF EN 206-1 encadre la composition du beton structurel.</strong> Pour
+                  un beton standard de classe C25/30 (resistance 25 MPa), le dosage classique est
+                  350 kg de ciment par m3 de beton, soit environ 1 sac de 35 kg pour 100 L. Pour un
+                  beton de proprete sans charge, on descend a 150-250 kg/m3. Pour du beton arme
+                  structurel, montez a 400 kg/m3.
+                </p>
+                <p>
+                  <strong>Le ratio eau/ciment (E/C) idealement vise est 0,5.</strong> Trop d&apos;eau
+                  affaiblit la resistance et favorise la fissuration ; trop peu rend le beton
+                  inmaniable. Pour 350 kg de ciment, comptez environ 175 L d&apos;eau. La regle
+                  pratique : le beton doit etre maniable mais ne pas couler tout seul de la
+                  betonniere (slump 8-12 cm).
+                </p>
+                <p>
+                  <strong>Composition type pour 1 m3 de beton dose a 350 kg/m3 :</strong> 350 kg de
+                  ciment CEM II/B 32,5, 700 kg de sable 0/4, 1 100 kg de gravier 4/20, et 175 L
+                  d&apos;eau. Soit en volume environ 1 part ciment, 2 parts sable, 3 parts gravier
+                  (memoriser : 1-2-3). Adapter selon la granulometrie et l&apos;humidite des
+                  granulats.
+                </p>
+                <p>
+                  <strong>Differences fondation vs dalle.</strong> Une fondation reprend les charges
+                  du batiment et descend hors gel (80 cm en zone H1, 50 cm en zone H3). Une dalle
+                  repartit la charge sur le sol mais ne porte pas de mur. Les deux requierent un
+                  treillis soude ou un ferraillage selon les charges. La densite retenue ici (2 400
+                  kg/m3) correspond au beton arme courant.
+                </p>
+              </div>
+            </section>
+
+            <ToolFaqSection
+              intro="Les questions frequentes sur le calcul et le coulage du beton."
+              items={[
+                {
+                  question: "Combien de sacs de beton pour 1 m3 ?",
+                  answer:
+                    "Environ 84 sacs de 25 kg (soit 12 litres chacun) ou 59 sacs de 35 kg (17 litres chacun) pour obtenir 1 m3 de beton. Ces chiffres sont des estimations basees sur du beton pret a l'emploi en sac. Pour les gros volumes (plus de 1 m3), le BPE en camion toupie est generalement plus economique et plus rapide.",
+                },
+                {
+                  question: "Quelle epaisseur de beton pour une dalle de terrasse ?",
+                  answer:
+                    "Pour une dalle de terrasse pieton, 10 a 12 cm est generalement suffisant. Pour une dalle carrossable (passage de vehicules), prevoyez 15 a 20 cm. Dans tous les cas, le beton doit reposer sur un lit de gravier compacte de 10 a 15 cm pour assurer un bon drainage et eviter les remontees d'humidite.",
+                },
+                {
+                  question: "Quelle est la difference entre beton et mortier ?",
+                  answer:
+                    "Le beton est compose de ciment, sable, gravier et eau. Il est utilise pour les ouvrages structurels (dalles, fondations, poteaux). Le mortier ne contient pas de gravier : seulement ciment, sable et eau. On l'utilise pour la pose de briques, parpaings et enduits. Ce calculateur est concu pour le beton, pas le mortier.",
+                },
+                {
+                  question: "Quel dosage de ciment pour du beton de fondation ?",
+                  answer:
+                    "Le dosage standard pour du beton de fondation est de 350 kg de ciment par m3 de beton, conformement a la norme NF EN 206-1 (classe C25/30). Pour du beton de proprete sans charge, on descend a 150-250 kg/m3. Pour du beton arme structurel ou expose, montez a 400 kg/m3.",
+                },
+                {
+                  question: "Pourquoi prevoir 10% de beton en plus ?",
+                  answer:
+                    "La marge de 10% compense les pertes inevitables : irregularites du terrain, residus dans la betonniere ou la toupie, eclaboussures, eventuelles erreurs de coffrage. Sans cette marge, vous risquez une rupture d'approvisionnement en plein coulage, ce qui cree une reprise de betonnage (point faible structurel).",
+                },
+                {
+                  question: "Sacs ou camion toupie : quel choix selon le volume ?",
+                  answer:
+                    "Sous 1 m3 : les sacs sont plus pratiques (pas de minimum de livraison, pas de creneau a tenir). Entre 1 et 3 m3 : equivalent en cout, le BPE livre est moins fatiguant. Au-dela de 3 m3 : la toupie est nettement plus economique (110-140 EUR/m3 livre) et indispensable pour eviter les reprises de betonnage.",
+                },
+                {
+                  question: "Le beton arme necessite-t-il un ferraillage ?",
+                  answer:
+                    "Oui, des qu'il y a une charge significative (dalle carrossable, plancher, fondation de maison). Treillis soude ST25C minimum pour une dalle, armatures HA10-HA12 pour fondations et poteaux. Sans armature, le beton resiste tres bien en compression mais cede en traction et fissure rapidement.",
+                },
+              ]}
+            />
           </div>
           <aside className="space-y-6">
             <AdPlaceholder className="h-[250px]" />

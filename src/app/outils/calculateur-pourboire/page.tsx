@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import AdPlaceholder from "@/components/AdPlaceholder";
+import ToolFaqSection from "@/components/ToolFaqSection";
+import ToolHowToSection from "@/components/ToolHowToSection";
 
 const PRESETS = [5, 10, 15, 20, 25];
 
@@ -136,49 +138,185 @@ export default function CalculateurPourboire() {
               </div>
             </div>
 
-            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Les usages du pourboire</h2>
-              <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                <p>En <strong className="text-[var(--foreground)]">France</strong>, le service est inclus dans les prix (15%). Le pourboire est un geste apprecie mais pas obligatoire, generalement 5-10%.</p>
-                <p>Aux <strong className="text-[var(--foreground)]">Etats-Unis</strong>, le pourboire est quasi-obligatoire : 15-20% au restaurant, 10-15% pour les taxis.</p>
-                <p>Au <strong className="text-[var(--foreground)]">Japon</strong>, laisser un pourboire est considere comme impoli.</p>
-              </div>
-            </div>
+            <ToolHowToSection
+              title="Comment calculer un pourboire correctement"
+              description="Trois etapes pour adapter le pourboire au contexte (France, USA, autres pays) et eviter le faux pas culturel."
+              steps={[
+                {
+                  name: "Identifier le contexte culturel",
+                  text:
+                    "France : service deja compris dans le prix affiche (15 pourcent par defaut depuis l&apos;arrete du 27 mars 1987 et le decret du 16 juin 1956), pourboire facultatif 5-10 pourcent en geste de remerciement. USA et Canada : 18-20 pourcent indispensables car les salaires de service sont sous le minimum legal hors pourboires. Japon : pourboire considere comme insultant, ne pas en laisser.",
+                },
+                {
+                  name: "Saisir l&apos;addition et le pourcentage",
+                  text:
+                    "Montant : addition totale TTC, sans avoir deja inclus le pourboire. Pourcentage : 5-10 pourcent en France (15 pourcent pour un service exceptionnel), 18-20 pourcent aux USA (15 pourcent en cas de service ordinaire, 22-25 pourcent pour un excellent service). Pour les taxis : 10-15 pourcent USA, geste rond en France (arrondir au 5 ou 10 superieur).",
+                },
+                {
+                  name: "Partager et arrondir",
+                  text:
+                    "Nombre de convives : l&apos;outil divise automatiquement le total (addition + pourboire) par personne pour un partage equitable. Option arrondi superieur par personne : tres pratique en cash pour eviter les centimes et simplifier le paiement entre amis. En CB, le partage exact a 2 decimales reste possible.",
+                },
+              ]}
+            />
 
-            {/* SEO Content */}
-            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
-                Comment utiliser le calculateur de pourboire
+            <section
+              className="rounded-xl border p-6 md:p-8 shadow-sm"
+              style={{ background: "var(--surface)", borderColor: "var(--border)" }}
+            >
+              <h2
+                className="text-2xl md:text-3xl font-extrabold"
+                style={{ fontFamily: "var(--font-display)", color: "var(--foreground)" }}
+              >
+                Cas d&apos;usage du calculateur de pourboire
               </h2>
-              <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                <p>Notre calculateur de pourboire vous permet de determiner rapidement le montant a laisser au restaurant ou dans tout autre etablissement de service. Il suffit de renseigner le montant de l&apos;addition et le pourcentage souhaite pour obtenir le resultat instantanement.</p>
-                <ul className="ml-4 list-disc space-y-1">
-                  <li><strong className="text-[var(--foreground)]">Entrez le montant de l&apos;addition</strong> : saisissez la somme totale hors pourboire en euros.</li>
-                  <li><strong className="text-[var(--foreground)]">Choisissez le pourcentage</strong> : utilisez le curseur ou les boutons predefinis (5%, 10%, 15%, 20%, 25%) selon votre satisfaction.</li>
-                  <li><strong className="text-[var(--foreground)]">Partagez entre convives</strong> : indiquez le nombre de personnes pour diviser equitablement l&apos;addition et le pourboire.</li>
-                  <li><strong className="text-[var(--foreground)]">Option d&apos;arrondi</strong> : activez l&apos;arrondi au-dessus pour simplifier le paiement par personne.</li>
-                </ul>
-              </div>
-            </div>
 
-            {/* FAQ */}
-            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Questions frequentes</h2>
-              <div className="mt-6 space-y-5">
-                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
-                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Le pourboire est-il obligatoire en France ?</h3>
-                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Non, en France le service est inclus dans les prix affiches (15% du prix hors taxe). Le pourboire est un geste de remerciement facultatif. Il est toutefois courant de laisser entre 5% et 10% de l&apos;addition pour un service apprecie, surtout au restaurant.</p>
+              <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
+                  <h3 className="font-semibold" style={{ color: "var(--foreground)" }}>
+                    Diner au restaurant en France
+                  </h3>
+                  <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    Addition de 85 EUR a 4 convives : pourboire de 5-10 pourcent =
+                    4,25-8,50 EUR au total, soit environ 1-2 EUR par personne. Geste optionnel
+                    mais apprecie pour un service attentionne. Pas de probleme de ne rien
+                    laisser : le service est legalement inclus dans le prix.
+                  </p>
                 </div>
-                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
-                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Quel pourcentage de pourboire laisser au restaurant ?</h3>
-                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>En France, 5 a 10% est la norme pour un bon service. Pour un service exceptionnel, vous pouvez aller jusqu&apos;a 15%. Aux Etats-Unis, le pourboire standard est de 15 a 20%, car les serveurs dependent largement des pourboires pour leur revenu.</p>
+                <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
+                  <h3 className="font-semibold" style={{ color: "var(--foreground)" }}>
+                    Voyage aux USA : restaurant
+                  </h3>
+                  <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    Pour un brunch a New York avec 60 USD d&apos;addition : tip de 18-20 pourcent
+                    soit 11-12 USD. Le tip aux USA n&apos;est PAS optionnel : les serveurs
+                    gagnent un salaire minimum federal de 2,13 USD/h, completes par les
+                    pourboires consideres comme partie integrante du salaire. Sous 15 pourcent
+                    = humiliation pour le serveur.
+                  </p>
                 </div>
-                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
-                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Comment partager equitablement l&apos;addition entre plusieurs personnes ?</h3>
-                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Indiquez le nombre de convives dans le champ prevu et notre outil divisera automatiquement le total (addition + pourboire) par personne. L&apos;option d&apos;arrondi permet d&apos;obtenir un montant entier par personne, ce qui facilite le paiement en especes.</p>
+                <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
+                  <h3 className="font-semibold" style={{ color: "var(--foreground)" }}>
+                    Partage entre amis avec arrondi
+                  </h3>
+                  <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    Pizza a 4 a 47 EUR + 8 pourcent de pourboire = 50,76 EUR, soit 12,69 EUR par
+                    personne. Avec arrondi superieur : 13 EUR par personne, total recolte
+                    52 EUR (1,24 EUR de pourboire bonus pour le serveur). Pratique en cash et
+                    evite les calculs de centimes.
+                  </p>
+                </div>
+                <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
+                  <h3 className="font-semibold" style={{ color: "var(--foreground)" }}>
+                    Service hotellier et autres prestataires
+                  </h3>
+                  <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    Bagagiste hotel : 1-2 EUR par bagage. Femme de chambre : 2-5 EUR par jour
+                    laisses a la fin du sejour (pas chaque jour, sinon premier jour seulement).
+                    Concierge service : 5-20 EUR selon difficulte. Coiffeur en France :
+                    pourboire optionnel 5-10 pourcent ou simple geste rond a la caisse.
+                  </p>
                 </div>
               </div>
-            </div>
+            </section>
+
+            <section
+              className="rounded-xl border p-6 md:p-8 shadow-sm"
+              style={{ background: "var(--surface-alt)", borderColor: "var(--border)" }}
+            >
+              <h2
+                className="text-2xl md:text-3xl font-extrabold"
+                style={{ fontFamily: "var(--font-display)", color: "var(--foreground)" }}
+              >
+                A savoir : France, USA, Japon, le pourboire selon les pays
+              </h2>
+
+              <div className="mt-4 space-y-4 leading-relaxed" style={{ color: "var(--foreground)" }}>
+                <p>
+                  <strong>France : service compris depuis 1987.</strong> L&apos;arrete du 27
+                  mars 1987 (et anciennement le decret de 1956) impose l&apos;affichage du prix
+                  &laquo; service compris &raquo; dans tous les etablissements de
+                  restauration. Cette disposition fixe le service a 15 pourcent du prix HT,
+                  reverse en partie aux serveurs via leur convention collective HCR (Hotels
+                  Cafes Restaurants). Le pourboire eventuel est donc un veritable bonus, pas
+                  un complement de salaire.
+                </p>
+                <p>
+                  <strong>USA et Canada : tipping culture obligatoire.</strong> Aux USA, le
+                  Federal Minimum Wage pour les tipped employees est de 2,13 USD/h (depuis
+                  1991, federal). Les pourboires couvrent l&apos;ecart avec le minimum legal
+                  general (7,25 USD/h federal, plus eleve dans certains Etats). Sans tip, un
+                  serveur gagne sous le minimum legal : c&apos;est pourquoi le tipping est
+                  socialement obligatoire. Standard 18-22 pourcent en restaurant en 2026.
+                </p>
+                <p>
+                  <strong>Japon, Coree du Sud : ne pas laisser de pourboire.</strong> Au Japon,
+                  laisser un pourboire est socialement maladroit voire offensant : le service
+                  est considere comme inclus dans le prix et donner extra suggererait que le
+                  professionnel est mal paye. Si vous insistez, presenter l&apos;argent dans
+                  une enveloppe fermee est l&apos;usage. La Coree du Sud suit la meme
+                  convention.
+                </p>
+                <p>
+                  <strong>Italie, Espagne, Allemagne : zone intermediaire.</strong> Italie :
+                  servizio pas toujours inclus, verifier le ticket (coperto = couvert obligatoire,
+                  pas un pourboire). Pourboire en sus 5-10 pourcent si service plaisant. Espagne :
+                  pas de norme stricte, geste rond ou 5-10 pourcent. Allemagne et Suisse : 5-10
+                  pourcent annonce a l&apos;oral au moment du paiement (le serveur arrondit
+                  lui-meme la note). En Suisse, service deja inclus officiellement.
+                </p>
+                <p>
+                  <strong>Pourboires et fiscalite francaise.</strong> En France, les
+                  pourboires verses directement au personnel sont, depuis la loi de finances
+                  2022 et jusqu&apos;a fin 2025, exoneres d&apos;impot sur le revenu et de
+                  cotisations sociales pour les salaires inferieurs a 1,6 SMIC. Mesure
+                  prolongee dans la loi de finances 2026 sous reserve de publication. Pour
+                  l&apos;employeur, c&apos;est aussi l&apos;exoneration de cotisations
+                  patronales sur ces pourboires.
+                </p>
+              </div>
+            </section>
+
+            <ToolFaqSection
+              intro="Les questions frequentes sur le pourboire en France et a l&apos;etranger."
+              items={[
+                {
+                  question: "Le pourboire est-il obligatoire en France ?",
+                  answer:
+                    "Non. Depuis l&apos;arrete du 27 mars 1987, tous les etablissements de restauration doivent afficher leurs prix &laquo; service compris &raquo; (15 pourcent du HT). Le pourboire est un geste optionnel pour remercier d&apos;un service apprecie. Norme courante : 5-10 pourcent au restaurant pour un bon service, jusqu&apos;a 15 pourcent pour un service exceptionnel. Ne rien laisser n&apos;est ni grossier ni mal vu en France.",
+                },
+                {
+                  question: "Quel pourcentage de pourboire au restaurant en France ?",
+                  answer:
+                    "5 a 10 pourcent pour un service correct a bon (entre 4 EUR et 8 EUR sur une addition de 80 EUR, par exemple). 10-15 pourcent pour un service exceptionnel, gastronomique ou pour des prestations longues. Sur de petites additions (cafe, soft), un geste arrondi (1 a 2 EUR) suffit largement. Aux Etats-Unis, la norme est nettement plus haute : 18-20 pourcent en moyenne.",
+                },
+                {
+                  question: "Comment partager equitablement entre plusieurs convives ?",
+                  answer:
+                    "Indiquez le nombre de convives dans le champ correspondant : l&apos;outil divise automatiquement (addition + pourboire) par personne. L&apos;option d&apos;arrondi superieur par personne facilite les paiements en cash en evitant les centimes. En groupe, l&apos;arrondi peut donner un pourboire effectif legerement superieur au pourcentage choisi : c&apos;est un bonus pour le serveur.",
+                },
+                {
+                  question: "Quel pourboire laisser aux Etats-Unis ?",
+                  answer:
+                    "Restaurant : 18-20 pourcent indispensables (pre-tax aux USA, sur le sous-total avant taxes locales). 15 pourcent au minimum, considere comme une critique discrete du service. 22-25 pourcent pour un service exceptionnel. Taxi / Uber : 10-15 pourcent. Bagagiste : 1-2 USD par bagage. Femme de chambre : 2-5 USD par nuit. Coiffeur : 15-20 pourcent. Manquer au tip est socialement tres mal percu.",
+                },
+                {
+                  question: "Faut-il laisser un pourboire au Japon ou en Asie ?",
+                  answer:
+                    "Au Japon : non, jamais. C&apos;est socialement maladroit voire offensant : le service est inclus dans le prix et offrir un pourboire suggererait un sous-paiement, ce qui est insultant culturellement. Idem en Coree du Sud. En Chine : pas de tradition de tipping en local, mais accepte dans les hotels internationaux haut de gamme. Singapour, Hong Kong : tip de 10 pourcent souvent deja inclus dans la note (verifier).",
+                },
+                {
+                  question: "Les pourboires sont-ils imposables pour le serveur en France ?",
+                  answer:
+                    "Mesure d&apos;exoneration en vigueur depuis la loi de finances 2022 : les pourboires verses directement au personnel sont exoneres d&apos;impot sur le revenu et de cotisations sociales (salariales et patronales) pour les salaires inferieurs a 1,6 SMIC. Mesure prevue jusqu&apos;a fin 2025 et generalement reconduite. Au-dela de 1,6 SMIC, les pourboires entrent dans l&apos;assiette imposable et soumis a cotisations.",
+                },
+                {
+                  question: "Cash, CB ou directement au serveur : quelle methode privilegier ?",
+                  answer:
+                    "En France et en Europe : cash en main directement au serveur reste la methode la plus appreciee (le serveur en a 100 pourcent immediatement, sans risque de partage force). En CB, ajout du tip sur le total : la repartition depend de la politique de l&apos;etablissement (parfois pool partage entre toute l&apos;equipe). Aux USA, le tip CB est la norme et bien gere (tip line sur le ticket).",
+                },
+              ]}
+            />
           </div>
           <aside className="space-y-6">
             <AdPlaceholder className="h-[250px]" />

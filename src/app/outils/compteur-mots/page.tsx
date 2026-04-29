@@ -2,6 +2,8 @@
 
 import { useState, useMemo } from "react";
 import AdPlaceholder from "@/components/AdPlaceholder";
+import ToolFaqSection from "@/components/ToolFaqSection";
+import ToolHowToSection from "@/components/ToolHowToSection";
 
 export default function CompteurMots() {
   const [text, setText] = useState("");
@@ -58,58 +60,163 @@ export default function CompteurMots() {
               </div>
             </div>
 
-            <div className="prose max-w-none rounded-xl border p-6 shadow-sm" style={{ borderColor: "var(--border)", background: "var(--surface)" }}>
-              <h2>Compteur de mots en ligne gratuit</h2>
-              <p>
-                Notre compteur de mots analyse instantanement votre texte pour vous donner
-                le nombre exact de mots, caracteres (avec et sans espaces), phrases et paragraphes.
-              </p>
-              <h2>A quoi sert un compteur de mots ?</h2>
-              <ul>
-                <li>Respecter les limites de caracteres (Twitter, LinkedIn, meta descriptions)</li>
-                <li>Verifier la longueur de vos articles de blog pour le SEO</li>
-                <li>Estimer le temps de lecture de vos contenus</li>
-                <li>Preparer des discours avec le temps de parole estime</li>
-              </ul>
-            </div>
+            <ToolHowToSection
+              title="Comment utiliser le compteur de mots"
+              description="Trois etapes simples pour analyser n'importe quel texte et obtenir des statistiques completes."
+              steps={[
+                {
+                  name: "Collez ou tapez votre texte",
+                  text:
+                    "Copiez votre article, votre post LinkedIn, votre discours ou votre essai dans la zone de saisie. Le comptage demarre des le premier caractere, sans bouton a cliquer. Vous pouvez aussi taper directement, les statistiques s'actualisent en temps reel.",
+                },
+                {
+                  name: "Lisez les statistiques cle",
+                  text:
+                    "Les quatre cartes en haut affichent : nombre de mots, caracteres totaux, caracteres sans espaces et nombre de phrases. Sous la zone de texte, deux estimations supplementaires : temps de lecture (base sur 200 mots par minute, vitesse moyenne d'un lecteur francais) et temps de parole (130 mots par minute pour un debit naturel).",
+                },
+                {
+                  name: "Adaptez votre texte aux contraintes",
+                  text:
+                    "Si vous depassez la limite d'un reseau social (280 caracteres pour Twitter, 3000 pour LinkedIn, 155 pour une meta description), reduisez le contenu jusqu'a respecter le seuil. Pour un article SEO, visez entre 1500 et 2500 mots selon la concurrence du mot-cle vise.",
+                },
+              ]}
+            />
 
-            {/* SEO Content */}
-            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
-                Comment utiliser le compteur de mots
+            <section
+              className="rounded-xl border p-6 md:p-8 shadow-sm"
+              style={{ background: "var(--surface)", borderColor: "var(--border)" }}
+            >
+              <h2
+                className="text-2xl md:text-3xl font-extrabold"
+                style={{ fontFamily: "var(--font-display)", color: "var(--foreground)" }}
+              >
+                Cas d&apos;usage du compteur de mots
               </h2>
-              <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                <p>
-                  Collez ou tapez votre texte dans la zone de saisie pour obtenir instantanement le decompte de mots, caracteres, phrases et paragraphes.
-                  L&apos;outil calcule egalement le temps de lecture (base sur 200 mots/minute) et le temps de parole (130 mots/minute).
-                </p>
-                <ul className="ml-4 list-disc space-y-1">
-                  <li><strong className="text-[var(--foreground)]">Comptage en temps reel</strong> : les statistiques se mettent a jour a chaque frappe</li>
-                  <li><strong className="text-[var(--foreground)]">Caracteres avec et sans espaces</strong> : utile pour les limites de reseaux sociaux</li>
-                  <li><strong className="text-[var(--foreground)]">Estimation du temps de lecture</strong> : ideal pour les articles de blog et le content marketing</li>
-                  <li><strong className="text-[var(--foreground)]">100% gratuit et sans inscription</strong> : aucune donnee n&apos;est stockee ni envoyee</li>
-                </ul>
-              </div>
-            </div>
 
-            {/* FAQ */}
-            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Questions frequentes</h2>
-              <div className="mt-6 space-y-5">
-                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
-                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Comment sont comptes les mots ?</h3>
-                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Les mots sont separes par les espaces, tabulations et retours a la ligne. Les nombres, abreviations et mots composes avec un trait d&apos;union comptent chacun comme un seul mot.</p>
+              <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
+                  <h3 className="font-semibold" style={{ color: "var(--foreground)" }}>
+                    Redacteur web et content manager
+                  </h3>
+                  <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    Verifier qu&apos;un article respecte le brief client (1800 mots minimum), calibrer
+                    les meta descriptions a 155 caracteres, valider la longueur d&apos;un title tag
+                    sous 60 caracteres pour eviter la troncature dans les SERP Google.
+                  </p>
                 </div>
-                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
-                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Combien de mots faut-il pour un article SEO ?</h3>
-                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Pour le referencement naturel en France, un article de blog performant contient generalement entre 1 500 et 2 500 mots. Les contenus de plus de 3 000 mots obtiennent souvent de meilleurs classements sur Google pour les requetes competitives.</p>
+                <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
+                  <h3 className="font-semibold" style={{ color: "var(--foreground)" }}>
+                    Etudiant et chercheur
+                  </h3>
+                  <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    Respecter les consignes d&apos;un memoire (entre 30 et 50 pages, soit 9000 a
+                    15000 mots), valider la longueur d&apos;un resume d&apos;article scientifique
+                    (souvent 250 mots max), preparer une dissertation au format impose.
+                  </p>
                 </div>
-                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
-                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>L&apos;outil fonctionne-t-il avec les caracteres accentues ?</h3>
-                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Oui, le compteur gere parfaitement les caracteres accentues francais (e, a, u, etc.), les caracteres speciaux et les emojis. Chaque caractere Unicode est compte individuellement.</p>
+                <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
+                  <h3 className="font-semibold" style={{ color: "var(--foreground)" }}>
+                    Conferencier et formateur
+                  </h3>
+                  <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    Caler un keynote de 20 minutes : 130 mots par minute donne 2600 mots de script.
+                    Le temps de parole estime evite de finir trop court ou de devoir accelerer en
+                    fin d&apos;intervention. Indispensable pour les pitchs concours type 3MT.
+                  </p>
+                </div>
+                <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
+                  <h3 className="font-semibold" style={{ color: "var(--foreground)" }}>
+                    Community manager
+                  </h3>
+                  <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    Adapter un message a chaque plateforme : Twitter/X 280 caracteres, threads
+                    LinkedIn 3000, bio Instagram 150, Facebook ad headline 40. Le compteur sans
+                    espaces est utile pour les anciennes contraintes SMS et les newsletters mobiles.
+                  </p>
                 </div>
               </div>
-            </div>
+            </section>
+
+            <section
+              className="rounded-xl border p-6 md:p-8 shadow-sm"
+              style={{ background: "var(--surface-alt)", borderColor: "var(--border)" }}
+            >
+              <h2
+                className="text-2xl md:text-3xl font-extrabold"
+                style={{ fontFamily: "var(--font-display)", color: "var(--foreground)" }}
+              >
+                A savoir sur le comptage de texte
+              </h2>
+
+              <div className="mt-4 space-y-4 leading-relaxed" style={{ color: "var(--foreground)" }}>
+                <p>
+                  <strong>Mot vs caractere : deux notions differentes.</strong> Un mot est une
+                  sequence separee par des espaces. Un caractere est chaque lettre, chiffre, signe
+                  de ponctuation ou espace. Le mot &laquo; aujourd&apos;hui &raquo; compte 1 mot et
+                  10 caracteres. Twitter limite en caracteres, un editeur en signes ou en mots.
+                </p>
+                <p>
+                  <strong>Caracteres avec ou sans espaces.</strong> Les contrats de redaction et
+                  les bareme universitaires raisonnent souvent en caracteres avec espaces (par
+                  defaut Word). Mais certaines plateformes SMS ou anciennes contraintes typographes
+                  comptent sans espaces. Bien lire le brief evite les mauvaises surprises.
+                </p>
+                <p>
+                  <strong>200 mots / minute, c&apos;est une moyenne.</strong> Un lecteur rapide
+                  monte a 300-400 mpm, un lecteur lent reste autour de 150 mpm. Le score Hemingway
+                  ou Flesch ajuste mieux la lisibilite. Pour un article de blog, viser 200 mpm
+                  reste une bonne base, c&apos;est la cadence d&apos;un public adulte standard.
+                </p>
+                <p>
+                  <strong>Phrases : detection imparfaite.</strong> L&apos;outil compte les
+                  terminateurs de phrase (point, exclamation, interrogation). Mais
+                  &laquo; M. Dupont &raquo; ou &laquo; etc. &raquo; contiennent un point sans
+                  terminer la phrase. Pour un comptage millimetrique, comptez manuellement ou
+                  utilisez un parseur NLP comme spaCy.
+                </p>
+              </div>
+            </section>
+
+            <ToolFaqSection
+              intro="Tout ce qu'il faut savoir sur le comptage de mots et caracteres."
+              items={[
+                {
+                  question: "Comment sont comptes les mots ?",
+                  answer:
+                    "Les mots sont separes par les espaces, tabulations et retours a la ligne. Les nombres, abreviations et mots composes avec un trait d'union comptent chacun comme un seul mot. Aujourd'hui, c'est-a-dire ou rendez-vous = 1 mot.",
+                },
+                {
+                  question: "Combien de mots faut-il pour un article SEO ?",
+                  answer:
+                    "Pour le referencement naturel en France, un article de blog performant contient generalement entre 1500 et 2500 mots. Les contenus de plus de 3000 mots obtiennent souvent de meilleurs classements sur Google pour les requetes competitives, mais la qualite reste plus importante que la quantite.",
+                },
+                {
+                  question: "L'outil fonctionne-t-il avec les caracteres accentues ?",
+                  answer:
+                    "Oui, le compteur gere parfaitement les caracteres accentues francais (e, a, u, etc.), les caracteres speciaux et les emojis. Chaque caractere Unicode est compte individuellement, meme les emojis composes sur plusieurs points de code.",
+                },
+                {
+                  question: "Mes donnees sont-elles confidentielles ?",
+                  answer:
+                    "Oui. Le comptage est effectue 100 % localement dans votre navigateur. Aucun texte saisi n'est envoye a un serveur, ne transite par le reseau ou n'est stocke. Vous pouvez compter des contenus sensibles ou confidentiels en toute securite.",
+                },
+                {
+                  question: "Quelle est la limite de longueur du texte ?",
+                  answer:
+                    "L'outil n'impose pas de limite stricte. Il peut analyser plusieurs milliers de mots sans ralentissement. Pour des textes tres volumineux (au-dela de 100000 caracteres), votre navigateur peut commencer a montrer une legere latence selon votre machine.",
+                },
+                {
+                  question: "Pourquoi le temps de lecture est-il different du temps de parole ?",
+                  answer:
+                    "Un lecteur silencieux traite environ 200 mots par minute en lecture courante, alors qu'un orateur naturel parle a 130 mots par minute. La parole inclut la respiration, la prosodie et les pauses. Pour un podcast ou une video, le temps de parole est plus realiste.",
+                },
+                {
+                  question: "L'outil compte-t-il les paragraphes et les sauts de ligne ?",
+                  answer:
+                    "Oui. Un paragraphe est defini par un saut de ligne double (ligne vide entre deux blocs de texte). Les retours a la ligne simples a l'interieur d'un paragraphe ne creent pas de nouveau paragraphe. Cette regle suit la convention markdown classique.",
+                },
+              ]}
+            />
           </div>
 
           <aside className="space-y-6">

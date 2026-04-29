@@ -2,6 +2,8 @@
 
 import { useState, useMemo } from "react";
 import AdPlaceholder from "@/components/AdPlaceholder";
+import ToolFaqSection from "@/components/ToolFaqSection";
+import ToolHowToSection from "@/components/ToolHowToSection";
 
 function slugify(text: string): string {
   // Normalize and remove accents
@@ -139,15 +141,163 @@ export default function GenerateurSlug() {
               </div>
             </div>
 
-            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Bonnes pratiques SEO pour les URLs</h2>
-              <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                <p><strong className="text-[var(--foreground)]">Lisibilite</strong> : Un bon slug est court, descriptif et lisible par un humain. Evitez les mots vides (le, la, de, du...).</p>
-                <p><strong className="text-[var(--foreground)]">Longueur</strong> : Google affiche environ 60-70 caracteres d&apos;URL. Gardez vos slugs sous 50 caracteres idealement.</p>
-                <p><strong className="text-[var(--foreground)]">Pas d&apos;accents</strong> : Les URLs avec accents fonctionnent mais sont encodees en %xx, ce qui les rend moins lisibles.</p>
-                <p><strong className="text-[var(--foreground)]">Tirets vs underscores</strong> : Google recommande les tirets (-) comme separateurs de mots dans les URLs.</p>
+            <ToolHowToSection
+              title="Comment generer un slug URL parfait"
+              description="Trois etapes pour transformer un titre en URL propre, indexable et lisible."
+              steps={[
+                {
+                  name: "Saisir le texte source",
+                  text:
+                    "Collez votre titre d'article, nom de produit, intitule de page ou tag. L'outil accepte n'importe quelle longueur, avec accents francais, ponctuation, majuscules et caracteres speciaux. La transformation est instantanee.",
+                },
+                {
+                  name: "Choisir le separateur",
+                  text:
+                    "Le tiret (-) est recommande par Google pour les URLs : il est interprete comme un separateur de mots. L'underscore (_) est traite comme une lettre dans un mot, donc moins lisible pour les moteurs. Sauf cas particulier (ID techniques), prenez toujours le tiret.",
+                },
+                {
+                  name: "Definir une longueur maximale",
+                  text:
+                    "Mettre 0 pour ne pas tronquer. Sinon, fixez 50 a 70 caracteres : Google affiche environ 60 caracteres d'URL dans les resultats de recherche, au-dela c'est tronque par des points de suspension. L'outil coupe proprement sans laisser un tiret en fin de slug.",
+                },
+              ]}
+            />
+
+            <section
+              className="rounded-xl border p-6 md:p-8 shadow-sm"
+              style={{ background: "var(--surface)", borderColor: "var(--border)" }}
+            >
+              <h2
+                className="text-2xl md:text-3xl font-extrabold"
+                style={{ fontFamily: "var(--font-display)", color: "var(--foreground)" }}
+              >
+                Cas d&apos;usage du generateur de slug
+              </h2>
+
+              <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
+                  <h3 className="font-semibold" style={{ color: "var(--foreground)" }}>
+                    Blogueur et editeur SEO
+                  </h3>
+                  <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    Convertir le titre d&apos;un article en URL : &laquo; Les 10 meilleurs hotels
+                    a Lyon en 2024 &raquo; devient meilleurs-hotels-lyon-2024. Court, descriptif,
+                    contient le mot-cle principal. Mieux indexe par Google que le slug brut genere
+                    par WordPress.
+                  </p>
+                </div>
+                <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
+                  <h3 className="font-semibold" style={{ color: "var(--foreground)" }}>
+                    Developpeur back-end
+                  </h3>
+                  <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    Generer des identifiants uniques pour des entites (produits, articles, users)
+                    dans une API REST. Le slug fait office de cle alternative a l&apos;ID numerique
+                    pour des URLs propres : /produits/casque-bluetooth-noir au lieu de /produits/4521.
+                  </p>
+                </div>
+                <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
+                  <h3 className="font-semibold" style={{ color: "var(--foreground)" }}>
+                    Manager e-commerce
+                  </h3>
+                  <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    Importer un catalogue produit et generer en lot les slugs de chaque fiche.
+                    Un slug propre booste le SEO produit (long-tail) et reduit les caracteres
+                    encodes %xx qui cassent les sharing URLs sur Facebook ou WhatsApp.
+                  </p>
+                </div>
+                <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
+                  <h3 className="font-semibold" style={{ color: "var(--foreground)" }}>
+                    Createur de fichiers et nommage
+                  </h3>
+                  <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    Renommer des fichiers, dossiers, branches Git ou tickets Jira dans un format
+                    homogene. Eviter les espaces qui necessitent des guillemets dans le terminal
+                    et les caracteres accentues qui posent probleme entre macOS, Linux et Windows.
+                  </p>
+                </div>
               </div>
-            </div>
+            </section>
+
+            <section
+              className="rounded-xl border p-6 md:p-8 shadow-sm"
+              style={{ background: "var(--surface-alt)", borderColor: "var(--border)" }}
+            >
+              <h2
+                className="text-2xl md:text-3xl font-extrabold"
+                style={{ fontFamily: "var(--font-display)", color: "var(--foreground)" }}
+              >
+                Bonnes pratiques SEO pour les slugs
+              </h2>
+
+              <div className="mt-4 space-y-4 leading-relaxed" style={{ color: "var(--foreground)" }}>
+                <p>
+                  <strong>Lisibilite : court, descriptif, sans mots vides.</strong> Un bon slug
+                  contient 3 a 6 mots significatifs : evitez le, la, du, des, et, ou, qui ne
+                  servent a rien pour le referencement. Preferez meilleurs-hotels-lyon plutot que
+                  les-meilleurs-des-hotels-de-la-ville-de-lyon.
+                </p>
+                <p>
+                  <strong>Longueur sous 60 caracteres.</strong> Google affiche environ 60
+                  caracteres d&apos;URL dans les SERP avant troncature par des points de
+                  suspension. Au-dela, vous perdez en CTR. Vise 30 a 50 caracteres pour le slug
+                  seul (hors domaine et chemin).
+                </p>
+                <p>
+                  <strong>Pas d&apos;accents en URL.</strong> Les URLs avec accents fonctionnent
+                  techniquement mais sont encodees en %xx (cafe devient caf%C3%A9). Resultat :
+                  illisible quand on partage le lien sur Twitter, dans un email ou un PDF. Le
+                  generateur supprime tous les accents par normalisation NFD.
+                </p>
+                <p>
+                  <strong>Tirets vs underscores.</strong> Google recommande les tirets (-) car ils
+                  sont traites comme des separateurs de mots. L&apos;underscore (_) est interprete
+                  comme une lettre dans le mot. Donc rachat-credit est lu rachat + credit, alors
+                  que rachat_credit est lu rachat_credit (un seul terme).
+                </p>
+              </div>
+            </section>
+
+            <ToolFaqSection
+              intro="Reponses aux questions frequentes sur la generation de slugs URL."
+              items={[
+                {
+                  question: "Qu'est-ce qu'un slug exactement ?",
+                  answer:
+                    "Un slug est la portion finale d'une URL, apres le domaine et les segments de chemin. Exemple : dans https://outilis.fr/blog/generateur-slug-url, le slug est generateur-slug-url. Il identifie de maniere unique et lisible la page sur le site.",
+                },
+                {
+                  question: "Faut-il inclure des chiffres dans un slug ?",
+                  answer:
+                    "Oui, si pertinents. Les annees (2024, 2025), les versions (v2, v3), les classements (top-10) ameliorent le CTR car les utilisateurs cherchent ces signaux. Eviter en revanche les ID numeriques bruts genre /article-4521 qui n'apportent rien au SEO.",
+                },
+                {
+                  question: "Mes accents francais sont-ils preserves ?",
+                  answer:
+                    "Non, ils sont supprimes apres normalisation Unicode NFD. C'est intentionnel : les URLs avec accents fonctionnent mais s'affichent en %xx (encodage URL), ce qui les rend illisibles. Le slug genere reste lisible et compatible 100% des plateformes.",
+                },
+                {
+                  question: "Puis-je utiliser des emojis ou caracteres speciaux ?",
+                  answer:
+                    "Non, l'outil les supprime systematiquement. Seuls les lettres a-z, chiffres 0-9 et le separateur (tiret ou underscore) sont conserves. C'est la convention RFC 3986 pour les URLs lisibles, recommandee par Google et tous les CMS modernes.",
+                },
+                {
+                  question: "Faut-il changer un slug existant pour le SEO ?",
+                  answer:
+                    "Non, sauf cas extreme. Modifier un slug deja indexe casse les liens entrants et perd le PageRank accumule. Si vous devez changer, mettez en place une redirection 301 permanente de l'ancien slug vers le nouveau, sinon vous perdrez du trafic SEO.",
+                },
+                {
+                  question: "Quelle longueur maximale recommandee ?",
+                  answer:
+                    "Visez 30 a 50 caracteres pour le slug seul. Google affiche environ 60 caracteres d'URL dans les resultats avant troncature. Sous WordPress, le maximum technique est 200 caracteres mais aucun benefice SEO au-dela de 60.",
+                },
+                {
+                  question: "Les slugs sont-ils generes sans envoyer mes donnees ?",
+                  answer:
+                    "Oui. La generation se fait entierement dans votre navigateur via JavaScript. Aucun titre, slug ou parametre n'est envoye a un serveur ou stocke. Vous pouvez generer des slugs pour des contenus confidentiels en toute securite.",
+                },
+              ]}
+            />
           </div>
 
           <aside className="space-y-6">

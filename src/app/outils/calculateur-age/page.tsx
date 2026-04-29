@@ -2,6 +2,8 @@
 
 import { useState, useMemo } from "react";
 import AdPlaceholder from "@/components/AdPlaceholder";
+import ToolFaqSection from "@/components/ToolFaqSection";
+import ToolHowToSection from "@/components/ToolHowToSection";
 
 function toInputDate(d: Date): string {
   return d.toISOString().split("T")[0];
@@ -192,14 +194,174 @@ export default function CalculateurAge() {
               </>
             )}
 
-            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Comment calculer son age exact ?</h2>
-              <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                <p><strong className="text-[var(--foreground)]">Age en annees</strong> : Soustrayez l{"'"}annee de naissance de l{"'"}annee actuelle, puis ajustez si l{"'"}anniversaire n{"'"}est pas encore passe cette annee.</p>
-                <p><strong className="text-[var(--foreground)]">Age exact</strong> : Calculez separement les annees, mois et jours restants pour obtenir un age precis au jour pres.</p>
-                <p><strong className="text-[var(--foreground)]">Cas pratiques</strong> : Verification de majorite (18 ans), eligibilite retraite, calcul de primes d{"'"}anciennete, documents administratifs.</p>
+            <ToolHowToSection
+              title="Comment utiliser le calculateur d&apos;age"
+              description="Calculez votre age exact au jour pres, le decompte avant votre prochain anniversaire, votre signe astrologique et votre generation, en saisissant simplement une date de naissance."
+              steps={[
+                {
+                  name: "Saisir la date de naissance",
+                  text:
+                    "Cliquez dans le champ date et selectionnez le jour, mois et annee de naissance. Le calendrier supporte les dates des annees 1900 a aujourd&apos;hui. Le calcul est instantane, sans bouton de validation a presser.",
+                },
+                {
+                  name: "Lire l'age exact en annees, mois, jours",
+                  text:
+                    "Le bloc principal affiche l&apos;age decompose : par exemple 33 ans, 8 mois et 14 jours. C&apos;est la representation la plus precise, utilisable pour des dossiers administratifs ou medicaux qui exigent l&apos;age au jour pres (RH, securite sociale, dossiers MDPH).",
+                },
+                {
+                  name: "Consulter les statistiques et le decompte d'anniversaire",
+                  text:
+                    "Sous le bloc principal, retrouvez le total de jours, semaines, mois et heures vecus, le nombre de jours avant votre prochain anniversaire avec barre de progression, votre signe astrologique calcule sur la base solaire occidentale et votre generation (Z, Millennials, X, Boomers).",
+                },
+              ]}
+            />
+
+            <section
+              className="rounded-xl border p-6 md:p-8 shadow-sm"
+              style={{ background: "var(--surface)", borderColor: "var(--border)" }}
+            >
+              <h2
+                className="text-2xl md:text-3xl font-extrabold"
+                style={{ fontFamily: "var(--font-display)", color: "var(--foreground)" }}
+              >
+                Cas d&apos;usage du calculateur d&apos;age
+              </h2>
+
+              <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
+                  <h3 className="font-semibold" style={{ color: "var(--foreground)" }}>
+                    Verifier une majorite ou un age legal
+                  </h3>
+                  <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    Majorite civile : 18 ans. Permis de conduire : 17 ans pour la conduite
+                    accompagnee, 18 ans pour la categorie B. Vente d&apos;alcool : 18 ans en
+                    France. Vote : 18 ans. Le calculateur affiche l&apos;age exact au jour pres,
+                    indispensable pour eviter les erreurs administratives sur les dossiers
+                    soumis a une condition d&apos;age.
+                  </p>
+                </div>
+                <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
+                  <h3 className="font-semibold" style={{ color: "var(--foreground)" }}>
+                    Service RH et anciennete
+                  </h3>
+                  <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    Calcul de l&apos;anciennete d&apos;un salarie depuis sa date d&apos;entree
+                    pour les primes, le 13e mois ou le calcul des indemnites. Pour la retraite,
+                    62 ans actuellement (64 ans progressivement). Pour le compte AGIRC-ARRCO :
+                    repere des age cle pour estimer la pension.
+                  </p>
+                </div>
+                <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
+                  <h3 className="font-semibold" style={{ color: "var(--foreground)" }}>
+                    Famille et garde d&apos;enfants
+                  </h3>
+                  <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    Inscription scolaire : age de 3 ans au 31 decembre pour la maternelle.
+                    Permis pieton : 8 ans. Premier velo sur la route : 12 ans (avec parents
+                    avant). Pour les vaccinations obligatoires (11 a 24 mois selon le type),
+                    l&apos;age en mois est crucial : le calculateur le donne au jour pres.
+                  </p>
+                </div>
+                <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
+                  <h3 className="font-semibold" style={{ color: "var(--foreground)" }}>
+                    Genealogie et histoire familiale
+                  </h3>
+                  <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    Pour reconstituer un arbre genealogique, l&apos;age de l&apos;ancetre au
+                    moment d&apos;un evenement (naissance d&apos;enfant, mariage, deces) eclaire
+                    les contextes : un anetre marie a 16 ans pre-1939 etait courant. Le
+                    calculateur facilite la datation des actes d&apos;etat civil et la coherence
+                    chronologique des donnees.
+                  </p>
+                </div>
               </div>
-            </div>
+            </section>
+
+            <section
+              className="rounded-xl border p-6 md:p-8 shadow-sm"
+              style={{ background: "var(--surface-alt)", borderColor: "var(--border)" }}
+            >
+              <h2
+                className="text-2xl md:text-3xl font-extrabold"
+                style={{ fontFamily: "var(--font-display)", color: "var(--foreground)" }}
+              >
+                A savoir sur le calcul d&apos;age
+              </h2>
+
+              <div className="mt-4 space-y-4 leading-relaxed" style={{ color: "var(--foreground)" }}>
+                <p>
+                  <strong>Le 29 fevrier pose un cas particulier.</strong> Une personne nee le
+                  29 fevrier (annee bissextile) ne fete legalement son anniversaire que tous les
+                  4 ans. En droit francais, son age augmente neanmoins chaque annee, mais
+                  l&apos;anniversaire calendaire est generalement reporte au 28 fevrier (parfois
+                  au 1er mars selon les traditions familiales). Le calculateur applique la regle
+                  legale : age incremente le 1er mars des annees non bissextiles.
+                </p>
+                <p>
+                  <strong>Les annees bissextiles ne sont pas tous les 4 ans.</strong> La regle
+                  est : divisible par 4 sauf les annees seculaires non divisibles par 400. Donc
+                  2000 et 2400 sont bissextiles, mais pas 1900, 2100, 2200, 2300. Sur une vie
+                  humaine, cela impacte le total exact de jours vecus de quelques unites. Le
+                  calculateur applique automatiquement cette regle.
+                </p>
+                <p>
+                  <strong>Age legal de la retraite en France.</strong> Reforme 2023 : passage
+                  progressif de 62 a 64 ans pour les nouveaux retraites (66 ans pour le taux
+                  plein automatique sans decote). Pour les nes apres 1968 : 64 ans. Le
+                  calculateur permet de visualiser combien de mois ou jours vous separent de la
+                  date de depart en retraite a taux plein, en saisissant la date de naissance
+                  ou d&apos;entree dans la vie active.
+                </p>
+                <p>
+                  <strong>Generations sociologiques.</strong> Boomers : 1946-1964. Generation
+                  X : 1965-1980. Millennials (Y) : 1981-1996. Generation Z : 1997-2012.
+                  Generation Alpha : a partir de 2013. Ces decoupages americains sont des
+                  reperes marketing et culturels, pas des regles legales. Ils sont utilises en
+                  RH, en pub et en analyse societale pour caracteriser des comportements.
+                </p>
+              </div>
+            </section>
+
+            <ToolFaqSection
+              intro="Les questions les plus posees sur le calcul d'age."
+              items={[
+                {
+                  question: "Comment calcule-t-on l'age en annees, mois et jours ?",
+                  answer:
+                    "On soustrait l'annee de naissance de l'annee actuelle. Si la date du jour est avant l'anniversaire de l'annee en cours, on retranche 1. Pour les mois et jours : on calcule la difference depuis le dernier anniversaire jusqu'a aujourd'hui. Le calculateur applique automatiquement cette logique en tenant compte des mois de 28 a 31 jours.",
+                },
+                {
+                  question: "Comment fonctionne le calcul pour quelqu'un ne le 29 fevrier ?",
+                  answer:
+                    "En droit francais, l'age incremente chaque annee meme sans 29 fevrier. L'anniversaire est conventionnellement reporte au 28 fevrier (parfois au 1er mars selon les familles). Le calculateur applique la regle legale : age augmente le 1er mars des annees non bissextiles. Exemple : ne le 29/02/2000, vous avez officiellement 24 ans le 1er mars 2024.",
+                },
+                {
+                  question: "Quel est l'age de la majorite en France ?",
+                  answer:
+                    "18 ans pour la majorite civile (vote, contrats, mariage sans autorisation, achat d'alcool). Majorite penale : 18 ans (avec attenuations possibles entre 16 et 18). Majorite sexuelle : 15 ans (consentement). Le calculateur donne l'age au jour pres, indispensable pour les dossiers ou le statut bascule a une date precise.",
+                },
+                {
+                  question: "Comment calculer l'age de la retraite en France ?",
+                  answer:
+                    "Reforme 2023 : passage progressif de 62 a 64 ans (Loi du 14 avril 2023). Pour les nes apres 1968 : 64 ans. Pour le taux plein automatique : 67 ans. Pour les carrieres longues (debut avant 21 ans) : 60-63 ans selon les trimestres cotises. Le compte info-retraite.fr donne une estimation personnalisee.",
+                },
+                {
+                  question: "Pourquoi mon age en jours est-il different de 365 x mon age en annees ?",
+                  answer:
+                    "Parce que les annees bissextiles ajoutent un jour tous les 4 ans (avec exceptions seculaires). Sur 30 ans, environ 7 a 8 annees sont bissextiles, soit 7-8 jours en plus. Le total exact se calcule en jours calendaires entre la date de naissance et aujourd'hui, ce que fait le calculateur.",
+                },
+                {
+                  question: "A quoi sert le signe astrologique calcule ?",
+                  answer:
+                    "Le calculateur affiche le signe astrologique solaire occidental, base sur la position du Soleil dans le zodiaque a la naissance. Belier (21/3 - 19/4), Taureau (20/4 - 20/5), etc. C'est une information culturelle et ludique, sans valeur scientifique. L'astrologie chinoise (signe annuel) ou vedique utilise des regles differentes.",
+                },
+                {
+                  question: "Mes donnees sont-elles confidentielles ?",
+                  answer:
+                    "Oui. La date de naissance saisie reste dans votre navigateur et n'est envoyee a aucun serveur. Le calcul est effectue 100 % localement en JavaScript. Aucun cookie de tracking n'est utilise. La page peut fonctionner hors connexion une fois chargee.",
+                },
+              ]}
+            />
           </div>
           <aside className="space-y-6">
             <AdPlaceholder className="h-[250px]" />

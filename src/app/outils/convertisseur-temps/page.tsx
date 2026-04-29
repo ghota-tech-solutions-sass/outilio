@@ -2,6 +2,8 @@
 
 import { useState, useMemo } from "react";
 import AdPlaceholder from "@/components/AdPlaceholder";
+import ToolFaqSection from "@/components/ToolFaqSection";
+import ToolHowToSection from "@/components/ToolHowToSection";
 
 const UNITS = [
   { key: "seconds", label: "Secondes", factor: 1 },
@@ -137,51 +139,170 @@ export default function ConvertisseurTemps() {
               </div>
             </div>
 
-            {/* SEO Content */}
-            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
-                Comment utiliser le convertisseur de temps
-              </h2>
-              <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                <p>
-                  Ce convertisseur de temps gratuit vous permet de convertir instantanement entre secondes, minutes, heures, jours, semaines, mois et annees. Il est utile pour la gestion de projet, les calculs scientifiques ou simplement pour satisfaire votre curiosite.
-                </p>
-                <ul className="ml-4 list-disc space-y-1">
-                  <li><strong className="text-[var(--foreground)]">Saisissez une valeur</strong> : entrez le nombre d&apos;unites de temps a convertir.</li>
-                  <li><strong className="text-[var(--foreground)]">Selectionnez l&apos;unite source</strong> : choisissez parmi secondes, minutes, heures, jours, semaines, mois (30 jours) ou annees (365 jours).</li>
-                  <li><strong className="text-[var(--foreground)]">Consultez les resultats</strong> : toutes les conversions s&apos;affichent simultanement. L&apos;unite source est mise en evidence.</li>
-                  <li><strong className="text-[var(--foreground)]">Decomposition lisible</strong> : l&apos;outil affiche aussi une decomposition humaine (ex : 2 jours, 3 heures, 15 minutes) pour mieux visualiser la duree.</li>
-                </ul>
-                <p>
-                  Les conversions sont basees sur les valeurs standard : 1 mois = 30 jours et 1 annee = 365 jours. Pour des calculs de dates precis tenant compte des mois reels et des annees bissextiles, utilisez un calculateur de dates.
-                </p>
-              </div>
-            </div>
+            <ToolHowToSection
+              title="Comment utiliser le convertisseur de temps"
+              description="Convertissez en un clic entre secondes, minutes, heures, jours, semaines, mois et annees, avec decomposition humaine pour les durees longues."
+              steps={[
+                {
+                  name: "Saisir la valeur a convertir",
+                  text:
+                    "Tapez le nombre dans le champ valeur. Les decimales sont acceptees (ex : 1,5 jour = 36 heures). Le calcul est instantane, sans bouton a cliquer.",
+                },
+                {
+                  name: "Choisir l'unite source",
+                  text:
+                    "Selectionnez l'unite correspondant a votre saisie : secondes, minutes, heures, jours, semaines, mois (base 30 jours) ou annees (base 365 jours). L'unite source est mise en evidence dans les resultats.",
+                },
+                {
+                  name: "Lire les conversions et la decomposition",
+                  text:
+                    "Toutes les unites sont calculees simultanement. La decomposition humaine (ex : 2 jours, 3 heures, 15 minutes) est ideale pour communiquer une duree dans une presentation, un rapport projet ou une estimation client.",
+                },
+              ]}
+            />
 
-            {/* FAQ */}
-            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Questions frequentes</h2>
-              <div className="mt-6 space-y-5">
-                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
-                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Combien de secondes y a-t-il dans une journee ?</h3>
-                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                    Une journee compte exactement 86 400 secondes (24 heures &times; 60 minutes &times; 60 secondes). Ce chiffre est utilise comme base dans de nombreux calculs informatiques, notamment pour les horodatages Unix (timestamps) qui comptent les secondes ecoulees depuis le 1er janvier 1970.
+            <section
+              className="rounded-xl border p-6 md:p-8 shadow-sm"
+              style={{ background: "var(--surface)", borderColor: "var(--border)" }}
+            >
+              <h2
+                className="text-2xl md:text-3xl font-extrabold"
+                style={{ fontFamily: "var(--font-display)", color: "var(--foreground)" }}
+              >
+                Cas d&apos;usage du convertisseur de temps
+              </h2>
+
+              <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
+                  <h3 className="font-semibold" style={{ color: "var(--foreground)" }}>
+                    Estimation projet client
+                  </h3>
+                  <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    Vous estimez une mission a 120 heures de dev : conversion = 3 semaines a
+                    temps plein, ou 5 semaines a 24h/semaine. Indispensable pour cadrer un devis
+                    et negocier une deadline realiste avec un client en jours ouvres.
                   </p>
                 </div>
-                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
-                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Pourquoi les mois sont-ils comptes sur 30 jours ?</h3>
-                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                    Les mois du calendrier gregorien varient de 28 a 31 jours. La valeur de 30 jours est une approximation standard utilisee pour les conversions generales. La moyenne exacte est d&apos;environ 30,44 jours (365,25/12). Pour des calculs de dates precis, il est preferable de travailler avec des dates calendaires plutot qu&apos;avec des conversions d&apos;unites.
+                <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
+                  <h3 className="font-semibold" style={{ color: "var(--foreground)" }}>
+                    Developpeur backend
+                  </h3>
+                  <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    Definir un TTL de cache : 86 400 secondes pour 24h, 604 800 secondes pour
+                    une semaine, 2 592 000 pour 30 jours. Les API REST, JWT, cookies et
+                    timestamps Unix raisonnent en secondes, le convertisseur evite les erreurs
+                    de zero classiques.
                   </p>
                 </div>
-                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
-                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Combien d&apos;heures de travail dans une annee en France ?</h3>
-                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                    En France, la duree legale du travail est de 35 heures par semaine. Sur une annee de 52 semaines, cela represente 1 820 heures. En pratique, en deduisant les 5 semaines de conges payes et les jours feries (environ 8), on obtient environ 1 607 heures de travail effectif par an, soit la base utilisee par le Code du travail.
+                <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
+                  <h3 className="font-semibold" style={{ color: "var(--foreground)" }}>
+                    Salarie qui calcule son temps de travail
+                  </h3>
+                  <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    Combien d&apos;heures sur une carriere de 42 ans a 1 607h/an ? Reponse :
+                    67 494 heures, soit l&apos;equivalent de 7,7 ans de travail continu. Utile
+                    pour relativiser la valeur d&apos;une journee de RTT ou d&apos;un raccourci
+                    procedural a 5 minutes par jour.
+                  </p>
+                </div>
+                <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
+                  <h3 className="font-semibold" style={{ color: "var(--foreground)" }}>
+                    Etudiant ou curieux
+                  </h3>
+                  <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    Combien d&apos;heures dans un siecle ? 876 600 (sur 100 annees civiles).
+                    Combien de minutes vivez-vous a 30 ans ? Environ 15,8 millions. Le
+                    convertisseur permet de visualiser des durees abstraites dans des unites
+                    concretes pour un expose ou un texte journalistique.
                   </p>
                 </div>
               </div>
-            </div>
+            </section>
+
+            <section
+              className="rounded-xl border p-6 md:p-8 shadow-sm"
+              style={{ background: "var(--surface-alt)", borderColor: "var(--border)" }}
+            >
+              <h2
+                className="text-2xl md:text-3xl font-extrabold"
+                style={{ fontFamily: "var(--font-display)", color: "var(--foreground)" }}
+              >
+                A savoir sur la conversion d&apos;unites de temps
+              </h2>
+
+              <div className="mt-4 space-y-4 leading-relaxed" style={{ color: "var(--foreground)" }}>
+                <p>
+                  <strong>Une journee n&apos;a pas toujours 86 400 secondes.</strong> Lors des
+                  changements d&apos;heure DST (passage heure d&apos;ete et heure d&apos;hiver),
+                  une journee dure 23 ou 25 heures. Les secondes intercalaires (leap seconds)
+                  ajoutees occasionnellement par l&apos;UTC peuvent aussi rallonger une minute
+                  a 61 secondes. Pour des calculs precis sur des dates reelles, utilisez un
+                  calculateur de dates plutot qu&apos;une simple conversion d&apos;unites.
+                </p>
+                <p>
+                  <strong>L&apos;annee moyenne fait 365,2425 jours.</strong> C&apos;est la base
+                  du calendrier gregorien : 365 jours, plus une annee bissextile tous les 4 ans,
+                  sauf les annees seculaires non divisibles par 400. Le convertisseur utilise
+                  365 jours par souci de simplicite, ce qui introduit une erreur de 0,07 % sur
+                  le long terme.
+                </p>
+                <p>
+                  <strong>Le format ISO 8601 duration normalise les durees.</strong> 2 jours,
+                  3 heures, 15 minutes s&apos;ecrit P2DT3H15M. Ce format est utilise dans les
+                  API REST, les feeds de podcasts (specifiees en ISO 8601), les playlists video
+                  et les schemas JSON-LD. Un standard a connaitre pour qui fait du dev backend
+                  ou du SEO technique.
+                </p>
+                <p>
+                  <strong>1 milliard de secondes = environ 31,7 ans.</strong> C&apos;est un
+                  repere mnemotechnique utile : si vous avez 31 ans, vous avez vecu environ un
+                  milliard de secondes. 1 million de secondes equivaut a 11,57 jours. Utile
+                  pour estimer rapidement la duree de processus longs en informatique
+                  (entrainement de modele ML, batch de calcul, etc.).
+                </p>
+              </div>
+            </section>
+
+            <ToolFaqSection
+              intro="Les questions les plus posees sur les conversions d'unites de temps."
+              items={[
+                {
+                  question: "Combien de secondes y a-t-il dans une journee ?",
+                  answer:
+                    "Une journee compte 86 400 secondes (24 x 60 x 60). C'est la base de nombreux calculs informatiques, notamment les timestamps Unix qui comptent les secondes ecoulees depuis le 1er janvier 1970 UTC. Attention : les jours de changement d'heure DST durent 23 ou 25 heures.",
+                },
+                {
+                  question: "Pourquoi les mois sont-ils comptes sur 30 jours ?",
+                  answer:
+                    "Les mois reels varient de 28 a 31 jours. La valeur de 30 jours est une approximation standard pour les conversions generales. La moyenne exacte est de 30,44 jours (365,25/12). Pour des calculs de dates exacts, travaillez sur des dates calendaires plutot que sur des conversions d'unites.",
+                },
+                {
+                  question: "Combien d'heures de travail dans une annee en France ?",
+                  answer:
+                    "Duree legale = 35h/semaine. Sur 52 semaines : 1 820 heures. En deduisant 5 semaines de conges payes et environ 8 jours feries, on obtient 1 607 heures de travail effectif par an, c'est la base utilisee par le Code du travail et l'URSSAF.",
+                },
+                {
+                  question: "Comment convertir un timestamp Unix en duree lisible ?",
+                  answer:
+                    "Un timestamp Unix est un nombre de secondes ecoulees depuis le 1er janvier 1970 UTC. Pour le convertir en duree, divisez par 86 400 pour obtenir des jours, ou utilisez la decomposition humaine (annees, jours, heures, minutes, secondes). Le timestamp 1 700 000 000 correspond au 14 novembre 2023.",
+                },
+                {
+                  question: "Quelle est la duree exacte d'une annee bissextile ?",
+                  answer:
+                    "Une annee bissextile compte 366 jours = 8 784 heures = 31 622 400 secondes. Elle se produit tous les 4 ans, sauf les annees seculaires non divisibles par 400 (donc 2000 etait bissextile mais 1900 ne l'etait pas). Cette regle compense le fait qu'une annee astronomique fait 365,2425 jours.",
+                },
+                {
+                  question: "Comment representer une duree au format ISO 8601 ?",
+                  answer:
+                    "Le format ISO 8601 duration commence par P puis liste les composantes : P[n]Y[n]M[n]DT[n]H[n]M[n]S. Exemple : 2 jours 3 heures 15 minutes = P2DT3H15M. 1 an 6 mois = P1Y6M. Ce format est utilise par les API REST, les flux RSS de podcasts et les schemas Schema.org.",
+                },
+                {
+                  question: "Mes calculs sont-ils confidentiels ?",
+                  answer:
+                    "Oui. Toutes les conversions sont effectuees localement dans votre navigateur. Aucune valeur saisie n'est envoyee a un serveur. L'outil fonctionne sans inscription, sans cookie de tracking et sans connexion internet active une fois la page chargee.",
+                },
+              ]}
+            />
           </div>
 
           <aside className="space-y-6">

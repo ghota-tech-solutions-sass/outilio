@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import AdPlaceholder from "@/components/AdPlaceholder";
+import ToolFaqSection from "@/components/ToolFaqSection";
+import ToolHowToSection from "@/components/ToolHowToSection";
 
 function jsonToCsv(json: string): string {
   const data = JSON.parse(json);
@@ -167,51 +169,170 @@ export default function ConvertisseurJsonCsv() {
               )}
             </div>
 
-            {/* SEO Content */}
-            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
-                Comment utiliser le convertisseur JSON / CSV
-              </h2>
-              <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                <p>
-                  Cet outil gratuit convertit vos donnees entre les formats JSON et CSV en un clic. Il est ideal pour les developpeurs, les analystes de donnees et tous ceux qui travaillent avec des fichiers de donnees structurees.
-                </p>
-                <ul className="ml-4 list-disc space-y-1">
-                  <li><strong className="text-[var(--foreground)]">Choisissez le sens de conversion</strong> : JSON vers CSV ou CSV vers JSON, selon votre besoin.</li>
-                  <li><strong className="text-[var(--foreground)]">Collez vos donnees</strong> : entrez ou collez votre contenu JSON (tableau d&apos;objets) ou CSV (avec en-tetes) dans la zone de texte.</li>
-                  <li><strong className="text-[var(--foreground)]">Cliquez sur Convertir</strong> : le resultat s&apos;affiche instantanement dans la zone de sortie.</li>
-                  <li><strong className="text-[var(--foreground)]">Telechargez le fichier</strong> : exportez le resultat en .csv ou .json directement sur votre ordinateur.</li>
-                </ul>
-                <p>
-                  La conversion s&apos;effectue entierement dans votre navigateur. Aucune donnee n&apos;est transmise a un serveur, ce qui garantit la confidentialite de vos informations.
-                </p>
-              </div>
-            </div>
+            <ToolHowToSection
+              title="Comment utiliser le convertisseur JSON / CSV"
+              description="Quatre etapes pour passer du JSON au CSV ou inversement, sans installer de logiciel."
+              steps={[
+                {
+                  name: "Choisir le sens de conversion",
+                  text:
+                    "Cliquez sur JSON vers CSV pour convertir un tableau d'objets JSON en feuille de calcul tabulaire, ou CSV vers JSON pour transformer un export Excel en structure exploitable par une API. Le bouton actif change l'interpretation de votre saisie.",
+                },
+                {
+                  name: "Coller vos donnees source",
+                  text:
+                    "Collez le contenu dans la zone de texte. Pour le JSON, fournissez un tableau d'objets type [ { 'nom': 'Dupont', 'age': 30 } ]. Pour le CSV, la premiere ligne doit contenir les en-tetes de colonne, separes par des virgules. Les valeurs avec virgule sont entourees de guillemets.",
+                },
+                {
+                  name: "Lancer la conversion",
+                  text:
+                    "Le bouton Convertir traite instantanement vos donnees. En cas d'erreur (JSON malforme, CSV incomplet), un message rouge precise la cause. La conversion gere automatiquement l'echappement des caracteres speciaux (virgules dans les valeurs, guillemets, sauts de ligne).",
+                },
+                {
+                  name: "Telecharger le resultat",
+                  text:
+                    "Le bouton Telecharger genere un fichier conversion.csv ou conversion.json directement dans votre dossier de telechargements. Le CSV s'ouvre dans Excel, Google Sheets, LibreOffice Calc ou Numbers. Le JSON est compatible avec n'importe quelle API REST ou base NoSQL.",
+                },
+              ]}
+            />
 
-            {/* FAQ */}
-            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Questions frequentes</h2>
-              <div className="mt-6 space-y-5">
-                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
-                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Quel format JSON est accepte ?</h3>
-                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                    L&apos;outil accepte un tableau d&apos;objets JSON (ex : [&#123;&quot;nom&quot;: &quot;Dupont&quot;&#125;, &#123;&quot;nom&quot;: &quot;Martin&quot;&#125;]) ou un objet unique qui sera automatiquement converti en tableau a une ligne. Chaque cle de l&apos;objet devient un en-tete de colonne dans le CSV genere.
+            <section
+              className="rounded-xl border p-6 md:p-8 shadow-sm"
+              style={{ background: "var(--surface)", borderColor: "var(--border)" }}
+            >
+              <h2
+                className="text-2xl md:text-3xl font-extrabold"
+                style={{ fontFamily: "var(--font-display)", color: "var(--foreground)" }}
+              >
+                Cas d&apos;usage du convertisseur JSON CSV
+              </h2>
+
+              <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
+                  <h3 className="font-semibold" style={{ color: "var(--foreground)" }}>
+                    Data analyst et BI
+                  </h3>
+                  <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    Importer rapidement un export d&apos;API (Stripe, Shopify, HubSpot) en JSON
+                    dans Excel ou Power BI pour un dashboard ad-hoc. Convertir des donnees
+                    Salesforce, Pipedrive ou Notion entre les formats avant analyse statistique
+                    ou visualisation Tableau.
                   </p>
                 </div>
-                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
-                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Le CSV genere est-il compatible avec Excel ?</h3>
-                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                    Oui. Le CSV produit utilise la virgule comme separateur et echappe correctement les valeurs contenant des virgules, des guillemets ou des sauts de ligne. Il s&apos;ouvre directement dans Excel, Google Sheets ou LibreOffice Calc. Si Excel n&apos;affiche pas les colonnes correctement, utilisez la fonction &laquo; Donnees &raquo; &gt; &laquo; Convertir &raquo; avec le separateur virgule.
+                <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
+                  <h3 className="font-semibold" style={{ color: "var(--foreground)" }}>
+                    Developpeur full-stack
+                  </h3>
+                  <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    Preparer un fichier de seed pour une base de donnees, importer un dataset
+                    public (data.gouv.fr en CSV) dans une application MongoDB ou Firebase qui
+                    attend du JSON. Tester rapidement un endpoint API en envoyant des donnees
+                    issues d&apos;un Excel.
                   </p>
                 </div>
-                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
-                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Puis-je convertir des fichiers CSV volumineux ?</h3>
-                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                    L&apos;outil fonctionne dans votre navigateur, ce qui signifie que la taille est limitee par la memoire disponible. En pratique, il gere sans probleme des fichiers de plusieurs milliers de lignes. Pour des fichiers tres volumineux (au-dela de 100 000 lignes), un traitement cote serveur ou un outil specialise comme Python (pandas) sera plus adapte.
+                <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
+                  <h3 className="font-semibold" style={{ color: "var(--foreground)" }}>
+                    Marketeur et CRM manager
+                  </h3>
+                  <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    Convertir une liste d&apos;abonnes Mailchimp ou Brevo (CSV) vers un JSON
+                    importable dans une nouvelle plateforme. Preparer un import contacts pour
+                    Salesforce, HubSpot ou ActiveCampaign en respectant le mapping de colonnes
+                    attendu.
+                  </p>
+                </div>
+                <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
+                  <h3 className="font-semibold" style={{ color: "var(--foreground)" }}>
+                    Comptable et controleur de gestion
+                  </h3>
+                  <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    Reformatter un export bancaire JSON (issues d&apos;une API type Bridge ou
+                    Budget Insight) en CSV exploitable dans un grand livre Excel ou un logiciel
+                    de comptabilite (Sage, Cegid, Pennylane). Reconciliation manuelle simplifiee.
                   </p>
                 </div>
               </div>
-            </div>
+            </section>
+
+            <section
+              className="rounded-xl border p-6 md:p-8 shadow-sm"
+              style={{ background: "var(--surface-alt)", borderColor: "var(--border)" }}
+            >
+              <h2
+                className="text-2xl md:text-3xl font-extrabold"
+                style={{ fontFamily: "var(--font-display)", color: "var(--foreground)" }}
+              >
+                Pieges classiques avec JSON et CSV
+              </h2>
+
+              <div className="mt-4 space-y-4 leading-relaxed" style={{ color: "var(--foreground)" }}>
+                <p>
+                  <strong>Excel et l&apos;encodage UTF-8.</strong> Excel sur Windows ouvre les CSV
+                  en encodage local (CP1252 ou CP1253) par defaut, ce qui casse les accents
+                  francais. Solution : utiliser Donnees puis Importer depuis CSV avec encodage
+                  UTF-8, ou ajouter un BOM (caractere invisible 0xFEFF) en debut de fichier.
+                </p>
+                <p>
+                  <strong>Cles imbriquees et tableaux.</strong> Le CSV est plat (tableau 2D), le
+                  JSON peut etre hierarchique. Si votre JSON contient des objets imbriques (ex :
+                  user.address.street), la conversion CSV serialise comme [object Object]. Mieux
+                  vaut aplatir manuellement avec des cles type address_street avant conversion.
+                </p>
+                <p>
+                  <strong>Caracteres specials a echapper.</strong> Une valeur CSV contenant une
+                  virgule, un guillemet ou un saut de ligne doit etre entouree de guillemets et
+                  les guillemets internes doubles. L&apos;outil gere automatiquement, mais un CSV
+                  fait main peut casser : verifiez que &laquo; Hello, world &raquo; est bien encadre.
+                </p>
+                <p>
+                  <strong>Header manquant en CSV.</strong> Le mode CSV vers JSON suppose que la
+                  premiere ligne contient les noms de colonnes. Si votre CSV n&apos;a pas
+                  d&apos;en-tete, ajoutez-en un manuellement (col1,col2,col3) ou la premiere
+                  ligne de donnees deviendra par erreur les cles JSON.
+                </p>
+              </div>
+            </section>
+
+            <ToolFaqSection
+              intro="Tout savoir sur la conversion entre JSON et CSV."
+              items={[
+                {
+                  question: "Quel format JSON est accepte ?",
+                  answer:
+                    "L'outil accepte un tableau d'objets JSON ou un objet unique qui sera automatiquement converti en tableau a une ligne. Chaque cle de l'objet devient un en-tete de colonne dans le CSV genere. Les valeurs imbriquees (sous-objets, sous-tableaux) sont serialisees mais perdent leur structure.",
+                },
+                {
+                  question: "Le CSV genere est-il compatible avec Excel ?",
+                  answer:
+                    "Oui. Le CSV produit utilise la virgule comme separateur et echappe correctement les valeurs contenant des virgules, guillemets ou sauts de ligne. Il s'ouvre directement dans Excel, Google Sheets ou LibreOffice Calc. Sur Windows en francais, utilisez Donnees puis Convertir pour forcer l'encodage UTF-8.",
+                },
+                {
+                  question: "Puis-je convertir des fichiers CSV volumineux ?",
+                  answer:
+                    "L'outil fonctionne dans votre navigateur, donc la taille est limitee par la memoire disponible. Il gere sans probleme plusieurs milliers de lignes. Au-dela de 100 000 lignes, preferez un script Python (pandas) ou un outil dedie cote serveur pour de meilleures performances.",
+                },
+                {
+                  question: "Mes donnees sont-elles confidentielles ?",
+                  answer:
+                    "Oui. La conversion est effectuee 100 % localement dans votre navigateur. Aucune donnee saisie ou convertie n'est envoyee a un serveur ou stockee. Vous pouvez convertir des donnees clients, financieres ou medicales en toute securite, conformement RGPD.",
+                },
+                {
+                  question: "Le separateur peut-il etre un point-virgule au lieu d'une virgule ?",
+                  answer:
+                    "Cet outil utilise la virgule (standard RFC 4180). Pour un separateur point-virgule (souvent prefere en France pour Excel), modifiez manuellement le CSV apres conversion, ou utilisez le menu Donnees puis Texte en colonnes dans Excel pour parser correctement.",
+                },
+                {
+                  question: "Comment gerer les colonnes manquantes en JSON ?",
+                  answer:
+                    "Si certains objets JSON n'ont pas toutes les cles, l'outil collecte l'union des cles de tous les objets et laisse les cellules vides pour les valeurs absentes. Le CSV produit reste valide avec des trous explicites, comportement standard et compatible Excel.",
+                },
+                {
+                  question: "Que se passe-t-il si mon JSON ou CSV est invalide ?",
+                  answer:
+                    "Un message d'erreur rouge s'affiche en cas de syntaxe invalide (JSON mal forme, CSV avec moins de 2 lignes). Le message indique la cause detaillee : virgule manquante, guillemet non ferme, etc. Corrigez la source avant de relancer la conversion.",
+                },
+              ]}
+            />
           </div>
 
           <aside className="space-y-6">
