@@ -2,6 +2,8 @@
 
 import { useState, useMemo } from "react";
 import AdPlaceholder from "@/components/AdPlaceholder";
+import ToolFaqSection from "@/components/ToolFaqSection";
+import ToolHowToSection from "@/components/ToolHowToSection";
 
 interface Credit {
   id: number;
@@ -645,40 +647,122 @@ export default function CalculateurRachatCredit() {
               </div>
             </div>
 
-            {/* SEO Content */}
-            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
-                Comment utiliser le simulateur de rachat de credit
-              </h2>
-              <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                <p>Ce simulateur vous permet d&apos;evaluer l&apos;interet d&apos;un regroupement de credits en quelques etapes simples. Vous obtenez une comparaison detaillee entre votre situation actuelle et le nouveau pret envisage.</p>
-                <ul className="ml-4 list-disc space-y-1">
-                  <li><strong className="text-[var(--foreground)]">Ajoutez vos credits existants</strong> : renseignez le capital restant du, le taux, la duree restante et la mensualite de chaque pret en cours.</li>
-                  <li><strong className="text-[var(--foreground)]">Definissez le nouveau credit</strong> : indiquez le taux et la duree souhaites pour le credit de regroupement.</li>
-                  <li><strong className="text-[var(--foreground)]">Integrez les frais</strong> : ajoutez les indemnites de remboursement anticipe (IRA) et les frais de dossier pour un resultat realiste.</li>
-                  <li><strong className="text-[var(--foreground)]">Analysez le verdict</strong> : l&apos;outil vous indique si le rachat est avantageux et affiche l&apos;economie mensuelle et totale.</li>
-                </ul>
-              </div>
-            </div>
+            <ToolHowToSection
+              title="Comment simuler un rachat de credit en 4 etapes"
+              description="Le simulateur compare la somme de vos mensualites actuelles a la mensualite unique du nouveau credit, integre les frais (IRA + dossier), et indique le gain reel sur la duree."
+              steps={[
+                {
+                  name: "Lister vos credits actuels",
+                  text:
+                    "Pour chaque credit en cours, ouvrez votre derniere echeance bancaire et notez : capital restant du, taux nominal, mensualite et nombre de mensualites restantes. Vous pouvez ajouter autant de credits que necessaire (immobilier, auto, conso, revolving).",
+                },
+                {
+                  name: "Definir le nouveau credit",
+                  text:
+                    "Renseignez le taux propose par la banque ou le courtier pour le regroupement et la duree souhaitee. La duree du nouveau credit est generalement plus longue que celle de vos credits actuels : c'est ce qui reduit la mensualite, mais augmente le cout total.",
+                },
+                {
+                  name: "Integrer tous les frais",
+                  text:
+                    "Saisissez le pourcentage d'IRA (Indemnites de Remboursement Anticipe, plafonnees a 3 % du capital restant ou 6 mois d'interets) et les frais de dossier de la nouvelle banque (300 a 1 500 EUR en moyenne). Sans ces frais, le simulateur sous-estimerait largement le cout reel.",
+                },
+                {
+                  name: "Lire le verdict",
+                  text:
+                    "L'outil affiche en parallele : votre situation actuelle (cout total, mensualite cumulee) et la situation apres rachat (mensualite, cout total, frais inclus). Le rachat est interessant si l'economie totale couvre largement les frais ET si la baisse de mensualite est significative.",
+                },
+              ]}
+            />
 
-            {/* FAQ */}
-            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Questions frequentes</h2>
-              <div className="mt-6 space-y-5">
-                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
-                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Quels types de credits peut-on regrouper ?</h3>
-                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Vous pouvez regrouper la plupart des credits : credit immobilier, credit auto, credit consommation, pret personnel, credit travaux et meme les credits revolving. La seule condition est que les credits soient en cours de remboursement.</p>
-                </div>
-                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
-                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Quels sont les frais lies au rachat de credit en France ?</h3>
-                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Les principaux frais sont les indemnites de remboursement anticipe (IRA), plafonnees a 3% du capital restant du ou 6 mois d&apos;interets. S&apos;ajoutent les frais de dossier de la nouvelle banque (300 &euro; a 1 000 &euro; en moyenne), les frais de garantie et eventuellement les frais de courtage.</p>
-                </div>
-                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
-                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>A partir de quel ecart de taux le rachat est-il rentable ?</h3>
-                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>En regle generale, un ecart d&apos;au moins 0,7 a 1 point de pourcentage entre votre taux actuel et le nouveau taux rend le rachat interessant. Cependant, cela depend aussi de la duree restante du credit et du montant du capital : plus ils sont eleves, plus l&apos;economie potentielle est importante.</p>
-                </div>
+            <section
+              className="rounded-xl border p-6 md:p-8 shadow-sm"
+              style={{ background: "var(--surface-alt)", borderColor: "var(--border)" }}
+            >
+              <h2
+                className="text-2xl md:text-3xl font-extrabold"
+                style={{ fontFamily: "var(--font-display)", color: "var(--foreground)" }}
+              >
+                A savoir avant de regrouper ses credits en 2026
+              </h2>
+
+              <div className="mt-4 space-y-4 leading-relaxed" style={{ color: "var(--foreground)" }}>
+                <p>
+                  <strong>Rachat immobilier vs rachat conso.</strong> La reglementation differe :
+                  un rachat ou la part immobiliere depasse 60 % suit le regime du credit immobilier
+                  (TAEG, IRA plafonnees, garantie hypothecaire ou caution). En dessous, c&apos;est
+                  un credit a la consommation, plus rapide a obtenir mais avec un taux plus eleve.
+                </p>
+                <p>
+                  <strong>Allonger la duree, c&apos;est payer plus au total.</strong> Reduire la
+                  mensualite passe par allonger la duree. Resultat : la mensualite baisse, mais le
+                  cout total des interets explose. Le simulateur le rend visible : verifiez toujours
+                  l&apos;ecart entre cout total avant / cout total apres.
+                </p>
+                <p>
+                  <strong>L&apos;assurance emprunteur.</strong> Pour un rachat avec part
+                  immobiliere, une nouvelle assurance est exigee. Depuis la loi Lemoine (2022), vous
+                  pouvez choisir librement (delegation), souvent 30 a 50 % moins chere que le contrat
+                  groupe de la banque. Pensez a chiffrer ce poste, non integre dans ce simulateur.
+                </p>
+                <p>
+                  <strong>Garantie de la nouvelle banque.</strong> Pour un rachat avec hypotheque,
+                  des frais de mainlevee et de nouvelle hypotheque s&apos;appliquent (1 a 2 % du
+                  capital). Avec une caution Credit Logement, les frais sont plus faibles (~1 %).
+                  Ces couts ne sont pas integres dans le simulateur, prevoyez-les separement.
+                </p>
+                <p>
+                  <strong>Source.</strong> Articles L313-39 a L313-46 du Code de la consommation
+                  pour les IRA, articles L313-25 et suivants pour le credit immobilier. Verifiez
+                  systematiquement les conditions exactes dans vos contrats actuels avant simulation.
+                </p>
               </div>
-            </div>
+            </section>
+
+            <ToolFaqSection
+              intro="Les questions les plus posees sur le rachat et le regroupement de credits."
+              items={[
+                {
+                  question: "Quels types de credits peut-on regrouper ?",
+                  answer:
+                    "Vous pouvez regrouper la plupart des credits : credit immobilier, credit auto, credit consommation, pret personnel, credit travaux et meme les credits revolving. La seule condition est que les credits soient en cours de remboursement.",
+                },
+                {
+                  question: "Quels sont les frais lies au rachat de credit en France ?",
+                  answer:
+                    "Les principaux frais sont les indemnites de remboursement anticipe (IRA), plafonnees a 3 % du capital restant du ou 6 mois d'interets. S'ajoutent les frais de dossier de la nouvelle banque (300 EUR a 1 000 EUR en moyenne), les frais de garantie et eventuellement les frais de courtage.",
+                },
+                {
+                  question: "A partir de quel ecart de taux le rachat est-il rentable ?",
+                  answer:
+                    "En regle generale, un ecart d'au moins 0,7 a 1 point de pourcentage entre votre taux actuel et le nouveau taux rend le rachat interessant. Cependant, cela depend aussi de la duree restante du credit et du montant du capital : plus ils sont eleves, plus l'economie potentielle est importante.",
+                },
+                {
+                  question: "A quel moment du pret le rachat est-il le plus interessant ?",
+                  answer:
+                    "Le rachat est plus rentable dans le premier tiers du credit, lorsque la part d'interets dans la mensualite est encore eleve. Apres la moitie du pret, l'essentiel des interets a deja ete paye et le gain potentiel diminue fortement.",
+                },
+                {
+                  question: "Le rachat impacte-t-il mon assurance emprunteur ?",
+                  answer:
+                    "Oui. Le rachat genere un nouveau pret, donc une nouvelle assurance emprunteur est exigee. Depuis la loi Lemoine (1er septembre 2022), vous pouvez la resilier a tout moment et choisir librement votre assureur (delegation), souvent 30 a 50 % moins chere que le contrat groupe de la banque.",
+                },
+                {
+                  question: "Combien de temps pour obtenir un rachat de credit ?",
+                  answer:
+                    "Pour un rachat 100 % credit consommation, comptez 2 a 4 semaines entre la demande et la mise en place. Pour un rachat avec part immobiliere, comptez 1,5 a 3 mois (etude, accord de principe, conditions suspensives, deblocage). Le delai legal de retractation de 14 jours s'applique apres signature de l'offre.",
+                },
+                {
+                  question: "Y a-t-il un montant minimum ou maximum pour un rachat ?",
+                  answer:
+                    "Pas de plancher legal mais en pratique, en dessous de 5 000-10 000 EUR de capital regroupé, les frais absorberaient l'economie. Pas de plafond legal mais les organismes appliquent leurs propres limites (souvent 200 000 a 500 000 EUR pour un rachat conso, plus pour un rachat avec immobilier).",
+                },
+                {
+                  question: "Le simulateur garde-t-il mes donnees ?",
+                  answer:
+                    "Non. Tous les calculs sont effectues localement dans votre navigateur. Aucune information sur vos credits (capital, taux, mensualite) n'est envoyee a un serveur ni stockee. L'outil fonctionne sans inscription.",
+                },
+              ]}
+            />
           </div>
 
           <aside className="space-y-6">
