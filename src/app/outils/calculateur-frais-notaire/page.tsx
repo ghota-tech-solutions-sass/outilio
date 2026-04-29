@@ -2,6 +2,8 @@
 
 import { useState, useMemo } from "react";
 import AdPlaceholder from "@/components/AdPlaceholder";
+import ToolFaqSection from "@/components/ToolFaqSection";
+import ToolHowToSection from "@/components/ToolHowToSection";
 
 // ---------------------------------------------------------------------------
 // Baremes officiels frais de notaire (source: loi de finances, decrets)
@@ -617,19 +619,123 @@ export default function CalculateurFraisNotaire() {
               </div>
             </div>
 
-            {/* Explications */}
-            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Comment sont calcules les frais de notaire ?</h2>
-              <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                <p>Les &laquo; frais de notaire &raquo; se composent en realite de <strong className="text-[var(--foreground)]">trois postes principaux</strong> :</p>
-                <p><strong className="text-[var(--foreground)]">1. Les droits de mutation (DMTO)</strong> : c&apos;est la part fiscale, reversee a l&apos;Etat et aux collectivites. Pour un bien ancien, ils representent environ 5,80% a 6,32% du prix selon le departement. Pour un bien neuf, seule la taxe de publicite fonciere au taux reduit de 0,715% s&apos;applique.</p>
-                <p><strong className="text-[var(--foreground)]">2. Les emoluments du notaire</strong> : c&apos;est la remuneration du notaire, calculee selon un bareme proportionnel degressif fixe par decret. Ils representent environ 1% du prix de vente, auxquels s&apos;ajoute la TVA a 20%.</p>
-                <p><strong className="text-[var(--foreground)]">3. Les debours et formalites</strong> : ce sont les frais avances par le notaire pour le compte de l&apos;acheteur (documents d&apos;urbanisme, cadastre, extraits hypothecaires, contribution de securite immobiliere).</p>
+            <ToolHowToSection
+              title="Comment estimer vos frais de notaire en 4 etapes"
+              description="Le calculateur applique les baremes officiels 2026 (loi de finances) avec gestion ancien / neuf et taux departementaux a jour."
+              steps={[
+                {
+                  name: "Saisir le prix d'achat du bien",
+                  text:
+                    "Indiquez le prix net vendeur, hors mobilier et hors honoraires d'agence. Si une portion du prix correspond a du mobilier (cuisine equipee, electromenager), elle peut etre deduite de l'assiette des droits de mutation : prevoyez de la valoriser dans le compromis (typiquement 2-5 % du prix).",
+                },
+                {
+                  name: "Choisir ancien ou neuf",
+                  text:
+                    "Bien ANCIEN (revenu vendu plus de 5 ans apres construction ou apres premiere mutation) : frais ~7 a 8 % du prix. Bien NEUF (VEFA, premiere mutation moins de 5 ans apres construction) : frais ~2 a 3 % du prix grace au taux reduit de TPF (0,715 %), la TVA est payee par le promoteur.",
+                },
+                {
+                  name: "Selectionner le departement",
+                  text:
+                    "Le taux departemental varie : 5,00 % dans la majorite des departements depuis avril 2025, 4,50 % dans une dizaine de departements, 3,80 % dans l'Indre et a Mayotte. Choisissez votre departement pour un calcul precis.",
+                },
+                {
+                  name: "Lire le detail",
+                  text:
+                    "Le calculateur affiche : DMTO (droits de mutation, partie fiscale), emoluments du notaire (bareme proportionnel degressif), debours et TVA. Le total est arrondi et indicatif. Le notaire vous remettra un devis precis avant signature.",
+                },
+              ]}
+            />
+
+            <section
+              className="rounded-xl border p-6 md:p-8 shadow-sm"
+              style={{ background: "var(--surface)", borderColor: "var(--border)" }}
+            >
+              <h2
+                className="text-2xl md:text-3xl font-extrabold"
+                style={{ fontFamily: "var(--font-display)", color: "var(--foreground)" }}
+              >
+                Comment se decomposent les frais de notaire
+              </h2>
+              <div className="mt-4 space-y-3 leading-relaxed" style={{ color: "var(--foreground)" }}>
+                <p>
+                  Les &laquo; frais de notaire &raquo; se composent en realite de{" "}
+                  <strong>trois postes principaux</strong> :
+                </p>
+                <p>
+                  <strong>1. Les droits de mutation (DMTO)</strong> : c&apos;est la part fiscale,
+                  reversee a l&apos;Etat et aux collectivites. Pour un bien ancien, ils
+                  representent environ 5,80 % a 6,32 % du prix selon le departement. Pour un bien
+                  neuf, seule la taxe de publicite fonciere au taux reduit de 0,715 % s&apos;applique.
+                </p>
+                <p>
+                  <strong>2. Les emoluments du notaire</strong> : c&apos;est la remuneration du
+                  notaire, calculee selon un bareme proportionnel degressif fixe par decret. Ils
+                  representent environ 1 % du prix de vente, auxquels s&apos;ajoute la TVA a 20 %.
+                </p>
+                <p>
+                  <strong>3. Les debours et formalites</strong> : ce sont les frais avances par le
+                  notaire pour le compte de l&apos;acheteur (documents d&apos;urbanisme, cadastre,
+                  extraits hypothecaires, contribution de securite immobiliere).
+                </p>
                 <p className="rounded-xl p-4" style={{ background: "var(--surface-alt)" }}>
-                  <strong className="text-[var(--foreground)]">Hausse 2025 :</strong> La loi de finances 2025 autorise les departements a majorer de 0,5 point le taux departemental (de 4,50% a 5%) jusqu&apos;au 30 avril 2028. La majorite des departements ont vote cette hausse. Les primo-accedants en sont exemptes.
+                  <strong>Hausse 2025-2028 :</strong> La loi de finances 2025 autorise les
+                  departements a majorer de 0,5 point le taux departemental (de 4,50 % a 5 %)
+                  jusqu&apos;au 30 avril 2028. La majorite des departements ont vote cette hausse.
+                  Les primo-accedants en sont exemptes.
+                </p>
+                <p>
+                  <strong>Source.</strong> Code general des impots art. 1594 D et 1594 H, decrets
+                  fixant les emoluments du notaire (Decret n2016-230 modifie). Verifications a
+                  notaires.fr.
                 </p>
               </div>
-            </div>
+            </section>
+
+            <ToolFaqSection
+              intro="Les questions les plus frequentes sur les frais de notaire en France."
+              items={[
+                {
+                  question: "Quels sont les frais de notaire pour un bien ancien en 2026 ?",
+                  answer:
+                    "Environ 7,5 a 8 % du prix d'achat dans la majorite des departements (taux 5 %), un peu moins dans les departements a 4,5 % (~7 %). Exemple : pour un appartement ancien a 300 000 EUR dans un departement majore, comptez environ 23 000 a 24 000 EUR de frais.",
+                },
+                {
+                  question: "Et pour un bien neuf (VEFA) ?",
+                  answer:
+                    "Environ 2 a 3 % du prix car les droits de mutation sont remplaces par la taxe de publicite fonciere au taux reduit de 0,715 %. La TVA a 20 % est payee par le vendeur (incluse dans le prix de vente affiche). Exemple : pour 300 000 EUR en neuf, comptez ~7 500 EUR de frais notaire.",
+                },
+                {
+                  question: "Les frais de notaire sont-ils negociables ?",
+                  answer:
+                    "Les emoluments du notaire (sa remuneration) sont fixes par decret donc non negociables sur les premiers 100 000 EUR. Au-dela, depuis 2016, le notaire peut accorder une remise jusqu'a 20 % sur la partie excedant 150 000 EUR. Les DMTO (partie fiscale) ne sont pas negociables.",
+                },
+                {
+                  question: "Quand paie-t-on les frais de notaire ?",
+                  answer:
+                    "Le jour de la signature de l'acte authentique de vente, soit en moyenne 2-3 mois apres le compromis. Le notaire vous demandera une provision (a peu pres egale aux frais estimes) quelques jours avant. Le solde eventuel est ajuste apres regularisation des comptes.",
+                },
+                {
+                  question: "Peut-on inclure les frais de notaire dans le pret immobilier ?",
+                  answer:
+                    "Oui, on parle alors de 'pret a 110 %'. Les banques l'accordent surtout aux primo-accedants ayant des revenus stables. Cela augmente le cout total du pret et peut depasser le seuil HCSF de 35 % d'endettement. Dans la pratique, un apport couvrant les frais de notaire reste fortement recommande.",
+                },
+                {
+                  question: "Les primo-accedants beneficient-ils d'une reduction ?",
+                  answer:
+                    "Depuis avril 2025, les primo-accedants achetant leur residence principale sont exemptes de la majoration de 0,5 point du taux departemental. Le taux applicable reste a 4,50 % au lieu de 5 % dans les departements concernes. Economie typique : ~1 500 EUR pour un bien a 300 000 EUR.",
+                },
+                {
+                  question: "Que valent les debours dans les frais de notaire ?",
+                  answer:
+                    "Les debours et frais de formalites representent en general 800 a 1 200 EUR, fixes pour la plupart : extrait cadastral, etat hypothecaire, copie du titre, contributions de securite immobiliere, frais d'enregistrement. Le calculateur applique une moyenne realiste.",
+                },
+                {
+                  question: "Le calculateur garde-t-il mes donnees ?",
+                  answer:
+                    "Non. Tous les calculs sont effectues localement dans votre navigateur. Aucune donnee saisie (prix, departement, type) n'est envoyee a un serveur ni stockee. L'outil fonctionne sans inscription.",
+                },
+              ]}
+            />
           </div>
 
           {/* Sidebar */}

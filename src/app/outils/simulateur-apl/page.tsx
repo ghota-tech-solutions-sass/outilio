@@ -2,6 +2,8 @@
 
 import { useState, useMemo } from "react";
 import AdPlaceholder from "@/components/AdPlaceholder";
+import ToolFaqSection from "@/components/ToolFaqSection";
+import ToolHowToSection from "@/components/ToolHowToSection";
 
 /* ==========================================================================
    PARAMETRES APL PAR ANNEE
@@ -707,46 +709,115 @@ export default function SimulateurAPL() {
               </p>
             </div>
 
-            {/* Explications */}
-            <div
-              className="rounded-2xl border p-8"
+            <ToolHowToSection
+              title="Comment estimer votre APL en 4 etapes"
+              description="Le simulateur applique la formule officielle CAF avec parametres revaloricies au 1er octobre 2025 (decret n2025-1401)."
+              steps={[
+                {
+                  name: "Identifier votre zone geographique",
+                  text:
+                    "Zone 1 : Ile-de-France. Zone 2 : agglomerations de plus de 100 000 habitants, Corse, DOM. Zone 3 : reste du territoire (zones rurales et petites villes). Vous pouvez verifier votre zone exacte avec votre code postal sur le site de la CAF.",
+                },
+                {
+                  name: "Saisir le loyer hors charges",
+                  text:
+                    "Indiquez votre loyer mensuel HORS charges. Si votre bail mentionne un loyer global, deduisez les charges locatives (eau, ordures, ascenseur, chauffage collectif). Le loyer retenu pour l'APL est plafonne : tout depassement du plafond ne genere pas d'APL supplementaire.",
+                },
+                {
+                  name: "Renseigner la composition du foyer",
+                  text:
+                    "Personne seule, couple, presence d'enfants ou de personnes a charge. Le forfait charges (C) augmente avec la taille du foyer. Pour un couple sans enfant, comptez environ 64 EUR de forfait charges en 2026 ; pour un couple avec 2 enfants, environ 102 EUR.",
+                },
+                {
+                  name: "Indiquer vos ressources annuelles",
+                  text:
+                    "La CAF retient les ressources des 12 derniers mois glissants : salaires, allocations chomage, pensions, revenus du patrimoine. Un plancher R0 est applique : si vos ressources sont en dessous, vous percevez l'APL maximale. R0 varie selon la composition du foyer.",
+                },
+              ]}
+            />
+
+            <section
+              className="rounded-xl border p-6 md:p-8 shadow-sm"
               style={{ background: "var(--surface)", borderColor: "var(--border)" }}
             >
               <h2
-                className="text-2xl tracking-tight"
-                style={{ fontFamily: "var(--font-display)" }}
+                className="text-2xl md:text-3xl font-extrabold"
+                style={{ fontFamily: "var(--font-display)", color: "var(--foreground)" }}
               >
-                Comment est calculee l&apos;APL ?
+                La formule de calcul de l&apos;APL
               </h2>
-              <div
-                className="mt-4 space-y-3 text-sm leading-relaxed"
-                style={{ color: "var(--muted)" }}
-              >
+              <div className="mt-4 space-y-3 leading-relaxed" style={{ color: "var(--foreground)" }}>
                 <p>
                   L&apos;aide personnalisee au logement (APL) est calculee selon la formule :{" "}
-                  <strong className="text-[var(--foreground)]">APL = L + C - PP - 5 euros</strong>, ou L est
-                  le loyer retenu dans la limite d&apos;un plafond, C le forfait charges et PP votre participation
+                  <strong>APL = L + C - PP - 5 EUR</strong>, ou L est le loyer retenu dans la
+                  limite d&apos;un plafond, C le forfait charges et PP votre participation
                   personnelle.
                 </p>
                 <p>
-                  <strong className="text-[var(--foreground)]">La participation personnelle</strong> depend de
-                  vos ressources et de la taille de votre foyer. Elle est calculee avec la formule PP = P0 + TP x RP,
-                  ou P0 est un minimum incompressible ({fmt(params.P0)} euros), TP un taux progressif et RP vos
-                  ressources au-dela du plancher R0.
+                  <strong>La participation personnelle</strong> depend de vos ressources et de la
+                  taille de votre foyer. Elle est calculee avec la formule PP = P0 + TP x RP, ou P0
+                  est un minimum incompressible ({fmt(params.P0)} EUR), TP un taux progressif et RP
+                  vos ressources au-dela du plancher R0.
                 </p>
                 <p>
-                  <strong className="text-[var(--foreground)]">Les zones geographiques</strong> :
-                  la zone 1 correspond a l&apos;Ile-de-France, la zone 2 aux agglomerations de plus de 100 000
-                  habitants et a la Corse, la zone 3 au reste du territoire.
+                  <strong>Les zones geographiques</strong> : la zone 1 correspond a
+                  l&apos;Ile-de-France, la zone 2 aux agglomerations de plus de 100 000 habitants et
+                  a la Corse, la zone 3 au reste du territoire.
                 </p>
                 <p>
-                  <strong className="text-[var(--foreground)]">Les ressources</strong> prises en compte
-                  sont celles des 12 derniers mois glissants : salaires, allocations chomage, pensions, revenus
-                  du patrimoine. Un plancher R0 est applique : en dessous de ce seuil, vous percevez l&apos;APL
+                  <strong>Les ressources</strong> prises en compte sont celles des 12 derniers mois
+                  glissants : salaires, allocations chomage, pensions, revenus du patrimoine. Un
+                  plancher R0 est applique : en dessous de ce seuil, vous percevez l&apos;APL
                   maximale.
                 </p>
+                <p>
+                  <strong>Source.</strong> Arrete du 5 septembre 2025, decret n2025-1401 du
+                  28 decembre 2025. Reglementation : articles L823-1 et suivants du Code de la
+                  construction et de l&apos;habitation.
+                </p>
               </div>
-            </div>
+            </section>
+
+            <ToolFaqSection
+              intro="Les questions les plus posees sur l'APL et l'aide au logement en France."
+              items={[
+                {
+                  question: "Qui peut beneficier de l'APL en 2026 ?",
+                  answer:
+                    "L'APL est versee aux locataires (logement conventionne) ou accedants (pret conventionne, pret a l'accession sociale). Conditions : etre Francais ou en sejour regulier, occuper le logement comme residence principale au moins 8 mois par an, avoir des ressources sous certains plafonds. Etudiants, salaries, retraites, demandeurs d'emploi sont eligibles.",
+                },
+                {
+                  question: "Comment faire une demande d'APL ?",
+                  answer:
+                    "La demande se fait en ligne sur caf.fr (creer son espace si vous n'etes pas allocataire). Documents necessaires : bail signe ou attestation de loyer du proprietaire, RIB, justificatif d'identite. Le versement debute le mois suivant celui de la demande. Pas de retroactivite : faites la demande des l'entree dans les lieux.",
+                },
+                {
+                  question: "Quelle difference entre APL, ALF et ALS ?",
+                  answer:
+                    "L'APL concerne les logements conventionnes (HLM, accession sociale, certains parcs prives). L'ALF (Allocation de Logement Familiale) concerne les familles avec enfants ou jeunes maries dans logements non conventionnes. L'ALS (Allocation de Logement Sociale) concerne les autres cas (etudiants, isoles). Le calculateur estime principalement l'APL : pour une situation precise, le simulateur officiel CAF est definitif.",
+                },
+                {
+                  question: "L'APL est-elle compatible avec d'autres aides ?",
+                  answer:
+                    "L'APL n'est pas cumulable avec l'ALF ou l'ALS pour le meme logement (une seule aide a la fois selon votre situation). Elle est compatible avec le RSA, la prime d'activite, les bourses etudiantes. En revanche, percevoir l'APL exclut une dependance fiscale a un parent imposable (rattachement fiscal).",
+                },
+                {
+                  question: "L'APL est-elle calculee sur les revenus N-2 ou les revenus actuels ?",
+                  answer:
+                    "Depuis janvier 2021, l'APL est calculee sur les revenus des 12 derniers mois glissants (et non plus N-2 comme avant). Cette reforme appelee 'APL contemporaine' permet une adaptation rapide aux variations de ressources. La CAF revise vos droits chaque trimestre.",
+                },
+                {
+                  question: "Est-ce qu'un proprietaire peut beneficier de l'APL ?",
+                  answer:
+                    "Oui, dans le cadre d'une accession a la propriete avec un Pret Conventionne (PC) ou un Pret a l'Accession Sociale (PAS). Cette aide est appelee 'APL accession'. Conditions : achat de la residence principale, pret signe avant 2018 pour le neuf ou avant 2020 pour l'ancien (la mesure ayant ete supprimee depuis pour le neuf et l'ancien standard).",
+                },
+                {
+                  question: "Le simulateur garde-t-il mes donnees ?",
+                  answer:
+                    "Non. Tous les calculs sont effectues localement dans votre navigateur. Aucune donnee saisie (loyer, ressources, composition du foyer) n'est envoyee a un serveur ni stockee. L'outil fonctionne sans inscription.",
+                },
+              ]}
+            />
           </div>
 
           {/* Sidebar */}

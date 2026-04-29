@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useCallback } from "react";
 import AdPlaceholder from "@/components/AdPlaceholder";
+import ToolFaqSection from "@/components/ToolFaqSection";
 
 /* ─── IR Barème 2025 ─── */
 function calcImpot(revenu: number, parts: number) {
@@ -1030,46 +1031,46 @@ export default function FreelanceVsCDI() {
               </div>
             </div>
 
-            {/* FAQ */}
-            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
-                Questions frequentes
-              </h2>
-              <div className="mt-6 space-y-5">
-                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
-                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>
-                    Quel TJM pour gagner autant qu&apos;en CDI ?
-                  </h3>
-                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                    Cela depend de votre statut juridique et de votre salaire CDI de reference. En moyenne,
-                    pour un salaire brut annuel de 45 000 &euro; en CDI, il faut facturer entre 350 et 500 &euro;/jour
-                    en freelance pour obtenir un revenu net equivalent. Utilisez notre simulateur pour un calcul precis
-                    adapte a votre situation.
-                  </p>
-                </div>
-                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
-                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>
-                    Micro-entreprise ou SASU : quel statut choisir ?
-                  </h3>
-                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                    La micro-entreprise convient pour debuter : pas de comptabilite complexe, cotisations simples (25,6% du CA).
-                    La SASU est plus avantageuse au-dela de 50 000 &euro; de CA grace a l&apos;optimisation remuneration/dividendes.
-                    Elle offre aussi une meilleure protection sociale (regime general) et aucun plafond de chiffre d&apos;affaires.
-                  </p>
-                </div>
-                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
-                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>
-                    Comment sont calcules les impots en freelance ?
-                  </h3>
-                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                    En micro-entreprise, le revenu imposable est le CA apres abattement forfaitaire (34% pour BNC).
-                    En SASU et EURL a l&apos;IS, la remuneration du dirigeant est imposee au bareme progressif de l&apos;IR,
-                    et les dividendes sont soumis au prelevement forfaitaire unique (PFU) de 31,4% depuis 2026 (12,8% d&apos;IR + 18,6% de
-                    prelevements sociaux).
-                  </p>
-                </div>
-              </div>
-            </div>
+            <ToolFaqSection
+              intro="Les questions les plus posees sur le passage du CDI au freelance."
+              items={[
+                {
+                  question: "Quel TJM pour gagner autant qu'en CDI ?",
+                  answer:
+                    "Cela depend de votre statut juridique et de votre salaire CDI de reference. En moyenne, pour un salaire brut annuel de 45 000 EUR en CDI, il faut facturer entre 350 et 500 EUR/jour en freelance pour obtenir un revenu net equivalent. Utilisez le simulateur pour un calcul precis adapte a votre situation et au nombre de jours factures par an.",
+                },
+                {
+                  question: "Micro-entreprise ou SASU : quel statut choisir ?",
+                  answer:
+                    "La micro-entreprise convient pour debuter : pas de comptabilite complexe, cotisations simples (25,6 % du CA pour BNC en 2026). La SASU est plus avantageuse au-dela de 50 000 EUR de CA grace a l'optimisation remuneration/dividendes. Elle offre aussi une meilleure protection sociale (regime general) et aucun plafond de chiffre d'affaires.",
+                },
+                {
+                  question: "Comment sont calcules les impots en freelance ?",
+                  answer:
+                    "En micro-entreprise, le revenu imposable est le CA apres abattement forfaitaire (34 % pour BNC). En SASU et EURL a l'IS, la remuneration du dirigeant est imposee au bareme progressif de l'IR, et les dividendes sont soumis au prelevement forfaitaire unique (PFU) de 31,4 % depuis 2026 (12,8 % d'IR + 18,6 % de prelevements sociaux).",
+                },
+                {
+                  question: "Combien de jours travailles par an en freelance ?",
+                  answer:
+                    "En moyenne, un freelance facture entre 180 et 220 jours par an. Le calcul : 365 jours - 104 weekends - 10 jours feries - 25 jours de conges - 10-20 jours de prospection/admin/formation = 196-216 jours nets factures. C'est cette base qu'il faut multiplier par votre TJM pour estimer votre CA annuel.",
+                },
+                {
+                  question: "Faut-il une assurance professionnelle obligatoire ?",
+                  answer:
+                    "Oui pour de nombreuses professions reglementees (sante, droit, expertise comptable, BTP). Pour les freelances IT, marketing, design, l'assurance RC Pro n'est pas obligatoire mais fortement recommandee : un client peut exiger une attestation. Comptez 250 a 600 EUR par an. La protection juridique professionnelle est aussi utile (litiges contractuels, recouvrement).",
+                },
+                {
+                  question: "Quels sont les droits au chomage en freelance ?",
+                  answer:
+                    "Les freelances en micro-entreprise et EURL/IR n'ont pas droit au chomage classique (TNS). En SASU, le president est assimile salarie mais ne cotise pas a l'assurance chomage Pole Emploi (sauf cas specifiques). L'ATI (Allocation Travailleurs Independants) existe depuis 2019 mais avec des conditions strictes : ~800 EUR/mois pendant 6 mois max, sous reserve de revenus minimum et de cessation involontaire d'activite.",
+                },
+                {
+                  question: "Le simulateur garde-t-il mes donnees ?",
+                  answer:
+                    "Non. Tous les calculs sont effectues localement dans votre navigateur. Aucune donnee saisie (TJM, salaire, charges, statut) n'est envoyee a un serveur ni stockee. L'outil fonctionne sans inscription.",
+                },
+              ]}
+            />
           </div>
 
           {/* ── Sidebar ── */}

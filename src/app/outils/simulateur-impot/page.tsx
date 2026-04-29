@@ -2,6 +2,8 @@
 
 import { useState, useMemo } from "react";
 import AdPlaceholder from "@/components/AdPlaceholder";
+import ToolFaqSection from "@/components/ToolFaqSection";
+import ToolHowToSection from "@/components/ToolHowToSection";
 
 type Tranche = { min: number; max: number; rate: number; label: string };
 
@@ -254,65 +256,117 @@ export default function SimulateurImpot() {
               </div>
             </div>
 
-            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Comment fonctionne l&apos;impot sur le revenu ?</h2>
-              <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                <p>L&apos;impot sur le revenu en France est <strong className="text-[var(--foreground)]">progressif</strong> : il augmente par tranches. Votre revenu est divise par le nombre de parts fiscales (quotient familial), puis chaque tranche est imposee a son taux.</p>
-                <p><strong className="text-[var(--foreground)]">Taux marginal</strong> : c&apos;est le taux de la derniere tranche atteinte. Il s&apos;applique uniquement a la partie du revenu dans cette tranche.</p>
-                <p><strong className="text-[var(--foreground)]">Taux moyen</strong> : c&apos;est le rapport entre l&apos;impot total et le revenu. Il est toujours inferieur au taux marginal.</p>
-              </div>
-            </div>
+            <ToolHowToSection
+              title="Comment simuler votre impot sur le revenu en 4 etapes"
+              description="Le simulateur applique le bareme officiel 2026 (loi de finances) avec quotient familial, decote pour faibles revenus et plafonnement."
+              steps={[
+                {
+                  name: "Saisir votre revenu net imposable",
+                  text:
+                    "C'est votre revenu net annuel APRES abattement de 10 % (salaires) ou frais reels. Si vous avez votre avis d'imposition, prenez la ligne 'Revenu net imposable'. Sinon, multipliez votre net mensuel par 12 et soustrayez 10 %.",
+                },
+                {
+                  name: "Renseigner votre situation familiale",
+                  text:
+                    "Celibataire = 1 part. Couple marie ou pacse = 2 parts. Chacun des 2 premiers enfants ajoute 0,5 part. A partir du 3e enfant : +1 part. Parent isole avec enfant : +0,5 part supplementaire.",
+                },
+                {
+                  name: "Choisir l'annee fiscale",
+                  text:
+                    "Selectionnez l'annee de declaration. Le bareme 2026 (revenus 2025) integre la revalorisation de 0,9 % decidee par la loi de finances pour neutraliser l'inflation. Les seuils des tranches sont releves chaque annee.",
+                },
+                {
+                  name: "Lire le detail par tranche",
+                  text:
+                    "Le simulateur affiche : le quotient familial, l'impot total, le taux moyen, le TMI (Taux Marginal d'Imposition) et la repartition par tranche d'imposition. Pour declarer officiellement, utilisez impots.gouv.fr.",
+                },
+              ]}
+            />
 
-            {/* FAQ Section */}
-            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
-                Questions frequentes
+            <section
+              className="rounded-xl border p-6 md:p-8 shadow-sm"
+              style={{ background: "var(--surface)", borderColor: "var(--border)" }}
+            >
+              <h2
+                className="text-2xl md:text-3xl font-extrabold"
+                style={{ fontFamily: "var(--font-display)", color: "var(--foreground)" }}
+              >
+                Comment fonctionne l&apos;impot sur le revenu en France
               </h2>
-              <div className="mt-6 space-y-5">
-                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
-                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>
-                    Quel est le bareme de l&apos;impot sur le revenu 2026 ?
-                  </h3>
-                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                    Le bareme 2026 (applicable aux revenus 2025) a ete revalorise de 0,9&nbsp;% par la loi
-                    de finances 2026 pour tenir compte de l&apos;inflation. Les tranches sont les suivantes :
-                    0&nbsp;% jusqu&apos;a 11&nbsp;600&nbsp;&euro;, 11&nbsp;% de 11&nbsp;601 a 29&nbsp;579&nbsp;&euro;,
-                    30&nbsp;% de 29&nbsp;580 a 84&nbsp;577&nbsp;&euro;, 41&nbsp;% de 84&nbsp;578 a
-                    181&nbsp;917&nbsp;&euro;, et 45&nbsp;% au-dela. Ces seuils s&apos;appliquent par part
-                    de quotient familial.
-                  </p>
-                </div>
-
-                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
-                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>
-                    Comment fonctionne le quotient familial ?
-                  </h3>
-                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                    Le quotient familial divise votre revenu net imposable par le nombre de parts fiscales
-                    de votre foyer. Un celibataire a 1 part, un couple marie ou pacse a 2 parts. Chacun des
-                    deux premiers enfants a charge ajoute 0,5 part, et chaque enfant a partir du troisieme
-                    ajoute 1 part. L&apos;impot est calcule sur ce quotient, puis multiplie par le nombre
-                    de parts. Ce mecanisme avantage les familles nombreuses, mais un plafonnement limite
-                    l&apos;avantage a environ 1&nbsp;759&nbsp;&euro; par demi-part supplementaire en 2026.
-                  </p>
-                </div>
-
-                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
-                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>
-                    Quand declarer ses impots en 2026 ?
-                  </h3>
-                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                    La declaration des revenus 2025 s&apos;effectue au printemps 2026. Le service en ligne
-                    sur impots.gouv.fr ouvre generalement mi-avril. Les dates limites varient selon votre
-                    departement de residence : fin mai pour les departements 01 a 19, debut juin pour les
-                    departements 20 a 54, et mi-juin pour les departements 55 et au-dela. La declaration
-                    papier, reservee aux contribuables ne pouvant declarer en ligne, doit etre deposee
-                    fin mai. Le prelevement a la source est ajuste en septembre apres traitement de votre
-                    declaration.
-                  </p>
-                </div>
+              <div className="mt-4 space-y-3 leading-relaxed" style={{ color: "var(--foreground)" }}>
+                <p>
+                  L&apos;impot sur le revenu en France est <strong>progressif</strong> : il augmente
+                  par tranches. Votre revenu est divise par le nombre de parts fiscales (quotient
+                  familial), puis chaque tranche est imposee a son taux.
+                </p>
+                <p>
+                  <strong>Taux marginal (TMI)</strong> : c&apos;est le taux de la derniere tranche
+                  atteinte. Il s&apos;applique uniquement a la partie du revenu dans cette tranche.
+                  Beaucoup confondent TMI et taux moyen.
+                </p>
+                <p>
+                  <strong>Taux moyen</strong> : c&apos;est le rapport entre l&apos;impot total et le
+                  revenu. Il est toujours inferieur au TMI. C&apos;est lui qui represente votre vrai
+                  taux d&apos;imposition global.
+                </p>
+                <p>
+                  <strong>Decote.</strong> Pour les revenus modestes, une decote reduit
+                  automatiquement l&apos;impot. Plafonds 2026 : 1 964 EUR pour un celibataire,
+                  3 248 EUR pour un couple marie/pacse.
+                </p>
+                <p>
+                  <strong>Plafonnement du quotient familial.</strong> L&apos;avantage fiscal procure
+                  par chaque demi-part supplementaire est plafonne (1 759 EUR par demi-part en
+                  2026). Au-dela, l&apos;avantage est ramene a ce plafond.
+                </p>
+                <p>
+                  <strong>Source.</strong> Bareme officiel issu de la loi de finances 2026 et
+                  articles 197 a 197 bis du Code general des impots. Pour declaration officielle :
+                  impots.gouv.fr.
+                </p>
               </div>
-            </div>
+            </section>
+
+            <ToolFaqSection
+              intro="Les questions les plus posees sur le calcul de l'impot sur le revenu en France."
+              items={[
+                {
+                  question: "Quel est le bareme de l'impot sur le revenu 2026 ?",
+                  answer:
+                    "Le bareme 2026 (applicable aux revenus 2025) a ete revalorise de 0,9 % par la loi de finances 2026 pour tenir compte de l'inflation. Les tranches sont les suivantes : 0 % jusqu'a 11 600 EUR, 11 % de 11 601 a 29 579 EUR, 30 % de 29 580 a 84 577 EUR, 41 % de 84 578 a 181 917 EUR, et 45 % au-dela. Ces seuils s'appliquent par part de quotient familial.",
+                },
+                {
+                  question: "Comment fonctionne le quotient familial ?",
+                  answer:
+                    "Le quotient familial divise votre revenu net imposable par le nombre de parts fiscales de votre foyer. Un celibataire a 1 part, un couple marie ou pacse a 2 parts. Chacun des deux premiers enfants a charge ajoute 0,5 part, et chaque enfant a partir du troisieme ajoute 1 part. L'impot est calcule sur ce quotient, puis multiplie par le nombre de parts. Le plafonnement limite l'avantage a environ 1 759 EUR par demi-part supplementaire en 2026.",
+                },
+                {
+                  question: "Quand declarer ses impots en 2026 ?",
+                  answer:
+                    "La declaration des revenus 2025 s'effectue au printemps 2026. Le service en ligne sur impots.gouv.fr ouvre generalement mi-avril. Les dates limites varient selon votre departement : fin mai pour les departements 01 a 19, debut juin pour les 20 a 54, et mi-juin pour les 55 et au-dela. La declaration papier doit etre deposee fin mai. Le prelevement a la source est ajuste en septembre apres traitement.",
+                },
+                {
+                  question: "Quelle est la difference entre TMI et taux moyen ?",
+                  answer:
+                    "Le TMI (Taux Marginal d'Imposition) est le taux de la derniere tranche atteinte. Il s'applique uniquement a la partie du revenu dans cette tranche. Le taux moyen est l'impot total divise par le revenu : c'est votre veritable taux global, toujours inferieur au TMI. Exemple : un TMI de 30 % peut correspondre a un taux moyen de 12 %.",
+                },
+                {
+                  question: "Le simulateur prend-il en compte les credits et reductions d'impot ?",
+                  answer:
+                    "Non. Le simulateur calcule l'impot brut a partir du bareme et du quotient familial. Il ne deduit pas les reductions et credits d'impot (dons, emploi a domicile, frais de garde d'enfants, etc.). Pour un calcul complet, utilisez le simulateur officiel sur impots.gouv.fr.",
+                },
+                {
+                  question: "Quels revenus declarer dans le revenu net imposable ?",
+                  answer:
+                    "Le revenu net imposable inclut : salaires (apres abattement 10 % ou frais reels), pensions de retraite, revenus fonciers (locations), BIC, BNC, dividendes (apres abattement 40 % si option bareme), plus-values mobilieres et immobilieres. L'abattement de 10 % sur salaires est plafonne a environ 14 426 EUR par actif en 2026.",
+                },
+                {
+                  question: "Le simulateur garde-t-il mes donnees ?",
+                  answer:
+                    "Non. Tous les calculs sont effectues localement dans votre navigateur. Aucune donnee saisie (revenus, situation familiale) n'est envoyee a un serveur ni stockee. L'outil fonctionne sans inscription.",
+                },
+              ]}
+            />
           </div>
 
           <aside className="space-y-6">

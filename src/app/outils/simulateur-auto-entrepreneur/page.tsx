@@ -2,6 +2,8 @@
 
 import { useState, useMemo } from "react";
 import AdPlaceholder from "@/components/AdPlaceholder";
+import ToolFaqSection from "@/components/ToolFaqSection";
+import ToolHowToSection from "@/components/ToolHowToSection";
 
 // ---------------------------------------------------------------------------
 // Types d'activite
@@ -756,49 +758,126 @@ export default function SimulateurAutoEntrepreneur() {
               style={{ background: "var(--surface)", borderColor: "var(--border)" }}
             >
               <h2
-                className="text-2xl tracking-tight"
-                style={{ fontFamily: "var(--font-display)" }}
+                className="text-2xl md:text-3xl font-extrabold"
+                style={{ fontFamily: "var(--font-display)", color: "var(--foreground)" }}
               >
-                Comment sont calculees les charges ?
+                Comment sont calculees les charges
               </h2>
               <div
-                className="mt-4 space-y-3 text-sm leading-relaxed"
-                style={{ color: "var(--muted)" }}
+                className="mt-4 space-y-3 leading-relaxed"
+                style={{ color: "var(--foreground)" }}
               >
                 <p>
-                  <strong className="text-[var(--foreground)]">Cotisations sociales</strong> : elles
-                  sont calculees en pourcentage de votre chiffre d&apos;affaires. Le taux depend de
-                  votre type d&apos;activite (
-                  {fmtPct(rates.cotisations.vente * 100)}% en vente,{" "}
-                  {fmtPct(rates.cotisations.service_bic * 100)}% en prestation BIC,{" "}
-                  {fmtPct(rates.cotisations.liberal_bnc * 100)}% en liberal BNC pour {annee}).
+                  <strong>Cotisations sociales</strong> : elles sont calculees en pourcentage de
+                  votre chiffre d&apos;affaires. Le taux depend de votre type d&apos;activite
+                  ({fmtPct(rates.cotisations.vente * 100)} % en vente,{" "}
+                  {fmtPct(rates.cotisations.service_bic * 100)} % en prestation BIC,{" "}
+                  {fmtPct(rates.cotisations.liberal_bnc * 100)} % en liberal BNC pour {annee}).
                 </p>
                 <p>
-                  <strong className="text-[var(--foreground)]">ACRE</strong> : l&apos;Aide a la
-                  Creation ou Reprise d&apos;Entreprise reduit vos cotisations de 50% la premiere
-                  annee d&apos;activite (exoneration ramenee a 25% a compter du 1er juillet 2026).
+                  <strong>ACRE</strong> : l&apos;Aide a la Creation ou Reprise d&apos;Entreprise
+                  reduit vos cotisations de 50 % la premiere annee d&apos;activite (exoneration
+                  ramenee a 25 % a compter du 1er juillet 2026).
                 </p>
                 <p>
-                  <strong className="text-[var(--foreground)]">Versement liberatoire</strong> : vous
-                  payez l&apos;IR directement sur votre CA a un taux fixe ({fmtPct(rates.versementLiberatoire.vente * 100)}%,{" "}
-                  {fmtPct(rates.versementLiberatoire.service_bic * 100)}% ou{" "}
-                  {fmtPct(rates.versementLiberatoire.liberal_bnc * 100)}% selon l&apos;activite) au
+                  <strong>Versement liberatoire</strong> : vous payez l&apos;IR directement sur
+                  votre CA a un taux fixe ({fmtPct(rates.versementLiberatoire.vente * 100)} %,{" "}
+                  {fmtPct(rates.versementLiberatoire.service_bic * 100)} % ou{" "}
+                  {fmtPct(rates.versementLiberatoire.liberal_bnc * 100)} % selon l&apos;activite) au
                   lieu du bareme progressif avec abattement forfaitaire (
-                  {(rates.abattementIR.vente * 100).toFixed(0)}%,{" "}
-                  {(rates.abattementIR.service_bic * 100).toFixed(0)}% ou{" "}
-                  {(rates.abattementIR.liberal_bnc * 100).toFixed(0)}%).
+                  {(rates.abattementIR.vente * 100).toFixed(0)} %,{" "}
+                  {(rates.abattementIR.service_bic * 100).toFixed(0)} % ou{" "}
+                  {(rates.abattementIR.liberal_bnc * 100).toFixed(0)} %).
                 </p>
                 <p>
-                  <strong className="text-[var(--foreground)]">CFE</strong> : la Cotisation Fonciere
-                  des Entreprises varie considerablement selon votre commune. Le montant affiche est
-                  une estimation mediane. Vous etes exonere si votre CA est inferieur a 5 000 &euro;.
+                  <strong>CFE</strong> : la Cotisation Fonciere des Entreprises varie
+                  considerablement selon votre commune. Le montant affiche est une estimation
+                  mediane. Vous etes exonere si votre CA est inferieur a 5 000 EUR.
                 </p>
                 <p>
-                  <strong className="text-[var(--foreground)]">CFP</strong> : la Contribution a la
-                  Formation Professionnelle est prelevee une fois par an en novembre.
+                  <strong>CFP</strong> : la Contribution a la Formation Professionnelle est
+                  prelevee une fois par an en novembre.
+                </p>
+                <p>
+                  <strong>Source.</strong> URSSAF, articles L613-7 et suivants du Code de la
+                  securite sociale, articles 102 ter et 151-0 du CGI. Verifications a urssaf.fr et
+                  autoentrepreneur.urssaf.fr.
                 </p>
               </div>
             </div>
+
+            <ToolHowToSection
+              title="Comment estimer vos cotisations d'auto-entrepreneur"
+              description="Le simulateur applique les taux URSSAF officiels par type d'activite et integre ACRE, versement liberatoire et CFE."
+              steps={[
+                {
+                  name: "Choisir votre type d'activite",
+                  text:
+                    "Vente de marchandises ou hebergement (12,3 % cotisations en 2026), prestation de service BIC (21,2 %), profession liberale BNC (24,6 %). Le taux depend de votre code APE et de la nature exacte de votre activite. Verifiez avec votre attestation INSEE.",
+                },
+                {
+                  name: "Saisir votre CA mensuel ou annuel",
+                  text:
+                    "Le CA est le total des facturations encaissees, hors TVA si vous etes en franchise (cas standard). Plafonds 2026 : 188 700 EUR pour la vente, 77 700 EUR pour les services et BNC. Au-dela, vous basculez en regime reel.",
+                },
+                {
+                  name: "Cocher ACRE si applicable",
+                  text:
+                    "L'ACRE divise vos cotisations par 2 la premiere annee (jusqu'au 30 juin 2026), 25 % les annees 2-3. Conditions : moins de 30 ans, demandeur d'emploi, RSA, ou createur dans les 12 mois suivant l'installation. La demande se fait sur autoentrepreneur.urssaf.fr.",
+                },
+                {
+                  name: "Choisir entre IR bareme ou versement liberatoire",
+                  text:
+                    "Versement liberatoire = paiement IR au taux forfaitaire chaque mois/trimestre (1 %, 1,7 % ou 2,2 % selon activite). IR bareme classique = abattement forfaitaire (71 %, 50 % ou 34 %) puis bareme progressif. Le simulateur compare les deux options pour votre situation.",
+                },
+              ]}
+            />
+
+            <ToolFaqSection
+              intro="Les questions les plus posees sur le statut d'auto-entrepreneur en France."
+              items={[
+                {
+                  question: "Quels sont les plafonds de CA en 2026 ?",
+                  answer:
+                    "188 700 EUR pour la vente de marchandises et hebergement (BIC). 77 700 EUR pour les prestations de services BIC et les professions liberales BNC. Si vous depassez ces plafonds 2 annees consecutives, vous basculez automatiquement au regime reel (BIC ou BNC). Pendant la 1re annee de depassement, vous restez en micro.",
+                },
+                {
+                  question: "Quel est le taux de cotisations sociales auto-entrepreneur 2026 ?",
+                  answer:
+                    "Pour 2026 : 12,3 % en vente / hebergement, 21,2 % en prestation de services BIC, 24,6 % en profession liberale BNC. Ces taux incluent les cotisations URSSAF, retraite et la CSG/CRDS. Ils sont appliques directement sur le CA encaisse, sans abattement.",
+                },
+                {
+                  question: "Quand vaut-il mieux choisir le versement liberatoire ?",
+                  answer:
+                    "Le versement liberatoire (IR forfaitaire au moment du CA) est avantageux si votre revenu fiscal de reference est superieur a un certain plafond (28 797 EUR par part en 2026). En dessous, le bareme progressif classique avec abattement est plus interessant. Le simulateur affiche les deux options pour votre situation.",
+                },
+                {
+                  question: "L'ACRE est-elle automatique ?",
+                  answer:
+                    "Non. L'ACRE doit etre demandee dans les 45 jours suivant la creation de votre auto-entreprise via le formulaire en ligne sur autoentrepreneur.urssaf.fr. Si elle est accordee, elle s'applique automatiquement aux cotisations URSSAF. Pas de retroactivite : tardez et vous perdez le benefice.",
+                },
+                {
+                  question: "Comment fonctionne la franchise en base TVA ?",
+                  answer:
+                    "Tant que vous etes sous le seuil de franchise en base (verifier les seuils en vigueur sur impots.gouv.fr), vous facturez sans TVA et la mention 'TVA non applicable, art. 293 B du CGI' doit figurer. Au-dela des seuils, la TVA devient obligatoire et vous devez facturer, collecter et reverser via vos declarations periodiques.",
+                },
+                {
+                  question: "Suis-je redevable de la CFE en tant qu'auto-entrepreneur ?",
+                  answer:
+                    "Oui apres la 1re annee d'activite (exoneration la 1re annee). Le montant depend de votre commune et de votre CA. Plafond plancher de 237 EUR a 562 EUR par an selon le CA pour 2026. Exoneration totale si votre CA annuel reste inferieur a 5 000 EUR (preuve par avis de situation a fournir).",
+                },
+                {
+                  question: "Puis-je cumuler micro-entreprise et salariat ?",
+                  answer:
+                    "Oui, c'est meme tres frequent. Un salarie peut creer son auto-entreprise sans en informer son employeur, sauf clause d'exclusivite ou conflit d'interets. Verifiez votre contrat et votre convention collective. Vos cotisations sociales sont separees : salariat = regime general, auto-entreprise = micro-social.",
+                },
+                {
+                  question: "Le simulateur garde-t-il mes donnees ?",
+                  answer:
+                    "Non. Tous les calculs sont effectues localement dans votre navigateur. Aucune donnee saisie (CA, type d'activite, ACRE) n'est envoyee a un serveur ni stockee. L'outil fonctionne sans inscription.",
+                },
+              ]}
+            />
           </div>
 
           {/* ---- Sidebar ---- */}
