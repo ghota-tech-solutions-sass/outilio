@@ -2,6 +2,8 @@
 
 import { useState, useMemo } from "react";
 import AdPlaceholder from "@/components/AdPlaceholder";
+import ToolFaqSection from "@/components/ToolFaqSection";
+import ToolHowToSection from "@/components/ToolHowToSection";
 
 const TEMPLATES = [
   { id: "classique", label: "Classique" },
@@ -192,14 +194,167 @@ export default function GenerateurSignatureEmail() {
               </pre>
             </div>
 
-            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Comment utiliser la signature ?</h2>
-              <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                <p><strong className="text-[var(--foreground)]">Gmail</strong> : Parametres &gt; Voir tous les parametres &gt; Signature &gt; collez le HTML.</p>
-                <p><strong className="text-[var(--foreground)]">Outlook</strong> : Fichier &gt; Options &gt; Courrier &gt; Signatures &gt; collez la signature.</p>
-                <p><strong className="text-[var(--foreground)]">Thunderbird</strong> : Parametres du compte &gt; cochez &quot;Utiliser HTML&quot; &gt; collez le code.</p>
+            <ToolHowToSection
+              title="Comment installer votre signature dans votre client mail"
+              description="La methode varie selon le client mail. Le HTML genere est compatible Gmail, Outlook desktop et web, Apple Mail, Thunderbird et la plupart des clients pro."
+              steps={[
+                {
+                  name: "Personnaliser et copier le code",
+                  text:
+                    "Remplissez nom, titre, entreprise, contacts et reseaux sociaux. Choisissez un template (classique, moderne, minimal) et une couleur de marque. Cliquez sur 'Copier le HTML' : le code est immediatement dans votre presse-papier.",
+                },
+                {
+                  name: "Coller dans Gmail",
+                  text:
+                    "Allez dans Parametres (engrenage) puis 'Voir tous les parametres' puis onglet 'General' puis section 'Signature'. Cliquez 'Creer une signature', puis collez en utilisant Ctrl+V. Gmail affichera automatiquement le rendu visuel. Sauvegardez en bas de page.",
+                },
+                {
+                  name: "Coller dans Outlook (desktop)",
+                  text:
+                    "Fichier > Options > Courrier > Signatures. Cliquez 'Nouveau', collez le HTML dans la zone d'edition (mode visuel). Outlook 2016+ accepte directement le HTML colle. Configurez par defaut pour 'Nouveaux messages' et 'Reponses/transferts'.",
+                },
+                {
+                  name: "Tester avant deploiement",
+                  text:
+                    "Envoyez un email test a vous-meme et verifiez le rendu sur mobile (smartphone Android ET iOS) et bureau. Certains clients (Outlook desktop) gerent mal les border-radius : si le rendu est cassé, choisissez le template Classique qui est le plus compatible.",
+                },
+              ]}
+            />
+
+            <section
+              className="rounded-xl border p-6 md:p-8 shadow-sm"
+              style={{ background: "var(--surface)", borderColor: "var(--border)" }}
+            >
+              <h2
+                className="text-2xl md:text-3xl font-extrabold"
+                style={{ fontFamily: "var(--font-display)", color: "var(--foreground)" }}
+              >
+                Conseils pour une signature efficace
+              </h2>
+
+              <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
+                  <h3 className="font-semibold" style={{ color: "var(--foreground)" }}>
+                    Aller a l&apos;essentiel
+                  </h3>
+                  <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    Une signature efficace comporte 4 a 6 lignes maximum : nom, fonction + entreprise,
+                    contact direct, lien web. Plus elle est longue, moins elle est lue. Evitez les
+                    citations philosophiques et les disclaimers a rallonge sauf obligation legale.
+                  </p>
+                </div>
+                <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
+                  <h3 className="font-semibold" style={{ color: "var(--foreground)" }}>
+                    Conformite RGPD et mentions legales
+                  </h3>
+                  <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    Pour une signature B2B, ajoutez le numero RCS, la forme juridique et le capital
+                    social si vous communiquez en tant qu&apos;entreprise. Evitez d&apos;y inclure
+                    une mention de consentement marketing : c&apos;est inefficace juridiquement.
+                  </p>
+                </div>
+                <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
+                  <h3 className="font-semibold" style={{ color: "var(--foreground)" }}>
+                    Couleur de marque coherente
+                  </h3>
+                  <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    Reprenez la couleur principale de votre charte graphique (verte pour
+                    l&apos;ecologie, bleue pour la finance, etc.). Une couleur unique est plus pro
+                    qu&apos;un arc-en-ciel. Le contraste doit rester suffisant pour la lisibilite.
+                  </p>
+                </div>
+                <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
+                  <h3 className="font-semibold" style={{ color: "var(--foreground)" }}>
+                    Ne pas inclure d&apos;image distante
+                  </h3>
+                  <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    Beaucoup de clients mail bloquent par defaut les images distantes (anti-tracking
+                    et anti-phishing). Privilegiez le texte stylise pour les coordonnees plutot que
+                    des images. Le HTML genere ici est full-text, donc toujours visible.
+                  </p>
+                </div>
               </div>
-            </div>
+            </section>
+
+            <section
+              className="rounded-xl border p-6 md:p-8 shadow-sm"
+              style={{ background: "var(--surface-alt)", borderColor: "var(--border)" }}
+            >
+              <h2
+                className="text-2xl md:text-3xl font-extrabold"
+                style={{ fontFamily: "var(--font-display)", color: "var(--foreground)" }}
+              >
+                A savoir avant de deployer une signature HTML
+              </h2>
+
+              <div className="mt-4 space-y-4 leading-relaxed" style={{ color: "var(--foreground)" }}>
+                <p>
+                  <strong>Pourquoi des `&lt;table&gt;` et pas du CSS Flex ?</strong> Les clients mail
+                  (Outlook surtout) ont un support CSS limite. La methode universelle reste le
+                  layout par tables, qui rend de maniere identique partout depuis 30 ans. Le HTML
+                  genere ici suit cette regle pour une compatibilite maximale.
+                </p>
+                <p>
+                  <strong>Tailles d&apos;ecran et responsive.</strong> Une signature compacte
+                  s&apos;affiche bien sur mobile sans modification. Si vous personnalisez le HTML,
+                  testez sur un smartphone avant deploiement : 60 % des emails sont desormais
+                  ouverts sur mobile (source : Litmus 2024).
+                </p>
+                <p>
+                  <strong>Cas particulier des reponses.</strong> Beaucoup de clients mail collent
+                  votre signature sous l&apos;email cite. Pour les reponses internes courtes,
+                  envisagez une 'signature courte' (juste prenom + titre) en plus de la signature
+                  complete pour les emails initiaux.
+                </p>
+                <p>
+                  <strong>Centralisation pour les equipes.</strong> Pour deployer une signature
+                  homogene a toute une entreprise, utilisez les outils du fournisseur (par exemple
+                  la signature globale Gmail dans Google Workspace). Cela garantit la coherence et
+                  facilite la maintenance.
+                </p>
+              </div>
+            </section>
+
+            <ToolFaqSection
+              intro="Les questions les plus frequentes sur la signature email professionnelle."
+              items={[
+                {
+                  question: "Le HTML genere fonctionne-t-il dans Outlook ?",
+                  answer:
+                    "Oui, les 3 templates sont compatibles Outlook 2016+, Outlook 365 et Outlook Web. Pour des versions tres anciennes (2007/2010), preferez le template 'Classique' qui utilise les balises les plus basiques.",
+                },
+                {
+                  question: "Puis-je ajouter mon logo a la signature ?",
+                  answer:
+                    "Pas directement avec ce generateur. Pour ajouter un logo, hebergez-le sur un domaine accessible (Cloudinary, votre site web), puis ajoutez une balise <img src='URL' alt='logo'> dans le HTML genere. Beaucoup de clients mail bloquent par defaut les images distantes : un logo peut donc etre invisible chez le destinataire.",
+                },
+                {
+                  question: "Comment faire une signature pour mobile uniquement ?",
+                  answer:
+                    "iPhone et Android permettent une signature simple texte par compte. Copiez les infos de votre signature complete (sans HTML), collez dans Reglages > Mail > Signature. Pour une signature HTML sur mobile, utilisez l'app native de Gmail ou Outlook qui supporte le HTML serveur.",
+                },
+                {
+                  question: "Quelle taille de police choisir ?",
+                  answer:
+                    "Le HTML genere utilise 13 px en taille de base, 18 px pour le nom. C'est un bon equilibre lisibilite / sobriete. Evitez en dessous de 11 px (illisible) et au-dessus de 16 px en taille de base (l'aspect devient amateur).",
+                },
+                {
+                  question: "Puis-je inclure un lien de prise de rendez-vous Calendly ?",
+                  answer:
+                    "Oui. Dans la URL du site web, mettez votre lien Calendly directement (https://calendly.com/votre-nom). C'est une excellente technique de conversion en B2B : 1 clic pour proposer un creneau, sans aller-retour mail.",
+                },
+                {
+                  question: "Mes donnees sont-elles confidentielles ?",
+                  answer:
+                    "Oui, le HTML est genere localement dans votre navigateur. Aucune information saisie (nom, email, entreprise) n'est envoyee a un serveur ni stockee. Vous pouvez generer autant de signatures que necessaire, sans inscription.",
+                },
+                {
+                  question: "Pourquoi mon Outlook affiche un rendu cassé ?",
+                  answer:
+                    "Outlook desktop (notamment Outlook 2016/2019/2021) utilise le moteur de rendu Word, qui ignore certains styles CSS. Les bordures arrondies ne sont pas supportees. Si le template Moderne (qui utilise border-radius) s'affiche mal, basculez sur Classique.",
+                },
+              ]}
+            />
           </div>
           <aside className="space-y-6">
             <AdPlaceholder className="h-[250px]" />

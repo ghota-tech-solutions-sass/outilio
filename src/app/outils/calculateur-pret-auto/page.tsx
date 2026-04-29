@@ -2,6 +2,8 @@
 
 import { useState, useMemo } from "react";
 import AdPlaceholder from "@/components/AdPlaceholder";
+import ToolFaqSection from "@/components/ToolFaqSection";
+import ToolHowToSection from "@/components/ToolHowToSection";
 
 export default function CalculateurPretAuto() {
   const [prix, setPrix] = useState("25000");
@@ -150,15 +152,172 @@ export default function CalculateurPretAuto() {
               </>
             )}
 
-            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Comment fonctionne un credit auto ?</h2>
-              <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                <p>Le credit automobile permet de financer l&apos;achat d&apos;un vehicule neuf ou d&apos;occasion. La mensualite se calcule avec la formule : <strong className="text-[var(--foreground)]">M = C x r / (1 - (1+r)^-n)</strong> ou C est le capital emprunte, r le taux mensuel et n le nombre de mensualites.</p>
-                <p><strong className="text-[var(--foreground)]">Duree typique</strong> : Un credit auto dure generalement entre 1 et 7 ans, contre 15 a 25 ans pour un pret immobilier.</p>
-                <p><strong className="text-[var(--foreground)]">Taux</strong> : Les taux de credit auto sont souvent plus eleves que les taux immobiliers, en moyenne entre 4% et 8% selon le profil et le type de vehicule.</p>
-                <p><strong className="text-[var(--foreground)]">Apport</strong> : Un apport personnel de 10 a 30% du prix du vehicule est recommande pour obtenir de meilleures conditions.</p>
+            <ToolHowToSection
+              title="Comment simuler votre credit auto en 4 etapes"
+              description="Le simulateur applique la formule mathematique standard utilisee par les banques et organismes de credit. Aucune donnee saisie n'est envoyee."
+              steps={[
+                {
+                  name: "Saisir le prix du vehicule",
+                  text:
+                    "Renseignez le prix d'achat affiche par le vendeur, hors options ajoutees apres signature. Pour un vehicule d'occasion, le prix integre la plupart du temps les frais de mise en main du concessionnaire.",
+                },
+                {
+                  name: "Indiquer votre apport personnel",
+                  text:
+                    "Un apport de 10 a 30 % du prix d'achat est recommande. Il rassure le preteur, reduit le capital emprunte et donc le cout total des interets. Sans apport, certains organismes refusent ou appliquent un taux majore.",
+                },
+                {
+                  name: "Renseigner le taux et la duree",
+                  text:
+                    "Le taux nominal annuel propose en 2026 oscille entre 4 % et 8 % selon votre profil, l'age du vehicule (neuf ou occasion) et la marque. La duree usuelle est de 12 a 84 mois (1 a 7 ans). Plus la duree est longue, plus la mensualite est faible mais plus le cout total grimpe.",
+                },
+                {
+                  name: "Comparer mensualite et cout total",
+                  text:
+                    "L'outil affiche la mensualite, le cout total des interets et le tableau d'amortissement. Comparez plusieurs scenarios (5 ans vs 7 ans, +/- d'apport) avant de signer. La regle d'or : la mensualite + vos autres credits ne doit pas depasser 35 % de vos revenus mensuels.",
+                },
+              ]}
+            />
+
+            <section
+              className="rounded-xl border p-6 md:p-8 shadow-sm"
+              style={{ background: "var(--surface)", borderColor: "var(--border)" }}
+            >
+              <h2
+                className="text-2xl md:text-3xl font-extrabold"
+                style={{ fontFamily: "var(--font-display)", color: "var(--foreground)" }}
+              >
+                Cas d&apos;usage du simulateur
+              </h2>
+
+              <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
+                  <h3 className="font-semibold" style={{ color: "var(--foreground)" }}>
+                    Achat neuf vs occasion
+                  </h3>
+                  <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    Les taux pour un vehicule neuf sont generalement 0,5 a 1 point inferieurs a ceux pour
+                    un vehicule d&apos;occasion. Simulez les deux scenarios pour evaluer si la baisse de
+                    prix d&apos;achat de l&apos;occasion compense le surcout du credit.
+                  </p>
+                </div>
+                <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
+                  <h3 className="font-semibold" style={{ color: "var(--foreground)" }}>
+                    Comparer concessionnaire vs banque
+                  </h3>
+                  <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    Le credit propose en concession est rarement le moins cher : il integre souvent une
+                    commission. Simulez les deux offres avec les memes parametres et comparez le TAEG, pas
+                    seulement la mensualite.
+                  </p>
+                </div>
+                <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
+                  <h3 className="font-semibold" style={{ color: "var(--foreground)" }}>
+                    Optimiser apport vs duree
+                  </h3>
+                  <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    Avec 5 000 EUR de plus en apport, vous economisez plus de 1 000 EUR d&apos;interets
+                    sur 5 ans (a 5,5 %). C&apos;est souvent un meilleur placement que de garder ces 5 000
+                    EUR sur un Livret A.
+                  </p>
+                </div>
+                <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
+                  <h3 className="font-semibold" style={{ color: "var(--foreground)" }}>
+                    Vehicule electrique et bonus ecologique
+                  </h3>
+                  <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    Pour un VE eligible au bonus ecologique 2026, integrez le bonus dans votre apport
+                    (deduit du prix sur facture). Les taux pour VE sont parfois bonifies par les banques
+                    partenaires des constructeurs : verifiez les offres dediees.
+                  </p>
+                </div>
               </div>
-            </div>
+            </section>
+
+            <section
+              className="rounded-xl border p-6 md:p-8 shadow-sm"
+              style={{ background: "var(--surface-alt)", borderColor: "var(--border)" }}
+            >
+              <h2
+                className="text-2xl md:text-3xl font-extrabold"
+                style={{ fontFamily: "var(--font-display)", color: "var(--foreground)" }}
+              >
+                A savoir avant de signer un credit auto
+              </h2>
+
+              <div className="mt-4 space-y-4 leading-relaxed" style={{ color: "var(--foreground)" }}>
+                <p>
+                  <strong>Credit affecte vs pret personnel.</strong> Le credit affecte est lie a
+                  l&apos;achat du vehicule : si la vente n&apos;a pas lieu (livraison, defaut), le credit
+                  est annule (Code de la consommation, art. L312-44). Le pret personnel est plus souple
+                  mais sans cette protection. Lisez bien le type de credit propose.
+                </p>
+                <p>
+                  <strong>Delai de retractation 14 jours.</strong> Comme pour tout credit a la
+                  consommation, vous disposez de 14 jours calendaires pour vous retracter sans
+                  justification (art. L312-19). Pendant cette periode, vous pouvez aussi changer
+                  d&apos;avis sur le vehicule pour un credit affecte.
+                </p>
+                <p>
+                  <strong>TAEG vs taux nominal.</strong> Le TAEG (Taux Annuel Effectif Global) integre
+                  les frais de dossier, l&apos;assurance et les frais accessoires. C&apos;est lui qui doit
+                  servir a comparer deux offres. Un taux nominal faible avec frais de dossier eleves
+                  peut donner un TAEG superieur a une offre sans frais.
+                </p>
+                <p>
+                  <strong>Assurance emprunteur (auto).</strong> Pour un credit auto, l&apos;assurance
+                  emprunteur est generalement facultative. Verifiez avant de souscrire : si elle vous est
+                  imposee sans choix possible, c&apos;est anormal. Les contrats decennale et tous risques
+                  vehicule sont distincts et obligatoires.
+                </p>
+                <p>
+                  <strong>Source.</strong> Les fourchettes de taux indiquees sont des moyennes 2026
+                  observees dans les offres bancaires francaises. Negociez systematiquement et faites
+                  jouer la concurrence avant de signer.
+                </p>
+              </div>
+            </section>
+
+            <ToolFaqSection
+              intro="Les questions les plus frequentes sur le credit auto en France."
+              items={[
+                {
+                  question: "Quel taux pour un credit auto en 2026 ?",
+                  answer:
+                    "En moyenne entre 4,5 % et 7,5 % selon la duree et votre profil. Les meilleurs taux sont reserves aux salaries en CDI avec apport de 20 %+ et bon historique bancaire. Les vehicules d'occasion de plus de 5 ans peuvent voir leur taux grimper a 8-10 %.",
+                },
+                {
+                  question: "Quelle duree maximale pour un credit auto ?",
+                  answer:
+                    "La duree maximale courante est de 84 mois (7 ans). Au-dela, c'est rare et peu pertinent : un vehicule perd 50-60 % de sa valeur sur 7 ans, donc s'endetter au-dela peut conduire a payer un vehicule plus que sa valeur de revente. La duree typique est 4 a 5 ans.",
+                },
+                {
+                  question: "LOA / LLD vs credit classique : que choisir ?",
+                  answer:
+                    "Le credit classique vous rend proprietaire (vous pouvez revendre). La LOA (Location avec Option d'Achat) propose une option de rachat en fin de contrat. La LLD (Location Longue Duree) est une location pure, sans option d'achat. Pour rester proprietaire et capitaliser, le credit est generalement preferable.",
+                },
+                {
+                  question: "Puis-je rembourser mon credit auto par anticipation ?",
+                  answer:
+                    "Oui. Pour un credit a la consommation, l'indemnite de remboursement anticipe est plafonnee a 1 % du capital restant si la duree restante depasse 12 mois, 0,5 % sinon. Sous 10 000 EUR rembourses sur 12 mois glissants, aucune indemnite ne peut etre demandee.",
+                },
+                {
+                  question: "Faut-il un apport pour obtenir un credit auto ?",
+                  answer:
+                    "Non, ce n'est pas obligatoire mais fortement recommande. Sans apport, certaines banques refusent ou appliquent un taux majore de 1 a 2 points. Un apport de 10 a 30 % du prix d'achat ameliore nettement les conditions et reduit le cout total des interets.",
+                },
+                {
+                  question: "Le credit auto est-il fiscalement deductible ?",
+                  answer:
+                    "Pour un usage personnel : non. Pour un usage professionnel (auto-entrepreneur, profession liberale, voiture de societe), les interets et eventuellement les amortissements peuvent etre deductibles selon votre regime fiscal. Consultez un expert-comptable.",
+                },
+                {
+                  question: "Mes donnees sont-elles confidentielles ?",
+                  answer:
+                    "Oui. Tous les calculs sont effectues localement dans votre navigateur. Aucune donnee saisie (prix, salaire, taux) n'est envoyee a un serveur ou stockee. L'outil fonctionne sans inscription.",
+                },
+              ]}
+            />
           </div>
 
           <aside className="space-y-6">

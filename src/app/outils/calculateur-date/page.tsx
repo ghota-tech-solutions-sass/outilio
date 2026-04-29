@@ -2,6 +2,8 @@
 
 import { useState, useMemo } from "react";
 import AdPlaceholder from "@/components/AdPlaceholder";
+import ToolFaqSection from "@/components/ToolFaqSection";
+import ToolHowToSection from "@/components/ToolHowToSection";
 
 function toInputDate(d: Date): string {
   return d.toISOString().split("T")[0];
@@ -143,14 +145,166 @@ export default function CalculateurDate() {
               </div>
             )}
 
-            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Comment calculer une difference de dates ?</h2>
-              <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                <p><strong className="text-[var(--foreground)]">Difference en jours</strong> : Soustrayez la date de debut de la date de fin, puis convertissez les millisecondes en jours (1 jour = 86 400 000 ms).</p>
-                <p><strong className="text-[var(--foreground)]">Ajouter des jours</strong> : Ajoutez le nombre de jours souhaite a la date de depart. Utile pour calculer des echeances, delais de livraison, ou dates de fin de preavis.</p>
-                <p><strong className="text-[var(--foreground)]">Cas pratiques</strong> : Calcul de duree de grossesse, delai de retractation (14 jours), preavis de location (3 mois), duree de garantie.</p>
+            <ToolHowToSection
+              title="Comment utiliser le calculateur de dates"
+              description="Deux modes complementaires pour repondre aux deux questions les plus frequentes : combien de jours entre A et B, et que donne A + ou - N jours."
+              steps={[
+                {
+                  name: "Calculer la difference entre deux dates",
+                  text:
+                    "Selectionnez la date de debut et la date de fin dans les deux champs date. L'outil affiche immediatement le nombre total de jours, la conversion en semaines + jours, en mois et en annees + mois. Pratique pour calculer une duree d'emploi, un anniversaire, un delai legal.",
+                },
+                {
+                  name: "Ajouter ou soustraire des jours",
+                  text:
+                    "Choisissez la date de depart, l'operation (+ ou -) et le nombre de jours. Le resultat indique la date precise (avec le nom du jour) et son format ISO (AAAA-MM-JJ). Ideal pour les echeances et delais reglementaires.",
+                },
+                {
+                  name: "Verifier le resultat",
+                  text:
+                    "Si vous depassez un changement d'annee bissextile (29 fevrier) ou de mois, l'outil le gere automatiquement. Le calcul inclut les week-ends. Pour exclure les week-ends ou jours feries, utilisez plutot un outil specialise jours ouvres.",
+                },
+              ]}
+            />
+
+            <section
+              className="rounded-xl border p-6 md:p-8 shadow-sm"
+              style={{ background: "var(--surface)", borderColor: "var(--border)" }}
+            >
+              <h2
+                className="text-2xl md:text-3xl font-extrabold"
+                style={{ fontFamily: "var(--font-display)", color: "var(--foreground)" }}
+              >
+                Cas d&apos;usage du calculateur de dates
+              </h2>
+              <p className="mt-2" style={{ color: "var(--muted)" }}>
+                Les delais et echeances administratives, juridiques ou personnelles sont les principaux
+                besoins.
+              </p>
+
+              <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
+                  <h3 className="font-semibold" style={{ color: "var(--foreground)" }}>
+                    Delai de retractation 14 jours
+                  </h3>
+                  <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    Pour une vente a distance ou un contrat hors etablissement, le Code de la consommation
+                    accorde 14 jours calendaires pour se retracter. Le mode &quot;Ajouter&quot; sur la
+                    date de signature donne la date butoir.
+                  </p>
+                </div>
+                <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
+                  <h3 className="font-semibold" style={{ color: "var(--foreground)" }}>
+                    Preavis de location ou demission
+                  </h3>
+                  <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    Calculez precisement la date de fin du preavis (1 mois en zone tendue / location
+                    meublee, 3 mois en non meuble). Utilisez la date de reception du courrier comme point
+                    de depart, pas la date d&apos;envoi.
+                  </p>
+                </div>
+                <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
+                  <h3 className="font-semibold" style={{ color: "var(--foreground)" }}>
+                    Anciennete et duree d&apos;emploi
+                  </h3>
+                  <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    Pour calculer votre anciennete totale dans une entreprise, indiquez la date
+                    d&apos;embauche et la date de fin (ou aujourd&apos;hui). Le resultat en annees +
+                    mois sert pour les indemnites legales et conventionnelles.
+                  </p>
+                </div>
+                <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
+                  <h3 className="font-semibold" style={{ color: "var(--foreground)" }}>
+                    Garantie produit et SAV
+                  </h3>
+                  <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+                    Garantie legale de conformite (2 ans en France pour les biens neufs depuis 2022),
+                    garantie commerciale eventuelle. Le calculateur donne la date butoir pour faire jouer
+                    vos droits.
+                  </p>
+                </div>
               </div>
-            </div>
+            </section>
+
+            <section
+              className="rounded-xl border p-6 md:p-8 shadow-sm"
+              style={{ background: "var(--surface-alt)", borderColor: "var(--border)" }}
+            >
+              <h2
+                className="text-2xl md:text-3xl font-extrabold"
+                style={{ fontFamily: "var(--font-display)", color: "var(--foreground)" }}
+              >
+                A savoir sur le calcul de dates
+              </h2>
+
+              <div className="mt-4 space-y-4 leading-relaxed" style={{ color: "var(--foreground)" }}>
+                <p>
+                  <strong>Jours calendaires vs jours ouvres.</strong> Ce calculateur compte les jours
+                  calendaires (tous les jours, week-ends inclus). Pour un calcul en jours ouvres
+                  (lundi-vendredi hors feries), utilisez plutot un outil specialise. La plupart des
+                  delais legaux francais utilisent les jours calendaires - sauf mentions contraires
+                  comme &quot;jours ouvrables&quot; ou &quot;jours ouvres&quot;.
+                </p>
+                <p>
+                  <strong>Annees bissextiles.</strong> Une annee est bissextile si elle est divisible par
+                  4, sauf les annees seculaires (divisibles par 100) qui doivent aussi etre divisibles par
+                  400. 2024 et 2028 sont bissextiles, 2100 ne le sera pas. Le calculateur applique cette
+                  regle automatiquement.
+                </p>
+                <p>
+                  <strong>Fuseau horaire.</strong> Toutes les dates sont traitees en heure locale du
+                  navigateur. Pour deux dates en zones differentes, le calcul peut varier de 1 jour selon
+                  l&apos;heure UTC. Pour des calculs critiques (vols internationaux, delais juridiques
+                  internationaux), verifiez avec un outil specialise.
+                </p>
+                <p>
+                  <strong>Format ISO 8601.</strong> Le format AAAA-MM-JJ (exemple 2026-04-29) est le
+                  standard international ISO 8601 utilise dans les bases de donnees, les API REST et la
+                  programmation. C&apos;est le format affiche en complement du format francais.
+                </p>
+              </div>
+            </section>
+
+            <ToolFaqSection
+              intro="Les questions les plus frequentes sur le calcul de dates et les delais."
+              items={[
+                {
+                  question: "Comment compter le nombre de jours entre deux dates ?",
+                  answer:
+                    "Le calcul est : (date_fin - date_debut) en millisecondes / 86 400 000 (millisecondes par jour), arrondi au plus pres. C'est exactement ce que fait le calculateur. Pour une date du 1er janvier au 31 decembre, vous obtenez 364 (et non 365) car les bornes sont 'date a date'.",
+                },
+                {
+                  question: "Le calcul inclut-il les week-ends et jours feries ?",
+                  answer:
+                    "Oui. Tous les jours sont comptes (lundi au dimanche, et tous les feries). Pour exclure week-ends ou feries, il faut un outil specialise 'jours ouvres' ou 'jours ouvrables'. La plupart des delais legaux francais utilisent les jours calendaires, sauf mention explicite.",
+                },
+                {
+                  question: "Que signifie le format AAAA-MM-JJ ?",
+                  answer:
+                    "C'est le format ISO 8601, standard international avec annee sur 4 chiffres, mois sur 2 chiffres, jour sur 2 chiffres. Pour le 29 avril 2026 : 2026-04-29. Ce format est universellement reconnu et permet le tri alphabetique correct des dates.",
+                },
+                {
+                  question: "Le calculateur gere-t-il les annees bissextiles ?",
+                  answer:
+                    "Oui. Le moteur de date du navigateur applique automatiquement la regle des annees bissextiles : un 29 fevrier supplementaire tous les 4 ans (sauf annees seculaires non divisibles par 400). Les calculs traversant un 29 fevrier sont donc exacts.",
+                },
+                {
+                  question: "Comment calculer un delai en jours ouvres ?",
+                  answer:
+                    "Ce calculateur compte uniquement les jours calendaires. Pour des jours ouvres (lundi-vendredi hors jours feries), utilisez un calculateur specialise. Reperes utiles : il y a en moyenne 21 jours ouvres par mois en France, et environ 252 jours ouvres par an.",
+                },
+                {
+                  question: "Le delai de 14 jours de retractation se compte comment ?",
+                  answer:
+                    "Le delai legal de retractation est de 14 jours calendaires (Code de la consommation, art. L221-18). Le decompte commence le lendemain de la conclusion du contrat ou de la reception du bien. Si le 14e jour tombe un samedi, dimanche ou jour ferie, il est prolonge au prochain jour ouvrable.",
+                },
+                {
+                  question: "Mes dates sont-elles confidentielles ?",
+                  answer:
+                    "Oui, totalement. Tous les calculs sont effectues localement dans votre navigateur. Aucune date saisie n'est envoyee sur internet. L'outil fonctionne sans inscription et sans cookie de tracking.",
+                },
+              ]}
+            />
           </div>
           <aside className="space-y-6">
             <AdPlaceholder className="h-[250px]" />

@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Calculateur de calories brulees - Par activite sportive",
+  title: "Calculateur Calories Brulees - 18 Sports, Methode MET | Outilis.fr",
   description:
-    "Estimez les calories brulees selon votre activite physique, duree et poids. Course, velo, natation, marche et plus. Gratuit et instantane.",
+    "Estimez les calories brulees selon votre poids, l'activite et la duree. 18 sports (course, velo, natation, HIIT, yoga, musculation). Methode MET du Compendium of Physical Activities. Gratuit, instantane.",
   keywords: [
     "calculateur calories",
     "calories brulees",
@@ -11,7 +11,20 @@ export const metadata: Metadata = {
     "calories sport",
     "calories course a pied",
     "calories velo",
+    "calories natation",
+    "MET activite",
+    "depense energetique",
   ],
+  alternates: {
+    canonical: "https://outilis.fr/outils/calculateur-calories",
+  },
+  openGraph: {
+    title: "Calculateur Calories Brulees - 18 Sports, Methode MET",
+    description:
+      "Depense energetique selon poids, duree et activite. Methode MET, comparaison entre sports.",
+    url: "https://outilis.fr/outils/calculateur-calories",
+    type: "website",
+  },
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {

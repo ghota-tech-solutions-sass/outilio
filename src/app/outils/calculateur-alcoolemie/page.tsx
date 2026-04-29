@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import AdPlaceholder from "@/components/AdPlaceholder";
+import ToolFaqSection from "@/components/ToolFaqSection";
+import ToolHowToSection from "@/components/ToolHowToSection";
 
 const BOISSONS = [
   { id: "biere", label: "Biere (25cl, 5%)", icon: "\u{1F37A}", alcoolGrammes: 10 },
@@ -152,13 +154,118 @@ export default function CalculateurAlcoolemie() {
               </p>
             </div>
 
-            <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Comment est calculee l&apos;alcoolemie ?</h2>
-              <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                <p><strong className="text-[var(--foreground)]">Formule de Widmark</strong> : Alcoolemie = (masse d&apos;alcool en grammes) / (poids x coefficient) - (temps x 0,15 g/L/h).</p>
-                <p>Le coefficient de diffusion est de 0,68 pour les hommes et 0,55 pour les femmes. L&apos;organisme elimine en moyenne 0,15 g/L par heure.</p>
+            <ToolHowToSection
+              title="Comment estimer votre alcoolemie en 4 etapes"
+              description="L'estimation utilise la formule de Widmark, methode standard utilisee en toxicologie pour evaluer le taux d'alcoolemie. Outil educatif uniquement."
+              steps={[
+                {
+                  name: "Indiquer les verres consommes",
+                  text:
+                    "Cliquez sur + pour ajouter une biere, un verre de vin, un cocktail, etc. Chaque type est calibre selon les volumes et degres standards de la consommation francaise. Un 'verre standard' contient environ 10 grammes d'alcool pur.",
+                },
+                {
+                  name: "Renseigner votre poids et votre sexe",
+                  text:
+                    "Le poids influe sur la dilution de l'alcool dans le sang. Le coefficient de Widmark est 0,68 pour les hommes et 0,55 pour les femmes (la repartition de l'eau corporelle differe). Ces moyennes statistiques peuvent varier selon votre morphologie reelle.",
+                },
+                {
+                  name: "Indiquer le temps ecoule",
+                  text:
+                    "Saisissez le nombre d'heures depuis votre premier verre. L'organisme elimine en moyenne 0,15 g/L par heure, mais cette vitesse varie de 0,1 a 0,2 g/L/h selon les individus. Cette variation peut faire passer ou rester au-dessus de la limite legale.",
+                },
+                {
+                  name: "Lire le resultat avec prudence",
+                  text:
+                    "Le calculateur affiche une estimation et un statut indicatif. Les ecarts reels peuvent etre importants : medicaments, fatigue, etat de sante, prise alimentaire pendant la consommation, tous ces facteurs modifient l'alcoolemie reelle. Un alcootest reste la seule mesure fiable.",
+                },
+              ]}
+            />
+
+            <section
+              className="rounded-xl border p-6 md:p-8 shadow-sm"
+              style={{ background: "var(--surface)", borderColor: "var(--border)" }}
+            >
+              <h2
+                className="text-2xl md:text-3xl font-extrabold"
+                style={{ fontFamily: "var(--font-display)", color: "var(--foreground)" }}
+              >
+                Limites legales et regles en France
+              </h2>
+
+              <div className="mt-4 space-y-4 leading-relaxed" style={{ color: "var(--foreground)" }}>
+                <p>
+                  <strong>0,5 g/L de sang (0,25 mg/L d&apos;air expire).</strong> Limite legale pour la
+                  conduite des conducteurs experimentes (permis de plus de 3 ans). En cas de depassement,
+                  amende forfaitaire 135 EUR + 6 points retires + immobilisation possible. Au-dessus de
+                  0,8 g/L, c&apos;est un delit : 4 500 EUR d&apos;amende, 2 ans de prison, 6 points et
+                  suspension du permis.
+                </p>
+                <p>
+                  <strong>0,2 g/L pour les jeunes conducteurs.</strong> Permis probatoire de moins de 3
+                  ans, conducteurs en periode d&apos;apprentissage et chauffeurs de transport en commun.
+                  Une seule biere peut faire depasser ce seuil chez certains profils. La sanction est
+                  identique pour tout depassement.
+                </p>
+                <p>
+                  <strong>0,0 pour certains professionnels.</strong> Les chauffeurs scolaires ont un seuil
+                  de 0 g/L. Toute trace d&apos;alcool est sanctionnee. Pensez aussi que certains
+                  medicaments (sirops contre la toux, par exemple) peuvent contenir de l&apos;alcool
+                  detecte par alcootest.
+                </p>
+                <p>
+                  <strong>Sources de reference.</strong> Securite Routiere, Code de la route (articles
+                  L234-1 a L234-18), Sante publique France. Le seuil de risque sanitaire recommande par
+                  l&apos;OMS est de 10 verres par semaine maximum, sans depasser 2 verres par jour, avec
+                  des jours sans consommation.
+                </p>
               </div>
-            </div>
+            </section>
+
+            <ToolFaqSection
+              intro="Les questions les plus posees sur l'estimation de l'alcoolemie."
+              items={[
+                {
+                  question: "Le calcul est-il fiable ?",
+                  answer:
+                    "Non, c'est une ESTIMATION. La formule de Widmark donne un ordre de grandeur, mais la realite varie selon le metabolisme, l'etat de sante, les medicaments, l'alimentation, la prise simultanee d'eau, le rythme de consommation, etc. Seul un alcootest ou un test sanguin donne une valeur reelle.",
+                },
+                {
+                  question: "Combien de temps pour eliminer 1 verre d'alcool ?",
+                  answer:
+                    "L'organisme elimine en moyenne 0,15 g/L par heure, soit environ 1 verre standard (10 g d'alcool) par heure et demie. Le foie ne peut pas accelerer cette elimination : ni cafe, ni douche froide, ni sport ne reduisent l'alcoolemie - seul le temps fonctionne.",
+                },
+                {
+                  question: "Pourquoi le calcul est-il different homme/femme ?",
+                  answer:
+                    "La repartition de l'eau corporelle est differente : environ 65 % chez l'homme contre 55 % chez la femme. L'alcool se diluant dans l'eau du corps, a quantite et poids egal, l'alcoolemie est plus elevee chez la femme. Le coefficient de Widmark traduit cet ecart (0,68 H, 0,55 F).",
+                },
+                {
+                  question: "Manger en buvant fait-il vraiment baisser l'alcoolemie ?",
+                  answer:
+                    "Pas exactement : la quantite finale absorbee reste la meme. En revanche, manger ralentit l'absorption intestinale, ce qui etale le pic d'alcoolemie dans le temps. C'est pourquoi le calculateur applique un facteur 0,85 si vous n'etes PAS a jeun (vs 1,0 a jeun).",
+                },
+                {
+                  question: "Puis-je conduire si le resultat est en-dessous de 0,5 g/L ?",
+                  answer:
+                    "L'outil etant indicatif et l'estimation pouvant varier de 30 % par rapport a la realite, NE CONDUISEZ PAS en vous basant uniquement sur ce calcul. Si vous etes proche de la limite, attendez ou prenez un taxi/Uber. La regle d'or : 'Si tu doutes, tu ne conduis pas.'",
+                },
+                {
+                  question: "Que vaut un 'verre standard' ?",
+                  answer:
+                    "En France, un verre standard contient environ 10 grammes d'alcool pur, equivalent a : 25 cl de biere a 5 %, 12 cl de vin a 12 %, 4 cl d'alcool fort a 40 %. Mais en bar, les serveurs versent souvent 1,5 a 2 verres standards (notamment pour les cocktails ou les rallonges).",
+                },
+                {
+                  question: "Combien de temps avant de conduire le lendemain ?",
+                  answer:
+                    "Apres une soiree avec 6 verres, comptez minimum 6 heures de sommeil + 2 a 3 heures avant de conduire. Beaucoup de controles routiers ont lieu le matin et reveillent des alcoolemies positives chez ceux qui pensaient avoir dessoule. Dans le doute, utilisez un alcootest ou attendez davantage.",
+                },
+                {
+                  question: "Mes donnees sont-elles confidentielles ?",
+                  answer:
+                    "Oui. Tous les calculs sont realises localement dans votre navigateur. Aucune donnee de consommation n'est envoyee a un serveur ni stockee. L'outil fonctionne sans inscription et sans tracker tiers.",
+                },
+              ]}
+            />
           </div>
           <aside className="space-y-6">
             <AdPlaceholder className="h-[250px]" />
