@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Calculateur Calories Brulees - 18 Sports, Methode MET | Outilis.fr",
+  title: "Calculateur Calories Brulees - 18 Sports, Methode MET",
   description:
     "Estimez les calories brulees selon votre poids, l'activite et la duree. 18 sports (course, velo, natation, HIIT, yoga, musculation). Methode MET du Compendium of Physical Activities. Gratuit, instantane.",
   keywords: [

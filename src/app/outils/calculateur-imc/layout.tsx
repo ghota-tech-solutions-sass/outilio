@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Calculateur IMC 2026 - Indice Masse Corporelle Gratuit | Outilis.fr",
+  title: "Calculateur IMC 2026 - Indice Masse Corporelle Gratuit",
   description:
     "Calculez votre IMC selon les normes OMS : 7 categories (denutrition a obesite morbide), fourchette de poids ideal, limites de l'indicateur expliquees. Outil de depistage adultes 18-65 ans, indicatif. Sans inscription.",
   keywords: [

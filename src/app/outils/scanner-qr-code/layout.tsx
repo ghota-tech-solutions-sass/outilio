@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Scanner QR Code en Ligne Gratuit - Camera + Image | Outilis.fr",
+  title: "Scanner QR Code en Ligne Gratuit - Camera + Image",
   description:
     "Scannez n'importe quel QR Code en ligne, depuis la camera ou en chargeant une image. Decodage instantane, historique des scans, ouverture securisee des liens. 100 % local, sans inscription.",
   keywords: [

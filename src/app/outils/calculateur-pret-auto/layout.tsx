@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Simulateur Credit Auto 2026 - Mensualite et Amortissement | Outilis.fr",
+  title: "Simulateur Credit Auto 2026 - Mensualite et Amortissement",
   description:
     "Simulateur de credit auto gratuit : calculez la mensualite, le cout total des interets et le tableau d'amortissement. Reperes TAEG 2026, retractation 14 jours, LOA vs credit classique. Sans inscription.",
   keywords: [

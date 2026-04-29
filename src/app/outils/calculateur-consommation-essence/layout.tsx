@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Calculateur Consommation Essence 2026 - L/100km, Cout Trajet | Outilis.fr",
+  title: "Calculateur Consommation Essence 2026 - L/100km, Cout Trajet",
   description:
     "Calculez votre consommation reelle en L/100 km et estimez le cout de vos trajets : Lyon-Paris, Marseille-Lille... Conseils eco-conduite (-25 % de consommation), bareme indicatif. Gratuit, sans inscription.",
   keywords: [

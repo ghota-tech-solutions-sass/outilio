@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Calculateur Date d'Accouchement Gratuit - DPA, SA, Trimestre | Outilis.fr",
+  title: "Calculateur Date d'Accouchement Gratuit - DPA, SA, Trimestre",
   description:
     "Calculez votre date prevue d'accouchement (DPA) et suivez votre grossesse en semaines d'amenorrhee (SA). Echographies, etapes cles, regle de Naegele. Outil indicatif gratuit, sans inscription. Le suivi medical reste indispensable.",
   keywords: [

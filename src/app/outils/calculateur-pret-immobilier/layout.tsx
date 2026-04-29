@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Simulateur Pret Immobilier 2026 - Mensualite + Amortissement | Outilis.fr",
+  title: "Simulateur Pret Immobilier 2026 - Mensualite + Amortissement",
   description:
     "Simulez votre pret immobilier 2026 : mensualite, assurance emprunteur, cout total des interets et tableau d'amortissement annuel. Regles HCSF 35 %, loi Lemoine et reperes taux a jour. Gratuit, instantane, sans inscription.",
   keywords: [

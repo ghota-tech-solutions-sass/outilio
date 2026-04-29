@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Simulation Rachat de Credit 2026 - Calculatrice Regroupement Gratuite | Outilis.fr",
+  title: "Simulation Rachat de Credit 2026 - Calculatrice Regroupement Gratuite",
   description:
     "Simulez votre rachat de credit 2026 : comparez mensualites, calculez l'economie reelle apres frais (IRA + dossier), evaluez l'interet d'un regroupement de prets. Plusieurs credits cumulables, resultat instantane, sans inscription.",
   keywords: [

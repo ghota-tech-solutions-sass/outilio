@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Generateur Signature Email HTML 2026 - 3 Templates | Outilis.fr",
+  title: "Generateur Signature Email HTML 2026 - 3 Templates",
   description:
     "Creez une signature email HTML professionnelle en 30 secondes : 3 templates (classique, moderne, minimal), 7 couleurs, LinkedIn et Twitter inclus. Compatible Gmail, Outlook, Apple Mail. Code HTML pret a coller.",
   keywords: [

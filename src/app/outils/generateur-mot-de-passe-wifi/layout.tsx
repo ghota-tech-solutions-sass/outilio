@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Generateur Mot de Passe Wi-Fi 2026 - Securise + QR Code | Outilis.fr",
+  title: "Generateur Mot de Passe Wi-Fi 2026 - Securise + QR Code",
   description:
     "Creez un mot de passe Wi-Fi fort, prononcable ou aleatoire, en 1 clic. QR Code de partage instantane pour vos invites (iOS et Android). 100 % local, sans inscription, gratuit.",
   keywords: [

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Generateur QR Code Gratuit 2026 - URL, Wi-Fi, vCard | Outilis.fr",
+  title: "Generateur QR Code Gratuit 2026 - URL, Wi-Fi, vCard",
   description:
     "Creez un QR Code instantane : URL, reseau Wi-Fi, email, telephone, SMS ou carte de visite vCard. Couleurs personnalisables, telechargement PNG jusqu'a 1024 px. Sans inscription, sans limite, 100 % gratuit.",
   keywords: [

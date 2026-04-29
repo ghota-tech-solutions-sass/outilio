@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Calculateur de Pourcentage 2026 - 3 Modes Gratuits | Outilis.fr",
+  title: "Calculateur de Pourcentage 2026 - 3 Modes Gratuits",
   description:
     "3 modes de calcul de pourcentage : X % de Y, variation entre 2 valeurs, part en %. Pour remises, evolution de prix, conversion, repartition de budget. Pieges classiques expliques. Gratuit, sans inscription.",
   keywords: [

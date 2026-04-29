@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Calculateur de Date - Jours Entre 2 Dates, Ajouter Jours | Outilis.fr",
+  title: "Calculateur de Date - Jours Entre 2 Dates, Ajouter Jours",
   description:
     "Calculez le nombre de jours, semaines, mois et annees entre deux dates. Ajoutez ou soustrayez des jours, calculez vos delais (retractation 14 jours, preavis, anciennete). Format ISO et FR. Gratuit, sans inscription.",
   keywords: [

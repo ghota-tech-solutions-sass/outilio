@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Simulateur Impot Revenu 2026 - Bareme + TMI + Quotient | Outilis.fr",
+  title: "Simulateur Impot Revenu 2026 - Bareme + TMI + Quotient",
   description:
     "Calculez votre impot sur le revenu 2026 instantanement : bareme officiel a jour, quotient familial, TMI, decote, plafonnement. Resultat detaille tranche par tranche, gratuit, sans inscription.",
   keywords: [

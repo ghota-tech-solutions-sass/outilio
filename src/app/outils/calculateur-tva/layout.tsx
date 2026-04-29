@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Calculateur TVA 2026 - HT / TTC Instantane Gratuit | Outilis.fr",
+  title: "Calculateur TVA 2026 - HT / TTC Instantane Gratuit",
   description:
     "Calculez la TVA en 1 seconde. Conversion HT en TTC et inversement, taux 20 %, 10 %, 5,5 %, 2,1 %. Reperes franchise en base, restauration, travaux, autoliquidation. Sans inscription.",
   keywords: [

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Calculateur Alcoolemie Gratuit - Widmark, Limite 0,5 g/L | Outilis.fr",
+  title: "Calculateur Alcoolemie Gratuit - Widmark, Limite 0,5 g/L",
   description:
     "Estimez votre taux d'alcoolemie avec la formule de Widmark : verres consommes, poids, sexe, temps ecoule. Reperes legaux 0,2 et 0,5 g/L, temps de retour a 0. Outil purement educatif.",
   keywords: [
