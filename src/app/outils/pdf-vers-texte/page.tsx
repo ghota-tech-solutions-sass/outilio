@@ -42,7 +42,57 @@ export default function PdfVersTexte() {
   const [dragOver, setDragOver] = useState(false);
   const [extracting, setExtracting] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [extractedText, setExtractedText] = useState("");
+  const [extractingText, setExtractingText] = useState(false);
+  const [textCopied, setTextCopied] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const extractText = async () => {
+    if (!info) return;
+    setExtractingText(true);
+    setExtractedText("");
+    setError("");
+    try {
+      const pdfjs = await import("pdfjs-dist");
+      pdfjs.GlobalWorkerOptions.workerSrc = `https://cdn.jsdelivr.net/npm/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
+      const loadingTask = pdfjs.getDocument({ data: info.bytes });
+      const pdf = await loadingTask.promise;
+      let fullText = "";
+      for (let i = 1; i <= pdf.numPages; i++) {
+        const page = await pdf.getPage(i);
+        const content = await page.getTextContent();
+        const pageText = content.items
+          .map((it) => ("str" in it ? it.str : ""))
+          .join(" ");
+        fullText += `\n\n--- Page ${i} ---\n\n${pageText}`;
+      }
+      const trimmed = fullText.trim();
+      setExtractedText(trimmed || "(Aucun texte extractible. Le PDF contient probablement uniquement des images scannees — un OCR serait necessaire.)");
+    } catch (e) {
+      setError("Erreur lors de l'extraction du texte : " + (e instanceof Error ? e.message : "inconnue"));
+    } finally {
+      setExtractingText(false);
+    }
+  };
+
+  const copyExtractedText = () => {
+    if (!extractedText) return;
+    navigator.clipboard.writeText(extractedText).then(() => {
+      setTextCopied(true);
+      setTimeout(() => setTextCopied(false), 2000);
+    });
+  };
+
+  const downloadExtractedText = () => {
+    if (!extractedText || !info) return;
+    const blob = new Blob([extractedText], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${info.name.replace(/\.pdf$/i, "")}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
   const loadPdf = useCallback(async (file: File) => {
     setError("");
@@ -248,6 +298,65 @@ export default function PdfVersTexte() {
                         <span className="text-sm break-all">{row.value}</span>
                       </div>
                     ))}
+                  </div>
+                </div>
+
+                {/* Text extraction */}
+                <div className="rounded-2xl border overflow-hidden" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+                  <div className="px-5 py-3 border-b flex items-center justify-between gap-3 flex-wrap" style={{ borderColor: "var(--border)", background: "var(--surface-alt)" }}>
+                    <h2 className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--accent)" }}>
+                      Texte extrait
+                    </h2>
+                    <div className="flex items-center gap-3">
+                      {!extractedText && (
+                        <button
+                          onClick={extractText}
+                          disabled={extractingText}
+                          className="rounded-lg px-4 py-1.5 text-xs font-semibold text-white transition-all disabled:opacity-50"
+                          style={{ background: "var(--primary)" }}
+                        >
+                          {extractingText ? "Extraction en cours..." : "Extraire le texte"}
+                        </button>
+                      )}
+                      {extractedText && (
+                        <>
+                          <button
+                            onClick={copyExtractedText}
+                            className="text-xs font-semibold transition-colors hover:opacity-70"
+                            style={{ color: "var(--primary)" }}
+                          >
+                            {textCopied ? "Copie !" : "Copier"}
+                          </button>
+                          <button
+                            onClick={downloadExtractedText}
+                            className="text-xs font-semibold transition-colors hover:opacity-70"
+                            style={{ color: "var(--primary)" }}
+                          >
+                            Telecharger .txt
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                  <div className="p-5">
+                    {!extractedText && !extractingText && (
+                      <p className="text-sm" style={{ color: "var(--muted)" }}>
+                        Cliquez sur &laquo;&nbsp;Extraire le texte&nbsp;&raquo; pour recuperer le contenu textuel de toutes les pages du PDF (compatible texte numerique uniquement, pas les scans/images).
+                      </p>
+                    )}
+                    {extractingText && (
+                      <p className="text-sm" style={{ color: "var(--muted)" }}>
+                        Lecture du PDF en cours, page par page...
+                      </p>
+                    )}
+                    {extractedText && (
+                      <textarea
+                        readOnly
+                        value={extractedText}
+                        className="w-full h-80 rounded-lg border p-3 text-xs font-mono resize-y"
+                        style={{ borderColor: "var(--border)", background: "var(--background)" }}
+                      />
+                    )}
                   </div>
                 </div>
 

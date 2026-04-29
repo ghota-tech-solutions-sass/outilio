@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import QRCode from "qrcode";
 import AdPlaceholder from "@/components/AdPlaceholder";
 import ToolFaqSection from "@/components/ToolFaqSection";
 import ToolHowToSection from "@/components/ToolHowToSection";
@@ -15,21 +16,28 @@ export default function GenerateurQRCode() {
 
   useEffect(() => {
     if (!text.trim()) return;
-    const img = new Image();
-    img.crossOrigin = "anonymous";
     const s = parseInt(size) || 256;
-    const encodedText = encodeURIComponent(text);
-    img.src = `https://api.qrserver.com/v1/create-qr-code/?size=${s}x${s}&data=${encodedText}&color=${color.replace("#", "")}&bgcolor=${bgColor.replace("#", "")}`;
-    img.onload = () => {
-      const canvas = canvasRef.current;
-      if (!canvas) return;
-      canvas.width = s;
-      canvas.height = s;
-      const ctx = canvas.getContext("2d");
-      if (!ctx) return;
-      ctx.drawImage(img, 0, 0, s, s);
-      setQrDataUrl(canvas.toDataURL("image/png"));
-    };
+    QRCode.toDataURL(text, {
+      width: s,
+      margin: 2,
+      color: { dark: color, light: bgColor },
+      errorCorrectionLevel: "M",
+    })
+      .then((url) => {
+        setQrDataUrl(url);
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+        const img = new Image();
+        img.onload = () => {
+          canvas.width = s;
+          canvas.height = s;
+          const ctx = canvas.getContext("2d");
+          if (!ctx) return;
+          ctx.drawImage(img, 0, 0, s, s);
+        };
+        img.src = url;
+      })
+      .catch(() => setQrDataUrl(""));
   }, [text, size, color, bgColor]);
 
   const download = () => {
@@ -330,7 +338,7 @@ export default function GenerateurQRCode() {
                 {
                   question: "Mes donnees Wi-Fi sont-elles envoyees a un serveur ?",
                   answer:
-                    "Le contenu du QR (y compris votre mot de passe Wi-Fi) est transmis a l'API api.qrserver.com pour generer l'image. Pour un usage hautement sensible, generez le QR sur une machine deconnectee avec un module local comme la lib npm 'qrcode'. Pour un Wi-Fi invite domestique, l'usage de cet outil reste raisonnable.",
+                    "Non. Le QR Code est genere entierement dans votre navigateur via la bibliotheque locale 'qrcode'. Aucune donnee (URL, SSID, mot de passe Wi-Fi, vCard, etc.) n'est envoyee vers un serveur tiers. Vous pouvez meme deconnecter votre acces internet apres le chargement de la page : la generation continue de fonctionner.",
                 },
                 {
                   question: "Puis-je ajouter mon logo au centre du QR Code ?",

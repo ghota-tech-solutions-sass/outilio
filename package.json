@@ -15,6 +15,7 @@
     "@types/qrcode": "^1.5.6",
     "next": "16.1.6",
     "pdf-lib": "^1.17.1",
+    "pdfjs-dist": "^5.7.284",
     "qrcode": "^1.5.4",
     "react": "19.2.3",
     "react-dom": "19.2.3"
