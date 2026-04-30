@@ -12,6 +12,7 @@ export const metadata: Metadata = {
     "minuterie",
     "chronometre en ligne",
   ],
+  alternates: { canonical: "https://outilis.fr/outils/minuteur" },
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {

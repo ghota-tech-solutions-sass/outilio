@@ -14,6 +14,7 @@ export const metadata: Metadata = {
     "vitesse moyenne",
     "temps de parcours",
   ],
+  alternates: { canonical: "https://outilis.fr/outils/calculateur-vitesse" },
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {

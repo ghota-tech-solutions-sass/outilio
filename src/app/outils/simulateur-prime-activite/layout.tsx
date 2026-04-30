@@ -13,6 +13,7 @@ export const metadata: Metadata = {
     "montant prime activite",
     "eligibilite prime activite",
   ],
+  alternates: { canonical: "https://outilis.fr/outils/simulateur-prime-activite" },
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {

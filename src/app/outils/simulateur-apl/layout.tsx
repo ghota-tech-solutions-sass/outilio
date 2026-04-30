@@ -17,6 +17,7 @@ export const metadata: Metadata = {
     "apl 2026 montant",
     "aide personnalisee au logement",
   ],
+  alternates: { canonical: "https://outilis.fr/outils/simulateur-apl" },
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {

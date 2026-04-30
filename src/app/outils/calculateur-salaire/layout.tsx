@@ -15,6 +15,7 @@ export const metadata: Metadata = {
     "simulation salaire",
     "simulateur salaire brut en net",
   ],
+  alternates: { canonical: "https://outilis.fr/outils/calculateur-salaire" },
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {

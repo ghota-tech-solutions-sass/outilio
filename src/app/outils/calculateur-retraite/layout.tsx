@@ -5,6 +5,7 @@ export const metadata: Metadata = {
   description:
     "Estimez votre age de depart a la retraite selon la reforme 2023. Calcul base sur votre annee de naissance et vos trimestres cotises.",
   keywords: ["age retraite", "depart retraite", "reforme retraite 2023", "calculateur retraite", "trimestres retraite"],
+  alternates: { canonical: "https://outilis.fr/outils/calculateur-retraite" },
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {

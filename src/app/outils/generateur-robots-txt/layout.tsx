@@ -12,6 +12,7 @@ export const metadata: Metadata = {
     "bloquer crawl",
     "sitemap robots",
   ],
+  alternates: { canonical: "https://outilis.fr/outils/generateur-robots-txt" },
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {

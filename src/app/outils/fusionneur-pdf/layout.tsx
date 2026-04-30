@@ -12,6 +12,7 @@ export const metadata: Metadata = {
     "pdf en ligne",
     "fusionneur pdf gratuit",
   ],
+  alternates: { canonical: "https://outilis.fr/outils/fusionneur-pdf" },
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {

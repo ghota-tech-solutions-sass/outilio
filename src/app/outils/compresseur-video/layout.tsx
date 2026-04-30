@@ -14,6 +14,7 @@ export const metadata: Metadata = {
     "compresser mp4",
     "compresser video gratuit",
   ],
+  alternates: { canonical: "https://outilis.fr/outils/compresseur-video" },
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {

@@ -13,6 +13,7 @@ export const metadata: Metadata = {
     "regex pattern",
     "expression reguliere test",
   ],
+  alternates: { canonical: "https://outilis.fr/outils/generateur-regex" },
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {

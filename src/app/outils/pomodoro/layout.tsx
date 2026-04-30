@@ -14,6 +14,7 @@ export const metadata: Metadata = {
     "productivite",
     "gestion du temps",
   ],
+  alternates: { canonical: "https://outilis.fr/outils/pomodoro" },
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {

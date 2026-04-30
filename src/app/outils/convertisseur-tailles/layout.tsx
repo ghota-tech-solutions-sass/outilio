@@ -14,6 +14,7 @@ export const metadata: Metadata = {
     "conversion taille homme femme",
     "guide des tailles",
   ],
+  alternates: { canonical: "https://outilis.fr/outils/convertisseur-tailles" },
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {

@@ -12,6 +12,7 @@ export const metadata: Metadata = {
     "metadonnees pdf",
     "pdf en ligne gratuit",
   ],
+  alternates: { canonical: "https://outilis.fr/outils/pdf-vers-texte" },
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {

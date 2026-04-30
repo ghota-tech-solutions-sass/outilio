@@ -12,6 +12,7 @@ export const metadata: Metadata = {
     "depreciation monnaie",
     "indice prix consommation",
   ],
+  alternates: { canonical: "https://outilis.fr/outils/calculateur-inflation" },
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {

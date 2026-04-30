@@ -13,6 +13,7 @@ export const metadata: Metadata = {
     "prelevements sociaux immobilier",
     "surtaxe plus-value",
   ],
+  alternates: { canonical: "https://outilis.fr/outils/simulateur-plus-value-immobiliere" },
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {

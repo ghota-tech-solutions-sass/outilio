@@ -13,6 +13,7 @@ export const metadata: Metadata = {
     "convertisseur markdown html",
     "markdown live preview",
   ],
+  alternates: { canonical: "https://outilis.fr/outils/editeur-markdown" },
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {

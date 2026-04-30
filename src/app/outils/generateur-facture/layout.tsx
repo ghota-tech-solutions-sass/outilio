@@ -14,6 +14,7 @@ export const metadata: Metadata = {
     "facture en ligne gratuite",
     "auto-entrepreneur facture",
   ],
+  alternates: { canonical: "https://outilis.fr/outils/generateur-facture" },
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {

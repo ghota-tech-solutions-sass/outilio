@@ -10,6 +10,7 @@ export const metadata: Metadata = {
     "password generator",
     "mot de passe fort",
   ],
+  alternates: { canonical: "https://outilis.fr/outils/generateur-mot-de-passe" },
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {

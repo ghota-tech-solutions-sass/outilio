@@ -12,6 +12,7 @@ export const metadata: Metadata = {
     "email demission",
     "email professionnel gratuit",
   ],
+  alternates: { canonical: "https://outilis.fr/outils/generateur-email-professionnel" },
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {

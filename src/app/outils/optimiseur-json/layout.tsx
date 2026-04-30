@@ -13,6 +13,7 @@ export const metadata: Metadata = {
     "minifier json",
     "json en ligne",
   ],
+  alternates: { canonical: "https://outilis.fr/outils/optimiseur-json" },
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {

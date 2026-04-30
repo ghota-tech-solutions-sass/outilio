@@ -16,6 +16,7 @@ export const metadata: Metadata = {
     "puissance fiscale",
     "declaration impots",
   ],
+  alternates: { canonical: "https://outilis.fr/outils/calculateur-frais-kilometriques" },
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {

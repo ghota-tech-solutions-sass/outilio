@@ -5,6 +5,7 @@ export const metadata: Metadata = {
   description:
     "Convertissez entre decimal, binaire, octal et hexadecimal. Conversion bidirectionnelle instantanee entre bases de numeration.",
   keywords: ["convertisseur binaire", "decimal hexadecimal", "conversion base", "binaire decimal", "octal hexadecimal"],
+  alternates: { canonical: "https://outilis.fr/outils/convertisseur-numeration" },
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {

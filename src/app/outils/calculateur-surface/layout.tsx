@@ -15,6 +15,7 @@ export const metadata: Metadata = {
     "calculer surface en m2",
     "surface en m2",
   ],
+  alternates: { canonical: "https://outilis.fr/outils/calculateur-surface" },
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {

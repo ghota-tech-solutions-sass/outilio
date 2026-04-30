@@ -16,6 +16,7 @@ export const metadata: Metadata = {
     "filtre VSCO",
     "photo editor",
   ],
+  alternates: { canonical: "https://outilis.fr/outils/editeur-photo" },
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {

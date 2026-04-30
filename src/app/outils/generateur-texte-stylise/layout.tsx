@@ -13,6 +13,7 @@ export const metadata: Metadata = {
     "texte bulle",
     "texte monospace",
   ],
+  alternates: { canonical: "https://outilis.fr/outils/generateur-texte-stylise" },
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {

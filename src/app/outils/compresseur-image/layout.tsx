@@ -13,6 +13,7 @@ export const metadata: Metadata = {
     "compresser photo",
     "logiciel compression photo gratuit",
   ],
+  alternates: { canonical: "https://outilis.fr/outils/compresseur-image" },
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {

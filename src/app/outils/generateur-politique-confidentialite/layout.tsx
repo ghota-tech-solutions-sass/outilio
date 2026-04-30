@@ -5,6 +5,7 @@ export const metadata: Metadata = {
   description:
     "Generez une politique de confidentialite conforme au RGPD pour votre site web. Gratuit, personnalisable et copie en un clic.",
   keywords: ["politique de confidentialite", "generateur RGPD", "privacy policy", "protection donnees", "RGPD site web"],
+  alternates: { canonical: "https://outilis.fr/outils/generateur-politique-confidentialite" },
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {

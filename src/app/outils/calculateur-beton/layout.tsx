@@ -15,6 +15,7 @@ export const metadata: Metadata = {
     "calculateur beton",
     "nombre sacs beton",
   ],
+  alternates: { canonical: "https://outilis.fr/outils/calculateur-beton" },
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {

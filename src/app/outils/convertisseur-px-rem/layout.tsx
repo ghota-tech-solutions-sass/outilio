@@ -13,6 +13,7 @@ export const metadata: Metadata = {
     "responsive design",
     "taille police css",
   ],
+  alternates: { canonical: "https://outilis.fr/outils/convertisseur-px-rem" },
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {

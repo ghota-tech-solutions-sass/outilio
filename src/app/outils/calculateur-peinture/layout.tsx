@@ -13,6 +13,7 @@ export const metadata: Metadata = {
     "surface murs peinture",
     "peinture metre carre",
   ],
+  alternates: { canonical: "https://outilis.fr/outils/calculateur-peinture" },
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {

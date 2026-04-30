@@ -12,6 +12,7 @@ export const metadata: Metadata = {
     "generateur url",
     "slugify texte",
   ],
+  alternates: { canonical: "https://outilis.fr/outils/generateur-slug" },
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {

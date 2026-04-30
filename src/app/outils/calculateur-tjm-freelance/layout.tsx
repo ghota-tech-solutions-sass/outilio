@@ -12,6 +12,7 @@ export const metadata: Metadata = {
     "calcul TJM auto-entrepreneur",
     "taux horaire freelance",
   ],
+  alternates: { canonical: "https://outilis.fr/outils/calculateur-tjm-freelance" },
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {

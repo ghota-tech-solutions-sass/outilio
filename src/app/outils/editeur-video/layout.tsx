@@ -15,6 +15,7 @@ export const metadata: Metadata = {
     "extraire gif",
     "montage video navigateur",
   ],
+  alternates: { canonical: "https://outilis.fr/outils/editeur-video" },
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {

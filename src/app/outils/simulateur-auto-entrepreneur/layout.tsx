@@ -15,6 +15,7 @@ export const metadata: Metadata = {
     "ACRE",
     "revenu net auto-entrepreneur",
   ],
+  alternates: { canonical: "https://outilis.fr/outils/simulateur-auto-entrepreneur" },
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {

@@ -13,6 +13,7 @@ export const metadata: Metadata = {
     "background gradient",
     "css degrade",
   ],
+  alternates: { canonical: "https://outilis.fr/outils/generateur-gradient" },
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {

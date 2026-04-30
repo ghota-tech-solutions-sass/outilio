@@ -10,6 +10,7 @@ export const metadata: Metadata = {
     "CSV to JSON",
     "conversion donnees",
   ],
+  alternates: { canonical: "https://outilis.fr/outils/convertisseur-json-csv" },
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {

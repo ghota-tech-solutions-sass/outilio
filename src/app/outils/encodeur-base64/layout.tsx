@@ -12,6 +12,7 @@ export const metadata: Metadata = {
     "convertir base64",
     "outil base64",
   ],
+  alternates: { canonical: "https://outilis.fr/outils/encodeur-base64" },
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {

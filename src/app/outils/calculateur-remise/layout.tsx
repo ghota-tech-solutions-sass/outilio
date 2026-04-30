@@ -12,6 +12,7 @@ export const metadata: Metadata = {
     "promotion pourcentage",
     "cumul reductions",
   ],
+  alternates: { canonical: "https://outilis.fr/outils/calculateur-remise" },
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {

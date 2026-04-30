@@ -13,6 +13,7 @@ export const metadata: Metadata = {
     "reduire taille image en ligne",
     "redimensionner photo",
   ],
+  alternates: { canonical: "https://outilis.fr/outils/redimensionneur-image" },
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {

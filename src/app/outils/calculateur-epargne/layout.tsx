@@ -12,6 +12,7 @@ export const metadata: Metadata = {
     "rendement placement",
     "calculateur investissement",
   ],
+  alternates: { canonical: "https://outilis.fr/outils/calculateur-epargne" },
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {

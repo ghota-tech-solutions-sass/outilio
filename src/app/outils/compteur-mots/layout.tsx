@@ -11,6 +11,7 @@ export const metadata: Metadata = {
     "nombre de mots",
     "word counter",
   ],
+  alternates: { canonical: "https://outilis.fr/outils/compteur-mots" },
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {

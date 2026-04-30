@@ -12,6 +12,7 @@ export const metadata: Metadata = {
     "marge beneficiaire",
     "calculateur profit",
   ],
+  alternates: { canonical: "https://outilis.fr/outils/calculateur-marge" },
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {

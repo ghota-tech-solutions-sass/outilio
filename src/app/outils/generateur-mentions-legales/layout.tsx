@@ -5,6 +5,7 @@ export const metadata: Metadata = {
   description:
     "Generez des mentions legales conformes a la loi francaise et au RGPD pour votre site web. Gratuit, personnalisable, copie en un clic.",
   keywords: ["mentions legales", "generateur mentions legales", "RGPD", "mentions legales site web", "obligations legales site internet"],
+  alternates: { canonical: "https://outilis.fr/outils/generateur-mentions-legales" },
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {

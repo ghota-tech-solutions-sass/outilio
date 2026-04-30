@@ -15,6 +15,7 @@ export const metadata: Metadata = {
     "faire un cv",
     "curriculum vitae",
   ],
+  alternates: { canonical: "https://outilis.fr/outils/generateur-cv" },
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {

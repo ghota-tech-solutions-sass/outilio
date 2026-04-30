@@ -16,6 +16,7 @@ export const metadata: Metadata = {
     "frais notaire neuf",
     "achat immobilier",
   ],
+  alternates: { canonical: "https://outilis.fr/outils/calculateur-frais-notaire" },
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {

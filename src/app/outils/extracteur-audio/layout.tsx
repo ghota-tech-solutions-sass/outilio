@@ -12,6 +12,7 @@ export const metadata: Metadata = {
     "convertir video audio",
     "extracteur audio gratuit",
   ],
+  alternates: { canonical: "https://outilis.fr/outils/extracteur-audio" },
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {

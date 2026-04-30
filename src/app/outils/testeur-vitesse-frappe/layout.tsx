@@ -14,6 +14,7 @@ export const metadata: Metadata = {
     "test clavier",
     "vitesse clavier",
   ],
+  alternates: { canonical: "https://outilis.fr/outils/testeur-vitesse-frappe" },
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {

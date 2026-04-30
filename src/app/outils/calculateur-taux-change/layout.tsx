@@ -13,6 +13,7 @@ export const metadata: Metadata = {
     "taux change CHF",
     "convertisseur XOF",
   ],
+  alternates: { canonical: "https://outilis.fr/outils/calculateur-taux-change" },
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {

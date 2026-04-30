@@ -14,6 +14,7 @@ export const metadata: Metadata = {
     "text diff",
     "outil diff gratuit",
   ],
+  alternates: { canonical: "https://outilis.fr/outils/comparateur-texte" },
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {

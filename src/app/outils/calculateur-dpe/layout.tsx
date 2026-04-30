@@ -15,6 +15,7 @@ export const metadata: Metadata = {
     "classe energetique",
     "calculateur dpe gratuit",
   ],
+  alternates: { canonical: "https://outilis.fr/outils/calculateur-dpe" },
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {

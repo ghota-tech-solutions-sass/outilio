@@ -12,6 +12,7 @@ export const metadata: Metadata = {
     "convertir duree",
     "calculateur temps",
   ],
+  alternates: { canonical: "https://outilis.fr/outils/convertisseur-temps" },
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {

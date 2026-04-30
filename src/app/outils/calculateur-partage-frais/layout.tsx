@@ -12,6 +12,7 @@ export const metadata: Metadata = {
     "split expenses",
     "tricount",
   ],
+  alternates: { canonical: "https://outilis.fr/outils/calculateur-partage-frais" },
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {

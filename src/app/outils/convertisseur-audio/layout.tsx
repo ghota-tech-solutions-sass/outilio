@@ -16,6 +16,7 @@ export const metadata: Metadata = {
     "mp3 vers wav",
     "wav vers mp3",
   ],
+  alternates: { canonical: "https://outilis.fr/outils/convertisseur-audio" },
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {
