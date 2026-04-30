@@ -58,7 +58,7 @@ function getUniqueCategories(): string[] {
 }
 
 // Date of last major update (used as lastmod for all pages)
-const LAST_UPDATE = new Date("2026-03-30").toISOString();
+const LAST_UPDATE = new Date("2026-04-30").toISOString();
 
 const BLOG_ARTICLES: { slug: string; date: string }[] = [
   { slug: "declaration-impots-2026", date: "2026-02-03" },
@@ -77,6 +77,9 @@ const BLOG_ARTICLES: { slug: string; date: string }[] = [
   { slug: "guide-creation-entreprise-2026", date: "2026-03-20" },
   { slug: "guide-freelance-2026", date: "2026-03-24" },
   { slug: "guide-immobilier-2026", date: "2026-03-27" },
+  { slug: "ptz-2026-nouveautes", date: "2026-04-30" },
+  { slug: "dpe-f-g-logement-energivore", date: "2026-04-30" },
+  { slug: "rachat-credit-immo-2026", date: "2026-04-30" },
 ];
 
 export default function sitemap(): MetadataRoute.Sitemap {

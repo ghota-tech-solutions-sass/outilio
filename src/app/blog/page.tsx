@@ -2,6 +2,33 @@ import Link from "next/link";
 
 const ARTICLES = [
   {
+    slug: "ptz-2026-nouveautes",
+    title: "PTZ 2026 : ce qui a change avec le nouveau dispositif elargi",
+    description:
+      "Le Pret a Taux Zero 2026 etendu a toute la France. Quotites 50 % en collectif neuf, plafonds revalorises, exemple chiffre Lyon : tout savoir.",
+    date: "30 avril 2026",
+    category: "Immobilier",
+    readTime: "6 min",
+  },
+  {
+    slug: "dpe-f-g-logement-energivore",
+    title: "DPE F ou G : que faire avec un logement energivore en 2026",
+    description:
+      "Calendrier des interdictions, decote 15-20 % a la revente, MaPrimeRenov, travaux prioritaires. Le guide pour decider en 2026.",
+    date: "30 avril 2026",
+    category: "Immobilier",
+    readTime: "7 min",
+  },
+  {
+    slug: "rachat-credit-immo-2026",
+    title: "Rachat de credit immo 2026 : quand ca vaut vraiment le coup ?",
+    description:
+      "Ecart de taux minimum, frais a anticiper, delai d&apos;amortissement, exemple chiffre. Tous les criteres pour decider de racheter ou non.",
+    date: "30 avril 2026",
+    category: "Finance",
+    readTime: "6 min",
+  },
+  {
     slug: "guide-immobilier-2026",
     title: "Guide complet achat immobilier 2026 : pret, frais de notaire, PTZ et rentabilite",
     description:
