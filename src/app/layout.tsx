@@ -37,6 +37,9 @@ export const metadata: Metadata = {
     "generateur facture",
     "outils gratuits",
   ],
+  alternates: {
+    canonical: "https://outilis.fr/",
+  },
   openGraph: {
     type: "website",
     locale: "fr_FR",

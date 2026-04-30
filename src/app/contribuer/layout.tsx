@@ -11,6 +11,7 @@ export const metadata: Metadata = {
     "outilis",
     "github",
   ],
+  alternates: { canonical: "https://outilis.fr/contribuer" },
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {
