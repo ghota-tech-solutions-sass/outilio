@@ -3,7 +3,14 @@
 import { useState, useMemo } from "react";
 import AdPlaceholder from "@/components/AdPlaceholder";
 
-const SMIC_NET_MENSUEL = 1426.30;
+// Montants en vigueur depuis la revalorisation du 1er avril 2025
+// TODO: revalidation montants 2026 sur caf.fr (revalorisation annuelle au 1er avril)
+const SMIC_NET_MENSUEL = 1426.30; // SMIC net mensuel 35h - a actualiser pour 2026
+const FORFAITAIRE_BASE = 633.21; // Montant forfaitaire personne seule (1er avril 2025)
+const BONIF_MAX = 173.22; // Bonification individuelle maximale - a verifier 2026
+const FORFAIT_LOGEMENT_1 = 77.83; // 1 personne - a verifier 2026
+const FORFAIT_LOGEMENT_2 = 155.66; // 2 personnes - a verifier 2026
+const FORFAIT_LOGEMENT_3 = 192.60; // 3 personnes et + - a verifier 2026
 
 export default function SimulateurPrimeActivite() {
   const [revenus, setRevenus] = useState("1200");
@@ -16,8 +23,8 @@ export default function SimulateurPrimeActivite() {
     const rev = parseFloat(revenus) || 0;
     const nbEnfants = parseInt(enfants) || 0;
 
-    // Montant forfaitaire de base (personne seule 2026)
-    const forfaitaireBase = 622.63;
+    // Montant forfaitaire de base (personne seule)
+    const forfaitaireBase = FORFAITAIRE_BASE;
 
     // Majoration couple : +50%
     const majorationCouple = situation === "couple" ? forfaitaireBase * 0.5 : 0;
@@ -37,11 +44,10 @@ export default function SimulateurPrimeActivite() {
     // Bonification individuelle
     let bonification = 0;
     const seuilBas = SMIC_NET_MENSUEL * 0.5; // 0.5 SMIC
-    const bonifMax = 173.22;
     if (rev >= SMIC_NET_MENSUEL) {
-      bonification = bonifMax;
+      bonification = BONIF_MAX;
     } else if (rev > seuilBas) {
-      bonification = bonifMax * ((rev - seuilBas) / (SMIC_NET_MENSUEL - seuilBas));
+      bonification = BONIF_MAX * ((rev - seuilBas) / (SMIC_NET_MENSUEL - seuilBas));
     }
 
     // Si couple, on considere que seul le declarant travaille pour la simplification
@@ -51,13 +57,21 @@ export default function SimulateurPrimeActivite() {
     const nbPersonnes = (situation === "couple" ? 2 : 1) + nbEnfants;
     let forfaitLogement = 0;
     if (logement === "proprietaire" || parseFloat(loyer as string) > 0) {
-      if (nbPersonnes === 1) forfaitLogement = 77.83;
-      else if (nbPersonnes === 2) forfaitLogement = 155.66;
-      else forfaitLogement = 192.60;
+      if (nbPersonnes === 1) forfaitLogement = FORFAIT_LOGEMENT_1;
+      else if (nbPersonnes === 2) forfaitLogement = FORFAIT_LOGEMENT_2;
+      else forfaitLogement = FORFAIT_LOGEMENT_3;
     }
 
-    // Calcul prime
-    const primeCalculee = montantForfaitaire + bonificationTotale - forfaitLogement - rev;
+    // Formule officielle (art. L842-1 et suivants CASF) :
+    // P = (montant_forfaitaire + 0,61 x revenus_pro + bonifications) - revenus_pris_en_compte
+    // ou revenus_pris_en_compte = revenus_pro + autres_revenus + forfait_logement
+    // La prime preserve 61% des revenus d'activite (element central du dispositif).
+    // Equivalent simplifie : P = montant_forfaitaire + bonifications - forfait_logement - 0,39 x revenus_pro
+    const revenusActivite = rev;
+    const autresRevenus = 0; // Non demande dans ce simulateur simplifie
+    const revenusPrisEnCompte = revenusActivite + autresRevenus + forfaitLogement;
+    const primeCalculee =
+      montantForfaitaire + 0.61 * revenusActivite + bonificationTotale - revenusPrisEnCompte;
     const primeMensuelle = Math.max(0, Math.round(primeCalculee * 100) / 100);
     const primeTrimestrielle = Math.round(primeMensuelle * 3 * 100) / 100;
     const eligible = primeMensuelle > 0;
@@ -68,6 +82,7 @@ export default function SimulateurPrimeActivite() {
       majorationEnfants,
       bonification: bonificationTotale,
       forfaitLogement,
+      revenusActivite,
       primeMensuelle,
       primeTrimestrielle,
       eligible,
@@ -189,12 +204,13 @@ export default function SimulateurPrimeActivite() {
               <h2 className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--accent)" }}>Detail du calcul</h2>
               <div className="mt-4 space-y-3">
                 {[
-                  { label: "Montant forfaitaire de base", value: `+ ${fmt(622.63)} \u20AC`, positive: true },
+                  { label: "Montant forfaitaire de base", value: `+ ${fmt(FORFAITAIRE_BASE)} \u20AC`, positive: true },
                   ...(resultats.majorationCouple > 0 ? [{ label: "Majoration couple (+50%)", value: `+ ${fmt(resultats.majorationCouple)} \u20AC`, positive: true }] : []),
                   ...(resultats.majorationEnfants > 0 ? [{ label: `Majoration enfants (${enfants})`, value: `+ ${fmt(resultats.majorationEnfants)} \u20AC`, positive: true }] : []),
                   { label: "Bonification individuelle", value: `+ ${fmt(resultats.bonification)} \u20AC`, positive: true },
+                  { label: "61% des revenus d'activite (preserves)", value: `+ ${fmt(0.61 * resultats.revenusActivite)} \u20AC`, positive: true },
                   { label: `Forfait logement (${resultats.nbPersonnes} pers.)`, value: `- ${fmt(resultats.forfaitLogement)} \u20AC`, positive: false },
-                  { label: "Revenus du foyer", value: `- ${fmt(parseFloat(revenus) || 0)} \u20AC`, positive: false },
+                  { label: "Revenus d'activite", value: `- ${fmt(parseFloat(revenus) || 0)} \u20AC`, positive: false },
                 ].map((item) => (
                   <div key={item.label} className="flex justify-between items-center py-2" style={{ borderBottom: "1px solid var(--border)" }}>
                     <span className="text-sm" style={{ color: "var(--muted)" }}>{item.label}</span>
@@ -216,9 +232,11 @@ export default function SimulateurPrimeActivite() {
               <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
                 <p>La prime d&apos;activite est une prestation sociale versee par la CAF (ou la MSA) aux travailleurs aux revenus modestes. Elle remplace depuis 2016 le RSA activite et la prime pour l&apos;emploi. Son objectif est d&apos;encourager l&apos;activite professionnelle en completant les revenus des salaries et travailleurs independants.</p>
                 <ul className="ml-4 list-disc space-y-1">
+                  <li><strong className="text-[var(--foreground)]">Cadre legal</strong> : articles L842-1 et suivants du Code de l&apos;action sociale et des familles (CASF).</li>
                   <li><strong className="text-[var(--foreground)]">Conditions</strong> : avoir plus de 18 ans, resider en France, exercer une activite professionnelle et percevoir des revenus modestes.</li>
-                  <li><strong className="text-[var(--foreground)]">Montant forfaitaire</strong> : 622,63 &euro; pour une personne seule en 2026, majore selon la composition du foyer.</li>
+                  <li><strong className="text-[var(--foreground)]">Montant forfaitaire</strong> : 633,21 &euro; pour une personne seule depuis le 1er avril 2025, majore selon la composition du foyer.</li>
                   <li><strong className="text-[var(--foreground)]">Bonification</strong> : un complement progressif est accorde a partir de 0,5 SMIC, jusqu&apos;a 173,22 &euro; au niveau du SMIC.</li>
+                  <li><strong className="text-[var(--foreground)]">Formule officielle</strong> : Prime = (forfaitaire + majorations + bonifications + 61% des revenus pro) - revenus pris en compte. Le coefficient de 61% sur les revenus d&apos;activite est l&apos;element central du dispositif : il garantit que travailler reste interessant.</li>
                   <li><strong className="text-[var(--foreground)]">Versement</strong> : trimestriel, base sur les revenus des 3 derniers mois. La demande se fait sur caf.fr.</li>
                 </ul>
                 <p>Ce simulateur fournit une estimation. Le montant reel depend de l&apos;ensemble des ressources du foyer evaluees par la CAF. Les travailleurs independants, les etudiants salaries et les apprentis peuvent aussi en beneficier sous conditions.</p>

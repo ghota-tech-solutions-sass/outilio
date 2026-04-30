@@ -4,9 +4,10 @@ import { useState, useMemo } from "react";
 import AdPlaceholder from "@/components/AdPlaceholder";
 
 type Zone = "Abis" | "A" | "B1" | "B2C";
-type TypeBien = "neuf" | "ancien";
+type TypeBien = "neuf-collectif" | "neuf-individuel" | "ancien";
 
-// Plafonds de revenus par zone et nombre de personnes (grille simplifiee)
+// Plafonds de revenus par zone et nombre de personnes (grille indicative, art. L31-10-3 CCH)
+// TODO: revalidation barème PTZ 2026 sur service-public.fr
 const PLAFONDS_REVENUS: Record<Zone, number[]> = {
   Abis: [49000, 73000, 87500, 104500, 121500, 138500, 155500, 172500],
   A:    [49000, 73000, 87500, 104500, 121500, 138500, 155500, 172500],
@@ -14,7 +15,8 @@ const PLAFONDS_REVENUS: Record<Zone, number[]> = {
   B2C:  [31500, 43500, 52000, 62500, 73000, 83500, 94000, 104500],
 };
 
-// Plafonds de l'operation par zone
+// Plafonds de l'operation par zone (art. L31-10-3 CCH, par tranche de coefficient familial)
+// TODO: revalidation barème PTZ 2026 sur service-public.fr
 const PLAFONDS_OPERATION: Record<Zone, number> = {
   Abis: 150000,
   A:    135000,
@@ -22,12 +24,19 @@ const PLAFONDS_OPERATION: Record<Zone, number> = {
   B2C:  100000,
 };
 
-// Quotite par zone et type de bien
+// Quotite par zone et type de bien (LFI 2025 + decret 2025-XXX modifiant decret 2024-484, 4 mars 2025)
+// Neuf collectif : elargissement a toute la France (avant : zones tendues uniquement)
 const QUOTITE: Record<TypeBien, Record<Zone, number>> = {
-  neuf: {
+  "neuf-collectif": {
     Abis: 0.5,
     A:    0.5,
-    B1:   0.4,
+    B1:   0.5,
+    B2C:  0.3,
+  },
+  "neuf-individuel": {
+    Abis: 0.3,
+    A:    0.3,
+    B1:   0.3,
     B2C:  0.2,
   },
   ancien: {
@@ -58,7 +67,7 @@ export default function SimulateurPTZ2026() {
   const [revenus, setRevenus] = useState("35000");
   const [nbPersonnes, setNbPersonnes] = useState("2");
   const [prixBien, setPrixBien] = useState("250000");
-  const [typeBien, setTypeBien] = useState<TypeBien>("neuf");
+  const [typeBien, setTypeBien] = useState<TypeBien>("neuf-collectif");
 
   const result = useMemo(() => {
     const rev = parseFloat(revenus) || 0;
@@ -152,7 +161,8 @@ export default function SimulateurPTZ2026() {
                   <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>Type de bien</label>
                   <select value={typeBien} onChange={(e) => setTypeBien(e.target.value as TypeBien)}
                     className="mt-2 w-full rounded-xl border px-4 py-4 text-lg font-semibold" style={{ borderColor: "var(--border)", background: "var(--surface)" }}>
-                    <option value="neuf">Neuf</option>
+                    <option value="neuf-collectif">Neuf - collectif (appartement)</option>
+                    <option value="neuf-individuel">Neuf - individuel (maison)</option>
                     <option value="ancien">Ancien avec travaux</option>
                   </select>
                 </div>
@@ -222,7 +232,7 @@ export default function SimulateurPTZ2026() {
                           <span className="font-semibold" style={{ color: "var(--foreground)" }}>{fmt(result.montantRetenu)} euros</span>
                         </div>
                         <div className="flex justify-between">
-                          <span>Quotite ({typeBien === "neuf" ? "neuf" : "ancien avec travaux"})</span>
+                          <span>Quotite ({typeBien === "neuf-collectif" ? "neuf collectif" : typeBien === "neuf-individuel" ? "neuf individuel" : "ancien avec travaux"})</span>
                           <span className="font-semibold" style={{ color: "var(--foreground)" }}>{(result.quotite * 100).toFixed(0)}%</span>
                         </div>
                         <hr style={{ borderColor: "var(--border)" }} />
@@ -261,7 +271,7 @@ export default function SimulateurPTZ2026() {
                   <li>Acheter un logement neuf ou ancien avec travaux representant au moins 25% du cout total</li>
                   <li>Le logement doit devenir la residence principale dans l&apos;annee suivant l&apos;achat</li>
                 </ul>
-                <p>En 2026, le PTZ a ete etendu a l&apos;ensemble du territoire pour le neuf et maintenu pour l&apos;ancien avec travaux. Les quotites et plafonds ont ete revus a la hausse pour faciliter l&apos;acces a la propriete.</p>
+                <p>Depuis la <strong className="text-[var(--foreground)]">LFI 2025 et le decret du 4 mars 2025</strong> (modifiant le decret 2024-484), le PTZ neuf collectif a ete <strong className="text-[var(--foreground)]">elargi a l&apos;ensemble du territoire</strong> (avant : zones tendues uniquement). Les quotites varient selon le type de bien : neuf collectif 50% en zone Abis/A/B1 et 30% en B2/C ; neuf individuel 30% en zone Abis/A/B1 et 20% en B2/C. Cadre legal : articles <strong className="text-[var(--foreground)]">L31-10-2 et L31-10-3 du Code de la construction et de l&apos;habitation (CCH)</strong>.</p>
               </div>
             </div>
 
@@ -284,6 +294,10 @@ export default function SimulateurPTZ2026() {
                 <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
                   <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Que signifie le differe de remboursement ?</h3>
                   <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Le differe est une periode pendant laquelle vous ne remboursez pas le PTZ. Vous ne payez que les mensualites de vos autres prets. Le differe peut aller de 5 a 15 ans selon vos revenus. Plus vos revenus sont faibles, plus le differe est long. Apres le differe, les mensualites du PTZ commencent sans interets.</p>
+                </div>
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Quelle difference entre neuf collectif et neuf individuel pour le PTZ ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Depuis la LFI 2025 et le decret du 4 mars 2025, les quotites different : <strong className="text-[var(--foreground)]">neuf collectif</strong> (appartement en logement collectif) = 50% en zone Abis/A/B1, 30% en B2/C, eligible sur tout le territoire. <strong className="text-[var(--foreground)]">Neuf individuel</strong> (maison) = 30% en zone Abis/A/B1, 20% en B2/C. Reference : articles L31-10-2 et L31-10-3 du Code de la construction et de l&apos;habitation (CCH).</p>
                 </div>
               </div>
             </div>

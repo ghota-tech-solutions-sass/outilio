@@ -7,7 +7,6 @@ export default function SimulateurRuptureConventionnelle() {
   const [salaireBrut, setSalaireBrut] = useState("3000");
   const [annees, setAnnees] = useState("5");
   const [mois, setMois] = useState("0");
-  const [convention, setConvention] = useState("standard");
 
   const result = useMemo(() => {
     const salaire = parseFloat(salaireBrut) || 0;
@@ -37,17 +36,21 @@ export default function SimulateurRuptureConventionnelle() {
     const plafondIR = Math.max(indemnite, 2 * salaireAnnuel, indemnite * 0.5);
     const partImposableIR = Math.max(0, indemnite - plafondIR);
 
-    // Exoneree de CSG/CRDS dans la limite de l'indemnite legale
-    const partSoumiseCSG = Math.max(0, indemnite - indemnite); // indemnite legale = indemnite ici (on calcule l'indemnite legale)
-    // Si l'indemnite negociee = indemnite legale, CSG/CRDS = 0
-    // Pour simplifier : on considere que l'indemnite versee = indemnite legale minimale
+    // Exoneree de CSG/CRDS dans la limite de l'indemnite legale.
+    // Calcul simplifie : on suppose que l'indemnite versee = indemnite legale,
+    // donc la part soumise a CSG/CRDS est nulle. Pour une indemnite supra-legale,
+    // il faudrait demander a l'utilisateur l'indemnite negociee et calculer
+    // partSoumiseCSG = max(0, indemniteNegociee - indemniteLegale).
+    const partSoumiseCSG = 0;
     const csgCrds = partSoumiseCSG * 0.097; // 9.7% (CSG 9.2% + CRDS 0.5%)
 
     // IR estime (simplifie)
     const irEstime = partImposableIR * 0.3; // taux moyen approximatif
 
-    // Forfait social employeur : 20% sur la part exoneree de cotisations
-    const forfaitSocial = indemnite * 0.2;
+    // Contribution patronale unique : 30% sur les indemnites de rupture conventionnelle
+    // depassant le seuil d'exoneration. Depuis le 1er septembre 2023, ce dispositif
+    // remplace l'ancien forfait social de 20% (LFSS 2023, art. L137-12 CSS).
+    const contributionPatronale = indemnite * 0.30;
 
     const indemniteNette = indemnite - csgCrds - irEstime;
 
@@ -56,13 +59,13 @@ export default function SimulateurRuptureConventionnelle() {
       indemniteNette,
       irEstime,
       csgCrds,
-      forfaitSocial,
+      contributionPatronale,
       ancienneteAnnees,
       salaireRef,
       plafondIR,
       partImposableIR,
     };
-  }, [salaireBrut, annees, mois, convention]);
+  }, [salaireBrut, annees, mois]);
 
   const fmt = (n: number) =>
     n.toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -103,15 +106,6 @@ export default function SimulateurRuptureConventionnelle() {
                   <input type="number" min="0" max="11" value={mois} onChange={(e) => setMois(e.target.value)}
                     className="mt-2 w-full rounded-xl border px-4 py-4 text-2xl font-bold" style={{ borderColor: "var(--border)", fontFamily: "var(--font-display)" }} />
                 </div>
-                <div className="sm:col-span-2">
-                  <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>Convention collective</label>
-                  <select value={convention} onChange={(e) => setConvention(e.target.value)}
-                    className="mt-2 w-full rounded-xl border px-4 py-4 text-lg font-semibold" style={{ borderColor: "var(--border)", background: "var(--surface)" }}>
-                    <option value="standard">Standard (Code du travail)</option>
-                    <option value="metallurgie" disabled>Metallurgie (bientot)</option>
-                    <option value="syntec" disabled>Syntec (bientot)</option>
-                  </select>
-                </div>
               </div>
             </div>
 
@@ -148,9 +142,12 @@ export default function SimulateurRuptureConventionnelle() {
                     </p>
                   </div>
                   <div className="rounded-2xl border p-6" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-                    <p className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--muted)" }}>Forfait social employeur (20%)</p>
+                    <p className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--muted)" }}>Contribution patronale unique (30%)</p>
                     <p className="mt-2 text-3xl font-bold" style={{ fontFamily: "var(--font-display)", color: "var(--foreground)" }}>
-                      {fmt(result.forfaitSocial)} euros
+                      {fmt(result.contributionPatronale)} euros
+                    </p>
+                    <p className="mt-1 text-[10px]" style={{ color: "var(--muted)" }}>
+                      Depuis le 1er sept. 2023 (LFSS 2023, art. L137-12 CSS)
                     </p>
                   </div>
                 </div>
@@ -247,6 +244,10 @@ export default function SimulateurRuptureConventionnelle() {
                 <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
                   <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>L&apos;indemnite de rupture conventionnelle est-elle imposable ?</h3>
                   <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>L&apos;indemnite est exoneree d&apos;impot sur le revenu dans la limite du montant le plus eleve entre : l&apos;indemnite legale, 2 fois la remuneration brute annuelle, ou 50% de l&apos;indemnite percue. Au-dela de ce plafond, la part excedentaire est soumise a l&apos;IR. Elle est aussi exoneree de CSG/CRDS dans la limite de l&apos;indemnite legale.</p>
+                </div>
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Quelle est la cotisation employeur sur la rupture conventionnelle ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Depuis le <strong className="text-[var(--foreground)]">1er septembre 2023</strong>, l&apos;ancien forfait social de 20% a ete remplace par une <strong className="text-[var(--foreground)]">contribution patronale unique de 30%</strong> sur les indemnites de rupture conventionnelle (LFSS 2023, art. L137-12 du Code de la securite sociale). Cette contribution s&apos;applique a la part de l&apos;indemnite exoneree de cotisations sociales et est due par l&apos;employeur, pas par le salarie. Son augmentation a alourdi le cout de la rupture conventionnelle pour les entreprises.</p>
                 </div>
               </div>
             </div>

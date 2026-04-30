@@ -1,16 +1,42 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import AdPlaceholder from "@/components/AdPlaceholder";
 import ToolFaqSection from "@/components/ToolFaqSection";
 import ToolHowToSection from "@/components/ToolHowToSection";
 
+// Bareme micro-entreprise 2026 (charges sociales + CFP par activite)
+// Source : URSSAF / decret 2024-484 (hausse progressive BNC libéral hors CIPAV : 24,6% en 2025, 26,1% en 2026)
+type ActiviteMicro =
+  | "bic-vente"
+  | "bic-services"
+  | "bnc-liberal"
+  | "bnc-cipav"
+  | "autre";
+
+const BAREME_MICRO: Record<ActiviteMicro, { charges: number; cfp: number; label: string }> = {
+  "bic-vente":     { charges: 12.3, cfp: 0.1, label: "Micro BIC - Vente de marchandises" },
+  "bic-services":  { charges: 21.2, cfp: 0.2, label: "Micro BIC - Prestations de services / artisanal" },
+  "bnc-liberal":   { charges: 26.1, cfp: 0.2, label: "Micro BNC - Liberal hors CIPAV (2026)" },
+  "bnc-cipav":     { charges: 23.2, cfp: 0.2, label: "Micro BNC - Liberal CIPAV" },
+  "autre":         { charges: 45.0, cfp: 0.0, label: "Autre (EURL/SASU - taux personnalise)" },
+};
+
 export default function CalculateurTJMFreelance() {
+  const [activite, setActivite] = useState<ActiviteMicro>("bnc-liberal");
   const [salaireNet, setSalaireNet] = useState("3000");
-  const [tauxCharges, setTauxCharges] = useState("22");
+  const [tauxCharges, setTauxCharges] = useState("26.1");
   const [joursTravaillesMois, setJoursTravaillesMois] = useState("20");
   const [joursConge, setJoursConge] = useState("25");
   const [fraisMensuels, setFraisMensuels] = useState("300");
+
+  // Met a jour le taux de charges quand l'activite change (sauf "autre" qui reste libre)
+  useEffect(() => {
+    if (activite !== "autre") {
+      const total = BAREME_MICRO[activite].charges + BAREME_MICRO[activite].cfp;
+      setTauxCharges(total.toFixed(1));
+    }
+  }, [activite]);
 
   const resultats = useMemo(() => {
     const salaire = parseFloat(salaireNet) || 0;
@@ -63,6 +89,18 @@ export default function CalculateurTJMFreelance() {
             <div className="rounded-2xl border p-6" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
               <h2 className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--accent)" }}>Vos parametres</h2>
               <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div className="sm:col-span-2">
+                  <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>Activite / statut</label>
+                  <select value={activite} onChange={(e) => setActivite(e.target.value as ActiviteMicro)}
+                    className="mt-2 w-full rounded-xl border px-4 py-3 text-sm font-semibold" style={{ borderColor: "var(--border)", background: "var(--surface)" }}>
+                    {(Object.entries(BAREME_MICRO) as [ActiviteMicro, typeof BAREME_MICRO[ActiviteMicro]][]).map(([key, v]) => (
+                      <option key={key} value={key}>{v.label}{key !== "autre" ? ` (${(v.charges + v.cfp).toFixed(1)}%)` : ""}</option>
+                    ))}
+                  </select>
+                  <p className="mt-1 text-xs" style={{ color: "var(--muted)" }}>
+                    Bareme URSSAF 2026 incluant CFP. Hausse progressive BNC liberal hors CIPAV : 24,6% (2025) puis 26,1% (2026), decret 2024-484.
+                  </p>
+                </div>
                 <div>
                   <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>Salaire net mensuel souhaite</label>
                   <div className="relative mt-2">
@@ -72,9 +110,9 @@ export default function CalculateurTJMFreelance() {
                   </div>
                 </div>
                 <div>
-                  <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>Charges sociales</label>
+                  <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>Charges sociales totales</label>
                   <div className="relative mt-2">
-                    <input type="number" value={tauxCharges} onChange={(e) => setTauxCharges(e.target.value)}
+                    <input type="number" value={tauxCharges} onChange={(e) => { setTauxCharges(e.target.value); setActivite("autre"); }}
                       className="w-full rounded-xl border px-4 py-4 text-2xl font-bold" style={{ borderColor: "var(--border)", fontFamily: "var(--font-display)" }} />
                     <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-semibold" style={{ color: "var(--muted)" }}>%</span>
                   </div>
@@ -144,7 +182,7 @@ export default function CalculateurTJMFreelance() {
                 {
                   name: "Renseigner vos charges sociales et frais",
                   text:
-                    "En micro-entreprise BNC : 21,2 pourcent (taux 2026) du CA en charges sociales + CFP + CFE. En EURL ou SASU IS : entre 30 et 45 pourcent selon le statut TNS ou assimile salarie. Ajoutez vos frais reels mensuels : mutuelle (50-150 EUR), assurance RC Pro (15-50 EUR), comptable (100-300 EUR), logiciels, coworking, materiel.",
+                    "Bareme micro 2026 : BIC vente 12,3 pourcent, BIC services / artisanal 21,2 pourcent, BNC liberal hors CIPAV 26,1 pourcent (apres hausse progressive du decret 2024-484), BNC liberal CIPAV 23,2 pourcent. Ajoutez la CFP (0,1 pourcent vente / 0,2 pourcent services et liberaux / 0,3 pourcent artisans) et la CFE (annuelle, variable selon commune). En EURL ou SASU IS : entre 30 et 45 pourcent selon le statut TNS ou assimile salarie. Ajoutez vos frais reels mensuels : mutuelle (50-150 EUR), assurance RC Pro (15-50 EUR), comptable (100-300 EUR), logiciels, coworking, materiel.",
                 },
                 {
                   name: "Calculer vos jours facturables reels",
@@ -182,8 +220,8 @@ export default function CalculateurTJMFreelance() {
                     Designer UX/UI freelance
                   </h3>
                   <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                    Objectif 3 200 EUR net en micro-BNC, 23 pourcent de charges, 250 EUR de frais,
-                    180 jours facturables (clients PME plus chronophages) : TJM cible 350-450 EUR.
+                    Objectif 3 200 EUR net en micro-BNC liberal hors CIPAV (26,1 pourcent en 2026),
+                    250 EUR de frais, 180 jours facturables (clients PME plus chronophages) : TJM cible 350-450 EUR.
                     Marche reel 2026 : 350-550 EUR selon seniorite et niche (UX research, design
                     system, branding).
                   </p>
@@ -241,11 +279,14 @@ export default function CalculateurTJMFreelance() {
                   220 sous-estime systematiquement le TJM necessaire de 10 a 15 pourcent.
                 </p>
                 <p>
-                  <strong>Charges sociales : statut compte enormement.</strong> Micro-BNC 2026 :
-                  21,2 pourcent de charges + 1,7 pourcent CFP + CFE. EURL avec gerant majoritaire
-                  TNS : environ 30-35 pourcent sur la remuneration. SASU avec president assimile
-                  salarie : 75-80 pourcent en charges patronales + salariales additionnees, soit
-                  l&apos;equivalent de 45 pourcent du brut total. La SASU est confortable
+                  <strong>Charges sociales : statut compte enormement.</strong> Bareme micro 2026 :
+                  BIC vente 12,3 pourcent (CFP 0,1 pourcent), BIC services / artisanal 21,2 pourcent
+                  (CFP 0,2 pourcent / 0,3 pourcent), BNC liberal hors CIPAV 26,1 pourcent (CFP 0,2
+                  pourcent) apres hausse progressive du decret 2024-484, BNC liberal CIPAV 23,2
+                  pourcent. La CFE est annuelle et varie selon la commune. EURL avec gerant
+                  majoritaire TNS : environ 30-35 pourcent sur la remuneration. SASU avec president
+                  assimile salarie : 75-80 pourcent en charges patronales + salariales additionnees,
+                  soit l&apos;equivalent de 45 pourcent du brut total. La SASU est confortable
                   socialement mais lourde fiscalement sous 80-100 KEUR de CA.
                 </p>
                 <p>

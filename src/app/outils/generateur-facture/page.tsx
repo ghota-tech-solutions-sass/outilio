@@ -12,8 +12,8 @@ interface LigneFacture {
 }
 
 export default function GenerateurFacture() {
-  const [emetteur, setEmetteur] = useState({ nom: "", adresse: "", siret: "", email: "", iban: "" });
-  const [client, setClient] = useState({ nom: "", adresse: "", email: "" });
+  const [emetteur, setEmetteur] = useState({ nom: "", adresse: "", siret: "", tvaIntra: "", email: "", iban: "" });
+  const [client, setClient] = useState({ nom: "", adresse: "", siret: "", tvaIntra: "", email: "" });
   const [numero, setNumero] = useState("FAC-001");
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
   const [lignes, setLignes] = useState<LigneFacture[]>([
@@ -69,8 +69,9 @@ export default function GenerateurFacture() {
               <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <Input label="Nom / Societe" value={emetteur.nom} onChange={(v) => setEmetteur({ ...emetteur, nom: v })} />
                 <Input label="SIRET" value={emetteur.siret} onChange={(v) => setEmetteur({ ...emetteur, siret: v })} />
-                <Input label="Adresse" value={emetteur.adresse} onChange={(v) => setEmetteur({ ...emetteur, adresse: v })} />
+                <Input label="N° TVA intracommunautaire (ex: FR12345678901)" value={emetteur.tvaIntra} onChange={(v) => setEmetteur({ ...emetteur, tvaIntra: v })} />
                 <Input label="Email" value={emetteur.email} onChange={(v) => setEmetteur({ ...emetteur, email: v })} />
+                <Input label="Adresse" value={emetteur.adresse} onChange={(v) => setEmetteur({ ...emetteur, adresse: v })} className="sm:col-span-2" />
                 <Input label="IBAN / RIB" value={emetteur.iban} onChange={(v) => setEmetteur({ ...emetteur, iban: v })} className="sm:col-span-2" />
               </div>
             </div>
@@ -79,9 +80,14 @@ export default function GenerateurFacture() {
               <h2 className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--accent)" }}>Informations client</h2>
               <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <Input label="Nom / Societe" value={client.nom} onChange={(v) => setClient({ ...client, nom: v })} />
+                <Input label="SIRET (B2B)" value={client.siret} onChange={(v) => setClient({ ...client, siret: v })} />
+                <Input label="N° TVA intracommunautaire client (B2B UE)" value={client.tvaIntra} onChange={(v) => setClient({ ...client, tvaIntra: v })} />
                 <Input label="Email" value={client.email} onChange={(v) => setClient({ ...client, email: v })} />
                 <Input label="Adresse" value={client.adresse} onChange={(v) => setClient({ ...client, adresse: v })} className="sm:col-span-2" />
               </div>
+              <p className="mt-3 text-xs" style={{ color: "var(--muted)" }}>
+                Le numero de TVA intracommunautaire de l&apos;emetteur est obligatoire (art. 242 nonies A CGI). Celui du client est obligatoire en B2B UE pour les operations &gt; 150 EUR HT (art. L441-9 Code de commerce, art. 289 CGI).
+              </p>
             </div>
 
             <div className="rounded-2xl border p-6" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
@@ -214,8 +220,8 @@ export default function GenerateurFacture() {
                   pour etre valide (article L441-9 du Code de commerce) :
                 </p>
                 <ul className="ml-6 list-disc space-y-1" style={{ color: "var(--muted)" }}>
-                  <li><strong style={{ color: "var(--foreground)" }}>Identite de l&apos;emetteur</strong> : nom ou raison sociale, adresse, SIRET</li>
-                  <li><strong style={{ color: "var(--foreground)" }}>Identite du client</strong> : nom ou raison sociale, adresse</li>
+                  <li><strong style={{ color: "var(--foreground)" }}>Identite de l&apos;emetteur</strong> : nom ou raison sociale, adresse, SIRET, numero de TVA intracommunautaire si assujetti (art. 242 nonies A CGI)</li>
+                  <li><strong style={{ color: "var(--foreground)" }}>Identite du client</strong> : nom ou raison sociale, adresse, numero de TVA intracommunautaire en B2B UE pour montants &gt; 150 EUR HT</li>
                   <li><strong style={{ color: "var(--foreground)" }}>Numero de facture</strong> : unique et sequentiel</li>
                   <li><strong style={{ color: "var(--foreground)" }}>Date d&apos;emission</strong> et date d&apos;echeance</li>
                   <li><strong style={{ color: "var(--foreground)" }}>Detail des prestations</strong> : designation, quantite, prix unitaire HT</li>
@@ -258,12 +264,17 @@ export default function GenerateurFacture() {
                   {
                     question: "Quel delai de paiement legal en France ?",
                     answer:
-                      "30 jours par defaut (art. L441-10 Code commerce). Maximum 60 jours apres date d'emission ou 45 jours fin de mois entre professionnels. Pour les particuliers, pas de delai legal mais 30 jours est une norme. Au-dela : penalites de retard (3 fois le taux interet legal, soit ~12 % en 2026) et indemnite forfaitaire 40 EUR.",
+                      "30 jours par defaut (art. L441-10 Code commerce). Maximum 60 jours apres date d'emission ou 45 jours fin de mois entre professionnels. Pour les particuliers, pas de delai legal mais 30 jours est une norme. Au-dela : penalites de retard egales a trois fois le taux d'interet legal en vigueur pour les creances professionnelles (publie par arrete tous les 6 mois sur economie.gouv.fr), plus une indemnite forfaitaire de recouvrement de 40 EUR (art. D441-5).",
                   },
                   {
                     question: "Faut-il facturer la TVA pour un client a l'etranger ?",
                     answer:
                       "Pour un client B2B intracommunautaire (UE), la facture est en general HT avec mention 'autoliquidation par le preneur, art. 196 directive 2006/112/CE'. Pour un client B2C intracommunautaire, le guichet OSS regroupe les declarations. Hors UE (export), pas de TVA francaise mais ajouter 'Exoneration TVA, art. 262 ter I du CGI' (livraisons de biens) ou 'art. 259-1' (services).",
+                  },
+                  {
+                    question: "Le numero de TVA intracommunautaire est-il obligatoire sur une facture ?",
+                    answer:
+                      "Oui pour l'emetteur assujetti a la TVA (art. 242 nonies A du CGI). Pour le client, son numero de TVA intracommunautaire est obligatoire en B2B intra-UE pour les operations superieures a 150 EUR HT (art. L441-9 Code de commerce). Le format francais est FR + 2 chiffres + SIREN (ex: FR12 345 678 901). Vous pouvez verifier la validite d'un numero TVA intra UE sur le site VIES de la Commission europeenne. Avec la facturation electronique generalisee 2026, ces mentions seront systematiquement controlees par les plateformes de dematerialisation.",
                   },
                   {
                     question: "Le generateur conserve-t-il mes donnees ?",
@@ -301,6 +312,9 @@ export default function GenerateurFacture() {
               <h2 className="text-xl font-bold">{emetteur.nom || "Votre societe"}</h2>
               <p className="text-sm" style={{ color: "var(--muted)" }}>{emetteur.adresse}</p>
               <p className="text-sm" style={{ color: "var(--muted)" }}>SIRET : {emetteur.siret}</p>
+              {emetteur.tvaIntra && (
+                <p className="text-sm" style={{ color: "var(--muted)" }}>N° TVA intra : {emetteur.tvaIntra}</p>
+              )}
               <p className="text-sm" style={{ color: "var(--muted)" }}>{emetteur.email}</p>
             </div>
             <div className="text-right">
@@ -315,6 +329,12 @@ export default function GenerateurFacture() {
             <h3 className="font-semibold">Facturer a :</h3>
             <p>{client.nom}</p>
             <p className="text-sm" style={{ color: "var(--muted)" }}>{client.adresse}</p>
+            {client.siret && (
+              <p className="text-sm" style={{ color: "var(--muted)" }}>SIRET : {client.siret}</p>
+            )}
+            {client.tvaIntra && (
+              <p className="text-sm" style={{ color: "var(--muted)" }}>N° TVA intra : {client.tvaIntra}</p>
+            )}
             <p className="text-sm" style={{ color: "var(--muted)" }}>{client.email}</p>
           </div>
 

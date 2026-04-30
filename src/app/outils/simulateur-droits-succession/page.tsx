@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import AdPlaceholder from "@/components/AdPlaceholder";
 
 type LienParente =
+  | "conjoint"
   | "enfant"
   | "petit_enfant"
   | "frere_soeur"
@@ -12,6 +13,7 @@ type LienParente =
   | "non_parent";
 
 const LIENS: { value: LienParente; label: string }[] = [
+  { value: "conjoint", label: "Conjoint(e) ou partenaire de PACS" },
   { value: "enfant", label: "Enfant" },
   { value: "petit_enfant", label: "Petit-enfant" },
   { value: "frere_soeur", label: "Frere / Soeur" },
@@ -21,6 +23,7 @@ const LIENS: { value: LienParente; label: string }[] = [
 ];
 
 const ABATTEMENTS: Record<LienParente, number> = {
+  conjoint: 0, // Exoneration totale (art. 796-0 bis CGI, loi TEPA 2007)
   enfant: 100_000,
   petit_enfant: 1_594,
   frere_soeur: 15_932,
@@ -73,6 +76,21 @@ function calculerDroitsProgressifs(
 
 function calculerSuccession(montant: number, lien: LienParente) {
   const abattement = ABATTEMENTS[lien];
+
+  // Conjoint survivant et partenaire de PACS : exoneration totale
+  // Reference legale : art. 796-0 bis CGI (loi TEPA du 21 aout 2007)
+  if (lien === "conjoint") {
+    return {
+      abattement: 0,
+      baseTaxable: 0,
+      droits: 0,
+      tauxEffectif: 0,
+      netHerite: montant,
+      details: [],
+      exonere: true as const,
+    };
+  }
+
   const baseTaxable = Math.max(0, montant - abattement);
 
   let droits = 0;
@@ -112,7 +130,7 @@ function calculerSuccession(montant: number, lien: LienParente) {
   const tauxEffectif = montant > 0 ? (droits / montant) * 100 : 0;
   const netHerite = montant - droits;
 
-  return { abattement, baseTaxable, droits, tauxEffectif, netHerite, details };
+  return { abattement, baseTaxable, droits, tauxEffectif, netHerite, details, exonere: false as const };
 }
 
 export default function SimulateurDroitsSuccession() {
@@ -216,6 +234,26 @@ export default function SimulateurDroitsSuccession() {
                 </div>
               </div>
             </div>
+
+            {result.exonere && (
+              <div
+                className="rounded-2xl border p-5"
+                style={{
+                  background: "#dcfce7",
+                  borderColor: "#16a34a",
+                }}
+              >
+                <p className="text-sm font-semibold" style={{ color: "#16a34a" }}>
+                  Exoneration totale des droits de succession
+                </p>
+                <p className="mt-2 text-sm leading-relaxed" style={{ color: "#166534" }}>
+                  Le conjoint survivant et le partenaire de PACS sont totalement
+                  exoneres de droits de succession (art. 796-0 bis CGI, depuis la loi
+                  TEPA du 21 aout 2007). Aucun droit a payer, quel que soit le montant
+                  de l&apos;heritage.
+                </p>
+              </div>
+            )}
 
             {/* Big results */}
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
@@ -430,6 +468,13 @@ export default function SimulateurDroitsSuccession() {
                   <strong className="text-[var(--foreground)]">60%</strong> pour les
                   non-parents.
                 </p>
+                <p>
+                  <strong className="text-[var(--foreground)]">Cas particulier du conjoint</strong> :
+                  le conjoint survivant et le partenaire de PACS sont{" "}
+                  <strong className="text-[var(--foreground)]">totalement exoneres</strong>{" "}
+                  de droits de succession (art. 796-0 bis CGI, loi TEPA du 21 aout 2007).
+                  Cette exoneration ne s&apos;applique pas aux concubins en union libre.
+                </p>
               </div>
             </div>
 
@@ -445,6 +490,29 @@ export default function SimulateurDroitsSuccession() {
                 Questions frequentes
               </h2>
               <div className="mt-6 space-y-5">
+                <div
+                  className="rounded-xl p-5"
+                  style={{ background: "var(--surface-alt)" }}
+                >
+                  <h3
+                    className="text-sm font-semibold"
+                    style={{ color: "var(--foreground)" }}
+                  >
+                    Le conjoint survivant ou partenaire de PACS paie-t-il des droits ?
+                  </h3>
+                  <p
+                    className="mt-2 text-sm leading-relaxed"
+                    style={{ color: "var(--muted)" }}
+                  >
+                    Non. Depuis la loi TEPA du 21 aout 2007 (article 796-0 bis du Code
+                    general des impots), le conjoint survivant et le partenaire lie par
+                    un PACS sont <strong className="text-[var(--foreground)]">totalement exoneres</strong> de
+                    droits de succession, quel que soit le montant transmis. Attention :
+                    cette exoneration ne concerne pas le concubin (union libre), qui est
+                    fiscalement considere comme un tiers et taxe a 60%.
+                  </p>
+                </div>
+
                 <div
                   className="rounded-xl p-5"
                   style={{ background: "var(--surface-alt)" }}
@@ -557,6 +625,10 @@ export default function SimulateurDroitsSuccession() {
                 className="mt-3 space-y-2 text-sm"
                 style={{ color: "var(--muted)" }}
               >
+                <li>
+                  Conjoint / PACS :{" "}
+                  <strong style={{ color: "#16a34a" }}>Exoneration totale</strong>
+                </li>
                 <li>
                   Enfant :{" "}
                   <strong className="text-[var(--foreground)]">100 000 &euro;</strong>

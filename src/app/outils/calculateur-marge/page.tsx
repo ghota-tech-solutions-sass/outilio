@@ -14,6 +14,11 @@ export default function CalculateurMarge() {
   const [margeTarget, setMargeTarget] = useState("40");
   const [prixAchatReverse, setPrixAchatReverse] = useState("60");
 
+  // Convention PCG :
+  //   Taux de marge  = (PV - PA) / PA  (sur le cout d'achat)
+  //   Taux de marque = (PV - PA) / PV  (sur le prix de vente)
+  // Le mode "reverse" prend en entree le taux de MARQUE (sur PV) car c'est l'usage
+  // commercial dominant pour fixer un prix de vente cible.
   const resultForward = useMemo(() => {
     if (mode !== "forward") return null;
     const achat = parseFloat(prixAchat) || 0;
@@ -21,23 +26,26 @@ export default function CalculateurMarge() {
     if (achat <= 0 || vente <= 0) return null;
 
     const profit = vente - achat;
-    const margePct = (profit / vente) * 100;
-    const markupPct = (profit / achat) * 100;
+    const tauxMarquePct = (profit / vente) * 100; // sur PV
+    const tauxMargePct = (profit / achat) * 100; // sur PA (= markup)
+    const coefficient = vente / achat;
 
-    return { achat, vente, profit, margePct, markupPct };
+    return { achat, vente, profit, tauxMarquePct, tauxMargePct, coefficient };
   }, [mode, prixAchat, prixVente]);
 
   const resultReverse = useMemo(() => {
     if (mode !== "reverse") return null;
     const achat = parseFloat(prixAchatReverse) || 0;
-    const marge = parseFloat(margeTarget) || 0;
-    if (achat <= 0 || marge <= 0 || marge >= 100) return null;
+    const marque = parseFloat(margeTarget) || 0;
+    if (achat <= 0 || marque <= 0 || marque >= 100) return null;
 
-    const venteCible = achat / (1 - marge / 100);
+    // Saisie = taux de marque cible (sur PV), formule classique
+    const venteCible = achat / (1 - marque / 100);
     const profit = venteCible - achat;
-    const markupPct = (profit / achat) * 100;
+    const tauxMargePct = (profit / achat) * 100;
+    const coefficient = venteCible / achat;
 
-    return { achat, vente: venteCible, profit, margePct: marge, markupPct };
+    return { achat, vente: venteCible, profit, tauxMarquePct: marque, tauxMargePct, coefficient };
   }, [mode, prixAchatReverse, margeTarget]);
 
   const result = mode === "forward" ? resultForward : resultReverse;
@@ -84,7 +92,7 @@ export default function CalculateurMarge() {
                     color: mode === "reverse" ? "#fff" : "inherit",
                   }}>
                   <span className="block text-sm font-bold">Calcul inverse</span>
-                  <span className="block text-[10px] opacity-80">Prix achat + marge cible</span>
+                  <span className="block text-[10px] opacity-80">Prix achat + taux de marque cible</span>
                 </button>
               </div>
             </div>
@@ -114,9 +122,10 @@ export default function CalculateurMarge() {
                         className="mt-2 w-full rounded-xl border px-4 py-3 text-lg font-bold" style={{ borderColor: "var(--border)", fontFamily: "var(--font-display)" }} />
                     </div>
                     <div>
-                      <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>Marge souhaitee (%)</label>
+                      <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>Taux de marque cible (% sur PV)</label>
                       <input type="number" step="0.1" value={margeTarget} onChange={(e) => setMargeTarget(e.target.value)}
                         className="mt-2 w-full rounded-xl border px-4 py-3 text-lg font-bold" style={{ borderColor: "var(--border)", fontFamily: "var(--font-display)" }} />
+                      <p className="mt-1 text-[10px]" style={{ color: "var(--muted)" }}>Convention PCG : marque = (PV-PA)/PV</p>
                     </div>
                   </>
                 )}
@@ -125,18 +134,25 @@ export default function CalculateurMarge() {
 
             {result && (
               <>
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
                   <div className="rounded-2xl border p-5 text-center" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
                     <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>Benefice</p>
                     <p className="mt-2 text-3xl font-bold" style={{ fontFamily: "var(--font-display)", color: "var(--primary)" }}>{fmt(result.profit)} &euro;</p>
                   </div>
                   <div className="rounded-2xl border p-5 text-center" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-                    <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>Taux de marge</p>
-                    <p className="mt-2 text-3xl font-bold" style={{ fontFamily: "var(--font-display)", color: "var(--accent)" }}>{result.margePct.toFixed(1)}%</p>
+                    <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>Taux de marque</p>
+                    <p className="mt-2 text-3xl font-bold" style={{ fontFamily: "var(--font-display)", color: "var(--accent)" }}>{result.tauxMarquePct.toFixed(1)}%</p>
+                    <p className="mt-1 text-[10px]" style={{ color: "var(--muted)" }}>(PV-PA)/PV</p>
                   </div>
                   <div className="rounded-2xl border p-5 text-center" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-                    <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>Taux de markup</p>
-                    <p className="mt-2 text-3xl font-bold" style={{ fontFamily: "var(--font-display)" }}>{result.markupPct.toFixed(1)}%</p>
+                    <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>Taux de marge</p>
+                    <p className="mt-2 text-3xl font-bold" style={{ fontFamily: "var(--font-display)" }}>{result.tauxMargePct.toFixed(1)}%</p>
+                    <p className="mt-1 text-[10px]" style={{ color: "var(--muted)" }}>(PV-PA)/PA - PCG</p>
+                  </div>
+                  <div className="rounded-2xl border p-5 text-center" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+                    <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>Coefficient</p>
+                    <p className="mt-2 text-3xl font-bold" style={{ fontFamily: "var(--font-display)" }}>{result.coefficient.toFixed(2)}</p>
+                    <p className="mt-1 text-[10px]" style={{ color: "var(--muted)" }}>PV / PA</p>
                   </div>
                 </div>
 
@@ -155,7 +171,7 @@ export default function CalculateurMarge() {
                       Cout {fmt(result.achat)} &euro;
                     </div>
                     <div className="flex items-center justify-center text-xs font-bold text-white" style={{ width: `${(result.profit / result.vente) * 100}%`, background: "var(--accent)", minWidth: "15%" }}>
-                      Marge {fmt(result.profit)} &euro;
+                      Marque {fmt(result.profit)} &euro;
                     </div>
                   </div>
                 </div>
@@ -163,11 +179,13 @@ export default function CalculateurMarge() {
             )}
 
             <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Marge vs Markup</h2>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Taux de marge vs taux de marque (convention PCG)</h2>
               <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                <p><strong className="text-[var(--foreground)]">Taux de marge</strong> = (Prix vente - Prix achat) / Prix vente x 100. C&apos;est le pourcentage du prix de vente qui est du profit.</p>
-                <p><strong className="text-[var(--foreground)]">Taux de markup</strong> = (Prix vente - Prix achat) / Prix achat x 100. C&apos;est le pourcentage d&apos;augmentation par rapport au cout.</p>
-                <p><strong className="text-[var(--foreground)]">Exemple</strong> : Un produit achete 60 &euro; et vendu 100 &euro; a une marge de 40% mais un markup de 66,7%.</p>
+                <p><strong className="text-[var(--foreground)]">Taux de marque</strong> = (Prix vente - Prix achat) / <strong>Prix vente</strong> x 100. C&apos;est le pourcentage du prix de vente qui est du profit. Tres utilise en commerce/distribution pour fixer un prix.</p>
+                <p><strong className="text-[var(--foreground)]">Taux de marge (PCG)</strong> = (Prix vente - Prix achat) / <strong>Prix achat</strong> x 100. Synonyme du markup anglo-saxon. C&apos;est le pourcentage d&apos;augmentation par rapport au cout. Convention du Plan Comptable General francais.</p>
+                <p><strong className="text-[var(--foreground)]">Coefficient multiplicateur</strong> = Prix vente / Prix achat. Permet de fixer un prix par simple multiplication.</p>
+                <p><strong className="text-[var(--foreground)]">Exemple</strong> : Un produit achete 60 &euro; et vendu 100 &euro; a un taux de marque de 40% (40&euro; sur 100&euro; vendus), un taux de marge de 66,7% (40&euro; sur 60&euro; investis), et un coefficient de 1,67.</p>
+                <p className="text-xs" style={{ color: "var(--accent)" }}>Cet outil utilise desormais les denominations strictes du PCG. Verifiez la convention utilisee par votre comptable ou ERP avant comparaison.</p>
               </div>
             </div>
 
@@ -186,9 +204,9 @@ export default function CalculateurMarge() {
                     "Calcul direct : vous connaissez votre prix de vente cible (positionnement marche, prix concurrents) et voulez verifier la rentabilite. Calcul inverse : vous fixez d&apos;abord la marge cible (objectif de rentabilite, marge plancher imposee par les couts fixes) et l&apos;outil deduit le prix de vente recommande.",
                 },
                 {
-                  name: "Comparer marge, markup et coefficient",
+                  name: "Comparer marque, marge et coefficient",
                   text:
-                    "Le taux de marge se calcule sur le prix de vente, le markup sur le prix d&apos;achat. Un produit achete 60 EUR vendu 100 EUR a une marge de 40 pourcent et un markup (ou coefficient multiplicateur 1,67) de 66,7 pourcent. Confondre les deux est l&apos;erreur classique qui fait perdre de l&apos;argent.",
+                    "Convention PCG : le taux de MARQUE se calcule sur le prix de vente ((PV-PA)/PV), le taux de MARGE sur le prix d'achat ((PV-PA)/PA, equivalent au markup anglo-saxon). Un produit achete 60 EUR vendu 100 EUR a un taux de marque de 40 pourcent, un taux de marge de 66,7 pourcent, et un coefficient multiplicateur de 1,67. Confondre les deux est l'erreur classique qui fait perdre de l'argent.",
                 },
               ]}
             />
@@ -264,12 +282,14 @@ export default function CalculateurMarge() {
 
               <div className="mt-4 space-y-4 leading-relaxed" style={{ color: "var(--foreground)" }}>
                 <p>
-                  <strong>Taux de marge vs taux de marque.</strong> Le taux de marge se calcule
-                  sur le prix d&apos;achat (synonyme de markup), le taux de marque se calcule sur
-                  le prix de vente (ce que cet outil affiche par defaut sous &laquo; taux de
-                  marge &raquo;, conforme a l&apos;usage commercial francais courant). Verifiez
-                  toujours quelle base utilise votre comptable ou votre logiciel ERP avant de
-                  comparer.
+                  <strong>Taux de marge vs taux de marque (PCG).</strong> Selon le Plan Comptable
+                  General : le <strong>taux de marge</strong> = (PV - PA) / PA (sur le cout
+                  d&apos;achat, equivalent au markup anglo-saxon) ; le <strong>taux de marque</strong>
+                  = (PV - PA) / PV (sur le prix de vente, usage commercial dominant). Cet outil
+                  affiche desormais les deux ratios sous leurs noms PCG corrects.
+                  Verifiez toujours quelle base utilise votre comptable ou votre logiciel ERP avant
+                  de comparer : un &laquo; taux de marge de 40 pourcent &raquo; en discours
+                  commercial designe souvent le taux de marque PCG.
                 </p>
                 <p>
                   <strong>Marge brute, marge commerciale, marge nette.</strong> La marge brute =
@@ -301,9 +321,9 @@ export default function CalculateurMarge() {
               intro="Les questions les plus frequentes sur le calcul de marge commerciale en France."
               items={[
                 {
-                  question: "Quelle est la difference entre marge et markup ?",
+                  question: "Quelle est la difference entre taux de marge et taux de marque ?",
                   answer:
-                    "La marge se calcule sur le prix de vente : benefice / prix de vente x 100. Le markup se calcule sur le prix d&apos;achat : benefice / prix d&apos;achat x 100. Exemple : un produit achete 60 EUR et vendu 100 EUR a une marge de 40 pourcent (40 EUR sur 100 EUR de vente) mais un markup de 66,7 pourcent (40 EUR sur 60 EUR d&apos;achat). Les deux indicateurs sont valides mais ne sont jamais interchangeables.",
+                    "Convention PCG (Plan Comptable General). Taux de MARQUE = (PV - PA) / PV : pourcentage du prix de vente qui est du profit. Taux de MARGE = (PV - PA) / PA : pourcentage par rapport au cout d'achat (equivalent au markup anglo-saxon). Exemple : un produit achete 60 EUR et vendu 100 EUR a un taux de marque de 40 pourcent (40 EUR sur 100 EUR de vente) et un taux de marge de 66,7 pourcent (40 EUR sur 60 EUR d'achat). Les deux indicateurs sont valides mais ne sont jamais interchangeables. Attention : dans le langage commercial courant, on dit souvent 'marge' pour designer en realite le taux de marque PCG.",
                 },
                 {
                   question: "Quelle marge viser pour etre rentable selon mon secteur ?",
@@ -311,9 +331,9 @@ export default function CalculateurMarge() {
                     "Grande distribution : 2-5 pourcent (volumes). Restauration : 60-70 pourcent (food cost). E-commerce : 20-40 pourcent. SaaS / logiciel : 70-90 pourcent (couts marginaux faibles). Artisanat : 30-50 pourcent. En micro-entreprise, n&apos;oubliez pas que les charges sociales (12,3 a 23,1 pourcent du CA selon l&apos;activite) et l&apos;IR s&apos;ajoutent : votre marge nette peut etre 30 a 40 pourcent inferieure a la marge brute affichee.",
                 },
                 {
-                  question: "Comment calculer un prix de vente a partir d&apos;une marge cible ?",
+                  question: "Comment calculer un prix de vente a partir d&apos;un taux de marque cible ?",
                   answer:
-                    "Formule : Prix de vente = Prix d&apos;achat / (1 - Taux de marge / 100). Pour un produit a 60 EUR avec marge cible de 40 pourcent : 60 / (1 - 0,40) = 100 EUR. Utilisez le mode &laquo; Calcul inverse &raquo;. Erreur classique : faire 60 + 40 pourcent = 84 EUR, ce qui donne en realite seulement 28,5 pourcent de marge.",
+                    "Formule : Prix de vente = Prix d'achat / (1 - Taux de marque / 100). Pour un produit a 60 EUR avec taux de marque cible de 40 pourcent (= 40 pourcent de profit sur PV) : 60 / (1 - 0,40) = 100 EUR. Utilisez le mode 'Calcul inverse'. Erreur classique : faire 60 + 40 pourcent = 84 EUR, ce qui donne en realite seulement un taux de marque de 28,5 pourcent.",
                 },
                 {
                   question: "Qu&apos;est-ce que le coefficient multiplicateur en commerce ?",

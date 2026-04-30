@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import AdPlaceholder from "@/components/AdPlaceholder";
 
 interface Currency {
@@ -9,23 +9,57 @@ interface Currency {
   symbol: string;
   flag: string;
   rateToEUR: number; // How many of this currency = 1 EUR
+  fixed?: boolean; // taux fixe (ex: XOF = 655,957 par accord avec le Tresor)
+  staticNote?: string; // note pour les devises hors API
 }
 
-const CURRENCIES: Currency[] = [
+// Codes a fetch via frankfurter (devises hors API gardees en dur : XOF fixe, MAD non disponible)
+const FRANKFURTER_CODES = ["USD", "GBP", "CHF", "CAD", "JPY", "AUD", "CNY"];
+
+// Taux fallback (dernieres valeurs connues - mis a jour dynamiquement via frankfurter.app / BCE)
+const FALLBACK_CURRENCIES: Currency[] = [
   { code: "EUR", name: "Euro", symbol: "€", flag: "\u{1F1EA}\u{1F1FA}", rateToEUR: 1 },
   { code: "USD", name: "Dollar americain", symbol: "$", flag: "\u{1F1FA}\u{1F1F8}", rateToEUR: 1.085 },
   { code: "GBP", name: "Livre sterling", symbol: "\u00A3", flag: "\u{1F1EC}\u{1F1E7}", rateToEUR: 0.855 },
   { code: "CHF", name: "Franc suisse", symbol: "CHF", flag: "\u{1F1E8}\u{1F1ED}", rateToEUR: 0.945 },
   { code: "CAD", name: "Dollar canadien", symbol: "C$", flag: "\u{1F1E8}\u{1F1E6}", rateToEUR: 1.485 },
   { code: "JPY", name: "Yen japonais", symbol: "\u00A5", flag: "\u{1F1EF}\u{1F1F5}", rateToEUR: 162.5 },
-  { code: "MAD", name: "Dirham marocain", symbol: "MAD", flag: "\u{1F1F2}\u{1F1E6}", rateToEUR: 10.85 },
-  { code: "XOF", name: "Franc CFA (BCEAO)", symbol: "CFA", flag: "\u{1F1F8}\u{1F1F3}", rateToEUR: 655.957 },
+  { code: "AUD", name: "Dollar australien", symbol: "A$", flag: "\u{1F1E6}\u{1F1FA}", rateToEUR: 1.65 },
+  { code: "CNY", name: "Yuan chinois", symbol: "¥", flag: "\u{1F1E8}\u{1F1F3}", rateToEUR: 7.85 },
+  { code: "MAD", name: "Dirham marocain", symbol: "MAD", flag: "\u{1F1F2}\u{1F1E6}", rateToEUR: 10.85, staticNote: "taux indicatif (hors API BCE)" },
+  { code: "XOF", name: "Franc CFA (BCEAO)", symbol: "CFA", flag: "\u{1F1F8}\u{1F1F3}", rateToEUR: 655.957, fixed: true, staticNote: "taux fixe par accord monetaire avec le Tresor francais" },
 ];
 
 export default function CalculateurTauxChange() {
   const [amount, setAmount] = useState("100");
   const [fromCurrency, setFromCurrency] = useState(0); // EUR
   const [toCurrency, setToCurrency] = useState(1); // USD
+  const [CURRENCIES, setCurrencies] = useState<Currency[]>(FALLBACK_CURRENCIES);
+  const [ratesDate, setRatesDate] = useState<string | null>(null);
+  const [apiError, setApiError] = useState<boolean>(false);
+
+  useEffect(() => {
+    const ctrl = new AbortController();
+    fetch("https://api.frankfurter.app/latest?from=EUR", { signal: ctrl.signal })
+      .then((r) => {
+        if (!r.ok) throw new Error("API down");
+        return r.json();
+      })
+      .then((data: { rates: Record<string, number>; date: string }) => {
+        setRatesDate(data.date);
+        setCurrencies((prev) =>
+          prev.map((c) => {
+            if (c.code === "EUR" || c.fixed || !FRANKFURTER_CODES.includes(c.code)) return c;
+            const r = data.rates[c.code];
+            return r ? { ...c, rateToEUR: r } : c;
+          })
+        );
+      })
+      .catch((e) => {
+        if (e.name !== "AbortError") setApiError(true);
+      });
+    return () => ctrl.abort();
+  }, []);
 
   const result = useMemo(() => {
     const val = parseFloat(amount) || 0;
@@ -40,7 +74,7 @@ export default function CalculateurTauxChange() {
     const inverseRate = from.rateToEUR / to.rateToEUR;
 
     return { converted, rate, inverseRate, from, to };
-  }, [amount, fromCurrency, toCurrency]);
+  }, [amount, fromCurrency, toCurrency, CURRENCIES]);
 
   const allConversions = useMemo(() => {
     const val = parseFloat(amount) || 0;
@@ -52,7 +86,7 @@ export default function CalculateurTauxChange() {
       ...c,
       converted: inEUR * c.rateToEUR,
     }));
-  }, [amount, fromCurrency]);
+  }, [amount, fromCurrency, CURRENCIES]);
 
   const swap = () => {
     setFromCurrency(toCurrency);
@@ -71,7 +105,14 @@ export default function CalculateurTauxChange() {
             Convertisseur de <span style={{ color: "var(--primary)" }}>devises</span>
           </h1>
           <p className="animate-fade-up stagger-2 mt-3 max-w-xl text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-            Convertissez entre EUR, USD, GBP, CHF, CAD, JPY, MAD et XOF. Taux indicatifs, conversion instantanee.
+            Convertissez entre EUR, USD, GBP, CHF, CAD, JPY, AUD, CNY, MAD et XOF.{" "}
+            {ratesDate ? (
+              <span>Taux BCE du <strong className="text-[var(--foreground)]">{new Date(ratesDate).toLocaleDateString("fr-FR")}</strong> (via frankfurter.app).</span>
+            ) : apiError ? (
+              <span>Taux indicatifs (API indisponible).</span>
+            ) : (
+              <span>Chargement des taux BCE...</span>
+            )}
           </p>
         </div>
       </section>
@@ -165,7 +206,14 @@ export default function CalculateurTauxChange() {
 
             {/* Rate table */}
             <div className="rounded-2xl border p-6" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-              <h2 className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--accent)" }}>Taux de reference (base EUR)</h2>
+              <h2 className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--accent)" }}>
+                Taux de reference (base EUR)
+                {ratesDate && (
+                  <span className="ml-2 text-[10px] font-normal normal-case tracking-normal" style={{ color: "var(--muted)" }}>
+                    BCE du {new Date(ratesDate).toLocaleDateString("fr-FR")}
+                  </span>
+                )}
+              </h2>
               <div className="mt-4 overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
@@ -180,6 +228,9 @@ export default function CalculateurTauxChange() {
                         <td className="py-2">
                           <span className="mr-2">{c.flag}</span>
                           {c.code} - {c.name}
+                          {c.staticNote && (
+                            <span className="ml-2 text-[10px] italic" style={{ color: "var(--muted)" }}>{c.staticNote}</span>
+                          )}
                         </td>
                         <td className="py-2 text-right font-mono font-bold" style={{ color: "var(--primary)" }}>
                           {formatNumber(c.rateToEUR)} {c.symbol}
@@ -194,8 +245,8 @@ export default function CalculateurTauxChange() {
             <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
               <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>A propos des taux de change</h2>
               <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                <p><strong className="text-[var(--foreground)]">Taux indicatifs</strong> : Les taux utilises sont des taux de reference moyens. Les taux reels varient selon les banques et les plateformes de change.</p>
-                <p><strong className="text-[var(--foreground)]">Franc CFA</strong> : Le XOF (Franc CFA de la BCEAO) a un taux fixe de 655,957 pour 1 EUR, garanti par le Tresor francais.</p>
+                <p><strong className="text-[var(--foreground)]">Source des taux</strong> : Les taux affiches sont les taux de reference de la <strong className="text-[var(--foreground)]">Banque Centrale Europeenne (BCE)</strong>, recuperes en temps reel via l&apos;API publique frankfurter.app. Ils sont mis a jour chaque jour ouvre vers 16h CET. Les taux reels varient selon les banques et les plateformes de change.</p>
+                <p><strong className="text-[var(--foreground)]">Franc CFA</strong> : Le XOF (Franc CFA de la BCEAO) a un taux fixe de 655,957 pour 1 EUR, garanti par le Tresor francais via l&apos;accord de cooperation monetaire. Le dirham marocain (MAD) n&apos;est pas couvert par l&apos;API BCE : son taux est indicatif.</p>
                 <p><strong className="text-[var(--foreground)]">Frais de change</strong> : Les banques appliquent generalement une marge de 1-3% sur le taux interbancaire. Pour les meilleurs taux, comparez les services de transfert en ligne.</p>
               </div>
             </div>
