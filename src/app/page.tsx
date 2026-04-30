@@ -8,6 +8,9 @@ export const metadata: Metadata = {
   title: "Outilis.fr - Outils en ligne gratuits pour le quotidien",
   description:
     "Calculateur salaire net/brut, simulateur pret immobilier, generateur de factures, QR codes, mots de passe securises. 100% gratuit, sans inscription. Plus de 88 outils dans votre navigateur.",
+  alternates: {
+    canonical: "https://outilis.fr/",
+  },
   other: {
     "article:modified_time": "2026-03-30",
   },
