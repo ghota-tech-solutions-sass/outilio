@@ -1,8 +1,17 @@
 "use client";
 
 import { useState, useMemo, useCallback } from "react";
+import Link from "next/link";
 import AdPlaceholder from "@/components/AdPlaceholder";
 import ToolFaqSection from "@/components/ToolFaqSection";
+
+/* ─── TJM Presets ─── */
+const TJM_PRESETS = [
+  { label: "Junior", value: 350 },
+  { label: "Confirme", value: 600 },
+  { label: "Senior", value: 900 },
+  { label: "Expert", value: 1300 },
+];
 
 /* ─── IR Barème 2025 ─── */
 function calcImpot(revenu: number, parts: number) {
@@ -84,7 +93,7 @@ function calcMicro(p: MicroParams) {
     netMensuel: netApresImpot / 12,
     avantages: [
       "Simplicite administrative",
-      "Pas de TVA (< 36 800 \u20ac)",
+      "Pas de TVA (< 36 800 €)",
       "Abattement forfaitaire 34%",
       "Comptabilite minimale",
       "Liberte totale",
@@ -396,6 +405,7 @@ export default function FreelanceVsCDI() {
       eurlPctRemuneration,
       eurlTauxTNS,
       eurlPctFrais,
+      eurlCapitalCCA,
     ]
   );
 
@@ -421,56 +431,132 @@ export default function FreelanceVsCDI() {
   const getFreelanceRows = (): [string, string, boolean?][] => {
     if (statut === "micro") {
       return [
-        ["Chiffre d'affaires", `${fmt(micro.ca)} \u20ac`],
-        [`Cotisations (${microTauxCotisations}%)`, `- ${fmt(micro.cotisations)} \u20ac`],
-        ["Net avant impot", `${fmt(micro.netAvantImpot)} \u20ac`],
-        ["Revenu imposable (CA x 0.66)", `${fmt(micro.revenuImposable)} \u20ac`],
-        ["Impot sur le revenu", `- ${fmt(micro.impotAnnuel)} \u20ac`],
-        ["Net annuel apres impot", `${fmt(micro.netApresImpot)} \u20ac`, true],
+        ["Chiffre d'affaires", `${fmt(micro.ca)} €`],
+        [`Cotisations (${microTauxCotisations}%)`, `- ${fmt(micro.cotisations)} €`],
+        ["Net avant impot", `${fmt(micro.netAvantImpot)} €`],
+        ["Revenu imposable (CA x 0.66)", `${fmt(micro.revenuImposable)} €`],
+        ["Impot sur le revenu", `- ${fmt(micro.impotAnnuel)} €`],
+        ["Net annuel apres impot", `${fmt(micro.netApresImpot)} €`, true],
       ];
     }
     if (statut === "sasu") {
       return [
-        ["Chiffre d'affaires", `${fmt(sasu.ca)} \u20ac`],
-        ["Frais professionnels", `- ${fmt(sasu.fraisPro)} \u20ac`],
-        ["\u2500\u2500 Remuneration president \u2500\u2500", ""],
-        ["Remuneration brute", `${fmt(sasu.remunerationBrute)} \u20ac`],
-        ["Charges patronales", `- ${fmt(sasu.chargesPatronales)} \u20ac`],
-        ["Charges salariales", `- ${fmt(sasu.chargesSalariales)} \u20ac`],
-        ["Remuneration nette", `${fmt(sasu.remunerationNette)} \u20ac`],
-        ["IR sur remuneration", `- ${fmt(sasu.impotRemuneration)} \u20ac`],
-        ["\u2500\u2500 Dividendes \u2500\u2500", ""],
-        ["Benefice avant IS", `${fmt(sasu.beneficeAvantIS)} \u20ac`],
-        ["Impot sur les societes", `- ${fmt(sasu.is)} \u20ac`],
-        ["Dividendes bruts", `${fmt(sasu.dividendesBruts)} \u20ac`],
-        ["Flat tax (30%)", `- ${fmt(sasu.pfuDividendes)} \u20ac`],
-        ["Dividendes nets", `${fmt(sasu.dividendesNets)} \u20ac`],
-        ...(sasu.taxePuma > 0 ? [["Taxe PUMa (6,5%)", `- ${fmt(sasu.taxePuma)} \u20ac`] as [string, string]] : []),
-        ["\u2500\u2500 Total \u2500\u2500", ""],
-        ["Net annuel total", `${fmt(sasu.totalNet)} \u20ac`, true],
+        ["Chiffre d'affaires", `${fmt(sasu.ca)} €`],
+        ["Frais professionnels", `- ${fmt(sasu.fraisPro)} €`],
+        ["── Remuneration president ──", ""],
+        ["Remuneration brute", `${fmt(sasu.remunerationBrute)} €`],
+        ["Charges patronales", `- ${fmt(sasu.chargesPatronales)} €`],
+        ["Charges salariales", `- ${fmt(sasu.chargesSalariales)} €`],
+        ["Remuneration nette", `${fmt(sasu.remunerationNette)} €`],
+        ["IR sur remuneration", `- ${fmt(sasu.impotRemuneration)} €`],
+        ["── Dividendes ──", ""],
+        ["Benefice avant IS", `${fmt(sasu.beneficeAvantIS)} €`],
+        ["Impot sur les societes", `- ${fmt(sasu.is)} €`],
+        ["Dividendes bruts", `${fmt(sasu.dividendesBruts)} €`],
+        ["Flat tax (30%)", `- ${fmt(sasu.pfuDividendes)} €`],
+        ["Dividendes nets", `${fmt(sasu.dividendesNets)} €`],
+        ...(sasu.taxePuma > 0 ? [["Taxe PUMa (6,5%)", `- ${fmt(sasu.taxePuma)} €`] as [string, string]] : []),
+        ["── Total ──", ""],
+        ["Net annuel total", `${fmt(sasu.totalNet)} €`, true],
       ];
     }
     // EURL
     return [
-      ["Chiffre d'affaires", `${fmt(eurl.ca)} \u20ac`],
-      ["Frais professionnels", `- ${fmt(eurl.fraisPro)} \u20ac`],
-      ["\u2500\u2500 Remuneration gerant TNS \u2500\u2500", ""],
-      ["Remuneration de base", `${fmt(eurl.remunerationBase)} \u20ac`],
-      ["Cotisations TNS", `- ${fmt(eurl.cotisationsTNS)} \u20ac`],
-      ["Remuneration nette", `${fmt(eurl.remunerationNette)} \u20ac`],
-      ["IR sur remuneration", `- ${fmt(eurl.impotRemuneration)} \u20ac`],
-      ["\u2500\u2500 Dividendes \u2500\u2500", ""],
-      ["Benefice avant IS", `${fmt(eurl.beneficeAvantIS)} \u20ac`],
-      ["Impot sur les societes", `- ${fmt(eurl.is)} \u20ac`],
-      ["Dividendes bruts", `${fmt(eurl.dividendesBruts)} \u20ac`],
-      [`Franchise PFU (\u226410% capital)`, `${fmt(eurl.partSousFranchise)} \u20ac`],
-      ...(eurl.partAuDessus > 0 ? [[`Soumis TNS (>${fmt(eurl.seuil10pct)}\u20ac)`, `${fmt(eurl.partAuDessus)} \u20ac`] as [string, string]] : []),
-      ["Prelevements totaux", `- ${fmt(eurl.prelDividendes)} \u20ac`],
-      ["Dividendes nets", `${fmt(eurl.dividendesNets)} \u20ac`],
-      ["\u2500\u2500 Total \u2500\u2500", ""],
-      ["Net annuel total", `${fmt(eurl.totalNet)} \u20ac`, true],
+      ["Chiffre d'affaires", `${fmt(eurl.ca)} €`],
+      ["Frais professionnels", `- ${fmt(eurl.fraisPro)} €`],
+      ["── Remuneration gerant TNS ──", ""],
+      ["Remuneration de base", `${fmt(eurl.remunerationBase)} €`],
+      ["Cotisations TNS", `- ${fmt(eurl.cotisationsTNS)} €`],
+      ["Remuneration nette", `${fmt(eurl.remunerationNette)} €`],
+      ["IR sur remuneration", `- ${fmt(eurl.impotRemuneration)} €`],
+      ["── Dividendes ──", ""],
+      ["Benefice avant IS", `${fmt(eurl.beneficeAvantIS)} €`],
+      ["Impot sur les societes", `- ${fmt(eurl.is)} €`],
+      ["Dividendes bruts", `${fmt(eurl.dividendesBruts)} €`],
+      [`Franchise PFU (≤10% capital)`, `${fmt(eurl.partSousFranchise)} €`],
+      ...(eurl.partAuDessus > 0 ? [[`Soumis TNS (>${fmt(eurl.seuil10pct)}€)`, `${fmt(eurl.partAuDessus)} €`] as [string, string]] : []),
+      ["Prelevements totaux", `- ${fmt(eurl.prelDividendes)} €`],
+      ["Dividendes nets", `${fmt(eurl.dividendesNets)} €`],
+      ["── Total ──", ""],
+      ["Net annuel total", `${fmt(eurl.totalNet)} €`, true],
     ];
   };
+
+  /* ── 4-card comparison data ── */
+  const compareCards = [
+    {
+      key: "cdi",
+      label: "CDI",
+      netAnnuel: cdi.netApresImpot,
+      netMensuel: cdi.netMensuel,
+      color: "var(--primary)",
+    },
+    {
+      key: "micro",
+      label: "Micro-entreprise",
+      netAnnuel: micro.netApresImpot,
+      netMensuel: micro.netMensuel,
+      color: "var(--accent)",
+    },
+    {
+      key: "sasu",
+      label: "SASU",
+      netAnnuel: sasu.totalNet,
+      netMensuel: sasu.netMensuel,
+      color: "var(--accent)",
+    },
+    {
+      key: "eurl",
+      label: "EURL (IS)",
+      netAnnuel: eurl.totalNet,
+      netMensuel: eurl.netMensuel,
+      color: "var(--accent)",
+    },
+  ];
+  const bestNet = Math.max(...compareCards.map((c) => c.netAnnuel));
+
+  /* ── Bars data ── */
+  const cdiCharges = cdi.coutEmployeur - cdi.netAvantImpot;
+  const sasuChargesTotal =
+    sasu.chargesPatronales +
+    sasu.chargesSalariales +
+    sasu.is +
+    sasu.pfuDividendes +
+    sasu.taxePuma +
+    sasu.fraisPro;
+  const eurlChargesTotal =
+    eurl.cotisationsTNS + eurl.is + eurl.prelDividendes + eurl.fraisPro;
+  const bars = [
+    {
+      label: "CDI",
+      total: cdi.coutEmployeur,
+      charges: cdiCharges,
+      impot: cdi.impotAnnuel,
+      net: cdi.netApresImpot,
+    },
+    {
+      label: "Micro",
+      total: micro.ca,
+      charges: micro.cotisations,
+      impot: micro.impotAnnuel,
+      net: micro.netApresImpot,
+    },
+    {
+      label: "SASU",
+      total: sasu.ca,
+      charges: sasuChargesTotal,
+      impot: sasu.impotRemuneration,
+      net: sasu.totalNet,
+    },
+    {
+      label: "EURL",
+      total: eurl.ca,
+      charges: eurlChargesTotal,
+      impot: eurl.impotRemuneration,
+      net: eurl.totalNet,
+    },
+  ];
+  const maxBarTotal = Math.max(...bars.map((b) => b.total), 1);
 
   return (
     <>
@@ -492,6 +578,15 @@ export default function FreelanceVsCDI() {
           >
             <span style={{ color: "var(--primary)" }}>Freelance</span> vs CDI
           </h1>
+          {diff > 0 && (
+            <p
+              className="animate-fade-up stagger-2 mt-3 text-sm font-semibold"
+              style={{ color: "var(--accent)" }}
+            >
+              Avec votre TJM actuel, vous gagnez{" "}
+              <strong>+{fmt(diff)} &euro;/mois</strong> en {statutLabels[statut]}.
+            </p>
+          )}
           <p
             className="animate-fade-up stagger-2 mt-3 max-w-xl text-sm leading-relaxed"
             style={{ color: "var(--muted)" }}
@@ -526,6 +621,79 @@ export default function FreelanceVsCDI() {
                 step="0.5"
                 min="1"
               />
+            </div>
+
+            {/* ═══ TJM slider + presets ═══ */}
+            <div
+              className="rounded-2xl border p-5"
+              style={{
+                background: "var(--surface)",
+                borderColor: "var(--border)",
+              }}
+            >
+              <div className="flex items-center justify-between">
+                <span
+                  className="text-[10px] font-semibold uppercase tracking-wider"
+                  style={{ color: "var(--muted)" }}
+                >
+                  Curseur TJM
+                </span>
+                <span
+                  className="text-sm font-bold"
+                  style={{
+                    fontFamily: "var(--font-display)",
+                    color: "var(--accent)",
+                  }}
+                >
+                  {tjm} &euro;/jour
+                </span>
+              </div>
+              <input
+                type="range"
+                min={200}
+                max={2000}
+                step={50}
+                value={Math.min(Math.max(parseFloat(tjm) || 200, 200), 2000)}
+                onChange={(e) => setTjm(e.target.value)}
+                className="mt-3 w-full accent-[#e8963e]"
+                aria-label="Curseur TJM"
+              />
+              <div
+                className="mt-1 flex justify-between text-[10px]"
+                style={{ color: "var(--muted)" }}
+              >
+                <span>200 &euro;</span>
+                <span>2000 &euro;</span>
+              </div>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {TJM_PRESETS.map((p) => {
+                  const isActive = parseFloat(tjm) === p.value;
+                  return (
+                    <button
+                      key={p.label}
+                      onClick={() => setTjm(String(p.value))}
+                      className="rounded-full border px-3 py-1.5 text-xs font-semibold transition-all hover:opacity-80"
+                      style={{
+                        borderColor: isActive ? "var(--primary)" : "var(--border)",
+                        color: isActive ? "var(--primary)" : "var(--muted)",
+                        background: isActive
+                          ? "rgba(13,79,60,0.06)"
+                          : "transparent",
+                      }}
+                    >
+                      {p.label}{" "}
+                      <span
+                        style={{
+                          color: isActive ? "var(--primary)" : "var(--accent)",
+                          fontFamily: "var(--font-display)",
+                        }}
+                      >
+                        {p.value} &euro;
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
 
             {/* ═══ CDI input ═══ */}
@@ -578,22 +746,37 @@ export default function FreelanceVsCDI() {
               </div>
             </div>
 
-            {/* ═══ Statut selector (pills) ═══ */}
-            <div className="flex items-center gap-1 rounded-xl border p-1" style={{ borderColor: "var(--border)", background: "var(--surface-alt)" }}>
-              {(["micro", "sasu", "eurl"] as const).map((s) => (
-                <button
-                  key={s}
-                  onClick={() => setStatut(s)}
-                  className="flex-1 rounded-lg px-4 py-2.5 text-sm font-semibold transition-all"
-                  style={{
-                    background: statut === s ? "var(--surface)" : "transparent",
-                    color: statut === s ? "var(--accent)" : "var(--muted)",
-                    boxShadow: statut === s ? "0 1px 3px rgba(0,0,0,0.08)" : "none",
-                  }}
-                >
-                  {s === "micro" ? "Micro" : s === "sasu" ? "SASU" : "EURL"}
-                </button>
-              ))}
+            {/* ═══ Statut selector (pills) - controls detail panel ═══ */}
+            <div>
+              <p
+                className="mb-2 text-[10px] font-semibold uppercase tracking-wider"
+                style={{ color: "var(--muted)" }}
+              >
+                Detail a afficher pour le statut
+              </p>
+              <div
+                className="flex items-center gap-1 rounded-xl border p-1"
+                style={{
+                  borderColor: "var(--border)",
+                  background: "var(--surface-alt)",
+                }}
+              >
+                {(["micro", "sasu", "eurl"] as const).map((s) => (
+                  <button
+                    key={s}
+                    onClick={() => setStatut(s)}
+                    className="flex-1 rounded-lg px-4 py-2.5 text-sm font-semibold transition-all"
+                    style={{
+                      background: statut === s ? "var(--surface)" : "transparent",
+                      color: statut === s ? "var(--accent)" : "var(--muted)",
+                      boxShadow:
+                        statut === s ? "0 1px 3px rgba(0,0,0,0.08)" : "none",
+                    }}
+                  >
+                    {s === "micro" ? "Micro" : s === "sasu" ? "SASU" : "EURL"}
+                  </button>
+                ))}
+              </div>
             </div>
 
             {/* ═══ SASU remuneration slider ═══ */}
@@ -657,7 +840,7 @@ export default function FreelanceVsCDI() {
                 </div>
                 {sasu.taxePuma > 0 && (
                   <div className="mt-3 flex items-start gap-2 rounded-lg border p-3" style={{ borderColor: "#dc262640", background: "#dc26260a" }}>
-                    <span className="mt-0.5 text-sm">{"\u26A0\uFE0F"}</span>
+                    <span className="mt-0.5 text-sm">{"⚠️"}</span>
                     <div>
                       <p className="text-xs font-semibold" style={{ color: "#dc2626" }}>Taxe PUMa applicable</p>
                       <p className="mt-0.5 text-[11px] leading-relaxed" style={{ color: "var(--muted)" }}>
@@ -749,7 +932,7 @@ export default function FreelanceVsCDI() {
                   transform: showAdvanced ? "rotate(90deg)" : "rotate(0deg)",
                 }}
               >
-                {"\u25B6"}
+                {"▶"}
               </span>
               Parametres avances
             </button>
@@ -857,22 +1040,183 @@ export default function FreelanceVsCDI() {
               </div>
             )}
 
-            {/* ═══ Comparison cards ═══ */}
-            <div className="grid grid-cols-2 gap-4">
-              <CompareCard
-                label="CDI"
-                subtitle="Net/mois apres impot"
-                value={`${fmt(cdi.netMensuel)} \u20ac`}
-                winner={cdi.netMensuel >= freelanceNet}
-                color="var(--primary)"
-              />
-              <CompareCard
-                label={statutLabels[statut]}
-                subtitle="Net/mois apres impot"
-                value={`${fmt(freelanceNet)} \u20ac`}
-                winner={freelanceNet > cdi.netMensuel}
-                color="var(--accent)"
-              />
+            {/* ═══ Comparison cards (4 statuts) ═══ */}
+            <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+              {compareCards.map((c) => {
+                const diffVsCDI = c.netAnnuel - cdi.netApresImpot;
+                const isBest = c.netAnnuel === bestNet;
+                const isCDI = c.key === "cdi";
+                return (
+                  <div
+                    key={c.key}
+                    className="relative rounded-2xl border p-5 text-center transition-all"
+                    style={{
+                      background: "var(--surface)",
+                      borderColor: isBest ? "#fbbf24" : "var(--border)",
+                      boxShadow: isBest ? "0 0 0 2px #fbbf2440" : "none",
+                    }}
+                  >
+                    {isBest && (
+                      <span
+                        className="absolute -top-2 left-1/2 -translate-x-1/2 rounded-full px-3 py-0.5 text-[10px] font-bold text-white"
+                        style={{ background: "#fbbf24" }}
+                      >
+                        {"\u{1F3C6}"} Meilleur
+                      </span>
+                    )}
+                    <p
+                      className="text-xs font-bold uppercase tracking-wider"
+                      style={{ color: c.color }}
+                    >
+                      {c.label}
+                    </p>
+                    <p
+                      className="mt-2 text-2xl font-bold"
+                      style={{
+                        fontFamily: "var(--font-display)",
+                        color: c.color,
+                      }}
+                    >
+                      {fmt(c.netAnnuel)} &euro;
+                    </p>
+                    <p
+                      className="text-[10px] uppercase tracking-wider"
+                      style={{ color: "var(--muted)" }}
+                    >
+                      Net annuel apres impot
+                    </p>
+                    <p
+                      className="mt-1 text-sm font-semibold"
+                      style={{ color: "var(--foreground)" }}
+                    >
+                      {fmt(c.netMensuel)} &euro;/mois
+                    </p>
+                    {!isCDI && (
+                      <p
+                        className="mt-2 text-xs font-semibold"
+                        style={{
+                          color:
+                            diffVsCDI >= 0 ? "var(--primary)" : "#dc2626",
+                        }}
+                      >
+                        {diffVsCDI >= 0 ? "+" : ""}
+                        {fmt(diffVsCDI)} &euro;/an vs CDI
+                      </p>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* ═══ Visualisation barres horizontales empilees ═══ */}
+            <div
+              className="rounded-2xl border p-6"
+              style={{
+                background: "var(--surface)",
+                borderColor: "var(--border)",
+              }}
+            >
+              <h3
+                className="text-xs font-semibold uppercase tracking-[0.15em]"
+                style={{ color: "var(--accent)" }}
+              >
+                Repartition charges / impot / net
+              </h3>
+              <p
+                className="mt-1 text-[11px]"
+                style={{ color: "var(--muted)" }}
+              >
+                Largeur proportionnelle au CA freelance (ou cout employeur pour le CDI).
+              </p>
+              <div className="mt-4 space-y-3">
+                {bars.map((b) => {
+                  const widthPct = (b.total / maxBarTotal) * 100;
+                  const cPct = b.total > 0 ? (b.charges / b.total) * 100 : 0;
+                  const iPct = b.total > 0 ? (b.impot / b.total) * 100 : 0;
+                  const nPct = b.total > 0 ? (b.net / b.total) * 100 : 0;
+                  return (
+                    <div key={b.label}>
+                      <div className="flex items-center justify-between text-xs">
+                        <span
+                          className="font-semibold"
+                          style={{ color: "var(--foreground)" }}
+                        >
+                          {b.label}
+                        </span>
+                        <span style={{ color: "var(--muted)" }}>
+                          Total : {fmt(b.total)} &euro;
+                        </span>
+                      </div>
+                      <div
+                        className="mt-1 h-7 overflow-hidden rounded-md"
+                        style={{ background: "var(--surface-alt)" }}
+                      >
+                        <div
+                          className="flex h-full"
+                          style={{ width: `${widthPct}%` }}
+                        >
+                          <div
+                            className="flex items-center justify-center text-[10px] font-bold text-white"
+                            style={{
+                              width: `${cPct}%`,
+                              background: "#dc2626",
+                            }}
+                            title={`Charges : ${fmt(b.charges)} EUR`}
+                          >
+                            {cPct >= 10 ? `${Math.round(cPct)}%` : ""}
+                          </div>
+                          <div
+                            className="flex items-center justify-center text-[10px] font-bold text-white"
+                            style={{
+                              width: `${iPct}%`,
+                              background: "#e8963e",
+                            }}
+                            title={`Impot : ${fmt(b.impot)} EUR`}
+                          >
+                            {iPct >= 8 ? `${Math.round(iPct)}%` : ""}
+                          </div>
+                          <div
+                            className="flex items-center justify-center text-[10px] font-bold text-white"
+                            style={{
+                              width: `${nPct}%`,
+                              background: "#0d4f3c",
+                            }}
+                            title={`Net : ${fmt(b.net)} EUR`}
+                          >
+                            {nPct >= 10 ? `${Math.round(nPct)}%` : ""}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+                <div
+                  className="flex flex-wrap gap-4 pt-2 text-[11px]"
+                  style={{ color: "var(--muted)" }}
+                >
+                  <span className="flex items-center gap-1.5">
+                    <span
+                      className="inline-block h-2.5 w-2.5 rounded-sm"
+                      style={{ background: "#dc2626" }}
+                    />
+                    Charges
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <span
+                      className="inline-block h-2.5 w-2.5 rounded-sm"
+                      style={{ background: "#e8963e" }}
+                    />
+                    Impot
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <span
+                      className="inline-block h-2.5 w-2.5 rounded-sm"
+                      style={{ background: "#0d4f3c" }}
+                    />
+                    Net
+                  </span>
+                </div>
+              </div>
             </div>
 
             {/* ═══ Verdict ═══ */}
@@ -925,21 +1269,21 @@ export default function FreelanceVsCDI() {
                 title="CDI"
                 color="var(--primary)"
                 rows={[
-                  ["Salaire brut annuel", `${fmt(cdi.brutAnnuel)} \u20ac`],
+                  ["Salaire brut annuel", `${fmt(cdi.brutAnnuel)} €`],
                   [
                     `Charges salariales (${cdiTauxSalariales}%)`,
-                    `- ${fmt(cdi.brutAnnuel - cdi.netAvantImpot)} \u20ac`,
+                    `- ${fmt(cdi.brutAnnuel - cdi.netAvantImpot)} €`,
                   ],
-                  ["Net avant impot", `${fmt(cdi.netAvantImpot)} \u20ac`],
-                  ["Impot sur le revenu", `- ${fmt(cdi.impotAnnuel)} \u20ac`],
+                  ["Net avant impot", `${fmt(cdi.netAvantImpot)} €`],
+                  ["Impot sur le revenu", `- ${fmt(cdi.impotAnnuel)} €`],
                   [
                     "Net annuel apres impot",
-                    `${fmt(cdi.netApresImpot)} \u20ac`,
+                    `${fmt(cdi.netApresImpot)} €`,
                     true,
                   ],
                   [
                     `Cout employeur (+${cdiTauxPatronales}%)`,
-                    `${fmt(cdi.coutEmployeur)} \u20ac`,
+                    `${fmt(cdi.coutEmployeur)} €`,
                   ],
                 ]}
               />
@@ -948,6 +1292,42 @@ export default function FreelanceVsCDI() {
                 color="var(--accent)"
                 rows={getFreelanceRows()}
               />
+            </div>
+
+            {/* ═══ CrossLinkCard CTAs ═══ */}
+            <div
+              className="rounded-2xl border p-6"
+              style={{
+                background: "var(--surface)",
+                borderColor: "var(--border)",
+              }}
+            >
+              <h3
+                className="text-xs font-semibold uppercase tracking-[0.2em]"
+                style={{ color: "var(--accent)" }}
+              >
+                Vous pourriez aussi vouloir
+              </h3>
+              <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
+                <CrossLinkCard
+                  href="/outils/calculateur-salaire"
+                  emoji={"\u{1F4BC}"}
+                  title="Net en poche CDI"
+                  desc="Calculez votre brut/net mensuel avec impot."
+                />
+                <CrossLinkCard
+                  href="/outils/simulateur-auto-entrepreneur"
+                  emoji={"\u{1F4CA}"}
+                  title="Charges micro detail"
+                  desc="Simulez vos cotisations URSSAF mensuelles."
+                />
+                <CrossLinkCard
+                  href="/outils/generateur-facture"
+                  emoji={"\u{1F4C4}"}
+                  title="Premiere facture freelance"
+                  desc="Generateur de facture conforme PDF."
+                />
+              </div>
             </div>
 
             {/* ═══ Advantages ═══ */}
@@ -972,7 +1352,7 @@ export default function FreelanceVsCDI() {
                       className="flex items-center gap-2 text-sm"
                       style={{ color: "var(--muted)" }}
                     >
-                      <span style={{ color: "var(--primary)" }}>{"\u2713"}</span>{" "}
+                      <span style={{ color: "var(--primary)" }}>{"✓"}</span>{" "}
                       {a}
                     </li>
                   ))}
@@ -998,7 +1378,7 @@ export default function FreelanceVsCDI() {
                       className="flex items-center gap-2 text-sm"
                       style={{ color: "var(--muted)" }}
                     >
-                      <span style={{ color: "var(--accent)" }}>{"\u2713"}</span>{" "}
+                      <span style={{ color: "var(--accent)" }}>{"✓"}</span>{" "}
                       {a}
                     </li>
                   ))}
@@ -1167,58 +1547,6 @@ function AdvancedInput({
   );
 }
 
-function CompareCard({
-  label,
-  subtitle,
-  value,
-  winner,
-  color,
-}: {
-  label: string;
-  subtitle: string;
-  value: string;
-  winner: boolean;
-  color: string;
-}) {
-  return (
-    <div
-      className="rounded-2xl border p-5 text-center transition-all"
-      style={{
-        background: "var(--surface)",
-        borderColor: winner ? color : "var(--border)",
-        boxShadow: winner ? `0 0 0 2px ${color}20` : "none",
-      }}
-    >
-      <p
-        className="text-xs font-bold uppercase tracking-wider"
-        style={{ color }}
-      >
-        {label}
-      </p>
-      <p
-        className="text-[10px] uppercase tracking-wider"
-        style={{ color: "var(--muted)" }}
-      >
-        {subtitle}
-      </p>
-      <p
-        className="mt-2 text-2xl font-bold"
-        style={{ fontFamily: "var(--font-display)", color }}
-      >
-        {value}
-      </p>
-      {winner && (
-        <span
-          className="mt-2 inline-block rounded-full px-3 py-0.5 text-[10px] font-bold text-white"
-          style={{ background: color }}
-        >
-          GAGNANT
-        </span>
-      )}
-    </div>
-  );
-}
-
 function DetailTable({
   title,
   color,
@@ -1242,14 +1570,14 @@ function DetailTable({
       <div className="mt-3 space-y-1.5">
         {rows.map(([label, value, isTotal], i) => {
           // Separator rows
-          if (value === "" && label.startsWith("\u2500")) {
+          if (value === "" && label.startsWith("─")) {
             return (
               <div
                 key={i}
                 className="pt-2 pb-1 text-[10px] font-bold uppercase tracking-wider"
                 style={{ color: "var(--muted)" }}
               >
-                {label.replace(/\u2500/g, "").trim()}
+                {label.replace(/─/g, "").trim()}
               </div>
             );
           }
@@ -1271,5 +1599,43 @@ function DetailTable({
         })}
       </div>
     </div>
+  );
+}
+
+function CrossLinkCard({
+  href,
+  emoji,
+  title,
+  desc,
+}: {
+  href: string;
+  emoji: string;
+  title: string;
+  desc: string;
+}) {
+  return (
+    <Link
+      href={href}
+      className="group flex items-start gap-3 rounded-xl border p-4 transition-all hover:shadow-sm"
+      style={{ borderColor: "var(--border)", background: "var(--surface-alt)" }}
+    >
+      <span className="text-2xl" aria-hidden>
+        {emoji}
+      </span>
+      <div className="flex-1 min-w-0">
+        <p
+          className="text-sm font-semibold transition-colors group-hover:text-[#0d4f3c]"
+          style={{ color: "var(--foreground)" }}
+        >
+          {title}{" "}
+          <span className="ml-1 inline-block transition-transform group-hover:translate-x-0.5">
+            {"→"}
+          </span>
+        </p>
+        <p className="mt-0.5 text-xs" style={{ color: "var(--muted)" }}>
+          {desc}
+        </p>
+      </div>
+    </Link>
   );
 }

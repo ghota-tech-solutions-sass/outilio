@@ -17,7 +17,7 @@ export default function LastUpdated() {
         <circle cx="12" cy="12" r="10" />
         <polyline points="12 6 12 12 16 14" />
       </svg>
-      Mis a jour : mars 2026
+      Mis a jour : avril 2026
     </span>
   );
 }

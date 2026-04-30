@@ -118,7 +118,7 @@ export default async function CategoryPage({
               : `${categoryTools.length} outil${categoryTools.length > 1 ? "s" : ""} gratuit${categoryTools.length > 1 ? "s" : ""} dans cette categorie. 100% en ligne, aucune inscription requise.`}
           </p>
           <p className="mt-2 text-sm font-medium" style={{ color: "var(--primary)" }}>
-            {categoryTools.length} outil{categoryTools.length > 1 ? "s" : ""} disponible{categoryTools.length > 1 ? "s" : ""} &middot; Mis a jour en mars 2026
+            {categoryTools.length} outil{categoryTools.length > 1 ? "s" : ""} disponible{categoryTools.length > 1 ? "s" : ""} &middot; Mis a jour en avril 2026
           </p>
         </div>
       </section>

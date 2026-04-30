@@ -1,9 +1,17 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import Link from "next/link";
 import AdPlaceholder from "@/components/AdPlaceholder";
 import ToolFaqSection from "@/components/ToolFaqSection";
 import ToolHowToSection from "@/components/ToolHowToSection";
+
+const PRESETS_PRIX = [
+  { label: "Studio Lyon", value: 130000 },
+  { label: "T2 Marseille", value: 180000 },
+  { label: "T3 Toulouse", value: 250000 },
+  { label: "Maison Bordeaux", value: 450000 },
+];
 
 export default function CalculateurRentabilite() {
   const [prixAchat, setPrixAchat] = useState("200000");
@@ -79,8 +87,58 @@ export default function CalculateurRentabilite() {
             {/* Acquisition */}
             <div className="rounded-2xl border p-6" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
               <h2 className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--accent)" }}>Acquisition</h2>
-              <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
-                <Field label="Prix d'achat (€)" value={prixAchat} onChange={setPrixAchat} />
+
+              {/* Prix d'achat avec slider + presets */}
+              <div className="mt-4">
+                <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>
+                  Prix d&apos;achat
+                </label>
+                <div className="relative mt-2">
+                  <input
+                    type="number"
+                    value={prixAchat}
+                    onChange={(e) => setPrixAchat(e.target.value)}
+                    className="w-full rounded-xl border px-4 py-4 text-2xl font-bold tracking-tight"
+                    style={{ borderColor: "var(--border)", fontFamily: "var(--font-display)" }}
+                    placeholder="200000"
+                  />
+                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-lg" style={{ color: "var(--muted)" }}>&euro;</span>
+                </div>
+                <input
+                  type="range"
+                  min={30000}
+                  max={1000000}
+                  step={5000}
+                  value={Math.min(parseFloat(prixAchat) || 0, 1000000)}
+                  onChange={(e) => setPrixAchat(e.target.value)}
+                  className="mt-3 w-full accent-[#0d4f3c]"
+                  aria-label="Curseur prix d'achat"
+                />
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {PRESETS_PRIX.map((p) => {
+                    const isActive = parseFloat(prixAchat) === p.value;
+                    return (
+                      <button
+                        key={p.label}
+                        onClick={() => setPrixAchat(String(p.value))}
+                        className="rounded-full border px-3 py-1.5 text-xs font-semibold transition-all hover:opacity-80"
+                        style={{
+                          borderColor: isActive ? "var(--primary)" : "var(--border)",
+                          color: isActive ? "var(--primary)" : "var(--muted)",
+                          background: isActive ? "rgba(13,79,60,0.06)" : "transparent",
+                        }}
+                      >
+                        {p.label}{" "}
+                        <span style={{ color: isActive ? "var(--primary)" : "var(--accent)", fontFamily: "var(--font-display)" }}>
+                          {p.value.toLocaleString("fr-FR")} &euro;
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="mt-4 grid grid-cols-2 gap-3">
                 <Field label="Frais notaire (%)" value={fraisNotaire} onChange={setFraisNotaire} />
                 <Field label="Travaux (€)" value={travaux} onChange={setTravaux} />
               </div>
@@ -123,6 +181,61 @@ export default function CalculateurRentabilite() {
               <StatCard label="Plus-value/an" value={`${fmt(result.plusValueAn1)} €`} color="var(--accent)" />
             </div>
 
+            {/* Visualisation Donut + cartes contextuelles */}
+            <div className="rounded-2xl border p-6" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+              <h2 className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--accent)" }}>Visualisation</h2>
+              <div className="mt-4 grid gap-6 sm:grid-cols-[180px_1fr] sm:items-center">
+                <div className="flex justify-center">
+                  <DonutChart
+                    cashflow={result.cashflowMensuel}
+                    charges={result.depensesAn / 12}
+                    mensualite={result.mensualiteCredit}
+                    rentaBrute={result.rentaBrute}
+                  />
+                </div>
+                <div className="grid grid-cols-1 gap-3">
+                  <div className="rounded-xl border p-4" style={{ borderColor: "var(--border)", background: "var(--surface-alt)" }}>
+                    <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>
+                      Rentabilite brute
+                    </p>
+                    <p
+                      className="mt-1 text-3xl font-bold"
+                      style={{
+                        fontFamily: "var(--font-display)",
+                        color: result.rentaBrute < 4 ? "#dc2626" : result.rentaBrute < 6 ? "#e8963e" : "var(--primary)",
+                      }}
+                    >
+                      {fmtPct(result.rentaBrute)}%
+                    </p>
+                    <p className="mt-1 text-[11px]" style={{ color: "var(--muted)" }}>
+                      {result.rentaBrute < 4 && "Faible : zone tendue ou prix surevalue."}
+                      {result.rentaBrute >= 4 && result.rentaBrute < 6 && "Correct : marges classiques en grande ville."}
+                      {result.rentaBrute >= 6 && "Excellent : bien au-dessus de la moyenne francaise."}
+                    </p>
+                  </div>
+                  <div className="rounded-xl border p-4" style={{ borderColor: "var(--border)", background: "var(--surface-alt)" }}>
+                    <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>
+                      Cash-flow mensuel
+                    </p>
+                    <p
+                      className="mt-1 text-3xl font-bold"
+                      style={{
+                        fontFamily: "var(--font-display)",
+                        color: result.cashflowMensuel >= 0 ? "var(--primary)" : "#dc2626",
+                      }}
+                    >
+                      {result.cashflowMensuel >= 0 ? "+" : ""}{fmt(result.cashflowMensuel)} &euro;
+                    </p>
+                    <p className="mt-1 text-[11px]" style={{ color: "var(--muted)" }}>
+                      {result.cashflowMensuel >= 0
+                        ? "Positif : auto-finance !"
+                        : `Negatif : effort d'epargne ${fmt(Math.abs(result.cashflowMensuel))} €/mois.`}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             {/* Summary */}
             <div className="rounded-2xl border p-6" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
               <h2 className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--accent)" }}>Bilan annuel</h2>
@@ -138,6 +251,33 @@ export default function CalculateurRentabilite() {
                 {result.effortEpargne > 0 && (
                   <Row label="Effort d'epargne mensuel" value={`${fmt(result.effortEpargne)} €`} warning />
                 )}
+              </div>
+            </div>
+
+            {/* Cross-link CTAs */}
+            <div className="rounded-2xl border p-6" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+              <h3 className="text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: "var(--accent)" }}>
+                Vous pourriez aussi vouloir
+              </h3>
+              <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
+                <CrossLinkCard
+                  href="/outils/calculateur-pret-immobilier"
+                  emoji="🏠"
+                  title="Simuler le pret"
+                  desc="Mensualite, taux, capacite emprunt"
+                />
+                <CrossLinkCard
+                  href="/outils/simulateur-plus-value-immobiliere"
+                  emoji="📈"
+                  title="Plus-value future"
+                  desc="Imposition selon duree de detention"
+                />
+                <CrossLinkCard
+                  href="/outils/calculateur-frais-notaire"
+                  emoji="🏛️"
+                  title="Frais notaire"
+                  desc="Ancien 7-8%, neuf VEFA 2-3%"
+                />
               </div>
             </div>
 
@@ -369,5 +509,133 @@ function Row({ label, value, highlight, primary, warning }: { label: string; val
         {value}
       </span>
     </div>
+  );
+}
+
+function DonutChart({
+  cashflow,
+  charges,
+  mensualite,
+  rentaBrute,
+}: {
+  cashflow: number;
+  charges: number;
+  mensualite: number;
+  rentaBrute: number;
+}) {
+  const r = 60;
+  const c = 2 * Math.PI * r;
+  const stroke = 22;
+
+  // 3 segments : cash-flow (vert si positif, rouge si negatif) + charges (orange) + mensualite (rouge)
+  const cashflowAbs = Math.abs(cashflow);
+  const total = cashflowAbs + charges + mensualite;
+  const safeTotal = total > 0 ? total : 1;
+
+  const cashflowPct = cashflowAbs / safeTotal;
+  const chargesPct = charges / safeTotal;
+  const mensPct = mensualite / safeTotal;
+
+  const cashflowLen = cashflowPct * c;
+  const chargesLen = chargesPct * c;
+  const mensLen = mensPct * c;
+
+  const cashflowColor = cashflow >= 0 ? "#0d4f3c" : "#dc2626";
+  const dominantColor = rentaBrute > 6 ? "var(--primary)" : rentaBrute < 4 ? "#dc2626" : "var(--accent)";
+
+  return (
+    <svg width="160" height="160" viewBox="-80 -80 160 160" role="img" aria-label="Repartition cash-flow mensuel">
+      <circle cx="0" cy="0" r={r} fill="none" stroke="var(--border)" strokeWidth={stroke} />
+      <g transform="rotate(-90)">
+        <circle
+          cx="0"
+          cy="0"
+          r={r}
+          fill="none"
+          stroke={cashflowColor}
+          strokeWidth={stroke}
+          strokeDasharray={`${cashflowLen} ${c}`}
+          strokeLinecap="butt"
+        />
+        <circle
+          cx="0"
+          cy="0"
+          r={r}
+          fill="none"
+          stroke="#e8963e"
+          strokeWidth={stroke}
+          strokeDasharray={`${chargesLen} ${c}`}
+          strokeDashoffset={-cashflowLen}
+          strokeLinecap="butt"
+        />
+        <circle
+          cx="0"
+          cy="0"
+          r={r}
+          fill="none"
+          stroke="#dc2626"
+          strokeWidth={stroke}
+          strokeDasharray={`${mensLen} ${c}`}
+          strokeDashoffset={-(cashflowLen + chargesLen)}
+          strokeLinecap="butt"
+        />
+      </g>
+      <text
+        x="0"
+        y="-4"
+        textAnchor="middle"
+        fontSize="10"
+        fill="var(--muted)"
+        style={{ fontFamily: "var(--font-body)" }}
+      >
+        Renta brute
+      </text>
+      <text
+        x="0"
+        y="14"
+        textAnchor="middle"
+        fontSize="16"
+        fontWeight="700"
+        fill={dominantColor}
+        style={{ fontFamily: "var(--font-display)" }}
+      >
+        {rentaBrute.toFixed(1)}%
+      </text>
+    </svg>
+  );
+}
+
+function CrossLinkCard({
+  href,
+  emoji,
+  title,
+  desc,
+}: {
+  href: string;
+  emoji: string;
+  title: string;
+  desc: string;
+}) {
+  return (
+    <Link
+      href={href}
+      className="group flex items-start gap-3 rounded-xl border p-4 transition-all hover:shadow-sm"
+      style={{ borderColor: "var(--border)", background: "var(--surface-alt)" }}
+    >
+      <span className="text-2xl" aria-hidden>
+        {emoji}
+      </span>
+      <div className="flex-1 min-w-0">
+        <p
+          className="text-sm font-semibold transition-colors group-hover:text-[#0d4f3c]"
+          style={{ color: "var(--foreground)" }}
+        >
+          {title} <span className="ml-1 inline-block transition-transform group-hover:translate-x-0.5">&rarr;</span>
+        </p>
+        <p className="mt-0.5 text-xs" style={{ color: "var(--muted)" }}>
+          {desc}
+        </p>
+      </div>
+    </Link>
   );
 }

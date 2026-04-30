@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
+import Link from "next/link";
 import AdPlaceholder from "@/components/AdPlaceholder";
 import ToolFaqSection from "@/components/ToolFaqSection";
 import ToolHowToSection from "@/components/ToolHowToSection";
@@ -155,10 +156,59 @@ export default function GenerateurFacture() {
                 + Ajouter une ligne
               </button>
 
-              <div className="mt-4 border-t pt-4 text-right space-y-1" style={{ borderColor: "var(--border)" }}>
-                <p className="text-sm" style={{ color: "var(--muted)" }}>Total HT : <span className="font-medium" style={{ color: "var(--foreground)" }}>{fmt(totalHT)} &euro;</span></p>
-                <p className="text-sm" style={{ color: "var(--muted)" }}>TVA ({tva}%) : <span className="font-medium" style={{ color: "var(--foreground)" }}>{fmt(montantTVA)} &euro;</span></p>
-                <p className="text-lg font-bold" style={{ color: "var(--primary)" }}>Total TTC : {fmt(totalTTC)} &euro;</p>
+              <div className="mt-4 border-t pt-4" style={{ borderColor: "var(--border)" }}>
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                  <div className="rounded-xl border p-4" style={{ borderColor: "var(--border)", background: "var(--surface-alt)" }}>
+                    <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>Total HT</p>
+                    <p className="mt-1 text-2xl font-bold" style={{ fontFamily: "var(--font-display)", color: "var(--foreground)" }}>
+                      {fmt(totalHT)} &euro;
+                    </p>
+                  </div>
+                  <div className="rounded-xl border p-4" style={{ borderColor: "var(--border)", background: "var(--surface-alt)" }}>
+                    <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>TVA collectee ({tva}%)</p>
+                    <p className="mt-1 text-2xl font-bold" style={{ fontFamily: "var(--font-display)", color: "var(--accent)" }}>
+                      {fmt(montantTVA)} &euro;
+                    </p>
+                  </div>
+                  <div className="rounded-xl border p-4" style={{ borderColor: "var(--primary)", background: "rgba(13,79,60,0.06)" }}>
+                    <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>Total TTC</p>
+                    <p className="mt-1 text-2xl font-bold" style={{ fontFamily: "var(--font-display)", color: "var(--primary)" }}>
+                      {fmt(totalTTC)} &euro;
+                    </p>
+                  </div>
+                </div>
+                {totalHT > 5000 && (
+                  <div className="mt-3 rounded-xl p-3 text-xs" style={{ background: "#fef3cd", color: "#856404" }}>
+                    <strong>Mention LCEN :</strong> pour les factures &gt; 5 000 &euro; HT, conservez vos justificatifs pendant 10 ans (art. L123-22 Code de commerce).
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Cross-link CTAs */}
+            <div className="rounded-2xl border p-6" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+              <h3 className="text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: "var(--accent)" }}>
+                Vous pourriez aussi vouloir
+              </h3>
+              <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
+                <CrossLinkCard
+                  href="/outils/calculateur-tva"
+                  emoji="📊"
+                  title="Calculer la TVA"
+                  desc="HT, TTC, taux 20/10/5,5/2,1%"
+                />
+                <CrossLinkCard
+                  href="/outils/calculateur-tjm-freelance"
+                  emoji="💼"
+                  title="Definir son TJM"
+                  desc="Taux journalier moyen freelance"
+                />
+                <CrossLinkCard
+                  href="/outils/calculateur-marge"
+                  emoji="📈"
+                  title="Calculer une marge"
+                  desc="Marge commerciale, taux, coefficient"
+                />
               </div>
             </div>
 
@@ -411,5 +461,40 @@ function Input({
         style={{ borderColor: "var(--border)" }}
       />
     </div>
+  );
+}
+
+function CrossLinkCard({
+  href,
+  emoji,
+  title,
+  desc,
+}: {
+  href: string;
+  emoji: string;
+  title: string;
+  desc: string;
+}) {
+  return (
+    <Link
+      href={href}
+      className="group flex items-start gap-3 rounded-xl border p-4 transition-all hover:shadow-sm"
+      style={{ borderColor: "var(--border)", background: "var(--surface-alt)" }}
+    >
+      <span className="text-2xl" aria-hidden>
+        {emoji}
+      </span>
+      <div className="flex-1 min-w-0">
+        <p
+          className="text-sm font-semibold transition-colors group-hover:text-[#0d4f3c]"
+          style={{ color: "var(--foreground)" }}
+        >
+          {title} <span className="ml-1 inline-block transition-transform group-hover:translate-x-0.5">&rarr;</span>
+        </p>
+        <p className="mt-0.5 text-xs" style={{ color: "var(--muted)" }}>
+          {desc}
+        </p>
+      </div>
+    </Link>
   );
 }

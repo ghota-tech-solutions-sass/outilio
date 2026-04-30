@@ -1,9 +1,17 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import Link from "next/link";
 import AdPlaceholder from "@/components/AdPlaceholder";
 import ToolFaqSection from "@/components/ToolFaqSection";
 import ToolHowToSection from "@/components/ToolHowToSection";
+
+const PRESETS_LOYER = [
+  { label: "Studio etudiant", value: 450 },
+  { label: "T2 province", value: 650 },
+  { label: "T2 Lyon/Bordeaux", value: 800 },
+  { label: "T2 Paris", value: 1100 },
+];
 
 /* ==========================================================================
    PARAMETRES APL PAR ANNEE
@@ -353,6 +361,38 @@ export default function SimulateurAPL() {
                       &euro;/mois
                     </span>
                   </div>
+                  <input
+                    type="range"
+                    min={200}
+                    max={1500}
+                    step={25}
+                    value={Math.min(Math.max(parseFloat(loyer) || 0, 200), 1500)}
+                    onChange={(e) => setLoyer(e.target.value)}
+                    className="mt-3 w-full accent-[#0d4f3c]"
+                    aria-label="Curseur loyer mensuel"
+                  />
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {PRESETS_LOYER.map((p) => {
+                      const isActive = parseFloat(loyer) === p.value;
+                      return (
+                        <button
+                          key={p.label}
+                          onClick={() => setLoyer(String(p.value))}
+                          className="rounded-full border px-3 py-1.5 text-xs font-semibold transition-all hover:opacity-80"
+                          style={{
+                            borderColor: isActive ? "var(--primary)" : "var(--border)",
+                            color: isActive ? "var(--primary)" : "var(--muted)",
+                            background: isActive ? "rgba(13,79,60,0.06)" : "transparent",
+                          }}
+                        >
+                          {p.label}{" "}
+                          <span style={{ color: isActive ? "var(--primary)" : "var(--accent)", fontFamily: "var(--font-display)" }}>
+                            {p.value} &euro;
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
 
                 {/* Zone + type logement */}
@@ -531,7 +571,7 @@ export default function SimulateurAPL() {
               )}
             </div>
 
-            {/* Barre visuelle */}
+            {/* Visualisation Donut + cartes contextuelles */}
             {result.montantAPL > 0 && loyerNum > 0 && (
               <div
                 className="rounded-2xl border p-6"
@@ -543,32 +583,78 @@ export default function SimulateurAPL() {
                 >
                   Repartition du loyer
                 </h2>
-                <div className="mt-4 h-8 flex overflow-hidden rounded-full" style={{ background: "var(--surface-alt)" }}>
-                  <div
-                    className="h-full transition-all duration-500"
-                    style={{
-                      width: `${Math.min(100, (result.montantAPL / loyerNum) * 100)}%`,
-                      background: "var(--primary)",
-                    }}
-                  />
-                  <div
-                    className="h-full transition-all duration-500"
-                    style={{
-                      width: `${Math.min(100, (resteACharge / loyerNum) * 100)}%`,
-                      background: "var(--accent)",
-                    }}
-                  />
-                </div>
-                <div className="mt-2 flex justify-between text-xs">
-                  <span style={{ color: "var(--primary)" }}>
-                    APL : {((result.montantAPL / loyerNum) * 100).toFixed(1)}%
-                  </span>
-                  <span style={{ color: "var(--accent)" }}>
-                    A votre charge : {((resteACharge / loyerNum) * 100).toFixed(1)}%
-                  </span>
+                <div className="mt-4 grid gap-6 sm:grid-cols-[180px_1fr] sm:items-center">
+                  <div className="flex justify-center">
+                    <DonutChart
+                      apl={result.montantAPL}
+                      reste={resteACharge}
+                      loyer={loyerNum}
+                    />
+                  </div>
+                  <div className="grid grid-cols-1 gap-3">
+                    <div className="rounded-xl border p-4" style={{ borderColor: "var(--border)", background: "var(--surface-alt)" }}>
+                      <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>
+                        APL mensuelle
+                      </p>
+                      <p
+                        className="mt-1 text-3xl font-bold"
+                        style={{ fontFamily: "var(--font-display)", color: "var(--primary)" }}
+                      >
+                        {fmt(result.montantAPL)} &euro;
+                      </p>
+                      <p className="mt-1 text-[11px]" style={{ color: "var(--muted)" }}>
+                        soit {fmt(result.montantAPL * 12)} &euro;/an verses par la CAF.
+                      </p>
+                    </div>
+                    <div className="rounded-xl border p-4" style={{ borderColor: "var(--border)", background: "var(--surface-alt)" }}>
+                      <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>
+                        Loyer net apres APL
+                      </p>
+                      <p
+                        className="mt-1 text-3xl font-bold"
+                        style={{
+                          fontFamily: "var(--font-display)",
+                          color: resteACharge / loyerNum < 0.5 ? "var(--primary)" : "var(--accent)",
+                        }}
+                      >
+                        {fmt(resteACharge)} &euro;
+                      </p>
+                      <p className="mt-1 text-[11px]" style={{ color: "var(--muted)" }}>
+                        {((result.montantAPL / loyerNum) * 100).toFixed(0)}% du loyer pris en charge par l&apos;APL.
+                        {resteACharge / loyerNum < 0.5 && " Tres bonne couverture."}
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </div>
             )}
+
+            {/* Cross-link CTAs */}
+            <div className="rounded-2xl border p-6" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+              <h3 className="text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: "var(--accent)" }}>
+                Vous pourriez aussi vouloir
+              </h3>
+              <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
+                <CrossLinkCard
+                  href="/outils/simulateur-prime-activite"
+                  emoji="💰"
+                  title="Prime activite"
+                  desc="Estimer votre complement de revenu"
+                />
+                <CrossLinkCard
+                  href="/outils/calculateur-salaire"
+                  emoji="💼"
+                  title="Salaire net"
+                  desc="Brut, net, impot apres PAS"
+                />
+                <CrossLinkCard
+                  href="/outils/simulateur-allocation-chomage"
+                  emoji="📊"
+                  title="Allocation chomage"
+                  desc="ARE selon France Travail"
+                />
+              </div>
+            </div>
 
             {/* Detail du calcul */}
             <div
@@ -995,5 +1081,109 @@ function PlafondRow({
       <td className="py-2 text-right font-semibold">{fmt(z2)} &euro;</td>
       <td className="py-2 text-right font-semibold">{fmt(z3)} &euro;</td>
     </tr>
+  );
+}
+
+function DonutChart({
+  apl,
+  reste,
+  loyer,
+}: {
+  apl: number;
+  reste: number;
+  loyer: number;
+}) {
+  const r = 60;
+  const c = 2 * Math.PI * r;
+  const stroke = 22;
+  const total = loyer > 0 ? loyer : 1;
+  const aplPct = Math.max(0, Math.min(apl, loyer)) / total;
+  const restePct = Math.max(0, reste) / total;
+  const aplLen = aplPct * c;
+  const resteLen = restePct * c;
+  const couverturePct = Math.round(aplPct * 100);
+  return (
+    <svg width="160" height="160" viewBox="-80 -80 160 160" role="img" aria-label="Repartition APL et reste a charge">
+      <circle cx="0" cy="0" r={r} fill="none" stroke="var(--border)" strokeWidth={stroke} />
+      <g transform="rotate(-90)">
+        <circle
+          cx="0"
+          cy="0"
+          r={r}
+          fill="none"
+          stroke="#0d4f3c"
+          strokeWidth={stroke}
+          strokeDasharray={`${aplLen} ${c}`}
+          strokeLinecap="butt"
+        />
+        <circle
+          cx="0"
+          cy="0"
+          r={r}
+          fill="none"
+          stroke="#dc2626"
+          strokeWidth={stroke}
+          strokeDasharray={`${resteLen} ${c}`}
+          strokeDashoffset={-aplLen}
+          strokeLinecap="butt"
+        />
+      </g>
+      <text
+        x="0"
+        y="-4"
+        textAnchor="middle"
+        fontSize="10"
+        fill="var(--muted)"
+        style={{ fontFamily: "var(--font-body)" }}
+      >
+        Couverture APL
+      </text>
+      <text
+        x="0"
+        y="14"
+        textAnchor="middle"
+        fontSize="16"
+        fontWeight="700"
+        fill="var(--primary)"
+        style={{ fontFamily: "var(--font-display)" }}
+      >
+        {couverturePct}%
+      </text>
+    </svg>
+  );
+}
+
+function CrossLinkCard({
+  href,
+  emoji,
+  title,
+  desc,
+}: {
+  href: string;
+  emoji: string;
+  title: string;
+  desc: string;
+}) {
+  return (
+    <Link
+      href={href}
+      className="group flex items-start gap-3 rounded-xl border p-4 transition-all hover:shadow-sm"
+      style={{ borderColor: "var(--border)", background: "var(--surface-alt)" }}
+    >
+      <span className="text-2xl" aria-hidden>
+        {emoji}
+      </span>
+      <div className="flex-1 min-w-0">
+        <p
+          className="text-sm font-semibold transition-colors group-hover:text-[#0d4f3c]"
+          style={{ color: "var(--foreground)" }}
+        >
+          {title} <span className="ml-1 inline-block transition-transform group-hover:translate-x-0.5">&rarr;</span>
+        </p>
+        <p className="mt-0.5 text-xs" style={{ color: "var(--muted)" }}>
+          {desc}
+        </p>
+      </div>
+    </Link>
   );
 }

@@ -1,9 +1,17 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import Link from "next/link";
 import AdPlaceholder from "@/components/AdPlaceholder";
 import ToolFaqSection from "@/components/ToolFaqSection";
 import ToolHowToSection from "@/components/ToolHowToSection";
+
+const PRESETS_CA = [
+  { label: "Demarrage", value: 15000 },
+  { label: "Confirme", value: 35000 },
+  { label: "Bien etabli", value: 60000 },
+  { label: "Plafond services", value: 77700 },
+];
 
 // ---------------------------------------------------------------------------
 // Types d'activite
@@ -481,6 +489,45 @@ export default function SimulateurAutoEntrepreneur() {
                       {fmtInt(result.plafondCA)} &euro; pour cette activite.
                     </p>
                   )}
+                  {/* Slider CA annuel */}
+                  <input
+                    type="range"
+                    min={0}
+                    max={200000}
+                    step={1000}
+                    value={Math.min(Math.max(caAnnuel, 0), 200000)}
+                    onChange={(e) => {
+                      const v = parseFloat(e.target.value) || 0;
+                      const display = periodeCA === "mensuel" ? Math.round(v / 12) : v;
+                      setCaInput(String(display));
+                    }}
+                    className="mt-3 w-full accent-[#0d4f3c]"
+                    aria-label="Curseur chiffre d'affaires annuel"
+                  />
+                  {/* Presets pills */}
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {PRESETS_CA.map((p) => {
+                      const presetDisplay = periodeCA === "mensuel" ? Math.round(p.value / 12) : p.value;
+                      const isActive = parseFloat(caInput) === presetDisplay;
+                      return (
+                        <button
+                          key={p.label}
+                          onClick={() => setCaInput(String(presetDisplay))}
+                          className="rounded-full border px-3 py-1.5 text-xs font-semibold transition-all hover:opacity-80"
+                          style={{
+                            borderColor: isActive ? "var(--primary)" : "var(--border)",
+                            color: isActive ? "var(--primary)" : "var(--muted)",
+                            background: isActive ? "rgba(13,79,60,0.06)" : "transparent",
+                          }}
+                        >
+                          {p.label}{" "}
+                          <span style={{ color: isActive ? "var(--primary)" : "var(--accent)", fontFamily: "var(--font-display)" }}>
+                            {fmtInt(p.value)} &euro;
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
 
                 {/* Parts IR (seulement si pas versement liberatoire) */}
@@ -565,6 +612,98 @@ export default function SimulateurAutoEntrepreneur() {
               <p className="mt-1 text-lg" style={{ color: "var(--muted)" }}>
                 soit {fmt(result.revenuNetMensuel)} &euro;/mois
               </p>
+            </div>
+
+            {/* DonutChart + cartes contextuelles */}
+            <div
+              className="rounded-2xl border p-6"
+              style={{ background: "var(--surface)", borderColor: "var(--border)" }}
+            >
+              <h2
+                className="text-xs font-semibold uppercase tracking-[0.15em]"
+                style={{ color: "var(--accent)" }}
+              >
+                Visualisation
+              </h2>
+              <div className="mt-5 grid gap-6 sm:grid-cols-[180px_1fr] sm:items-center">
+                <div className="flex justify-center">
+                  <DonutChart
+                    cotisations={result.cotisationsSociales + result.cfp + result.cfeEstime}
+                    impot={result.impotRevenu}
+                    net={Math.max(0, result.revenuNetAnnuel)}
+                    total={Math.max(1, caAnnuel)}
+                  />
+                </div>
+                <div className="grid grid-cols-1 gap-3">
+                  {(() => {
+                    const plafondVente = rates.plafondCA.vente;
+                    const plafondServices = rates.plafondCA.service_bic;
+                    const isVente = activite === "vente";
+                    const plafond = isVente ? plafondVente : plafondServices;
+                    const seuilAlerte = isVente ? plafond * 0.85 : plafond * 0.9;
+                    const proche = caAnnuel > seuilAlerte;
+                    return (
+                      <div
+                        className="rounded-xl border p-4"
+                        style={{
+                          borderColor: proche ? "#dc2626" : "var(--border)",
+                          background: proche ? "rgba(220,38,38,0.05)" : "var(--surface-alt)",
+                        }}
+                      >
+                        <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>
+                          Approche du plafond
+                        </p>
+                        <p
+                          className="mt-1 text-2xl font-bold"
+                          style={{
+                            fontFamily: "var(--font-display)",
+                            color: proche ? "#dc2626" : "var(--primary)",
+                          }}
+                        >
+                          {Math.round((caAnnuel / plafond) * 100)}%
+                        </p>
+                        <p className="mt-1 text-[11px]" style={{ color: "var(--muted)" }}>
+                          {proche
+                            ? `Vous approchez du plafond ${fmtInt(plafond)} EUR. Envisagez le passage en SASU/EURL.`
+                            : `CA actuel ${fmtInt(caAnnuel)} EUR / plafond ${fmtInt(plafond)} EUR.`}
+                        </p>
+                      </div>
+                    );
+                  })()}
+                  {(() => {
+                    const isVente = activite === "vente";
+                    const seuilTVA = isVente ? 85000 : 37500;
+                    const redevableTVA = caAnnuel > seuilTVA;
+                    return (
+                      <div
+                        className="rounded-xl border p-4"
+                        style={{
+                          borderColor: redevableTVA ? "var(--accent)" : "var(--border)",
+                          background: redevableTVA ? "rgba(232,150,62,0.05)" : "var(--surface-alt)",
+                        }}
+                      >
+                        <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>
+                          Franchise TVA
+                        </p>
+                        <p
+                          className="mt-1 text-2xl font-bold"
+                          style={{
+                            fontFamily: "var(--font-display)",
+                            color: redevableTVA ? "var(--accent)" : "var(--primary)",
+                          }}
+                        >
+                          {redevableTVA ? "Redevable" : "En franchise"}
+                        </p>
+                        <p className="mt-1 text-[11px]" style={{ color: "var(--muted)" }}>
+                          {redevableTVA
+                            ? `Au-dela de ${fmtInt(seuilTVA)} EUR, vous devez facturer la TVA et la reverser.`
+                            : `Sous le seuil ${fmtInt(seuilTVA)} EUR — mention "TVA non applicable, art. 293 B du CGI".`}
+                        </p>
+                      </div>
+                    );
+                  })()}
+                </div>
+              </div>
             </div>
 
             {/* Detail des charges */}
@@ -806,6 +945,33 @@ export default function SimulateurAutoEntrepreneur() {
               </div>
             </div>
 
+            {/* Cross-link CTAs */}
+            <div className="rounded-2xl border p-6" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+              <h3 className="text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: "var(--accent)" }}>
+                Vous pourriez aussi vouloir
+              </h3>
+              <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
+                <CrossLinkCard
+                  href="/outils/freelance-vs-cdi"
+                  emoji="📊"
+                  title="Comparer avec CDI"
+                  desc="Quel revenu net micro vs salariat ?"
+                />
+                <CrossLinkCard
+                  href="/outils/generateur-facture"
+                  emoji="📄"
+                  title="Generer facture"
+                  desc="Devis et factures conformes en PDF"
+                />
+                <CrossLinkCard
+                  href="/outils/calculateur-tjm-freelance"
+                  emoji="💼"
+                  title="Calculer son TJM"
+                  desc="Tarif journalier pour atteindre votre cible"
+                />
+              </div>
+            </div>
+
             <ToolHowToSection
               title="Comment estimer vos cotisations d'auto-entrepreneur"
               description="Le simulateur applique les taux URSSAF officiels par type d'activite et integre ACRE, versement liberatoire et CFE."
@@ -994,5 +1160,123 @@ export default function SimulateurAutoEntrepreneur() {
         </div>
       </div>
     </>
+  );
+}
+
+function DonutChart({
+  cotisations,
+  impot,
+  net,
+  total,
+}: {
+  cotisations: number;
+  impot: number;
+  net: number;
+  total: number;
+}) {
+  const r = 60;
+  const c = 2 * Math.PI * r;
+  const stroke = 22;
+  const safeTotal = total > 0 ? total : 1;
+  const cotPct = Math.max(0, cotisations) / safeTotal;
+  const impotPct = Math.max(0, impot) / safeTotal;
+  const netPct = Math.max(0, net) / safeTotal;
+  const cotLen = cotPct * c;
+  const impotLen = impotPct * c;
+  const netLen = netPct * c;
+  return (
+    <svg width="160" height="160" viewBox="-80 -80 160 160" role="img" aria-label="Repartition du chiffre d'affaires">
+      <circle cx="0" cy="0" r={r} fill="none" stroke="var(--border)" strokeWidth={stroke} />
+      <g transform="rotate(-90)">
+        <circle
+          cx="0"
+          cy="0"
+          r={r}
+          fill="none"
+          stroke="#dc2626"
+          strokeWidth={stroke}
+          strokeDasharray={`${cotLen} ${c}`}
+          strokeLinecap="butt"
+        />
+        <circle
+          cx="0"
+          cy="0"
+          r={r}
+          fill="none"
+          stroke="#e8963e"
+          strokeWidth={stroke}
+          strokeDasharray={`${impotLen} ${c}`}
+          strokeDashoffset={-cotLen}
+          strokeLinecap="butt"
+        />
+        <circle
+          cx="0"
+          cy="0"
+          r={r}
+          fill="none"
+          stroke="#0d4f3c"
+          strokeWidth={stroke}
+          strokeDasharray={`${netLen} ${c}`}
+          strokeDashoffset={-(cotLen + impotLen)}
+          strokeLinecap="butt"
+        />
+      </g>
+      <text
+        x="0"
+        y="-4"
+        textAnchor="middle"
+        fontSize="10"
+        fill="var(--muted)"
+        style={{ fontFamily: "var(--font-body)" }}
+      >
+        Net
+      </text>
+      <text
+        x="0"
+        y="14"
+        textAnchor="middle"
+        fontSize="16"
+        fontWeight="700"
+        fill="var(--primary)"
+        style={{ fontFamily: "var(--font-display)" }}
+      >
+        {Math.round(netPct * 100)}%
+      </text>
+    </svg>
+  );
+}
+
+function CrossLinkCard({
+  href,
+  emoji,
+  title,
+  desc,
+}: {
+  href: string;
+  emoji: string;
+  title: string;
+  desc: string;
+}) {
+  return (
+    <Link
+      href={href}
+      className="group flex items-start gap-3 rounded-xl border p-4 transition-all hover:shadow-sm"
+      style={{ borderColor: "var(--border)", background: "var(--surface-alt)" }}
+    >
+      <span className="text-2xl" aria-hidden>
+        {emoji}
+      </span>
+      <div className="flex-1 min-w-0">
+        <p
+          className="text-sm font-semibold transition-colors group-hover:text-[#0d4f3c]"
+          style={{ color: "var(--foreground)" }}
+        >
+          {title} <span className="ml-1 inline-block transition-transform group-hover:translate-x-0.5">&rarr;</span>
+        </p>
+        <p className="mt-0.5 text-xs" style={{ color: "var(--muted)" }}>
+          {desc}
+        </p>
+      </div>
+    </Link>
   );
 }

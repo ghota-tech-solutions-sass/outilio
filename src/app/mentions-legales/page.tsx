@@ -126,7 +126,7 @@ export default function MentionsLegales() {
           </Section>
 
           <p className="pt-4 text-xs" style={{ color: "var(--border)" }}>
-            Derniere mise a jour : 15 mars 2026
+            Derniere mise a jour : 30 avril 2026
           </p>
         </div>
       </div>

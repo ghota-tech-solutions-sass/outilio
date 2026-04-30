@@ -1,9 +1,17 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import Link from "next/link";
 import AdPlaceholder from "@/components/AdPlaceholder";
 import ToolFaqSection from "@/components/ToolFaqSection";
 import ToolHowToSection from "@/components/ToolHowToSection";
+
+const PRESETS_TAUX = [
+  { label: "Tres bon", value: 2.5 },
+  { label: "Bon", value: 3.2 },
+  { label: "Moyen", value: 4.0 },
+  { label: "Eleve", value: 5.0 },
+];
 
 interface Credit {
   id: number;
@@ -261,38 +269,73 @@ export default function CalculateurRachatCredit() {
               >
                 Nouveau credit unique
               </h2>
-              <div className="mt-4 grid grid-cols-2 gap-3">
-                <div>
-                  <label
-                    className="text-[10px] font-semibold uppercase tracking-wider"
-                    style={{ color: "var(--muted)" }}
-                  >
-                    Nouveau taux (%)
-                  </label>
+              <div className="mt-4">
+                <label
+                  className="text-[10px] font-semibold uppercase tracking-wider"
+                  style={{ color: "var(--muted)" }}
+                >
+                  Nouveau taux d&apos;interet (%)
+                </label>
+                <div className="relative mt-1">
                   <input
                     type="number"
-                    step="0.1"
+                    step="0.05"
                     value={nouveauTaux}
                     onChange={(e) => setNouveauTaux(e.target.value)}
-                    className="mt-1 w-full rounded-xl border px-3 py-2.5 text-sm font-medium"
-                    style={{ borderColor: "var(--border)" }}
+                    className="w-full rounded-xl border px-4 py-4 text-2xl font-bold tracking-tight"
+                    style={{ borderColor: "var(--border)", fontFamily: "var(--font-display)" }}
                   />
+                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-lg" style={{ color: "var(--muted)" }}>%</span>
                 </div>
-                <div>
-                  <label
-                    className="text-[10px] font-semibold uppercase tracking-wider"
-                    style={{ color: "var(--muted)" }}
-                  >
-                    Duree souhaitee (mois)
-                  </label>
-                  <input
-                    type="number"
-                    value={nouvelleDuree}
-                    onChange={(e) => setNouvelleDuree(e.target.value)}
-                    className="mt-1 w-full rounded-xl border px-3 py-2.5 text-sm font-medium"
-                    style={{ borderColor: "var(--border)" }}
-                  />
+                {/* Slider taux */}
+                <input
+                  type="range"
+                  min={1.5}
+                  max={7}
+                  step={0.05}
+                  value={Math.min(Math.max(parseFloat(nouveauTaux) || 0, 1.5), 7)}
+                  onChange={(e) => setNouveauTaux(e.target.value)}
+                  className="mt-3 w-full accent-[#0d4f3c]"
+                  aria-label="Curseur nouveau taux"
+                />
+                {/* Presets pills */}
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {PRESETS_TAUX.map((p) => {
+                    const isActive = parseFloat(nouveauTaux) === p.value;
+                    return (
+                      <button
+                        key={p.label}
+                        onClick={() => setNouveauTaux(String(p.value))}
+                        className="rounded-full border px-3 py-1.5 text-xs font-semibold transition-all hover:opacity-80"
+                        style={{
+                          borderColor: isActive ? "var(--primary)" : "var(--border)",
+                          color: isActive ? "var(--primary)" : "var(--muted)",
+                          background: isActive ? "rgba(13,79,60,0.06)" : "transparent",
+                        }}
+                      >
+                        {p.label}{" "}
+                        <span style={{ color: isActive ? "var(--primary)" : "var(--accent)", fontFamily: "var(--font-display)" }}>
+                          {p.value.toFixed(2).replace(".", ",")}%
+                        </span>
+                      </button>
+                    );
+                  })}
                 </div>
+              </div>
+              <div className="mt-4">
+                <label
+                  className="text-[10px] font-semibold uppercase tracking-wider"
+                  style={{ color: "var(--muted)" }}
+                >
+                  Duree souhaitee (mois)
+                </label>
+                <input
+                  type="number"
+                  value={nouvelleDuree}
+                  onChange={(e) => setNouvelleDuree(e.target.value)}
+                  className="mt-1 w-full rounded-xl border px-3 py-2.5 text-sm font-medium"
+                  style={{ borderColor: "var(--border)" }}
+                />
               </div>
             </div>
 
@@ -381,6 +424,79 @@ export default function CalculateurRachatCredit() {
                       ? `Vous economisez ${fmt(result.economieTotale)} € sur la duree totale du credit.`
                       : `Le rachat vous couterait ${fmt(Math.abs(result.economieTotale))} € de plus au total.`}
                   </p>
+                </div>
+
+                {/* DonutChart + cartes contextuelles */}
+                <div
+                  className="rounded-2xl border p-6"
+                  style={{ background: "var(--surface)", borderColor: "var(--border)" }}
+                >
+                  <h2
+                    className="text-xs font-semibold uppercase tracking-[0.15em]"
+                    style={{ color: "var(--accent)" }}
+                  >
+                    Visualisation
+                  </h2>
+                  <div className="mt-5 grid gap-6 sm:grid-cols-[180px_1fr] sm:items-center">
+                    <div className="flex justify-center">
+                      <DonutChart
+                        economie={result.economieTotale}
+                        frais={result.totalFrais}
+                      />
+                    </div>
+                    <div className="grid grid-cols-1 gap-3">
+                      <div className="rounded-xl border p-4" style={{ borderColor: "var(--border)", background: "var(--surface-alt)" }}>
+                        <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>
+                          Gain mensuel
+                        </p>
+                        <p
+                          className="mt-1 text-3xl font-bold"
+                          style={{
+                            fontFamily: "var(--font-display)",
+                            color: result.economieMensuelle >= 0 ? "var(--primary)" : "#dc2626",
+                          }}
+                        >
+                          {result.economieMensuelle >= 0 ? "+" : ""}
+                          {fmt(result.economieMensuelle)} &euro;
+                        </p>
+                        <p className="mt-1 text-[11px]" style={{ color: "var(--muted)" }}>
+                          {result.economieMensuelle > 0
+                            ? "Rachat rentable — votre mensualite baisse."
+                            : "Rachat peu pertinent — la mensualite augmente."}
+                        </p>
+                      </div>
+                      <div className="rounded-xl border p-4" style={{ borderColor: "var(--border)", background: "var(--surface-alt)" }}>
+                        <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>
+                          Delai amortissement frais
+                        </p>
+                        {result.economieMensuelle > 0 ? (
+                          <>
+                            <p
+                              className="mt-1 text-3xl font-bold"
+                              style={{ fontFamily: "var(--font-display)", color: "var(--primary)" }}
+                            >
+                              {Math.ceil(result.totalFrais / result.economieMensuelle)} mois
+                            </p>
+                            <p className="mt-1 text-[11px]" style={{ color: "var(--muted)" }}>
+                              Temps necessaire pour rembourser les {fmt(result.totalFrais)} &euro; de frais via votre gain mensuel.
+                            </p>
+                          </>
+                        ) : (
+                          <>
+                            <p
+                              className="mt-1 text-3xl font-bold"
+                              style={{ fontFamily: "var(--font-display)", color: "#dc2626" }}
+                            >
+                              N/A
+                            </p>
+                            <p className="mt-1 text-[11px]" style={{ color: "var(--muted)" }}>
+                              Sans gain mensuel, les frais ne s&apos;amortissent jamais.
+                            </p>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Cards comparatif */}
@@ -598,6 +714,33 @@ export default function CalculateurRachatCredit() {
                 </div>
               </>
             )}
+
+            {/* Cross-link CTAs */}
+            <div className="rounded-2xl border p-6" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+              <h3 className="text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: "var(--accent)" }}>
+                Vous pourriez aussi vouloir
+              </h3>
+              <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
+                <CrossLinkCard
+                  href="/outils/calculateur-pret-immobilier"
+                  emoji="🏠"
+                  title="Simuler nouveau pret"
+                  desc="Mensualite, TAEG, tableau d'amortissement"
+                />
+                <CrossLinkCard
+                  href="/outils/calculateur-frais-notaire"
+                  emoji="🏛️"
+                  title="Frais notaire"
+                  desc="Estimation par departement et type de bien"
+                />
+                <CrossLinkCard
+                  href="/outils/calculateur-salaire"
+                  emoji="💼"
+                  title="Capacite d'emprunt"
+                  desc="Mensualite max selon votre net"
+                />
+              </div>
+            </div>
 
             {/* Contenu SEO */}
             <div
@@ -939,5 +1082,112 @@ function CompareRow({
         </span>
       </div>
     </div>
+  );
+}
+
+function DonutChart({
+  economie,
+  frais,
+}: {
+  economie: number;
+  frais: number;
+}) {
+  const r = 60;
+  const c = 2 * Math.PI * r;
+  const stroke = 22;
+  const absEcon = Math.abs(economie);
+  const absFrais = Math.abs(frais);
+  const total = absEcon + absFrais > 0 ? absEcon + absFrais : 1;
+  const econPct = absEcon / total;
+  const fraisPct = absFrais / total;
+  const econLen = econPct * c;
+  const fraisLen = fraisPct * c;
+  const positive = economie >= 0;
+  // Si economie negative, swap les couleurs (rouge pour economie, vert pour frais)
+  const econColor = positive ? "#0d4f3c" : "#dc2626";
+  const fraisColor = positive ? "#dc2626" : "#0d4f3c";
+  return (
+    <svg width="160" height="160" viewBox="-80 -80 160 160" role="img" aria-label="Economie totale vs frais de rachat">
+      <circle cx="0" cy="0" r={r} fill="none" stroke="var(--border)" strokeWidth={stroke} />
+      <g transform="rotate(-90)">
+        <circle
+          cx="0"
+          cy="0"
+          r={r}
+          fill="none"
+          stroke={econColor}
+          strokeWidth={stroke}
+          strokeDasharray={`${econLen} ${c}`}
+          strokeLinecap="butt"
+        />
+        <circle
+          cx="0"
+          cy="0"
+          r={r}
+          fill="none"
+          stroke={fraisColor}
+          strokeWidth={stroke}
+          strokeDasharray={`${fraisLen} ${c}`}
+          strokeDashoffset={-econLen}
+          strokeLinecap="butt"
+        />
+      </g>
+      <text
+        x="0"
+        y="-4"
+        textAnchor="middle"
+        fontSize="10"
+        fill="var(--muted)"
+        style={{ fontFamily: "var(--font-body)" }}
+      >
+        {positive ? "Economie" : "Surcout"}
+      </text>
+      <text
+        x="0"
+        y="14"
+        textAnchor="middle"
+        fontSize="14"
+        fontWeight="700"
+        fill={positive ? "#0d4f3c" : "#dc2626"}
+        style={{ fontFamily: "var(--font-display)" }}
+      >
+        {Math.round(econPct * 100)}%
+      </text>
+    </svg>
+  );
+}
+
+function CrossLinkCard({
+  href,
+  emoji,
+  title,
+  desc,
+}: {
+  href: string;
+  emoji: string;
+  title: string;
+  desc: string;
+}) {
+  return (
+    <Link
+      href={href}
+      className="group flex items-start gap-3 rounded-xl border p-4 transition-all hover:shadow-sm"
+      style={{ borderColor: "var(--border)", background: "var(--surface-alt)" }}
+    >
+      <span className="text-2xl" aria-hidden>
+        {emoji}
+      </span>
+      <div className="flex-1 min-w-0">
+        <p
+          className="text-sm font-semibold transition-colors group-hover:text-[#0d4f3c]"
+          style={{ color: "var(--foreground)" }}
+        >
+          {title} <span className="ml-1 inline-block transition-transform group-hover:translate-x-0.5">&rarr;</span>
+        </p>
+        <p className="mt-0.5 text-xs" style={{ color: "var(--muted)" }}>
+          {desc}
+        </p>
+      </div>
+    </Link>
   );
 }
