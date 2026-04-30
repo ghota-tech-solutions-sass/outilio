@@ -34,7 +34,7 @@ export default function ArticleDPEFG() {
             className="animate-fade-up stagger-2 mt-4 flex items-center gap-4 text-xs font-medium"
             style={{ color: "var(--muted)" }}
           >
-            <span>30 avril 2026</span>
+            <span>22 avril 2026</span>
             <span className="h-1 w-1 rounded-full" style={{ background: "var(--border)" }} />
             <span>7 min de lecture</span>
           </div>

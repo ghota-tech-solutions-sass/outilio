@@ -34,7 +34,7 @@ export default function ArticleRachatCreditImmo2026() {
             className="animate-fade-up stagger-2 mt-4 flex items-center gap-4 text-xs font-medium"
             style={{ color: "var(--muted)" }}
           >
-            <span>30 avril 2026</span>
+            <span>28 avril 2026</span>
             <span className="h-1 w-1 rounded-full" style={{ background: "var(--border)" }} />
             <span>6 min de lecture</span>
           </div>

@@ -2,12 +2,12 @@ import Link from "next/link";
 
 const ARTICLES = [
   {
-    slug: "ptz-2026-nouveautes",
-    title: "PTZ 2026 : ce qui a change avec le nouveau dispositif elargi",
+    slug: "rachat-credit-immo-2026",
+    title: "Rachat de credit immo 2026 : quand ca vaut vraiment le coup ?",
     description:
-      "Le Pret a Taux Zero 2026 etendu a toute la France. Quotites 50 % en collectif neuf, plafonds revalorises, exemple chiffre Lyon : tout savoir.",
-    date: "30 avril 2026",
-    category: "Immobilier",
+      "Ecart de taux minimum, frais a anticiper, delai d&apos;amortissement, exemple chiffre. Tous les criteres pour decider de racheter ou non.",
+    date: "28 avril 2026",
+    category: "Finance",
     readTime: "6 min",
   },
   {
@@ -15,17 +15,17 @@ const ARTICLES = [
     title: "DPE F ou G : que faire avec un logement energivore en 2026",
     description:
       "Calendrier des interdictions, decote 15-20 % a la revente, MaPrimeRenov, travaux prioritaires. Le guide pour decider en 2026.",
-    date: "30 avril 2026",
+    date: "22 avril 2026",
     category: "Immobilier",
     readTime: "7 min",
   },
   {
-    slug: "rachat-credit-immo-2026",
-    title: "Rachat de credit immo 2026 : quand ca vaut vraiment le coup ?",
+    slug: "ptz-2026-nouveautes",
+    title: "PTZ 2026 : ce qui a change avec le nouveau dispositif elargi",
     description:
-      "Ecart de taux minimum, frais a anticiper, delai d&apos;amortissement, exemple chiffre. Tous les criteres pour decider de racheter ou non.",
-    date: "30 avril 2026",
-    category: "Finance",
+      "Le Pret a Taux Zero 2026 etendu a toute la France. Quotites 50 % en collectif neuf, plafonds revalorises, exemple chiffre Lyon : tout savoir.",
+    date: "15 avril 2026",
+    category: "Immobilier",
     readTime: "6 min",
   },
   {
