@@ -1,9 +1,17 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import Link from "next/link";
 import AdPlaceholder from "@/components/AdPlaceholder";
 import ToolFaqSection from "@/components/ToolFaqSection";
 import ToolHowToSection from "@/components/ToolHowToSection";
+
+const PRESETS_PRIX = [
+  { label: "Studio", value: 120000 },
+  { label: "T2", value: 220000 },
+  { label: "T3", value: 380000 },
+  { label: "Maison", value: 600000 },
+];
 
 // ---------------------------------------------------------------------------
 // Baremes officiels frais de notaire (source: loi de finances, decrets)
@@ -291,6 +299,163 @@ function StatBox({ label, value, primary, accent }: { label: string; value: stri
   );
 }
 
+function Row({
+  label,
+  value,
+  highlight,
+  primary,
+  sub,
+  dotColor,
+}: {
+  label: string;
+  value: string;
+  highlight?: boolean;
+  primary?: boolean;
+  sub?: boolean;
+  dotColor?: string;
+}) {
+  return (
+    <div
+      className="flex items-center justify-between rounded-lg px-4 py-3"
+      style={highlight ? { background: "var(--surface-alt)" } : {}}
+    >
+      <span className="flex items-center gap-2 text-sm" style={{ color: "var(--muted)" }}>
+        {dotColor && (
+          <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ background: dotColor }} />
+        )}
+        {label}
+      </span>
+      <span
+        className={`font-semibold ${primary ? "text-xl" : ""}`}
+        style={{
+          color: primary ? "var(--primary)" : "var(--foreground)",
+          fontFamily: primary ? "var(--font-display)" : undefined,
+        }}
+      >
+        {value}
+      </span>
+    </div>
+  );
+}
+
+function DonutChartFraisNotaire({
+  droits,
+  emoluments,
+  debours,
+  pct,
+}: {
+  droits: number;
+  emoluments: number;
+  debours: number;
+  pct: number;
+}) {
+  const r = 60;
+  const c = 2 * Math.PI * r;
+  const stroke = 22;
+  const total = droits + emoluments + debours > 0 ? droits + emoluments + debours : 1;
+  const droitsPct = Math.max(0, droits) / total;
+  const emolPct = Math.max(0, emoluments) / total;
+  const deboursPct = Math.max(0, debours) / total;
+  const droitsLen = droitsPct * c;
+  const emolLen = emolPct * c;
+  const deboursLen = deboursPct * c;
+  return (
+    <svg width="160" height="160" viewBox="-80 -80 160 160" role="img" aria-label="Repartition des frais de notaire">
+      <circle cx="0" cy="0" r={r} fill="none" stroke="var(--border)" strokeWidth={stroke} />
+      <g transform="rotate(-90)">
+        <circle
+          cx="0"
+          cy="0"
+          r={r}
+          fill="none"
+          stroke="#dc2626"
+          strokeWidth={stroke}
+          strokeDasharray={`${droitsLen} ${c}`}
+          strokeLinecap="butt"
+        />
+        <circle
+          cx="0"
+          cy="0"
+          r={r}
+          fill="none"
+          stroke="#e8963e"
+          strokeWidth={stroke}
+          strokeDasharray={`${emolLen} ${c}`}
+          strokeDashoffset={-droitsLen}
+          strokeLinecap="butt"
+        />
+        <circle
+          cx="0"
+          cy="0"
+          r={r}
+          fill="none"
+          stroke="#0d4f3c"
+          strokeWidth={stroke}
+          strokeDasharray={`${deboursLen} ${c}`}
+          strokeDashoffset={-(droitsLen + emolLen)}
+          strokeLinecap="butt"
+        />
+      </g>
+      <text
+        x="0"
+        y="-4"
+        textAnchor="middle"
+        fontSize="10"
+        fill="var(--muted)"
+        style={{ fontFamily: "var(--font-body)" }}
+      >
+        % du prix
+      </text>
+      <text
+        x="0"
+        y="14"
+        textAnchor="middle"
+        fontSize="16"
+        fontWeight="700"
+        fill="var(--primary)"
+        style={{ fontFamily: "var(--font-display)" }}
+      >
+        {pct.toFixed(1)}%
+      </text>
+    </svg>
+  );
+}
+
+function CrossLinkCard({
+  href,
+  emoji,
+  title,
+  desc,
+}: {
+  href: string;
+  emoji: string;
+  title: string;
+  desc: string;
+}) {
+  return (
+    <Link
+      href={href}
+      className="group flex items-start gap-3 rounded-xl border p-4 transition-all hover:shadow-sm"
+      style={{ borderColor: "var(--border)", background: "var(--surface-alt)" }}
+    >
+      <span className="text-2xl" aria-hidden>
+        {emoji}
+      </span>
+      <div className="flex-1 min-w-0">
+        <p
+          className="text-sm font-semibold transition-colors group-hover:text-[#0d4f3c]"
+          style={{ color: "var(--foreground)" }}
+        >
+          {title} <span className="ml-1 inline-block transition-transform group-hover:translate-x-0.5">&rarr;</span>
+        </p>
+        <p className="mt-0.5 text-xs" style={{ color: "var(--muted)" }}>
+          {desc}
+        </p>
+      </div>
+    </Link>
+  );
+}
+
 // ---------------------------------------------------------------------------
 // Page principale
 // ---------------------------------------------------------------------------
@@ -310,14 +475,6 @@ export default function CalculateurFraisNotaire() {
   const tauxDeptLabel = typeBien === "ancien"
     ? `${(result.tauxDepartemental * 100).toFixed(2)}%`
     : "0,715% (TPF neuf)";
-
-  // Repartition pour barre visuelle
-  const parts = [
-    { label: "Droits de mutation", value: result.totalDroitsMutation, color: "var(--primary)" },
-    { label: "Emoluments TTC", value: result.emolumentsTTC, color: "var(--accent)" },
-    { label: "Debours & formalites", value: result.debours + result.securiteImmobiliere, color: "var(--muted)" },
-  ];
-  const totalParts = parts.reduce((s, p) => s + p.value, 0);
 
   return (
     <>
@@ -355,6 +512,40 @@ export default function CalculateurFraisNotaire() {
                       style={{ borderColor: "var(--border)", fontFamily: "var(--font-display)" }}
                     />
                     <span className="absolute right-4 top-1/2 -translate-y-1/2 text-lg" style={{ color: "var(--muted)" }}>&euro;</span>
+                  </div>
+                  {/* Slider */}
+                  <input
+                    type="range"
+                    min={50000}
+                    max={1500000}
+                    step={5000}
+                    value={Math.min(Math.max(parseFloat(prix) || 0, 50000), 1500000)}
+                    onChange={(e) => setPrix(e.target.value)}
+                    className="mt-3 w-full accent-[#0d4f3c]"
+                    aria-label="Curseur prix du bien"
+                  />
+                  {/* Presets */}
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {PRESETS_PRIX.map((p) => {
+                      const isActive = parseFloat(prix) === p.value;
+                      return (
+                        <button
+                          key={p.label}
+                          onClick={() => setPrix(String(p.value))}
+                          className="rounded-full border px-3 py-1.5 text-xs font-semibold transition-all hover:opacity-80"
+                          style={{
+                            borderColor: isActive ? "var(--primary)" : "var(--border)",
+                            color: isActive ? "var(--primary)" : "var(--muted)",
+                            background: isActive ? "rgba(13,79,60,0.06)" : "transparent",
+                          }}
+                        >
+                          {p.label}{" "}
+                          <span style={{ color: isActive ? "var(--primary)" : "var(--accent)", fontFamily: "var(--font-display)" }}>
+                            {p.value.toLocaleString("fr-FR")} &euro;
+                          </span>
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
 
@@ -431,31 +622,81 @@ export default function CalculateurFraisNotaire() {
               </p>
             </div>
 
-            {/* Barre de repartition visuelle */}
-            <div className="rounded-2xl border p-6" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+            {/* Visualisation donut */}
+            <div className="animate-scale-in stagger-2 rounded-2xl border p-6" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
               <h2 className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--accent)" }}>
                 Repartition des frais
               </h2>
-              <div className="mt-4 flex h-8 overflow-hidden rounded-full" style={{ background: "var(--surface-alt)" }}>
-                {parts.map((p, i) => {
-                  const pct = totalParts > 0 ? (p.value / totalParts) * 100 : 0;
-                  return (
-                    <div
-                      key={i}
-                      className="h-full transition-all duration-500"
-                      style={{ width: `${pct}%`, background: p.color }}
-                      title={`${p.label}: ${fmt(p.value)} \u20AC (${pct.toFixed(1)}%)`}
-                    />
-                  );
-                })}
+              <div className="mt-5 grid gap-6 sm:grid-cols-[180px_1fr] sm:items-center">
+                <div className="flex justify-center">
+                  <DonutChartFraisNotaire
+                    droits={result.totalDroitsMutation}
+                    emoluments={result.emolumentsTTC}
+                    debours={result.debours + result.securiteImmobiliere}
+                    pct={result.pourcentage}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Row label="Droits de mutation" value={`${fmt(result.totalDroitsMutation)} \u20AC`} sub dotColor="#dc2626" />
+                  <Row label="Emoluments notaire (TTC)" value={`${fmt(result.emolumentsTTC)} \u20AC`} sub dotColor="#e8963e" />
+                  <Row label="Debours et formalites" value={`${fmt(result.debours + result.securiteImmobiliere)} \u20AC`} sub dotColor="#0d4f3c" />
+                  <Row label="Total des frais" value={`${fmt(result.totalFrais)} \u20AC`} highlight primary dotColor="var(--primary)" />
+                </div>
               </div>
-              <div className="mt-3 flex flex-wrap gap-4 text-xs">
-                {parts.map((p, i) => (
-                  <div key={i} className="flex items-center gap-2">
-                    <span className="inline-block h-3 w-3 rounded-full" style={{ background: p.color }} />
-                    <span style={{ color: "var(--muted)" }}>{p.label} : <strong className="text-[var(--foreground)]">{fmt(p.value)} &euro;</strong></span>
-                  </div>
-                ))}
+
+              {/* Cartes contextuelles */}
+              <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <div className="rounded-xl border p-4" style={{ borderColor: "var(--border)", background: "var(--surface-alt)" }}>
+                  <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>
+                    Total a prevoir
+                  </p>
+                  <p className="mt-1 text-2xl font-bold" style={{ fontFamily: "var(--font-display)", color: "var(--primary)" }}>
+                    {fmt(result.totalFrais)} &euro;
+                  </p>
+                  <p className="mt-1 text-[11px]" style={{ color: "var(--muted)" }}>
+                    A regler le jour de la signature de l&apos;acte authentique chez le notaire.
+                  </p>
+                </div>
+                <div className="rounded-xl border p-4" style={{ borderColor: "var(--border)", background: "var(--surface-alt)" }}>
+                  <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>
+                    Soit X% du prix du bien
+                  </p>
+                  <p className="mt-1 text-2xl font-bold" style={{ fontFamily: "var(--font-display)", color: result.pourcentage >= 7 ? "#dc2626" : "var(--accent)" }}>
+                    {fmtPct(result.pourcentage)}%
+                  </p>
+                  <p className="mt-1 text-[11px]" style={{ color: "var(--muted)" }}>
+                    {typeBien === "neuf"
+                      ? "Ratio typique pour du neuf (2 a 3%) grace au taux reduit de TPF."
+                      : "Ratio typique pour de l'ancien (7 a 8%) avec DMTO majoritairement a 5%."}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Cross-link CTAs */}
+            <div className="rounded-2xl border p-6" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+              <h3 className="text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: "var(--accent)" }}>
+                Vous pourriez aussi vouloir
+              </h3>
+              <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
+                <CrossLinkCard
+                  href="/outils/calculateur-pret-immobilier"
+                  emoji="\uD83C\uDFE0"
+                  title="Simuler le pret"
+                  desc="Mensualite et capacite d&apos;emprunt selon HCSF"
+                />
+                <CrossLinkCard
+                  href="/outils/simulateur-plus-value-immobiliere"
+                  emoji="\uD83D\uDCC8"
+                  title="Plus-value immo"
+                  desc="Imposition sur la revente d&apos;un bien"
+                />
+                <CrossLinkCard
+                  href="/outils/simulateur-ptz-2026"
+                  emoji="\uD83C\uDD93"
+                  title="PTZ 2026"
+                  desc="Pret a taux zero pour primo-accedants"
+                />
               </div>
             </div>
 

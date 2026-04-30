@@ -1,9 +1,21 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import Link from "next/link";
 import AdPlaceholder from "@/components/AdPlaceholder";
 import ToolFaqSection from "@/components/ToolFaqSection";
 import ToolHowToSection from "@/components/ToolHowToSection";
+
+const PRESETS_PRIX = [
+  { label: "Studio", value: 150000 },
+  { label: "T2 province", value: 220000 },
+  { label: "T3 grande ville", value: 400000 },
+  { label: "Maison", value: 650000 },
+];
+
+const PRIX_MIN = 80000;
+const PRIX_MAX = 1500000;
+const PRIX_STEP = 5000;
 
 export default function CalculateurPret() {
   const [capital, setCapital] = useState("200000");
@@ -79,8 +91,59 @@ export default function CalculateurPret() {
               className="animate-fade-up stagger-2 rounded-2xl border p-6 shadow-sm"
               style={{ background: "var(--surface)", borderColor: "var(--border)" }}
             >
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <Field label="Prix du bien (&euro;)" value={capital} onChange={setCapital} />
+              {/* Prix du bien : input principal avec slider + presets */}
+              <div>
+                <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>
+                  Prix du bien
+                </label>
+                <div className="relative mt-2">
+                  <input
+                    type="number"
+                    value={capital}
+                    onChange={(e) => setCapital(e.target.value)}
+                    className="w-full rounded-xl border px-4 py-4 text-2xl font-bold tracking-tight"
+                    style={{ borderColor: "var(--border)", fontFamily: "var(--font-display)" }}
+                  />
+                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-lg" style={{ color: "var(--muted)" }}>&euro;</span>
+                </div>
+                {/* Slider */}
+                <input
+                  type="range"
+                  min={PRIX_MIN}
+                  max={PRIX_MAX}
+                  step={PRIX_STEP}
+                  value={Math.min(Math.max(parseFloat(capital) || 0, PRIX_MIN), PRIX_MAX)}
+                  onChange={(e) => setCapital(e.target.value)}
+                  className="mt-3 w-full accent-[#0d4f3c]"
+                  aria-label="Curseur prix du bien"
+                />
+                {/* Presets */}
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {PRESETS_PRIX.map((p) => {
+                    const isActive = parseFloat(capital) === p.value;
+                    return (
+                      <button
+                        key={p.label}
+                        onClick={() => setCapital(String(p.value))}
+                        className="rounded-full border px-3 py-1.5 text-xs font-semibold transition-all hover:opacity-80"
+                        style={{
+                          borderColor: isActive ? "var(--primary)" : "var(--border)",
+                          color: isActive ? "var(--primary)" : "var(--muted)",
+                          background: isActive ? "rgba(13,79,60,0.06)" : "transparent",
+                        }}
+                      >
+                        {p.label}{" "}
+                        <span style={{ color: isActive ? "var(--primary)" : "var(--accent)", fontFamily: "var(--font-display)" }}>
+                          {p.value.toLocaleString("fr-FR")} €
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Autres champs */}
+              <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <Field label="Apport personnel (&euro;)" value={apport} onChange={setApport} />
                 <Field label="Taux d'interet (%)" value={taux} onChange={setTaux} step="0.1" />
                 <Field label="Duree (annees)" value={duree} onChange={setDuree} />
@@ -95,6 +158,96 @@ export default function CalculateurPret() {
                   <StatCard label="Dont assurance" value={`${fmt(result.assuranceMensuelle)} €/mois`} />
                   <StatCard label="Cout total interets" value={`${fmt(result.interetsTotal)} €`} />
                   <StatCard label="Cout total assurance" value={`${fmt(result.coutAssuranceTotal)} €`} />
+                </div>
+
+                {/* Donut + repartition + cartes contextuelles */}
+                <div className="rounded-2xl border p-6 shadow-sm" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+                  <h2 className="text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: "var(--accent)" }}>
+                    Repartition du cout total
+                  </h2>
+                  <div className="mt-5 grid gap-6 sm:grid-cols-[180px_1fr] sm:items-center">
+                    <div className="flex justify-center">
+                      <DonutChart
+                        capital={result.emprunt}
+                        interets={result.interetsTotal}
+                        assurance={result.coutAssuranceTotal}
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Row label="Capital emprunte" value={`${fmt(result.emprunt)} €`} dotColor="#0d4f3c" />
+                      <Row label="Interets totaux" value={`${fmt(result.interetsTotal)} €`} sub dotColor="#dc2626" />
+                      <Row label="Assurance totale" value={`${fmt(result.coutAssuranceTotal)} €`} sub dotColor="#e8963e" />
+                      <Row
+                        label="Cout total du credit"
+                        value={`${fmt(result.emprunt + result.interetsTotal + result.coutAssuranceTotal)} €`}
+                        highlight
+                        primary
+                      />
+                    </div>
+                  </div>
+
+                  {/* Cartes contextuelles HCSF + cout */}
+                  {(() => {
+                    const prixBien = parseFloat(capital) || 0;
+                    const revenuMinHCSF = result.mensualite / 0.35;
+                    const surcoutCredit = result.interetsTotal + result.coutAssuranceTotal;
+                    const ratioSurcout = prixBien > 0 ? (surcoutCredit / prixBien) * 100 : 0;
+                    return (
+                      <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                        <div className="rounded-xl border p-4" style={{ borderColor: "var(--border)", background: "var(--surface-alt)" }}>
+                          <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>
+                            Capacite HCSF 35%
+                          </p>
+                          <p className="mt-1 text-2xl font-bold" style={{ fontFamily: "var(--font-display)", color: "var(--primary)" }}>
+                            {fmt(revenuMinHCSF)} &euro;/mois
+                          </p>
+                          <p className="mt-1 text-[11px]" style={{ color: "var(--muted)" }}>
+                            Revenu net mensuel minimum recommande pour respecter le seuil de 35% d&apos;endettement (mensualite assurance comprise).
+                          </p>
+                        </div>
+                        <div className="rounded-xl border p-4" style={{ borderColor: "var(--border)", background: "var(--surface-alt)" }}>
+                          <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>
+                            Surcout du credit
+                          </p>
+                          <p className="mt-1 text-2xl font-bold" style={{ fontFamily: "var(--font-display)", color: ratioSurcout >= 30 ? "#dc2626" : "var(--primary)" }}>
+                            {ratioSurcout.toFixed(1)}% du prix
+                          </p>
+                          <p className="mt-1 text-[11px]" style={{ color: "var(--muted)" }}>
+                            {ratioSurcout < 15 && "Cout maitrise — duree courte ou taux bas."}
+                            {ratioSurcout >= 15 && ratioSurcout < 30 && `Vous payez ${fmt(surcoutCredit)} € en plus du prix d'achat.`}
+                            {ratioSurcout >= 30 && `Cout eleve : ${fmt(surcoutCredit)} € d'interets+assurance. Reduisez la duree si possible.`}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </div>
+
+                {/* Cross-link CTAs */}
+                <div className="rounded-2xl border p-6 shadow-sm" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+                  <h3 className="text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: "var(--accent)" }}>
+                    Vous pourriez aussi vouloir
+                  </h3>
+                  <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
+                    <CrossLinkCard
+                      href="/outils/calculateur-frais-notaire"
+                      emoji="🏛️"
+                      title="Frais de notaire"
+                      desc="Estimer le budget total de l'achat"
+                    />
+                    <CrossLinkCard
+                      href="/outils/calculateur-rachat-credit"
+                      emoji="🔄"
+                      title="Rachat de credit"
+                      desc="Renegocier votre taux et economiser"
+                    />
+                    <CrossLinkCard
+                      href="/outils/simulateur-ptz-2026"
+                      emoji="🆓"
+                      title="PTZ 2026"
+                      desc="Pret a taux zero pour primo-accedant"
+                    />
+                  </div>
                 </div>
 
                 <div
@@ -383,5 +536,162 @@ function StatCard({ label, value, primary }: { label: string; value: string; pri
         {value}
       </p>
     </div>
+  );
+}
+
+function Row({
+  label,
+  value,
+  highlight,
+  primary,
+  sub,
+  dotColor,
+}: {
+  label: string;
+  value: string;
+  highlight?: boolean;
+  primary?: boolean;
+  sub?: boolean;
+  dotColor?: string;
+}) {
+  return (
+    <div
+      className="flex items-center justify-between rounded-lg px-4 py-3"
+      style={highlight ? { background: "var(--surface-alt)" } : {}}
+    >
+      <span className="flex items-center gap-2 text-sm" style={{ color: "var(--muted)" }}>
+        {dotColor && (
+          <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ background: dotColor }} />
+        )}
+        {label}
+      </span>
+      <span
+        className={`font-semibold ${primary ? "text-xl" : ""} ${sub ? "" : ""}`}
+        style={{
+          color: primary ? "var(--primary)" : "var(--foreground)",
+          fontFamily: primary ? "var(--font-display)" : undefined,
+        }}
+      >
+        {value}
+      </span>
+    </div>
+  );
+}
+
+function DonutChart({
+  capital,
+  interets,
+  assurance,
+}: {
+  capital: number;
+  interets: number;
+  assurance: number;
+}) {
+  const r = 60;
+  const c = 2 * Math.PI * r;
+  const stroke = 22;
+  const total = capital + interets + assurance;
+  const safeTotal = total > 0 ? total : 1;
+  const capPct = Math.max(0, capital) / safeTotal;
+  const intPct = Math.max(0, interets) / safeTotal;
+  const assPct = Math.max(0, assurance) / safeTotal;
+  const capLen = capPct * c;
+  const intLen = intPct * c;
+  const assLen = assPct * c;
+  const interetsPctTotal = total > 0 ? (interets / total) * 100 : 0;
+  return (
+    <svg width="160" height="160" viewBox="-80 -80 160 160" role="img" aria-label="Repartition du cout total du credit">
+      <circle cx="0" cy="0" r={r} fill="none" stroke="var(--border)" strokeWidth={stroke} />
+      <g transform="rotate(-90)">
+        <circle
+          cx="0"
+          cy="0"
+          r={r}
+          fill="none"
+          stroke="#0d4f3c"
+          strokeWidth={stroke}
+          strokeDasharray={`${capLen} ${c}`}
+          strokeLinecap="butt"
+        />
+        <circle
+          cx="0"
+          cy="0"
+          r={r}
+          fill="none"
+          stroke="#dc2626"
+          strokeWidth={stroke}
+          strokeDasharray={`${intLen} ${c}`}
+          strokeDashoffset={-capLen}
+          strokeLinecap="butt"
+        />
+        <circle
+          cx="0"
+          cy="0"
+          r={r}
+          fill="none"
+          stroke="#e8963e"
+          strokeWidth={stroke}
+          strokeDasharray={`${assLen} ${c}`}
+          strokeDashoffset={-(capLen + intLen)}
+          strokeLinecap="butt"
+        />
+      </g>
+      <text
+        x="0"
+        y="-4"
+        textAnchor="middle"
+        fontSize="10"
+        fill="var(--muted)"
+        style={{ fontFamily: "var(--font-body)" }}
+      >
+        Interets
+      </text>
+      <text
+        x="0"
+        y="14"
+        textAnchor="middle"
+        fontSize="16"
+        fontWeight="700"
+        fill="#dc2626"
+        style={{ fontFamily: "var(--font-display)" }}
+      >
+        {interetsPctTotal.toFixed(0)}%
+      </text>
+    </svg>
+  );
+}
+
+function CrossLinkCard({
+  href,
+  emoji,
+  title,
+  desc,
+}: {
+  href: string;
+  emoji: string;
+  title: string;
+  desc: string;
+}) {
+  return (
+    <Link
+      href={href}
+      className="group flex items-start gap-3 rounded-xl border p-4 transition-all hover:shadow-sm"
+      style={{ borderColor: "var(--border)", background: "var(--surface-alt)" }}
+    >
+      <span className="text-2xl" aria-hidden>
+        {emoji}
+      </span>
+      <div className="flex-1 min-w-0">
+        <p
+          className="text-sm font-semibold transition-colors group-hover:text-[#0d4f3c]"
+          style={{ color: "var(--foreground)" }}
+        >
+          {title} <span className="ml-1 inline-block transition-transform group-hover:translate-x-0.5">&rarr;</span>
+        </p>
+        <p className="mt-0.5 text-xs" style={{ color: "var(--muted)" }}>
+          {desc}
+        </p>
+      </div>
+    </Link>
   );
 }

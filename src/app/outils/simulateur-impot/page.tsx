@@ -1,11 +1,23 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import Link from "next/link";
 import AdPlaceholder from "@/components/AdPlaceholder";
 import ToolFaqSection from "@/components/ToolFaqSection";
 import ToolHowToSection from "@/components/ToolHowToSection";
 
 type Tranche = { min: number; max: number; rate: number; label: string };
+
+const PRESETS_REVENU = [
+  { label: "SMIC", value: 17100 },
+  { label: "Median", value: 26400 },
+  { label: "Cadre", value: 48000 },
+  { label: "Top 10%", value: 96000 },
+];
+
+const REVENU_MIN = 10000;
+const REVENU_MAX = 200000;
+const REVENU_STEP = 1000;
 
 // Baremes officiels connus (source: loi de finances)
 // Les seuils sont revalorises chaque annee en fonction de l'inflation.
@@ -162,6 +174,40 @@ export default function SimulateurImpot() {
                       style={{ borderColor: "var(--border)", fontFamily: "var(--font-display)" }} />
                     <span className="absolute right-4 top-1/2 -translate-y-1/2 text-lg" style={{ color: "var(--muted)" }}>&euro;/an</span>
                   </div>
+                  {/* Slider */}
+                  <input
+                    type="range"
+                    min={REVENU_MIN}
+                    max={REVENU_MAX}
+                    step={REVENU_STEP}
+                    value={Math.min(Math.max(parseFloat(revenu) || 0, REVENU_MIN), REVENU_MAX)}
+                    onChange={(e) => setRevenu(e.target.value)}
+                    className="mt-3 w-full accent-[#0d4f3c]"
+                    aria-label="Curseur revenu net imposable"
+                  />
+                  {/* Presets */}
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {PRESETS_REVENU.map((p) => {
+                      const isActive = parseFloat(revenu) === p.value;
+                      return (
+                        <button
+                          key={p.label}
+                          onClick={() => setRevenu(String(p.value))}
+                          className="rounded-full border px-3 py-1.5 text-xs font-semibold transition-all hover:opacity-80"
+                          style={{
+                            borderColor: isActive ? "var(--primary)" : "var(--border)",
+                            color: isActive ? "var(--primary)" : "var(--muted)",
+                            background: isActive ? "rgba(13,79,60,0.06)" : "transparent",
+                          }}
+                        >
+                          {p.label}{" "}
+                          <span style={{ color: isActive ? "var(--primary)" : "var(--accent)", fontFamily: "var(--font-display)" }}>
+                            {p.value.toLocaleString("fr-FR")} €
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
@@ -190,15 +236,88 @@ export default function SimulateurImpot() {
               <StatBox label="Taux marginal" value={`${(result.tauxMarginal * 100).toFixed(0)}%`} accent />
             </div>
 
-            {/* Remaining income */}
-            <div className="rounded-2xl border p-6 text-center" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-              <p className="text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: "var(--muted)" }}>Revenu apres impot</p>
-              <p className="mt-2 text-4xl font-bold" style={{ fontFamily: "var(--font-display)", color: "var(--primary)" }}>
-                {fmt(result.revenuApresImpot)} &euro;/an
-              </p>
-              <p className="mt-1 text-lg" style={{ color: "var(--muted)" }}>
-                soit {fmt(result.revenuApresImpot / 12)} &euro;/mois
-              </p>
+            {/* Remaining income + Donut visualisation */}
+            <div className="rounded-2xl border p-6" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+              <h2 className="text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: "var(--accent)" }}>
+                Repartition du revenu
+              </h2>
+              <div className="mt-5 grid gap-6 sm:grid-cols-[180px_1fr] sm:items-center">
+                <div className="flex justify-center">
+                  <DonutChart
+                    impot={result.impotTotal}
+                    net={result.revenuApresImpot}
+                    revenu={revenuNum}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Row label="Revenu net imposable" value={`${fmt(revenuNum)} €`} />
+                  <Row label="Impot sur le revenu" value={`- ${fmt(result.impotTotal)} €`} sub dotColor="#dc2626" />
+                  <Row label="Revenu net apres impot" value={`${fmt(result.revenuApresImpot)} €`} highlight primary dotColor="#0d4f3c" />
+                  <Row label="Soit par mois" value={`${fmt(result.revenuApresImpot / 12)} €`} />
+                </div>
+              </div>
+
+              {/* TMI + Taux moyen contextuels */}
+              {revenuNum > 0 && (
+                <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  <div className="rounded-xl border p-4" style={{ borderColor: "var(--border)", background: "var(--surface-alt)" }}>
+                    <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>
+                      Votre TMI (Taux Marginal)
+                    </p>
+                    <p className="mt-1 text-2xl font-bold" style={{ fontFamily: "var(--font-display)", color: result.tauxMarginal >= 0.30 ? "#dc2626" : "var(--primary)" }}>
+                      {(result.tauxMarginal * 100).toFixed(0)}%
+                    </p>
+                    <p className="mt-1 text-[11px]" style={{ color: "var(--muted)" }}>
+                      {result.tauxMarginal === 0 && "Vous n'etes pas imposable."}
+                      {result.tauxMarginal === 0.11 && "Tranche basse — chaque euro additionnel taxe a 11%."}
+                      {result.tauxMarginal === 0.30 && "Tranche intermediaire — optimisez vos deductions (PER, dons)."}
+                      {result.tauxMarginal === 0.41 && "Tranche haute — pensez au PER, Pinel, FCPI/FIP."}
+                      {result.tauxMarginal === 0.45 && "Tranche maximale — strategie patrimoniale recommandee."}
+                    </p>
+                  </div>
+                  <div className="rounded-xl border p-4" style={{ borderColor: "var(--border)", background: "var(--surface-alt)" }}>
+                    <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>
+                      Taux moyen d&apos;imposition
+                    </p>
+                    <p className="mt-1 text-2xl font-bold" style={{ fontFamily: "var(--font-display)", color: "var(--primary)" }}>
+                      {fmtPct(result.tauxMoyen)}%
+                    </p>
+                    <p className="mt-1 text-[11px]" style={{ color: "var(--muted)" }}>
+                      {result.tauxMoyen < 5 && "Imposition tres faible — profitez-en pour epargner."}
+                      {result.tauxMoyen >= 5 && result.tauxMoyen < 12 && "Imposition moderee — proche de la moyenne francaise."}
+                      {result.tauxMoyen >= 12 && result.tauxMoyen < 20 && "Imposition consequente — un PER peut reduire la facture."}
+                      {result.tauxMoyen >= 20 && "Imposition elevee — strategie de defiscalisation conseillee."}
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Cross-link CTAs */}
+            <div className="rounded-2xl border p-6" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+              <h3 className="text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: "var(--accent)" }}>
+                Vous pourriez aussi vouloir
+              </h3>
+              <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
+                <CrossLinkCard
+                  href="/outils/calculateur-salaire"
+                  emoji="💼"
+                  title="Salaire net en poche"
+                  desc="Brut vers net + impot mensuel estime"
+                />
+                <CrossLinkCard
+                  href="/outils/freelance-vs-cdi"
+                  emoji="🏢"
+                  title="Statut freelance"
+                  desc="Quel TJM pour egaliser votre net ?"
+                />
+                <CrossLinkCard
+                  href="/outils/simulateur-prime-activite"
+                  emoji="💰"
+                  title="Prime d'activite"
+                  desc="Eligibilite et montant CAF estime"
+                />
+              </div>
             </div>
 
             {/* Breakdown by bracket */}
@@ -396,5 +515,147 @@ function StatBox({ label, value, primary, accent }: { label: string; value: stri
         {value}
       </p>
     </div>
+  );
+}
+
+function Row({
+  label,
+  value,
+  highlight,
+  primary,
+  sub,
+  dotColor,
+}: {
+  label: string;
+  value: string;
+  highlight?: boolean;
+  primary?: boolean;
+  sub?: boolean;
+  dotColor?: string;
+}) {
+  return (
+    <div
+      className="flex items-center justify-between rounded-lg px-4 py-3"
+      style={highlight ? { background: "var(--surface-alt)" } : {}}
+    >
+      <span className="flex items-center gap-2 text-sm" style={{ color: "var(--muted)" }}>
+        {dotColor && (
+          <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ background: dotColor }} />
+        )}
+        {label}
+      </span>
+      <span
+        className={`font-semibold ${primary ? "text-xl" : ""} ${sub ? "" : ""}`}
+        style={{
+          color: primary ? "var(--primary)" : "var(--foreground)",
+          fontFamily: primary ? "var(--font-display)" : undefined,
+        }}
+      >
+        {value}
+      </span>
+    </div>
+  );
+}
+
+function DonutChart({
+  impot,
+  net,
+  revenu,
+}: {
+  impot: number;
+  net: number;
+  revenu: number;
+}) {
+  const r = 60;
+  const c = 2 * Math.PI * r;
+  const stroke = 22;
+  const total = revenu > 0 ? revenu : 1;
+  const impotPct = Math.max(0, impot) / total;
+  const netPct = Math.max(0, net) / total;
+  const impotLen = impotPct * c;
+  const netLen = netPct * c;
+  return (
+    <svg width="160" height="160" viewBox="-80 -80 160 160" role="img" aria-label="Repartition net vs impot">
+      <circle cx="0" cy="0" r={r} fill="none" stroke="var(--border)" strokeWidth={stroke} />
+      <g transform="rotate(-90)">
+        <circle
+          cx="0"
+          cy="0"
+          r={r}
+          fill="none"
+          stroke="#dc2626"
+          strokeWidth={stroke}
+          strokeDasharray={`${impotLen} ${c}`}
+          strokeLinecap="butt"
+        />
+        <circle
+          cx="0"
+          cy="0"
+          r={r}
+          fill="none"
+          stroke="#0d4f3c"
+          strokeWidth={stroke}
+          strokeDasharray={`${netLen} ${c}`}
+          strokeDashoffset={-impotLen}
+          strokeLinecap="butt"
+        />
+      </g>
+      <text
+        x="0"
+        y="-4"
+        textAnchor="middle"
+        fontSize="10"
+        fill="var(--muted)"
+        style={{ fontFamily: "var(--font-body)" }}
+      >
+        Net conserve
+      </text>
+      <text
+        x="0"
+        y="14"
+        textAnchor="middle"
+        fontSize="16"
+        fontWeight="700"
+        fill="var(--primary)"
+        style={{ fontFamily: "var(--font-display)" }}
+      >
+        {Math.round(netPct * 100)}%
+      </text>
+    </svg>
+  );
+}
+
+function CrossLinkCard({
+  href,
+  emoji,
+  title,
+  desc,
+}: {
+  href: string;
+  emoji: string;
+  title: string;
+  desc: string;
+}) {
+  return (
+    <Link
+      href={href}
+      className="group flex items-start gap-3 rounded-xl border p-4 transition-all hover:shadow-sm"
+      style={{ borderColor: "var(--border)", background: "var(--surface-alt)" }}
+    >
+      <span className="text-2xl" aria-hidden>
+        {emoji}
+      </span>
+      <div className="flex-1 min-w-0">
+        <p
+          className="text-sm font-semibold transition-colors group-hover:text-[#0d4f3c]"
+          style={{ color: "var(--foreground)" }}
+        >
+          {title} <span className="ml-1 inline-block transition-transform group-hover:translate-x-0.5">&rarr;</span>
+        </p>
+        <p className="mt-0.5 text-xs" style={{ color: "var(--muted)" }}>
+          {desc}
+        </p>
+      </div>
+    </Link>
   );
 }
