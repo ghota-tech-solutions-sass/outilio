@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import AdPlaceholder from "@/components/AdPlaceholder";
 import ToolFaqSection from "@/components/ToolFaqSection";
 import ToolHowToSection from "@/components/ToolHowToSection";
@@ -20,6 +21,24 @@ const TAX_BRACKETS = [
   { max: Infinity, rate: 0.45 },
 ];
 
+// SMIC 2026 brut mensuel (35h)
+const SMIC_BRUT_2026 = 1801;
+const SMIC_NET_2026 = 1426;
+
+const PRESETS_BRUT = [
+  { label: "SMIC", value: SMIC_BRUT_2026 },
+  { label: "Median", value: 2820 },
+  { label: "Cadre", value: 5333 },
+  { label: "Top 10%", value: 10670 },
+];
+
+const PRESETS_NET = [
+  { label: "SMIC", value: SMIC_NET_2026 },
+  { label: "Median", value: 2200 },
+  { label: "Cadre", value: 4000 },
+  { label: "Top 10%", value: 8000 },
+];
+
 function calcTax(annualNet: number) {
   let tax = 0;
   let prev = 0;
@@ -30,6 +49,15 @@ function calcTax(annualNet: number) {
     prev = b.max;
   }
   return tax;
+}
+
+function getTMI(annualNetTaxable: number, parts: number): number {
+  const quotient = annualNetTaxable / parts;
+  if (quotient <= 11600) return 0;
+  if (quotient <= 29579) return 11;
+  if (quotient <= 84577) return 30;
+  if (quotient <= 181917) return 41;
+  return 45;
 }
 
 export default function CalculateurSalaire() {
@@ -60,6 +88,8 @@ export default function CalculateurSalaire() {
   const monthlyTax = annualTax / 12;
   const netApresImpot = net - monthlyTax;
   const charges = brut - net;
+  const tmi = getTMI(annualNet, nbParts);
+  const vsSmic = SMIC_NET_2026 > 0 ? ((netApresImpot / SMIC_NET_2026) - 1) * 100 : 0;
 
   const fmt = (n: number) =>
     n.toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -164,6 +194,41 @@ export default function CalculateurSalaire() {
                   />
                   <span className="absolute right-4 top-1/2 -translate-y-1/2 text-lg" style={{ color: "var(--muted)" }}>&euro;</span>
                 </div>
+                {/* Slider */}
+                <input
+                  type="range"
+                  min={period === "mensuel" ? 1000 : 12000}
+                  max={period === "mensuel" ? 15000 : 180000}
+                  step={period === "mensuel" ? 50 : 500}
+                  value={Math.min(parseFloat(amount) || 0, period === "mensuel" ? 15000 : 180000)}
+                  onChange={(e) => setAmount(e.target.value)}
+                  className="mt-3 w-full accent-[#0d4f3c]"
+                  aria-label="Curseur salaire"
+                />
+                {/* Presets */}
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {(mode === "brut-to-net" ? PRESETS_BRUT : PRESETS_NET).map((p) => {
+                    const presetVal = period === "annuel" ? p.value * 12 : p.value;
+                    const isActive = parseFloat(amount) === presetVal;
+                    return (
+                      <button
+                        key={p.label}
+                        onClick={() => setAmount(String(presetVal))}
+                        className="rounded-full border px-3 py-1.5 text-xs font-semibold transition-all hover:opacity-80"
+                        style={{
+                          borderColor: isActive ? "var(--primary)" : "var(--border)",
+                          color: isActive ? "var(--primary)" : "var(--muted)",
+                          background: isActive ? "rgba(13,79,60,0.06)" : "transparent",
+                        }}
+                      >
+                        {p.label}{" "}
+                        <span style={{ color: isActive ? "var(--primary)" : "var(--accent)", fontFamily: "var(--font-display)" }}>
+                          {fmt(presetVal)} €
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
                 {isHighMonthly && period === "mensuel" && (
                   <button
                     onClick={() => {
@@ -213,13 +278,59 @@ export default function CalculateurSalaire() {
               <h2 className="text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: "var(--accent)" }}>
                 Resultats
               </h2>
-              <div className="mt-5 space-y-1">
-                <Row label="Salaire brut mensuel" value={`${fmt(brut)} €`} />
-                <Row label="Cotisations salariales" value={`- ${fmt(charges)} €`} sub />
-                <Row label="Salaire net avant impot" value={`${fmt(net)} €`} highlight />
-                <Row label="Impot sur le revenu (estimation)" value={`- ${fmt(monthlyTax)} €`} sub />
-                <Row label="Salaire net apres impot" value={`${fmt(netApresImpot)} €`} highlight primary />
+              {/* Visualisation donut + détail */}
+              <div className="mt-5 grid gap-6 sm:grid-cols-[180px_1fr] sm:items-center">
+                <div className="flex justify-center">
+                  <DonutChart
+                    cotisations={charges}
+                    impot={monthlyTax}
+                    net={netApresImpot}
+                    brut={brut}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Row label="Salaire brut mensuel" value={`${fmt(brut)} €`} />
+                  <Row label="Cotisations salariales" value={`- ${fmt(charges)} €`} sub dotColor="#dc2626" />
+                  <Row label="Salaire net avant impot" value={`${fmt(net)} €`} highlight />
+                  <Row label="Impot sur le revenu (estimation)" value={`- ${fmt(monthlyTax)} €`} sub dotColor="#e8963e" />
+                  <Row label="Salaire net en poche" value={`${fmt(netApresImpot)} €`} highlight primary dotColor="#0d4f3c" />
+                </div>
               </div>
+
+              {/* TMI + repere SMIC */}
+              {netApresImpot > 0 && (
+                <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  <div className="rounded-xl border p-4" style={{ borderColor: "var(--border)", background: "var(--surface-alt)" }}>
+                    <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>
+                      Tranche marginale d&apos;imposition
+                    </p>
+                    <p className="mt-1 text-2xl font-bold" style={{ fontFamily: "var(--font-display)", color: tmi >= 30 ? "#dc2626" : "var(--primary)" }}>
+                      {tmi}%
+                    </p>
+                    <p className="mt-1 text-[11px]" style={{ color: "var(--muted)" }}>
+                      {tmi === 0 && "Vous n'etes pas imposable."}
+                      {tmi === 11 && "Tranche basse — chaque euro additionnel est taxe a 11%."}
+                      {tmi === 30 && "Tranche intermediaire — optimisez vos deductions (PER, dons)."}
+                      {tmi === 41 && "Tranche haute — pensez au PER, dispositifs Pinel, FCPI/FIP."}
+                      {tmi === 45 && "Tranche maximale — strategie patrimoniale recommandee."}
+                    </p>
+                  </div>
+                  <div className="rounded-xl border p-4" style={{ borderColor: "var(--border)", background: "var(--surface-alt)" }}>
+                    <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>
+                      Repere vs SMIC net 2026
+                    </p>
+                    <p className="mt-1 text-2xl font-bold" style={{ fontFamily: "var(--font-display)", color: vsSmic >= 0 ? "var(--primary)" : "#dc2626" }}>
+                      {vsSmic >= 0 ? "+" : ""}{vsSmic.toFixed(0)}%
+                    </p>
+                    <p className="mt-1 text-[11px]" style={{ color: "var(--muted)" }}>
+                      {vsSmic > 200 && "Vous etes parmi le top 10% des salaires francais."}
+                      {vsSmic > 50 && vsSmic <= 200 && "Au-dessus du salaire median (~2 200 € net)."}
+                      {vsSmic >= 0 && vsSmic <= 50 && `Au-dessus du SMIC net (${fmt(SMIC_NET_2026)} €).`}
+                      {vsSmic < 0 && `En-dessous du SMIC net (${fmt(SMIC_NET_2026)} €).`}
+                    </p>
+                  </div>
+                </div>
+              )}
 
               <div className="mt-6 rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
                 <h3 className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>
@@ -237,6 +348,33 @@ export default function CalculateurSalaire() {
                     {fmt(netApresImpot * 12)} &euro;
                   </span>
                 </div>
+              </div>
+            </div>
+
+            {/* Cross-link CTAs */}
+            <div className="rounded-2xl border p-6" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+              <h3 className="text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: "var(--accent)" }}>
+                Vous pourriez aussi vouloir
+              </h3>
+              <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
+                <CrossLinkCard
+                  href="/outils/freelance-vs-cdi"
+                  emoji="💼"
+                  title="Comparer CDI / Freelance"
+                  desc="Quel TJM pour egaliser votre net ?"
+                />
+                <CrossLinkCard
+                  href="/outils/simulateur-impot"
+                  emoji="📋"
+                  title="Simulateur impot 2026"
+                  desc="Bareme officiel + TMI detaille"
+                />
+                <CrossLinkCard
+                  href="/outils/calculateur-pret-immobilier"
+                  emoji="🏠"
+                  title="Capacite d'emprunt"
+                  desc="Mensualite max selon HCSF 35%"
+                />
               </div>
             </div>
 
@@ -372,30 +510,153 @@ function Row({
   highlight,
   primary,
   sub,
+  dotColor,
 }: {
   label: string;
   value: string;
   highlight?: boolean;
   primary?: boolean;
   sub?: boolean;
+  dotColor?: string;
 }) {
   return (
     <div
-      className={`flex items-center justify-between rounded-lg px-4 py-3 ${highlight ? "" : ""}`}
+      className="flex items-center justify-between rounded-lg px-4 py-3"
       style={highlight ? { background: "var(--surface-alt)" } : {}}
     >
-      <span className="text-sm" style={{ color: sub ? "var(--border)" : "var(--muted)" }}>
+      <span className="flex items-center gap-2 text-sm" style={{ color: "var(--muted)" }}>
+        {dotColor && (
+          <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ background: dotColor }} />
+        )}
         {label}
       </span>
       <span
-        className={`font-semibold ${primary ? "text-xl" : sub ? "text-sm" : ""}`}
+        className={`font-semibold ${primary ? "text-xl" : ""}`}
         style={{
-          color: primary ? "var(--primary)" : sub ? "var(--muted)" : "var(--foreground)",
+          color: primary ? "var(--primary)" : "var(--foreground)",
           fontFamily: primary ? "var(--font-display)" : undefined,
         }}
       >
         {value}
       </span>
     </div>
+  );
+}
+
+function DonutChart({
+  cotisations,
+  impot,
+  net,
+  brut,
+}: {
+  cotisations: number;
+  impot: number;
+  net: number;
+  brut: number;
+}) {
+  const r = 60;
+  const c = 2 * Math.PI * r;
+  const stroke = 22;
+  const total = brut > 0 ? brut : 1;
+  const cotPct = Math.max(0, cotisations) / total;
+  const impotPct = Math.max(0, impot) / total;
+  const netPct = Math.max(0, net) / total;
+  const cotLen = cotPct * c;
+  const impotLen = impotPct * c;
+  const netLen = netPct * c;
+  return (
+    <svg width="160" height="160" viewBox="-80 -80 160 160" role="img" aria-label="Repartition du salaire brut">
+      <circle cx="0" cy="0" r={r} fill="none" stroke="var(--border)" strokeWidth={stroke} />
+      <g transform="rotate(-90)">
+        <circle
+          cx="0"
+          cy="0"
+          r={r}
+          fill="none"
+          stroke="#dc2626"
+          strokeWidth={stroke}
+          strokeDasharray={`${cotLen} ${c}`}
+          strokeLinecap="butt"
+        />
+        <circle
+          cx="0"
+          cy="0"
+          r={r}
+          fill="none"
+          stroke="#e8963e"
+          strokeWidth={stroke}
+          strokeDasharray={`${impotLen} ${c}`}
+          strokeDashoffset={-cotLen}
+          strokeLinecap="butt"
+        />
+        <circle
+          cx="0"
+          cy="0"
+          r={r}
+          fill="none"
+          stroke="#0d4f3c"
+          strokeWidth={stroke}
+          strokeDasharray={`${netLen} ${c}`}
+          strokeDashoffset={-(cotLen + impotLen)}
+          strokeLinecap="butt"
+        />
+      </g>
+      <text
+        x="0"
+        y="-4"
+        textAnchor="middle"
+        fontSize="10"
+        fill="var(--muted)"
+        style={{ fontFamily: "var(--font-body)" }}
+      >
+        Net en poche
+      </text>
+      <text
+        x="0"
+        y="14"
+        textAnchor="middle"
+        fontSize="16"
+        fontWeight="700"
+        fill="var(--primary)"
+        style={{ fontFamily: "var(--font-display)" }}
+      >
+        {Math.round(netPct * 100)}%
+      </text>
+    </svg>
+  );
+}
+
+function CrossLinkCard({
+  href,
+  emoji,
+  title,
+  desc,
+}: {
+  href: string;
+  emoji: string;
+  title: string;
+  desc: string;
+}) {
+  return (
+    <Link
+      href={href}
+      className="group flex items-start gap-3 rounded-xl border p-4 transition-all hover:shadow-sm"
+      style={{ borderColor: "var(--border)", background: "var(--surface-alt)" }}
+    >
+      <span className="text-2xl" aria-hidden>
+        {emoji}
+      </span>
+      <div className="flex-1 min-w-0">
+        <p
+          className="text-sm font-semibold transition-colors group-hover:text-[#0d4f3c]"
+          style={{ color: "var(--foreground)" }}
+        >
+          {title} <span className="ml-1 inline-block transition-transform group-hover:translate-x-0.5">&rarr;</span>
+        </p>
+        <p className="mt-0.5 text-xs" style={{ color: "var(--muted)" }}>
+          {desc}
+        </p>
+      </div>
+    </Link>
   );
 }
