@@ -93,14 +93,14 @@ export default function Home() {
                 className="animate-fade-up stagger-1 mt-6 text-[2.75rem] leading-[1.08] tracking-tight sm:text-5xl md:text-[3.75rem] lg:text-[4.25rem] xl:text-[4.75rem]"
                 style={{ fontFamily: "var(--font-display)" }}
               >
-                Simplifiez votre{" "}
+                Outils en ligne{" "}
                 <span className="relative whitespace-nowrap" style={{ color: "var(--primary)" }}>
-                  quotidien
+                  gratuits
                   <svg className="absolute -bottom-1.5 left-0 w-full" viewBox="0 0 200 8" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M1 5.5C40 2 80 1 100 3C120 5 160 6 199 2.5" stroke="#e8963e" strokeWidth="2.5" strokeLinecap="round" opacity="0.7"/>
                   </svg>
-                </span>
-                <span style={{ color: "var(--accent)" }}>.</span>
+                </span>{" "}
+                pour le quotidien<span style={{ color: "var(--accent)" }}>.</span>
               </h1>
 
               <p
