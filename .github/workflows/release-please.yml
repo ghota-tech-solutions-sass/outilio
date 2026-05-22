@@ -1,0 +1,24 @@
+name: release-please
+
+# Maintains a rolling "release PR" from Conventional Commits on main.
+# Merging that PR bumps package.json, updates CHANGELOG.md and tags the
+# release (v*) — the tag then triggers the deploy job.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: googleapis/release-please-action@v5
+        with:
+          # Manifest mode — version state persisted in
+          # .release-please-manifest.json, never re-derived from scratch.
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
