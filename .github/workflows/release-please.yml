@@ -1,8 +1,9 @@
 name: release-please
 
 # Maintains a rolling "release PR" from Conventional Commits on main.
-# Merging that PR bumps package.json, updates CHANGELOG.md and tags the
-# release (v*) — the tag then triggers the deploy job.
+# When the release PR merges, release-please cuts the tag + GitHub Release,
+# then the step below dispatches deploy.yml. (The tag is created with
+# GITHUB_TOKEN, which on its own does NOT trigger tag-based workflows.)
 on:
   push:
     branches: [main]
@@ -11,14 +12,22 @@ on:
 permissions:
   contents: write
   pull-requests: write
+  actions: write
 
 jobs:
   release-please:
     runs-on: ubuntu-latest
     steps:
       - uses: googleapis/release-please-action@v5
+        id: release
         with:
           # Manifest mode — version state persisted in
           # .release-please-manifest.json, never re-derived from scratch.
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
+
+      - name: Deploy on release
+        if: ${{ steps.release.outputs.release_created }}
+        run: gh workflow run deploy.yml --ref main
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
