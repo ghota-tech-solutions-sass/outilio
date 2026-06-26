@@ -384,7 +384,7 @@ export default function OptimiseurJson() {
                 <li><strong className="text-[var(--foreground)]">Objet</strong> : {`{ "cle": "valeur" }`}</li>
                 <li><strong className="text-[var(--foreground)]">Tableau</strong> : {`[1, 2, 3]`}</li>
                 <li><strong className="text-[var(--foreground)]">Types</strong> : string, number, boolean, null, object, array</li>
-                <li><strong className="text-[var(--foreground)]">Echappement</strong> : \n, \t, \\, \"</li>
+                <li><strong className="text-[var(--foreground)]">Echappement</strong> : {"\\n, \\t, \\\\, \\\""}</li>
               </ul>
             </div>
             <AdPlaceholder className="h-[600px]" />

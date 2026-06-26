@@ -11,7 +11,6 @@ function formatSize(bytes: number): string {
 
 export default function RedimensionneurImage() {
   const [originalFile, setOriginalFile] = useState<File | null>(null);
-  const [originalURL, setOriginalURL] = useState("");
   const [origW, setOrigW] = useState(0);
   const [origH, setOrigH] = useState(0);
   const [targetW, setTargetW] = useState(0);
@@ -47,7 +46,6 @@ export default function RedimensionneurImage() {
     const reader = new FileReader();
     reader.onload = (e) => {
       const url = e.target?.result as string;
-      setOriginalURL(url);
       const img = new Image();
       img.onload = () => {
         imgRef.current = img;
@@ -159,7 +157,7 @@ export default function RedimensionneurImage() {
                 <div className="rounded-2xl border p-6" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
                   <div className="flex items-center justify-between mb-4">
                     <h2 className="text-lg font-semibold" style={{ fontFamily: "var(--font-display)" }}>Dimensions</h2>
-                    <button onClick={() => { setOriginalFile(null); setOriginalURL(""); setPreviewURL(""); }}
+                    <button onClick={() => { setOriginalFile(null); setPreviewURL(""); }}
                       className="text-sm font-medium px-4 py-2 rounded-lg border transition-colors hover:bg-[var(--surface-alt)]"
                       style={{ borderColor: "var(--border)", color: "var(--muted)" }}>
                       Nouvelle image

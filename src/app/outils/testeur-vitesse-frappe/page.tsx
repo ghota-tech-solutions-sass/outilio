@@ -97,7 +97,10 @@ export default function TesteurVitesseFrappe() {
   // End game when time runs out
   useEffect(() => {
     if (gameState === "running" && timeLeft <= 0) {
-      endGame();
+      const timer = setTimeout(() => {
+        endGame();
+      }, 0);
+      return () => clearTimeout(timer);
     }
   }, [timeLeft, gameState, endGame]);
 

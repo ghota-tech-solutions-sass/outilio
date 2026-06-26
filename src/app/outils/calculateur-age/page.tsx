@@ -5,10 +5,6 @@ import AdPlaceholder from "@/components/AdPlaceholder";
 import ToolFaqSection from "@/components/ToolFaqSection";
 import ToolHowToSection from "@/components/ToolHowToSection";
 
-function toInputDate(d: Date): string {
-  return d.toISOString().split("T")[0];
-}
-
 function parseDate(s: string): Date | null {
   const d = new Date(s + "T00:00:00");
   return isNaN(d.getTime()) ? null : d;

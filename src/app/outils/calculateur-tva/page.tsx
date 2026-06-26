@@ -427,7 +427,6 @@ function Row({
   value,
   highlight,
   primary,
-  sub,
   dotColor,
 }: {
   label: string;

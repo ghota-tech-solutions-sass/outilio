@@ -51,7 +51,6 @@ export default function ConvertisseurAudio() {
   const [outputFormat, setOutputFormat] = useState<OutputFormat>("mp3");
   const [bitrate, setBitrate] = useState<Bitrate>("192k");
   const [result, setResult] = useState<{ url: string; size: number; name: string } | null>(null);
-  const [ffmpegLoaded, setFfmpegLoaded] = useState(false);
   const [ffmpegLoading, setFfmpegLoading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -75,7 +74,6 @@ export default function ConvertisseurAudio() {
 
   const loadFFmpeg = useCallback(async () => {
     if (ffmpegRef.current?.loaded) {
-      setFfmpegLoaded(true);
       return true;
     }
 
@@ -99,7 +97,6 @@ export default function ConvertisseurAudio() {
       });
 
       ffmpegRef.current = ffmpeg;
-      setFfmpegLoaded(true);
       setFfmpegLoading(false);
       setProgressMessage("");
       return true;

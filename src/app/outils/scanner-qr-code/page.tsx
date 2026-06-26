@@ -123,7 +123,7 @@ export default function ScannerQRCode() {
   const [error, setError] = useState("");
   const [scanning, setScanning] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [history, setHistory] = useState<ScanResult[]>([]);
+  const [history, setHistory] = useState<ScanResult[]>(() => loadHistory());
   const [dragOver, setDragOver] = useState(false);
   const [cameraReady, setCameraReady] = useState(false);
 
@@ -134,34 +134,28 @@ export default function ScannerQRCode() {
   const inputRef = useRef<HTMLInputElement>(null);
   const lastScanRef = useRef<string>("");
 
-  // Load history on mount
-  useEffect(() => {
-    setHistory(loadHistory());
+  /* ---- Add scan result ---- */
+  const addResult = useCallback((value: string, source: "camera" | "image") => {
+    setResult(value);
+    const entry: ScanResult = {
+      id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+      value,
+      timestamp: Date.now(),
+      source,
+    };
+    setHistory((prev) => {
+      const updated = [entry, ...prev.filter((h) => h.value !== value)].slice(0, 50);
+      saveHistory(updated);
+      return updated;
+    });
   }, []);
 
-  /* ---- Add scan result ---- */
-  const addResult = useCallback(
-    (value: string, source: "camera" | "image") => {
-      setResult(value);
-      const entry: ScanResult = {
-        id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
-        value,
-        timestamp: Date.now(),
-        source,
-      };
-      const updated = [entry, ...history.filter((h) => h.value !== value)].slice(0, 50);
-      setHistory(updated);
-      saveHistory(updated);
-    },
-    [history]
-  );
-
   /* ---- Camera scanning loop ---- */
-  const scanFrame = useCallback(() => {
+  const scanFrame = useCallback(function scanFrameLoop() {
     const video = videoRef.current;
     const canvas = canvasRef.current;
     if (!video || !canvas || video.readyState !== video.HAVE_ENOUGH_DATA) {
-      rafRef.current = requestAnimationFrame(scanFrame);
+      rafRef.current = requestAnimationFrame(scanFrameLoop);
       return;
     }
     canvas.width = video.videoWidth;
@@ -176,7 +170,7 @@ export default function ScannerQRCode() {
         addResult(val, "camera");
       }
       if (streamRef.current) {
-        rafRef.current = requestAnimationFrame(scanFrame);
+        rafRef.current = requestAnimationFrame(scanFrameLoop);
       }
     });
   }, [addResult]);
@@ -222,14 +216,18 @@ export default function ScannerQRCode() {
 
   // Auto-start camera when tab switches to "camera"
   useEffect(() => {
-    if (tab === "camera") {
-      startCamera();
-    } else {
+    const timer = setTimeout(() => {
+      if (tab === "camera") {
+        void startCamera();
+      } else {
+        stopCamera();
+      }
+    }, 0);
+    return () => {
+      clearTimeout(timer);
       stopCamera();
-    }
-    return () => stopCamera();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tab]);
+    };
+  }, [tab, startCamera, stopCamera]);
 
   /* ---- Image upload handler ---- */
   const handleImage = useCallback(

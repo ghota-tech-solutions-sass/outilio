@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import AdPlaceholder from "@/components/AdPlaceholder";
 import ToolFaqSection from "@/components/ToolFaqSection";
 import ToolHowToSection from "@/components/ToolHowToSection";
@@ -30,13 +30,13 @@ export default function CalculateurTJMFreelance() {
   const [joursConge, setJoursConge] = useState("25");
   const [fraisMensuels, setFraisMensuels] = useState("300");
 
-  // Met a jour le taux de charges quand l'activite change (sauf "autre" qui reste libre)
-  useEffect(() => {
-    if (activite !== "autre") {
-      const total = BAREME_MICRO[activite].charges + BAREME_MICRO[activite].cfp;
+  const handleActiviteChange = (nextActivite: ActiviteMicro) => {
+    setActivite(nextActivite);
+    if (nextActivite !== "autre") {
+      const total = BAREME_MICRO[nextActivite].charges + BAREME_MICRO[nextActivite].cfp;
       setTauxCharges(total.toFixed(1));
     }
-  }, [activite]);
+  };
 
   const resultats = useMemo(() => {
     const salaire = parseFloat(salaireNet) || 0;
@@ -91,7 +91,7 @@ export default function CalculateurTJMFreelance() {
               <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="sm:col-span-2">
                   <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>Activite / statut</label>
-                  <select value={activite} onChange={(e) => setActivite(e.target.value as ActiviteMicro)}
+                  <select value={activite} onChange={(e) => handleActiviteChange(e.target.value as ActiviteMicro)}
                     className="mt-2 w-full rounded-xl border px-4 py-3 text-sm font-semibold" style={{ borderColor: "var(--border)", background: "var(--surface)" }}>
                     {(Object.entries(BAREME_MICRO) as [ActiviteMicro, typeof BAREME_MICRO[ActiviteMicro]][]).map(([key, v]) => (
                       <option key={key} value={key}>{v.label}{key !== "autre" ? ` (${(v.charges + v.cfp).toFixed(1)}%)` : ""}</option>

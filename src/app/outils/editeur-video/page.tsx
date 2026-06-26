@@ -310,7 +310,9 @@ export default function EditeurVideo() {
   };
 
   const removeEffect = (id: string) => { setPipeline((p) => p.filter((e) => e.id !== id)); if (selectedId === id) setSelectedId(null); };
-  const updateCfg = (id: string, config: EffectCfg) => { setPipeline((p) => p.map((e) => (e.id === id ? { ...e, config } : e))); };
+  const updateCfg = useCallback((id: string, config: EffectCfg) => {
+    setPipeline((p) => p.map((e) => (e.id === id ? { ...e, config } : e)));
+  }, []);
 
   /* ─── Timeline interaction ─── */
   const getTimeFromX = useCallback((clientX: number) => {
@@ -484,7 +486,12 @@ export default function EditeurVideo() {
             <div
               onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
               onDragLeave={() => setDragOver(false)}
-              onDrop={(e) => { e.preventDefault(); setDragOver(false); e.dataTransfer.files[0] && loadVideo(e.dataTransfer.files[0]); }}
+              onDrop={(e) => {
+                e.preventDefault();
+                setDragOver(false);
+                const file = e.dataTransfer.files[0];
+                if (file) loadVideo(file);
+              }}
               onClick={() => inputRef.current?.click()}
               className="mx-auto mt-10 max-w-lg cursor-pointer rounded-2xl border-2 border-dashed p-12 text-center transition-all hover:shadow-xl hover:scale-[1.01]"
               style={{ borderColor: dragOver ? "var(--primary)" : "var(--border)", background: dragOver ? "rgba(13,79,60,0.04)" : "var(--surface)" }}

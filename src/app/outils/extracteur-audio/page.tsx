@@ -178,7 +178,7 @@ export default function ExtracteurAudio() {
       dest = audioCtx.createMediaStreamDestination();
       source.connect(dest);
       // Don't connect to speakers to avoid playback noise
-    } catch (e) {
+    } catch {
       setError("Impossible d'acceder a la piste audio. La video ne contient peut-etre pas d'audio.");
       setExtracting(false);
       return;

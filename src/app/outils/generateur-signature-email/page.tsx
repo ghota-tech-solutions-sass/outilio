@@ -303,7 +303,7 @@ export default function GenerateurSignatureEmail() {
                 <p>
                   <strong>Cas particulier des reponses.</strong> Beaucoup de clients mail collent
                   votre signature sous l&apos;email cite. Pour les reponses internes courtes,
-                  envisagez une 'signature courte' (juste prenom + titre) en plus de la signature
+                  envisagez une &apos;signature courte&apos; (juste prenom + titre) en plus de la signature
                   complete pour les emails initiaux.
                 </p>
                 <p>

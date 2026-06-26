@@ -261,6 +261,22 @@ Du texte avec du \`code inline\` et une image :
 
 *100% gratuit, 100% local.*`;
 
+const TOOLBAR_ACTIONS = [
+  { label: "G", title: "Gras (Ctrl+B)", before: "**", after: "**", placeholder: "texte gras" },
+  { label: "I", title: "Italique (Ctrl+I)", before: "*", after: "*", placeholder: "texte italique", italic: true },
+  { label: "H1", title: "Titre 1", before: "# ", after: "", placeholder: "Titre" },
+  { label: "H2", title: "Titre 2", before: "## ", after: "", placeholder: "Sous-titre" },
+  { label: "H3", title: "Titre 3", before: "### ", after: "", placeholder: "Sous-sous-titre" },
+  { label: "</>", title: "Code inline", before: "`", after: "`", placeholder: "code" },
+  { label: "{ }", title: "Bloc de code", before: "```\n", after: "\n```", placeholder: "code ici" },
+  { label: "-", title: "Ligne horizontale", before: "\n---\n", after: "", placeholder: "" },
+  { label: "\"", title: "Citation", before: "> ", after: "", placeholder: "Citation" },
+  { label: "Lien", title: "Lien", before: "[", after: "](https://)", placeholder: "texte du lien" },
+  { label: "Img", title: "Image", before: "![", after: "](https://)", placeholder: "alt text" },
+  { label: "*", title: "Liste a puces", before: "- ", after: "", placeholder: "element" },
+  { label: "1.", title: "Liste numerotee", before: "1. ", after: "", placeholder: "element" },
+];
+
 /* ─── Component ─── */
 
 export default function EditeurMarkdown() {
@@ -295,25 +311,6 @@ export default function EditeurMarkdown() {
       }, 0);
     },
     [markdown]
-  );
-
-  const toolbarActions = useMemo(
-    () => [
-      { label: "G", title: "Gras (Ctrl+B)", action: () => insertAtCursor("**", "**", "texte gras") },
-      { label: "I", title: "Italique (Ctrl+I)", action: () => insertAtCursor("*", "*", "texte italique"), italic: true },
-      { label: "H1", title: "Titre 1", action: () => insertAtCursor("# ", "", "Titre") },
-      { label: "H2", title: "Titre 2", action: () => insertAtCursor("## ", "", "Sous-titre") },
-      { label: "H3", title: "Titre 3", action: () => insertAtCursor("### ", "", "Sous-sous-titre") },
-      { label: "</>", title: "Code inline", action: () => insertAtCursor("`", "`", "code") },
-      { label: "{ }", title: "Bloc de code", action: () => insertAtCursor("```\n", "\n```", "code ici") },
-      { label: "—", title: "Ligne horizontale", action: () => insertAtCursor("\n---\n", "", "") },
-      { label: "\"", title: "Citation", action: () => insertAtCursor("> ", "", "Citation") },
-      { label: "Lien", title: "Lien", action: () => insertAtCursor("[", "](https://)", "texte du lien") },
-      { label: "Img", title: "Image", action: () => insertAtCursor("![", "](https://)", "alt text") },
-      { label: "\u2022", title: "Liste a puces", action: () => insertAtCursor("- ", "", "element") },
-      { label: "1.", title: "Liste numerotee", action: () => insertAtCursor("1. ", "", "element") },
-    ],
-    [insertAtCursor]
   );
 
   /* ─── Keyboard shortcuts ─── */
@@ -453,10 +450,10 @@ export default function EditeurMarkdown() {
         style={{ borderBottom: "1px solid var(--border)", background: "var(--surface)" }}
       >
         <div className="mx-auto max-w-7xl px-5 py-2 flex flex-wrap gap-1">
-          {toolbarActions.map((btn) => (
+          {TOOLBAR_ACTIONS.map((btn) => (
             <button
               key={btn.label}
-              onClick={btn.action}
+              onClick={() => insertAtCursor(btn.before, btn.after, btn.placeholder)}
               title={btn.title}
               className="rounded-lg px-3 py-1.5 text-xs font-semibold transition-all hover:bg-[var(--surface-alt)]"
               style={{

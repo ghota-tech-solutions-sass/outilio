@@ -188,7 +188,10 @@ export default function Pomodoro() {
           }, 1500);
           return () => clearTimeout(timeout);
         } else {
-          goToNextMode();
+          const timeout = setTimeout(() => {
+            goToNextMode();
+          }, 0);
+          return () => clearTimeout(timeout);
         }
       }
     }

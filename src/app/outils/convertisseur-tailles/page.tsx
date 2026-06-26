@@ -9,7 +9,6 @@ import AdPlaceholder from "@/components/AdPlaceholder";
 
 type Category = "clothing" | "shoes";
 type Gender = "men" | "women";
-type Region = "EU" | "US" | "UK" | "INT";
 
 interface SizeRow {
   EU: string;

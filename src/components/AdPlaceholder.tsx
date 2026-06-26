@@ -75,8 +75,11 @@ export default function AdPlaceholder({ className = "" }: { className?: string }
   const [promo, setPromo] = useState(PROMOS[0]);
 
   useEffect(() => {
-    const idx = Math.floor(Math.random() * PROMOS.length);
-    setPromo(PROMOS[idx]);
+    const timer = setTimeout(() => {
+      const idx = Math.floor(Math.random() * PROMOS.length);
+      setPromo(PROMOS[idx]);
+    }, 0);
+    return () => clearTimeout(timer);
   }, []);
 
   const isLarge = className.includes("600");

@@ -40,6 +40,7 @@ interface HistoryState {
 
 type TabId = "adjust" | "filters" | "curves" | "layers" | "ai";
 type CurveChannel = "rgb" | "r" | "g" | "b";
+type HistogramData = { r: number[]; g: number[]; b: number[]; lum: number[] };
 
 /* ═══════════════════════════ CONSTANTS ═══════════════════════════ */
 
@@ -174,7 +175,7 @@ function buildLUT(points: CurvePoint[]): Uint8Array {
   return lut;
 }
 
-function computeHistogram(imageData: ImageData): { r: number[]; g: number[]; b: number[]; lum: number[] } {
+function computeHistogram(imageData: ImageData): HistogramData {
   const r = new Array(256).fill(0);
   const g = new Array(256).fill(0);
   const b = new Array(256).fill(0);
@@ -243,9 +244,15 @@ export default function EditeurPhoto() {
   const offscreenCanvasRef = useRef<HTMLCanvasElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const filterThumbCanvasRefs = useRef<Map<string, HTMLCanvasElement>>(new Map());
-  const histogramRef = useRef<{ r: number[]; g: number[]; b: number[]; lum: number[] } | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [canvasSize, setCanvasSize] = useState({ w: 0, h: 0 });
+  const [histogram, setHistogram] = useState<HistogramData | null>(null);
+  const [imageMeta, setImageMeta] = useState<{ width: number; height: number } | null>(null);
+
+  const setCurrentImage = useCallback((img: HTMLImageElement | null) => {
+    imgRef.current = img;
+    setImageMeta(img ? { width: img.naturalWidth, height: img.naturalHeight } : null);
+  }, []);
 
   /* ═══════════════ SAVE HISTORY ═══════════════ */
 
@@ -489,7 +496,7 @@ export default function EditeurPhoto() {
 
     // Compute histogram
     const finalData = ctx.getImageData(0, 0, dw, dh);
-    histogramRef.current = computeHistogram(finalData);
+    setHistogram(computeHistogram(finalData));
 
     // Before/After mode: draw original on left side
     if (showBeforeAfter && originalDataRef.current && imgRef.current) {
@@ -564,6 +571,28 @@ export default function EditeurPhoto() {
     return () => window.removeEventListener("resize", handler);
   }, [imageLoaded, render]);
 
+  /* ═══════════════ FILTER THUMBNAILS ═══════════════ */
+
+  const generateFilterThumbnails = useCallback((img: HTMLImageElement) => {
+    FILTER_PRESETS.forEach((preset) => {
+      const canvas = filterThumbCanvasRefs.current.get(preset.name);
+      if (!canvas) return;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
+      canvas.width = 60;
+      canvas.height = 60;
+      const scale = Math.max(60 / img.naturalWidth, 60 / img.naturalHeight);
+      const w = img.naturalWidth * scale;
+      const h = img.naturalHeight * scale;
+      const x = (60 - w) / 2;
+      const y = (60 - h) / 2;
+      if (preset.name !== "Original") {
+        ctx.filter = filterPresetToCSS(preset.css);
+      }
+      ctx.drawImage(img, x, y, w, h);
+    });
+  }, []);
+
   /* ═══════════════ FILE HANDLING ═══════════════ */
 
   const handleFile = useCallback((file: File) => {
@@ -574,7 +603,7 @@ export default function EditeurPhoto() {
       const url = e.target?.result as string;
       const img = new Image();
       img.onload = () => {
-        imgRef.current = img;
+        setCurrentImage(img);
         // Store original data
         const tmpC = document.createElement("canvas");
         tmpC.width = img.naturalWidth;
@@ -599,6 +628,7 @@ export default function EditeurPhoto() {
         setHistory([]);
         setHistoryIdx(-1);
         setShowBeforeAfter(false);
+        setHistogram(null);
         setImageLoaded(true);
 
         // Generate filter thumbnails after a tick
@@ -607,7 +637,7 @@ export default function EditeurPhoto() {
       img.src = url;
     };
     reader.readAsDataURL(file);
-  }, []);
+  }, [generateFilterThumbnails, setCurrentImage]);
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -615,28 +645,6 @@ export default function EditeurPhoto() {
     const file = e.dataTransfer.files[0];
     if (file) handleFile(file);
   }, [handleFile]);
-
-  /* ═══════════════ FILTER THUMBNAILS ═══════════════ */
-
-  const generateFilterThumbnails = (img: HTMLImageElement) => {
-    FILTER_PRESETS.forEach((preset) => {
-      const canvas = filterThumbCanvasRefs.current.get(preset.name);
-      if (!canvas) return;
-      const ctx = canvas.getContext("2d");
-      if (!ctx) return;
-      canvas.width = 60;
-      canvas.height = 60;
-      const scale = Math.max(60 / img.naturalWidth, 60 / img.naturalHeight);
-      const w = img.naturalWidth * scale;
-      const h = img.naturalHeight * scale;
-      const x = (60 - w) / 2;
-      const y = (60 - h) / 2;
-      if (preset.name !== "Original") {
-        ctx.filter = filterPresetToCSS(preset.css);
-      }
-      ctx.drawImage(img, x, y, w, h);
-    });
-  };
 
   /* ═══════════════ AUTO-ENHANCE ═══════════════ */
 
@@ -843,8 +851,11 @@ export default function EditeurPhoto() {
   }, [undo, redo]);
 
   /* ═══════════════════ AI FEATURES (must be before any early return) ═══════════════════ */
-  renderRef.current = render;
-  pushHistoryRef.current = pushHistory;
+
+  useEffect(() => {
+    renderRef.current = render;
+    pushHistoryRef.current = pushHistory;
+  }, [render, pushHistory]);
 
   const loadTransformersTop = useCallback(async () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -929,7 +940,7 @@ export default function EditeurPhoto() {
         newImg.src = resultURL;
       });
       pushHistoryRef.current();
-      imgRef.current = newImg;
+      setCurrentImage(newImg);
       renderRef.current();
     } catch (e) {
       console.error("AI BG removal error:", e);
@@ -937,7 +948,7 @@ export default function EditeurPhoto() {
     } finally {
       setAiLoading(false); setAiProgress("");
     }
-  }, [getAIPipelineTop, getCanvasDataURLTop]);
+  }, [getAIPipelineTop, getCanvasDataURLTop, rawImageToDataURL, setCurrentImage]);
 
   const aiDepthMap = useCallback(async () => {
     if (!imgRef.current) return;
@@ -957,7 +968,7 @@ export default function EditeurPhoto() {
       await new Promise<void>((res, rej) => { depthImg.onload = () => res(); depthImg.onerror = () => rej(); depthImg.src = depthDataURL; });
       pushHistoryRef.current();
       if (depthMode === "preview") {
-        imgRef.current = depthImg;
+        setCurrentImage(depthImg);
       } else {
         const img = imgRef.current;
         const w = img.naturalWidth, h = img.naturalHeight;
@@ -982,7 +993,7 @@ export default function EditeurPhoto() {
         resC.getContext("2d")!.putImageData(outData, 0, 0);
         const newImg = new Image();
         await new Promise<void>((res, rej) => { newImg.onload = () => res(); newImg.onerror = () => rej(); newImg.src = resC.toDataURL("image/png"); });
-        imgRef.current = newImg;
+        setCurrentImage(newImg);
       }
       renderRef.current();
     } catch (e) {
@@ -991,7 +1002,7 @@ export default function EditeurPhoto() {
     } finally {
       setAiLoading(false); setAiProgress("");
     }
-  }, [getAIPipelineTop, getCanvasDataURLTop, depthMode, depthIntensity]);
+  }, [getAIPipelineTop, getCanvasDataURLTop, rawImageToDataURL, depthMode, depthIntensity, setCurrentImage]);
 
   const aiSuperRes = useCallback(async () => {
     if (!imgRef.current) return;
@@ -1017,7 +1028,7 @@ export default function EditeurPhoto() {
       pushHistoryRef.current();
       const newImg = new Image();
       await new Promise<void>((res, rej) => { newImg.onload = () => res(); newImg.onerror = () => rej(); newImg.src = resultURL; });
-      imgRef.current = newImg;
+      setCurrentImage(newImg);
       renderRef.current();
     } catch (e) {
       console.error("AI super-res error:", e);
@@ -1025,7 +1036,7 @@ export default function EditeurPhoto() {
     } finally {
       setAiLoading(false); setAiProgress("");
     }
-  }, [getAIPipelineTop, getCanvasDataURLTop]);
+  }, [getAIPipelineTop, getCanvasDataURLTop, rawImageToDataURL, setCurrentImage]);
 
   /* ═══════════════ RENDER ═══════════════ */
 
@@ -1175,7 +1186,7 @@ export default function EditeurPhoto() {
           <div className="w-px h-5 mx-1" style={{ background: DARK.border }} />
 
           {/* New image */}
-          <button onClick={() => { setImageLoaded(false); setFileName(""); imgRef.current = null; }}
+          <button onClick={() => { setImageLoaded(false); setFileName(""); setCurrentImage(null); setHistogram(null); }}
             className="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors hover:bg-white/5"
             style={{ color: DARK.text }}>
             Nouvelle image
@@ -1217,9 +1228,9 @@ export default function EditeurPhoto() {
           </div>
 
           {/* Mini histogram overlay */}
-          {histogramRef.current && !showBeforeAfter && (
+          {histogram && !showBeforeAfter && (
             <div className="absolute bottom-4 left-4 rounded-lg overflow-hidden" style={{ background: "rgba(0,0,0,0.6)", padding: 4 }}>
-              <MiniHistogram data={histogramRef.current} />
+              <MiniHistogram data={histogram} />
             </div>
           )}
         </div>
@@ -1348,7 +1359,7 @@ export default function EditeurPhoto() {
                 </div>
 
                 {/* Curve widget */}
-                <CurveWidget channel={curveChannel} points={curvePoints[curveChannel]} histogram={histogramRef.current} onPointsChange={(pts) => setCurvePoints(prev => ({ ...prev, [curveChannel]: pts }))} />
+                <CurveWidget channel={curveChannel} points={curvePoints[curveChannel]} histogram={histogram} onPointsChange={(pts) => setCurvePoints(prev => ({ ...prev, [curveChannel]: pts }))} />
 
                 <p className="text-[10px] leading-relaxed" style={{ color: DARK.text }}>
                   Cliquez pour ajouter un point. Double-cliquez un point pour le supprimer. Glissez pour ajuster.
@@ -1496,7 +1507,7 @@ export default function EditeurPhoto() {
                           <p className="mt-0.5 text-[10px]" style={{ color: DARK.text }}>Modele MODNet — 6.6 Mo — Apache 2.0</p>
                         </div>
                       </div>
-                      <button onClick={aiRemoveBackground} disabled={!imgRef.current}
+                      <button onClick={aiRemoveBackground} disabled={!imageMeta}
                         className="mt-3 w-full rounded-lg py-2.5 text-xs font-bold transition-all hover:brightness-110 disabled:opacity-40"
                         style={{ background: DARK.accent, color: "#000" }}>
                         Supprimer le fond
@@ -1533,7 +1544,7 @@ export default function EditeurPhoto() {
                           <span className="w-6 text-right text-[10px] font-bold tabular-nums" style={{ color: "#6366f1" }}>{depthIntensity}</span>
                         </div>
                       )}
-                      <button onClick={aiDepthMap} disabled={!imgRef.current}
+                      <button onClick={aiDepthMap} disabled={!imageMeta}
                         className="mt-2 w-full rounded-lg py-2.5 text-xs font-bold transition-all hover:brightness-110 disabled:opacity-40"
                         style={{ background: "#6366f1", color: "#fff" }}>
                         {depthMode === "bokeh" ? "Appliquer le Bokeh" : "Generer la carte"}
@@ -1549,12 +1560,12 @@ export default function EditeurPhoto() {
                           <p className="mt-0.5 text-[10px]" style={{ color: DARK.text }}>Swin2SR — 16 Mo — Apache 2.0</p>
                         </div>
                       </div>
-                      {imgRef.current && (imgRef.current.naturalWidth > 1024 || imgRef.current.naturalHeight > 1024) && (
+                      {imageMeta && (imageMeta.width > 1024 || imageMeta.height > 1024) && (
                         <p className="mt-2 text-[10px] rounded px-2 py-1" style={{ background: "#e8963e20", color: "#e8963e" }}>
                           Image &gt; 1024px : le traitement peut prendre 30-60s
                         </p>
                       )}
-                      <button onClick={aiSuperRes} disabled={!imgRef.current}
+                      <button onClick={aiSuperRes} disabled={!imageMeta}
                         className="mt-3 w-full rounded-lg py-2.5 text-xs font-bold transition-all hover:brightness-110 disabled:opacity-40"
                         style={{ background: "#e8963e", color: "#000" }}>
                         Ameliorer la resolution (x2)

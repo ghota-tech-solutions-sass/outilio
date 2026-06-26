@@ -83,7 +83,6 @@ export default function GenerateurMotDePasseWifi() {
   // Generate a real, scannable WiFi QR code via the qrcode library.
   useEffect(() => {
     if (!password) {
-      setQrDataUrl("");
       return;
     }
     const wifiString = `WIFI:T:WPA;S:${escapeWifiField(ssid)};P:${escapeWifiField(password)};;`;

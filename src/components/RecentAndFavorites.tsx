@@ -30,7 +30,10 @@ export function useFavorite(href: string) {
   const [isFav, setIsFav] = useState(false);
 
   useEffect(() => {
-    setIsFav(getFavorites().includes(href));
+    const timer = setTimeout(() => {
+      setIsFav(getFavorites().includes(href));
+    }, 0);
+    return () => clearTimeout(timer);
   }, [href]);
 
   const toggle = useCallback(() => {
@@ -81,10 +84,14 @@ export default function RecentAndFavorites() {
   }, []);
 
   useEffect(() => {
-    refresh();
+    const timer = setTimeout(() => {
+      refresh();
+    }, 0);
     window.addEventListener("outilis-favorites-changed", refresh);
-    return () =>
+    return () => {
+      clearTimeout(timer);
       window.removeEventListener("outilis-favorites-changed", refresh);
+    };
   }, [refresh]);
 
   if (favorites.length === 0 && recent.length === 0) return null;

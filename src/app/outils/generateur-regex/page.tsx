@@ -29,21 +29,18 @@ export default function GenerateurRegex() {
   const [pattern, setPattern] = useState("");
   const [testString, setTestString] = useState("");
   const [flags, setFlags] = useState({ g: true, i: false, m: false, s: false });
-  const [error, setError] = useState("");
   const [copied, setCopied] = useState<string | null>(null);
 
   const flagString = useMemo(() => {
     return (flags.g ? "g" : "") + (flags.i ? "i" : "") + (flags.m ? "m" : "") + (flags.s ? "s" : "");
   }, [flags]);
 
-  const matches = useMemo((): MatchResult[] => {
+  const { matches, error } = useMemo((): { matches: MatchResult[]; error: string } => {
     if (!pattern || !testString) {
-      setError("");
-      return [];
+      return { matches: [], error: "" };
     }
     try {
       const regex = new RegExp(pattern, flagString);
-      setError("");
       const results: MatchResult[] = [];
       if (flags.g) {
         let match: RegExpExecArray | null;
@@ -69,10 +66,9 @@ export default function GenerateurRegex() {
           });
         }
       }
-      return results;
+      return { matches: results, error: "" };
     } catch (e) {
-      setError((e as Error).message);
-      return [];
+      return { matches: [], error: (e as Error).message };
     }
   }, [pattern, testString, flagString, flags.g]);
 

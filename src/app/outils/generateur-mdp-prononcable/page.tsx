@@ -87,11 +87,14 @@ export default function GenerateurMdpPrononcable() {
 
   // Generate on first render
   useEffect(() => {
-    const initial: string[] = [];
-    for (let i = 0; i < 6; i++) {
-      initial.push(generatePassword(syllables, includeNumbers, includeSpecial, capitalize));
-    }
-    setPasswords(initial);
+    const timer = setTimeout(() => {
+      const initial: string[] = [];
+      for (let i = 0; i < 6; i++) {
+        initial.push(generatePassword(syllables, includeNumbers, includeSpecial, capitalize));
+      }
+      setPasswords(initial);
+    }, 0);
+    return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

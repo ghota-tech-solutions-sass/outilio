@@ -79,11 +79,6 @@ export default function CommandPalette() {
     }
   }, [open]);
 
-  // Reset selected index when filtered results change
-  useEffect(() => {
-    setSelectedIndex(0);
-  }, [query]);
-
   // Scroll selected item into view
   useEffect(() => {
     if (!listRef.current) return;
@@ -169,7 +164,10 @@ export default function CommandPalette() {
             ref={inputRef}
             type="text"
             value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            onChange={(e) => {
+              setQuery(e.target.value);
+              setSelectedIndex(0);
+            }}
             placeholder="Rechercher un outil..."
             className="flex-1 bg-transparent text-base outline-none placeholder:text-[var(--muted)]"
             style={{ color: "var(--foreground)", fontFamily: "var(--font-body)" }}

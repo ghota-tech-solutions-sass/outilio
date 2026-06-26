@@ -197,13 +197,13 @@ export default function CommentCaMarche() {
           <p className="mt-3 text-sm text-white/70">
             Essayez nos outils maintenant. Gratuit, sans inscription, sans cookies.
           </p>
-          <a
+          <Link
             href="/"
             className="mt-6 inline-flex items-center gap-2 rounded-full bg-white px-8 py-3.5 text-sm font-semibold transition-all hover:scale-[1.02]"
             style={{ color: "var(--primary)" }}
           >
             Decouvrir tous les outils
-          </a>
+          </Link>
         </div>
       </section>
     </>
