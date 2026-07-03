@@ -28,6 +28,6 @@ jobs:
 
       - name: Deploy on release
         if: ${{ steps.release.outputs.release_created }}
-        run: gh workflow run deploy.yml --ref main
+        run: gh workflow run deploy.yml --repo "$GITHUB_REPOSITORY" --ref main
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
