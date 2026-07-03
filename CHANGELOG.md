@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.1](https://github.com/ghota-tech-solutions-sass/outilio/compare/v0.2.0...v0.2.1) (2026-07-03)
+
+
+### Bug Fixes
+
+* make lint pass with eslint 10 ([14faae2](https://github.com/ghota-tech-solutions-sass/outilio/commit/14faae2d0669ba3ba262d660ebba47ebeabd6615))
+
 ## [0.2.0](https://github.com/ghota-tech-solutions-sass/outilio/compare/v0.1.0...v0.2.0) (2026-05-22)
 
 
