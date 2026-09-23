@@ -1,48 +1,28 @@
-/*! coi-serviceworker v0.1.7 - Guido Zuidhof / nicolepratt, licensed under MIT */
+/*
+ * Ancien service worker "coi-serviceworker" (isolation cross-origin pour FFmpeg).
+ * Il n'est plus nécessaire : FFmpeg utilise désormais un cœur sans SharedArrayBuffer.
+ * Cette version se désinstalle chez les visiteurs qui l'avaient encore, pour ne plus
+ * réécrire les en-têtes COOP/COEP de tout le site (gêne pour les publicités et iframes).
+ */
 "use strict";
 
 if (typeof window === "undefined") {
-  // Service Worker context
   self.addEventListener("install", () => self.skipWaiting());
-  self.addEventListener("activate", (e) => e.waitUntil(self.clients.claim()));
-  self.addEventListener("fetch", (e) => {
-    if (
-      e.request.cache === "only-if-cached" &&
-      e.request.mode !== "same-origin"
-    ) {
-      return;
-    }
-    e.respondWith(
-      fetch(e.request).then((res) => {
-        if (res.status === 0) return res;
-        const headers = new Headers(res.headers);
-        headers.set("Cross-Origin-Embedder-Policy", "credentialless");
-        headers.set("Cross-Origin-Opener-Policy", "same-origin");
-        return new Response(res.body, {
-          status: res.status,
-          statusText: res.statusText,
-          headers,
-        });
-      })
+  self.addEventListener("activate", (event) => {
+    event.waitUntil(
+      (async () => {
+        await self.registration.unregister();
+        const clients = await self.clients.matchAll({ type: "window" });
+        for (const client of clients) {
+          client.navigate(client.url);
+        }
+      })()
     );
   });
-} else {
-  // Window context - register the service worker
-  (async () => {
-    if (window.crossOriginIsolated !== false) return;
-    const registration = await navigator.serviceWorker.register(
-      window.document.currentScript.src
-    );
-    if (registration.active && !navigator.serviceWorker.controller) {
-      window.location.reload();
-    } else if (!registration.active) {
-      registration.addEventListener("updatefound", () => {
-        registration.installing.addEventListener("statechange", () => {
-          if (registration.active && !navigator.serviceWorker.controller) {
-            window.location.reload();
-          }
-        });
-      });
+} else if (navigator.serviceWorker) {
+  navigator.serviceWorker.getRegistrations().then((registrations) => {
+    for (const registration of registrations) {
+      registration.unregister();
     }
-  })();
+  });
 }
