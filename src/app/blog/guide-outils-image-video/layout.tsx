@@ -1,10 +1,6 @@
-import type { Metadata } from "next";
+import { redirectMetadata } from "../_data/metadata";
 
-export const metadata: Metadata = {
-  alternates: {
-    canonical: "https://outilis.fr/blog/guide-outils-image-video",
-  },
-};
+export const metadata = redirectMetadata("/categories/image");
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   return children;

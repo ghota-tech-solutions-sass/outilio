@@ -1,5 +1,6 @@
 import { tools } from "@/data/tools";
 import { categoryContent } from "@/data/category-content";
+import { CATEGORY_REDIRECTS, categoryLabel } from "@/data/categories";
 import type { Metadata } from "next";
 import Link from "next/link";
 
@@ -20,14 +21,17 @@ function getCategories() {
     if (existing) {
       existing.count++;
     } else {
-      map.set(slug, { name: t.category, slug, count: 1 });
+      map.set(slug, { name: categoryLabel(t.category), slug, count: 1 });
     }
   }
   return Array.from(map.values()).sort((a, b) => b.count - a.count);
 }
 
 export function generateStaticParams() {
-  return getCategories().map((c) => ({ slug: c.slug }));
+  return [
+    ...getCategories().map((c) => ({ slug: c.slug })),
+    ...Object.keys(CATEGORY_REDIRECTS).map((slug) => ({ slug })),
+  ];
 }
 
 export async function generateMetadata({
@@ -36,6 +40,14 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
+  const redirectTo = CATEGORY_REDIRECTS[slug];
+  if (redirectTo) {
+    return {
+      title: "Catégorie déplacée",
+      robots: { index: false, follow: true },
+      alternates: { canonical: `https://outilis.fr/categories/${redirectTo}` },
+    };
+  }
   const categories = getCategories();
   const category = categories.find((c) => c.slug === slug);
   const name = category?.name ?? slug;
@@ -46,7 +58,7 @@ export async function generateMetadata({
     title: `Outils ${name} gratuits en ligne (${count} outils) — Guide et conseils`,
     description: content
       ? content.intro
-      : `Decouvrez nos ${count} outils ${name.toLowerCase()} gratuits : calculateurs, simulateurs et generateurs. 100% en ligne, sans inscription.`,
+      : `Découvrez nos ${count} outils ${name.toLowerCase()} gratuits : calculateurs, simulateurs et générateurs. 100% en ligne, sans inscription.`,
     keywords: [
       `outils ${name.toLowerCase()}`,
       `${name.toLowerCase()} en ligne`,
@@ -54,6 +66,7 @@ export async function generateMetadata({
       `guide ${name.toLowerCase()}`,
       "outils gratuits",
     ],
+    alternates: { canonical: `https://outilis.fr/categories/${slug}` },
   };
 }
 
@@ -63,6 +76,21 @@ export default async function CategoryPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
+  const redirectTo = CATEGORY_REDIRECTS[slug];
+  if (redirectTo) {
+    const target = `/categories/${redirectTo}`;
+    return (
+      <section className="mx-auto max-w-7xl px-6 py-20 2xl:max-w-[1400px]">
+        <meta httpEquiv="refresh" content={`0; url=${target}`} />
+        <p style={{ color: "var(--muted)" }}>
+          Cette catégorie a été regroupée.{" "}
+          <Link href={target} className="font-semibold underline" style={{ color: "var(--primary)" }}>
+            Voir les outils {categoryLabel(redirectTo.charAt(0).toUpperCase() + redirectTo.slice(1)).toLowerCase()}
+          </Link>
+        </p>
+      </section>
+    );
+  }
   const categories = getCategories();
   const category = categories.find((c) => c.slug === slug);
   const categoryTools = tools.filter(
@@ -81,7 +109,7 @@ export default async function CategoryPage({
           </li>
           <li>/</li>
           <li>
-            <Link href="/#outils" className="transition-colors hover:text-[var(--primary)]">Categories</Link>
+            <Link href="/#outils" className="transition-colors hover:text-[var(--primary)]">Catégories</Link>
           </li>
           <li>/</li>
           <li style={{ color: "var(--foreground)" }} className="font-medium">
@@ -97,7 +125,7 @@ export default async function CategoryPage({
             className="text-xs font-semibold uppercase tracking-[0.2em]"
             style={{ color: "var(--accent)" }}
           >
-            Categorie
+            Catégorie
           </p>
           <h1
             className="mt-3 text-4xl tracking-tight md:text-5xl"
@@ -115,10 +143,10 @@ export default async function CategoryPage({
           >
             {content
               ? content.intro
-              : `${categoryTools.length} outil${categoryTools.length > 1 ? "s" : ""} gratuit${categoryTools.length > 1 ? "s" : ""} dans cette categorie. 100% en ligne, aucune inscription requise.`}
+              : `${categoryTools.length} outil${categoryTools.length > 1 ? "s" : ""} gratuit${categoryTools.length > 1 ? "s" : ""} dans cette catégorie. 100% en ligne, aucune inscription requise.`}
           </p>
           <p className="mt-2 text-sm font-medium" style={{ color: "var(--primary)" }}>
-            {categoryTools.length} outil{categoryTools.length > 1 ? "s" : ""} disponible{categoryTools.length > 1 ? "s" : ""} &middot; Mis a jour en avril 2026
+            {categoryTools.length} outil{categoryTools.length > 1 ? "s" : ""} disponible{categoryTools.length > 1 ? "s" : ""} &middot; Mis à jour en septembre 2026
           </p>
         </div>
       </section>
@@ -128,7 +156,7 @@ export default async function CategoryPage({
         <section className="py-10" style={{ background: "var(--surface-alt)", borderBottom: "1px solid var(--border)" }}>
           <div className="mx-auto max-w-7xl px-6 2xl:max-w-[1400px]">
             <h2 className="text-xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
-              A quoi servent ces outils ?
+              À quoi servent ces outils ?
             </h2>
             <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
               {content.useCases.map((uc, i) => (
@@ -239,7 +267,7 @@ export default async function CategoryPage({
           <div className="mx-auto max-w-7xl px-6 2xl:max-w-[1400px]">
             <div className="mx-auto max-w-3xl">
               <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
-                Questions frequentes
+                Questions fréquentes
               </h2>
               <div className="mt-6 space-y-6">
                 {content.faqItems.map((faq, i) => (
@@ -268,7 +296,7 @@ export default async function CategoryPage({
             className="text-2xl tracking-tight"
             style={{ fontFamily: "var(--font-display)" }}
           >
-            Autres categories
+            Autres catégories
           </h2>
           <div className="mt-6 flex flex-wrap gap-2">
             {otherCategories.map((c) => (

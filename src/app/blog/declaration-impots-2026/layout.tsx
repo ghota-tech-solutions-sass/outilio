@@ -1,10 +1,6 @@
-import type { Metadata } from "next";
+import { redirectMetadata } from "../_data/metadata";
 
-export const metadata: Metadata = {
-  alternates: {
-    canonical: "https://outilis.fr/blog/declaration-impots-2026",
-  },
-};
+export const metadata = redirectMetadata("/blog/guide-impots-revenus-2026");
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   return children;

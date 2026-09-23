@@ -1,10 +1,6 @@
-import type { Metadata } from "next";
+import { articleMetadata } from "../_data/metadata";
 
-export const metadata: Metadata = {
-  alternates: {
-    canonical: "https://outilis.fr/blog/simulateur-apl-2026",
-  },
-};
+export const metadata = articleMetadata("simulateur-apl-2026");
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   return children;
