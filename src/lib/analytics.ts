@@ -22,11 +22,24 @@ export function trackEvent({ action, category, label, value }: GtagEvent) {
 }
 
 export function trackToolUse(toolSlug: string) {
-  trackEvent({
-    action: "tool_use",
-    category: "engagement",
-    label: toolSlug,
-  });
+  if (typeof window !== "undefined" && window.gtag) {
+    window.gtag("event", "tool_use", {
+      event_category: "engagement",
+      event_label: toolSlug,
+      tool_name: toolSlug.replace("/outils/", ""),
+    });
+  }
+}
+
+export function trackAffiliateClick(partner: string, toolSlug: string) {
+  if (typeof window !== "undefined" && window.gtag) {
+    window.gtag("event", "affiliate_click", {
+      event_category: "monetization",
+      event_label: partner,
+      partner,
+      tool_name: toolSlug.replace("/outils/", ""),
+    });
+  }
 }
 
 export function trackToolView(toolSlug: string) {

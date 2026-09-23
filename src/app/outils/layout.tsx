@@ -3,6 +3,8 @@ import ShareButtons from "@/components/ShareButtons";
 import FavoriteButton from "@/components/FavoriteButton";
 import ToolJsonLd from "@/components/ToolJsonLd";
 import LastUpdated from "@/components/LastUpdated";
+import ToolUseTracker from "@/components/ToolUseTracker";
+import AffiliateSlot from "@/components/AffiliateSlot";
 
 export default function OutilsLayout({
   children,
@@ -16,9 +18,11 @@ export default function OutilsLayout({
         <FavoriteButton />
       </div>
       {children}
+      <AffiliateSlot />
       <ShareButtons />
       <RelatedTools />
       <ToolJsonLd />
+      <ToolUseTracker />
     </>
   );
 }
