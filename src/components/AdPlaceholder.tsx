@@ -1,86 +1,51 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import { tools } from "@/data/tools";
 
-const PROMOS = [
-  {
-    title: "Calculez votre salaire net",
-    description: "Brut \u2192 Net en 1 clic. Cadre, non-cadre, fonction publique.",
-    href: "/outils/calculateur-salaire",
-    icon: "\u{1F4B0}",
-    accent: true,
-  },
-  {
-    title: "Simulateur pret immobilier",
-    description: "Mensualites, cout total, tableau d'amortissement.",
-    href: "/outils/calculateur-pret-immobilier",
-    icon: "\u{1F3E0}",
-  },
-  {
-    title: "Freelance vs CDI",
-    description: "Comparez vos revenus nets reels. TJM equivalent inclus.",
-    href: "/outils/freelance-vs-cdi",
-    icon: "\u{1F4BC}",
-    accent: true,
-  },
-  {
-    title: "Simulateur impot 2024",
-    description: "Bareme officiel, quotient familial, detail par tranche.",
-    href: "/outils/simulateur-impot",
-    icon: "\u{1F4CB}",
-  },
-  {
-    title: "Generateur de factures",
-    description: "Factures PDF conformes, gratuites, sans inscription.",
-    href: "/outils/generateur-facture",
-    icon: "\u{1F4C4}",
-    accent: true,
-  },
-  {
-    title: "Age depart retraite",
-    description: "Reforme 2023. Trimestres requis selon votre annee de naissance.",
-    href: "/outils/calculateur-retraite",
-    icon: "\u{1F9D3}",
-  },
-  {
-    title: "Calculateur TVA",
-    description: "HT \u2194 TTC instantane. Tous les taux francais.",
-    href: "/outils/calculateur-tva",
-    icon: "\u{1F4B1}",
-  },
-  {
-    title: "Generateur mot de passe",
-    description: "Mots de passe forts et securises. 100% local.",
-    href: "/outils/generateur-mot-de-passe",
-    icon: "\u{1F512}",
-    accent: true,
-  },
-  {
-    title: "Rentabilite locative",
-    description: "Rendement brut/net, cashflow, effort d'epargne.",
-    href: "/outils/calculateur-rentabilite-locative",
-    icon: "\u{1F3D8}\uFE0F",
-  },
-  {
-    title: "Convertisseur couleurs",
-    description: "HEX, RGB, HSL. Color picker et copie en un clic.",
-    href: "/outils/convertisseur-couleurs",
-    icon: "\u{1F3A8}",
-    accent: true,
-  },
+type Promo = {
+  title: string;
+  description: string;
+  href: string;
+  icon: string;
+  accent?: boolean;
+  /** Catégories d'outils (voir src/data/tools.ts) sur lesquelles la promo est pertinente. */
+  categories: string[];
+};
+
+// Outils mis en avant dans la barre latérale. Priorité aux outils qui mènent
+// vers des partenaires (immobilier, crédit, création d'entreprise, épargne).
+const PROMOS: Promo[] = [
+  { title: "Capacité d'emprunt", description: "Combien pouvez-vous emprunter selon vos revenus ?", href: "/outils/capacite-emprunt", icon: "\u{1F3E6}", accent: true, categories: ["Immobilier", "Finance"] },
+  { title: "Simulateur prêt immobilier", description: "Mensualités, coût total, tableau d'amortissement.", href: "/outils/calculateur-pret-immobilier", icon: "\u{1F3E0}", categories: ["Immobilier", "Finance"] },
+  { title: "Assurance de prêt", description: "Combien économiser en changeant d'assurance (loi Lemoine) ?", href: "/outils/assurance-emprunteur", icon: "\u{1F6E1}\uFE0F", accent: true, categories: ["Immobilier", "Finance"] },
+  { title: "Simulateur PTZ 2026", description: "Éligibilité et montant du prêt à taux zéro.", href: "/outils/simulateur-ptz-2026", icon: "\u{1F511}", categories: ["Immobilier"] },
+  { title: "MaPrimeRénov' 2026", description: "Estimez vos aides à la rénovation énergétique.", href: "/outils/simulateur-maprimerenov", icon: "\u{1F33F}", accent: true, categories: ["Immobilier", "Environnement"] },
+  { title: "Quel statut juridique ?", description: "Micro, EURL ou SASU : comparez votre revenu net.", href: "/outils/choisir-statut-juridique", icon: "\u{2696}\uFE0F", accent: true, categories: ["Business", "Carriere", "Emploi", "Travail"] },
+  { title: "Freelance vs CDI", description: "Comparez vos revenus nets réels. TJM équivalent inclus.", href: "/outils/freelance-vs-cdi", icon: "\u{1F4BC}", categories: ["Business", "Carriere", "Emploi", "Travail"] },
+  { title: "Générateur de factures", description: "Factures PDF gratuites, sans inscription.", href: "/outils/generateur-facture", icon: "\u{1F4C4}", categories: ["Business"] },
+  { title: "Calculez votre salaire net", description: "Brut → net en 1 clic. Cadre, non-cadre, fonction publique.", href: "/outils/calculateur-salaire", icon: "\u{1F4B0}", categories: ["Emploi", "Travail", "Finance"] },
+  { title: "Simulateur impôt 2026", description: "Barème officiel, quotient familial, décote.", href: "/outils/simulateur-impot", icon: "\u{1F4CB}", categories: ["Finance", "Emploi"] },
+  { title: "Calculateur d'épargne", description: "Intérêts composés et projection de votre épargne.", href: "/outils/calculateur-epargne", icon: "\u{1F4C8}", categories: ["Finance"] },
+  { title: "Rentabilité locative", description: "Rendement brut/net, cashflow, effort d'épargne.", href: "/outils/calculateur-rentabilite-locative", icon: "\u{1F3D8}\uFE0F", categories: ["Immobilier", "Finance"] },
 ];
 
 export default function AdPlaceholder({ className = "" }: { className?: string }) {
+  const pathname = usePathname();
   const [promo, setPromo] = useState(PROMOS[0]);
 
   useEffect(() => {
+    const category = tools.find((t) => t.href === pathname)?.category;
+    const others = PROMOS.filter((p) => p.href !== pathname);
+    const related = category ? others.filter((p) => p.categories.includes(category)) : [];
+    const pool = related.length > 0 ? related : others;
     const timer = setTimeout(() => {
-      const idx = Math.floor(Math.random() * PROMOS.length);
-      setPromo(PROMOS[idx]);
+      setPromo(pool[Math.floor(Math.random() * pool.length)]);
     }, 0);
     return () => clearTimeout(timer);
-  }, []);
+  }, [pathname]);
 
   const isLarge = className.includes("600");
 

@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { tools } from "@/data/tools";
+import { categoryLabel } from "@/data/categories";
 import { trackSearch } from "@/lib/analytics";
 
 export default function CommandPalette() {
@@ -114,7 +115,7 @@ export default function CommandPalette() {
   if (!open) return null;
 
   return (
-    <div
+    <div data-no-track
       className="fixed inset-0 z-[100] flex items-start justify-center pt-[15vh]"
       style={{ animation: "cmdPaletteFadeIn 0.15s ease-out" }}
       onClick={(e) => {
@@ -180,7 +181,7 @@ export default function CommandPalette() {
               background: "var(--surface-alt)",
             }}
           >
-            Echap
+            Échap
           </kbd>
         </div>
 
@@ -200,7 +201,7 @@ export default function CommandPalette() {
                   color: "var(--foreground)",
                 }}
               >
-                Aucun outil trouve
+                Aucun outil trouvé
               </p>
               <p className="mt-1 text-xs" style={{ color: "var(--muted)" }}>
                 Essayez un autre terme de recherche.
@@ -248,7 +249,7 @@ export default function CommandPalette() {
                             : "var(--muted)",
                       }}
                     >
-                      {tool.category}
+                      {categoryLabel(tool.category)}
                     </span>
                   </div>
                   <p

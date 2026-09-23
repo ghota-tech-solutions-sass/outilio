@@ -47,12 +47,12 @@ export default function PrivacyBanner() {
                 className="text-xl tracking-tight text-white md:text-2xl"
                 style={{ fontFamily: "var(--font-display)" }}
               >
-                Vos donnees restent chez vous.
+                Vos saisies restent chez vous.
               </h3>
               <p className="mt-3 text-sm leading-relaxed text-white/80 md:text-base">
                 Tous nos outils fonctionnent 100% dans votre navigateur. Aucune
-                donnee n&apos;est envoyee a un serveur. Aucun cookie de tracking.
-                Aucune inscription requise.
+                donnée saisie n&apos;est envoyée à un serveur. Aucune inscription
+                requise.
               </p>
             </div>
           </div>

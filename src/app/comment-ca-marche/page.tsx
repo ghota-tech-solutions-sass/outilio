@@ -4,41 +4,40 @@ const STEPS = [
   {
     num: "01",
     title: "Vous ouvrez un outil",
-    description: "Choisissez parmi nos outils gratuits. La page se charge instantanement depuis le CDN mondial de GitHub.",
+    description: "Choisissez parmi nos outils gratuits. La page se charge instantanément depuis le CDN mondial de GitHub.",
     icon: "\u{1F310}",
-    detail: "Les pages sont pre-generees en HTML statique. Aucun serveur n'est sollicite pour generer le contenu.",
+    detail: "Les pages sont pré-générées en HTML statique. Aucun serveur n'est sollicité pour générer le contenu.",
   },
   {
     num: "02",
-    title: "Vous entrez vos donnees",
-    description: "Tapez vos chiffres, collez votre texte, ajustez les parametres. Tout se passe dans votre navigateur.",
+    title: "Vous entrez vos données",
+    description: "Tapez vos chiffres, collez votre texte, ajustez les paramètres. Tout se passe dans votre navigateur.",
     icon: "\u{1F4BB}",
-    detail: "JavaScript s'execute localement sur votre appareil. Vos donnees ne quittent jamais votre navigateur.",
+    detail: "JavaScript s'exécute localement sur votre appareil. Les valeurs et fichiers que vous saisissez ne quittent jamais votre navigateur.",
   },
   {
     num: "03",
-    title: "Le calcul se fait instantanement",
-    description: "Les resultats apparaissent en temps reel pendant que vous tapez. Pas d'attente, pas de chargement.",
+    title: "Le calcul se fait instantanément",
+    description: "Les résultats apparaissent en temps réel pendant que vous tapez. Pas d'attente, pas de chargement.",
     icon: "\u{26A1}",
-    detail: "Tout est calcule par le processeur de votre appareil. Meme sans connexion internet, les outils continueraient a fonctionner.",
+    detail: "Tout est calculé par le processeur de votre appareil. Une fois la page chargée, la plupart des outils fonctionnent même sans connexion internet.",
   },
   {
     num: "04",
-    title: "Vous repartez. Rien n'est stocke",
-    description: "Fermez l'onglet et tout disparait. Aucune donnee n'est sauvegardee, nulle part, par personne.",
+    title: "Vous repartez. Rien ne part sur un serveur",
+    description: "Fermez l'onglet : vos saisies ne sont enregistrées sur aucun serveur, et la plupart disparaissent avec la page.",
     icon: "\u{1F512}",
-    detail: "Pas de cookies de tracking, pas de compte utilisateur, pas de base de donnees. Zero trace de votre passage.",
+    detail: "Pas de compte utilisateur, pas de base de données. Quelques éléments (favoris, outils récents, historique du scanner QR) sont gardés dans le stockage local de votre navigateur, jamais sur un serveur. La mesure d'audience (Google Analytics) et la publicité (Google AdSense) peuvent déposer des cookies, sans jamais recevoir vos saisies dans les outils.",
   },
 ];
 
 const COMPARISONS = [
-  { feature: "Traitement des donnees", us: "Dans votre navigateur", others: "Sur leurs serveurs" },
+  { feature: "Traitement des données", us: "Dans votre navigateur", others: "Sur leurs serveurs" },
   { feature: "Inscription requise", us: "Non", others: "Souvent oui" },
-  { feature: "Donnees stockees", us: "Jamais", others: "Oui (cloud)" },
-  { feature: "Cookies de tracking", us: "Aucun", others: "Multiples" },
-  { feature: "Code source", us: "Open source (MIT)", others: "Ferme" },
+  { feature: "Saisies stockées sur un serveur", us: "Jamais", others: "Oui (cloud)" },
+  { feature: "Code source", us: "Open source (MIT)", others: "Fermé" },
   { feature: "Prix", us: "Gratuit pour toujours", others: "Freemium / Ads" },
-  { feature: "Vitesse", us: "Instantanee (local)", others: "Depend du serveur" },
+  { feature: "Vitesse", us: "Instantanée (local)", others: "Dépend du serveur" },
 ];
 
 export default function CommentCaMarche() {
@@ -61,10 +60,10 @@ export default function CommentCaMarche() {
             className="mt-6 text-4xl tracking-tight md:text-5xl"
             style={{ fontFamily: "var(--font-display)" }}
           >
-            Comment ca <span style={{ color: "var(--primary)" }}>marche</span> ?
+            Comment ça <span style={{ color: "var(--primary)" }}>marche</span> ?
           </h1>
           <p className="mt-4 text-lg leading-relaxed" style={{ color: "var(--muted)" }}>
-            Outilis.fr est different. Vos donnees ne quittent <strong style={{ color: "var(--foreground)" }}>jamais</strong> votre appareil.
+            Outilis.fr est différent. Ce que vous saisissez dans les outils ne quitte <strong style={{ color: "var(--foreground)" }}>jamais</strong> votre appareil.
             Voici pourquoi et comment.
           </p>
         </div>
@@ -125,7 +124,7 @@ export default function CommentCaMarche() {
             <table className="w-full text-sm">
               <thead>
                 <tr style={{ background: "var(--primary)" }}>
-                  <th className="px-5 py-3 text-left font-medium text-white/70">Critere</th>
+                  <th className="px-5 py-3 text-left font-medium text-white/70">Critère</th>
                   <th className="px-5 py-3 text-center font-semibold text-white">Outilis.fr</th>
                   <th className="px-5 py-3 text-center font-medium text-white/70">Autres sites</th>
                 </tr>
@@ -167,8 +166,8 @@ export default function CommentCaMarche() {
                 </h2>
                 <p className="mt-2 leading-relaxed" style={{ color: "var(--muted)" }}>
                   Le code source complet d&apos;Outilis.fr est disponible sur GitHub sous licence MIT.
-                  Vous pouvez inspecter chaque ligne de code, verifier qu&apos;aucune donnee n&apos;est transmise,
-                  et meme contribuer au projet.
+                  Vous pouvez inspecter chaque ligne de code, vérifier que vos saisies ne sont jamais transmises,
+                  et même contribuer au projet.
                 </p>
                 <a
                   href="https://github.com/ghota-tech-solutions-sass/outilio"
@@ -195,14 +194,14 @@ export default function CommentCaMarche() {
             Convaincu ?
           </h2>
           <p className="mt-3 text-sm text-white/70">
-            Essayez nos outils maintenant. Gratuit, sans inscription, sans cookies.
+            Essayez nos outils maintenant. Gratuit, sans inscription, vos données restent chez vous.
           </p>
           <Link
             href="/"
             className="mt-6 inline-flex items-center gap-2 rounded-full bg-white px-8 py-3.5 text-sm font-semibold transition-all hover:scale-[1.02]"
             style={{ color: "var(--primary)" }}
           >
-            Decouvrir tous les outils
+            Découvrir tous les outils
           </Link>
         </div>
       </section>

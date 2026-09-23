@@ -50,7 +50,7 @@ export default function ShareButtons() {
   };
 
   return (
-    <div className="no-print mx-auto max-w-7xl px-6 2xl:max-w-[1400px] pb-2">
+    <div data-no-track className="no-print mx-auto max-w-7xl px-6 2xl:max-w-[1400px] pb-2">
       <div
         className="flex flex-wrap items-center gap-2 rounded-xl border px-5 py-3"
         style={{ background: "var(--surface)", borderColor: "var(--border)" }}
@@ -115,7 +115,7 @@ export default function ShareButtons() {
               <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
             </svg>
           )}
-          {copied ? "Copie !" : "Copier le lien"}
+          {copied ? "Lien copié !" : "Copier le lien"}
         </button>
       </div>
     </div>

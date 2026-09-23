@@ -6,23 +6,17 @@ import Link from "next/link";
 const REPO_URL = "https://github.com/ghota-tech-solutions-sass/outilio";
 
 const CATEGORIES = [
-  "Finance",
-  "Immobilier",
-  "Business",
-  "Carriere",
-  "Sante",
+  "Immobilier & travaux",
+  "Argent & impôts",
+  "Emploi & salaire",
+  "Entreprise & freelance",
+  "Développeur & web",
+  "Image, vidéo & PDF",
+  "Santé",
+  "Sécurité",
+  "Conversions & calculs",
   "Texte",
-  "Dev",
-  "Outils",
-  "Legal",
-  "Securite",
-  "Conversion",
-  "Design",
-  "Maths",
-  "Image",
-  "PDF",
-  "Video",
-  "Audio",
+  "Quotidien",
   "Autre",
 ];
 
@@ -48,7 +42,7 @@ const STEPS = [
   },
   {
     num: "2",
-    title: "Creez votre outil",
+    title: "Créez votre outil",
     description: (
       <>
         Ajoutez un dossier dans{" "}
@@ -67,13 +61,13 @@ const STEPS = [
     num: "3",
     title: "Suivez la structure existante",
     description:
-      "Regardez un outil existant comme modele. Utilisez les CSS variables du projet et importez AdPlaceholder pour la sidebar.",
+      "Prenez un outil existant comme modèle. Utilisez les variables CSS du projet et importez AdPlaceholder pour la barre latérale.",
   },
   {
     num: "4",
     title: "Ouvrez une Pull Request",
     description:
-      "Poussez votre branche et ouvrez une PR. Decrivez l'outil, son utilite et ajoutez une capture d'ecran si possible.",
+      "Poussez votre branche et ouvrez une PR. Décrivez l'outil, son utilité et ajoutez une capture d'écran si possible.",
   },
 ];
 
@@ -89,7 +83,7 @@ export default function ContribuerPage() {
     const title = `[Suggestion] ${nom}`;
     const body = [
       `## Nom de l'outil\n${nom}`,
-      `## Categorie\n${categorie}`,
+      `## Catégorie\n${categorie}`,
       `## Description\n${description}`,
       casUsage ? `## Cas d'usage\n${casUsage}` : "",
     ]
@@ -119,21 +113,21 @@ export default function ContribuerPage() {
               className="animate-fade-up text-xs font-semibold uppercase tracking-[0.2em]"
               style={{ color: "var(--accent)" }}
             >
-              Communaute
+              Communauté
             </p>
             <h1
               className="animate-fade-up stagger-1 mt-3 text-4xl tracking-tight md:text-5xl"
               style={{ fontFamily: "var(--font-display)" }}
             >
-              Contribuer a{" "}
+              Contribuer à{" "}
               <span style={{ color: "var(--primary)" }}>Outilis</span>
             </h1>
             <p
               className="animate-fade-up stagger-2 mt-4 text-lg leading-relaxed"
               style={{ color: "var(--muted)" }}
             >
-              Suggerez un outil qui vous manque ou contribuez directement au code.
-              Le projet est open source et ouvert a tous.
+              Suggérez un outil qui vous manque ou contribuez directement au code.
+              Le projet est open source et ouvert à tous.
             </p>
           </div>
         </div>
@@ -154,12 +148,12 @@ export default function ContribuerPage() {
                 className="text-2xl tracking-tight"
                 style={{ fontFamily: "var(--font-display)" }}
               >
-                Suggerer un outil
+                Suggérer un outil
               </h2>
             </div>
             <p className="mt-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-              Remplissez le formulaire ci-dessous. Votre suggestion sera envoyee
-              comme issue GitHub pour que la communaute puisse en discuter.
+              Remplissez le formulaire ci-dessous. Votre suggestion sera envoyée
+              comme issue GitHub pour que la communauté puisse en discuter.
             </p>
 
             <form onSubmit={handleSubmit} className="mt-8 space-y-5">
@@ -172,7 +166,7 @@ export default function ContribuerPage() {
                   type="text"
                   value={nom}
                   onChange={(e) => setNom(e.target.value)}
-                  placeholder="Ex: Calculateur de TVA inversee"
+                  placeholder="Ex. : Calculateur de TVA inversée"
                   maxLength={100}
                   required
                   className="w-full rounded-xl border px-4 py-3 text-sm outline-none transition-colors focus:border-[var(--primary)]"
@@ -186,7 +180,7 @@ export default function ContribuerPage() {
               {/* Categorie */}
               <div>
                 <label className="mb-1.5 block text-sm font-semibold">
-                  Categorie <span style={{ color: "var(--accent)" }}>*</span>
+                  Catégorie <span style={{ color: "var(--accent)" }}>*</span>
                 </label>
                 <select
                   value={categorie}
@@ -200,7 +194,7 @@ export default function ContribuerPage() {
                   }}
                 >
                   <option value="" disabled>
-                    Choisir une categorie...
+                    Choisir une catégorie...
                   </option>
                   {CATEGORIES.map((cat) => (
                     <option key={cat} value={cat}>
@@ -218,7 +212,7 @@ export default function ContribuerPage() {
                 <textarea
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Decrivez l'outil : que ferait-il, comment fonctionnerait-il ?"
+                  placeholder="Décrivez l'outil : que ferait-il, comment fonctionnerait-il ?"
                   maxLength={500}
                   required
                   rows={4}
@@ -279,8 +273,8 @@ export default function ContribuerPage() {
                   <path d="M12 16v-4M12 8h.01" />
                 </svg>
                 <p className="text-xs leading-relaxed" style={{ color: "var(--muted)" }}>
-                  Un compte GitHub est necessaire pour soumettre une suggestion.
-                  Le formulaire ouvrira une issue pre-remplie sur notre repository.
+                  Un compte GitHub est nécessaire pour soumettre une suggestion.
+                  Le formulaire ouvrira une issue pré-remplie sur notre repository.
                 </p>
               </div>
 
@@ -327,7 +321,7 @@ export default function ContribuerPage() {
             </div>
             <p className="mt-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
               Le projet est open source. Vous pouvez ajouter un outil, corriger
-              un bug ou ameliorer le site directement.
+              un bug ou améliorer le site directement.
             </p>
 
             {/* Steps */}
@@ -442,8 +436,8 @@ export default function ContribuerPage() {
             className="mt-3 text-sm leading-relaxed"
             style={{ color: "var(--muted)" }}
           >
-            Qu&apos;il s&apos;agisse d&apos;une idee d&apos;outil, d&apos;un bug reporte ou d&apos;une
-            ligne de code, vous aidez des milliers de Francais au quotidien.
+            Qu&apos;il s&apos;agisse d&apos;une idée d&apos;outil, d&apos;un bug signalé ou d&apos;une
+            ligne de code, vous aidez des milliers de Français au quotidien.
           </p>
           <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
             <Link
@@ -451,7 +445,7 @@ export default function ContribuerPage() {
               className="inline-flex items-center rounded-full border px-6 py-3 text-sm font-semibold transition-all hover:bg-[#0d4f3c]/5"
               style={{ borderColor: "var(--border)" }}
             >
-              Retour a l&apos;accueil
+              Retour à l&apos;accueil
             </Link>
             <a
               href={`${REPO_URL}/issues`}

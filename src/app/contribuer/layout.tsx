@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Contribuer - Suggerez un outil ou contribuez au code",
+  title: "Contribuer - Suggérez un outil ou contribuez au code",
   description:
-    "Proposez de nouveaux outils pour Outilis.fr ou contribuez au code open source. Rejoignez la communaute et aidez a simplifier le quotidien de milliers de Francais.",
+    "Proposez de nouveaux outils pour Outilis.fr ou contribuez au code open source. Rejoignez la communauté et aidez à simplifier le quotidien de milliers de Français.",
   keywords: [
     "contribuer",
     "open source",

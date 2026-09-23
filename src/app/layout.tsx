@@ -28,13 +28,13 @@ export const metadata: Metadata = {
     template: "%s | Outilis.fr",
   },
   description:
-    "Outils en ligne gratuits : calculateur salaire net/brut, simulateur pret immobilier, generateur de factures, QR codes, mots de passe et plus.",
+    "92 outils en ligne gratuits et sans inscription : calculateur salaire net/brut, simulateur prêt immobilier, générateur de factures, QR codes, mots de passe et plus.",
   keywords: [
     "outils en ligne",
     "calculateur salaire",
     "salaire brut net",
     "simulateur pret",
-    "generateur facture",
+    "générateur facture",
     "outils gratuits",
   ],
   openGraph: {
@@ -44,21 +44,21 @@ export const metadata: Metadata = {
     url: "https://outilis.fr",
     title: "Outilis.fr - Outils en ligne gratuits",
     description:
-      "Calculateurs, generateurs et convertisseurs gratuits. 100% dans votre navigateur.",
+      "Calculateurs, générateurs et convertisseurs gratuits. 100% dans votre navigateur.",
     images: [
       {
-        url: "https://outilis.fr/og-image.svg",
+        url: "https://outilis.fr/og-image.png",
         width: 1200,
         height: 630,
-        alt: "Outilis.fr - 78 outils en ligne gratuits",
+        alt: "Outilis.fr - 92 outils en ligne gratuits",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
     title: "Outilis.fr - Outils en ligne gratuits",
-    description: "78 outils gratuits : calculateurs, generateurs, convertisseurs. 100% navigateur.",
-    images: ["https://outilis.fr/og-image.svg"],
+    description: "92 outils gratuits : calculateurs, générateurs, convertisseurs. 100% navigateur.",
+    images: ["https://outilis.fr/og-image.png"],
     creator: "@MickaelV79228",
   },
   metadataBase: new URL("https://outilis.fr"),
@@ -96,7 +96,7 @@ export default function RootLayout({
                   "url": "https://outilis.fr",
                   "inLanguage": "fr-FR",
                   "description":
-                    "88 outils en ligne 100 % gratuits, sans inscription : calculateurs, simulateurs, generateurs, convertisseurs. Tout dans le navigateur, donnees a jour 2026.",
+                    "92 outils en ligne 100 % gratuits, sans inscription : calculateurs, simulateurs, générateurs, convertisseurs. Tout dans le navigateur, données à jour 2026.",
                   "publisher": { "@id": "https://outilis.fr/#organization" },
                   "potentialAction": {
                     "@type": "SearchAction",
@@ -112,7 +112,7 @@ export default function RootLayout({
                   "@id": "https://outilis.fr/#organization",
                   "name": "Outilis.fr",
                   "url": "https://outilis.fr",
-                  "logo": "https://outilis.fr/og-image.svg",
+                  "logo": "https://outilis.fr/og-image.png",
                   "founder": {
                     "@type": "Person",
                     "name": "Mickael Villers",

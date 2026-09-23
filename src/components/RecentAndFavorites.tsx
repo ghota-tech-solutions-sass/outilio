@@ -182,7 +182,7 @@ export default function RecentAndFavorites() {
               className="text-lg tracking-tight"
               style={{ fontFamily: "var(--font-display)" }}
             >
-              Utilises recemment
+              Utilisés récemment
             </h2>
           </div>
           <div className="mt-3 flex flex-wrap gap-2">

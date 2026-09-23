@@ -2,8 +2,8 @@ import Link from "next/link";
 
 const TOOL_LINKS = [
   { href: "/outils/calculateur-salaire", label: "Calculateur salaire" },
-  { href: "/outils/calculateur-pret-immobilier", label: "Simulateur pret" },
-  { href: "/outils/generateur-facture", label: "Generateur factures" },
+  { href: "/outils/calculateur-pret-immobilier", label: "Simulateur prêt" },
+  { href: "/outils/generateur-facture", label: "Générateur de factures" },
   { href: "/outils/generateur-qr-code", label: "QR Code" },
   { href: "/outils/generateur-mot-de-passe", label: "Mots de passe" },
   { href: "/outils/compteur-mots", label: "Compteur de mots" },
@@ -11,15 +11,16 @@ const TOOL_LINKS = [
 ];
 
 const CATEGORY_LINKS = [
-  { href: "/categories/finance", label: "Finance" },
-  { href: "/categories/immobilier", label: "Immobilier" },
-  { href: "/categories/business", label: "Business" },
-  { href: "/categories/dev", label: "Dev" },
-  { href: "/categories/image", label: "Image" },
-  { href: "/categories/outils", label: "Outils" },
-  { href: "/categories/sante", label: "Sante" },
-  { href: "/categories/securite", label: "Securite" },
-  { href: "/categories/conversion", label: "Conversion" },
+  { href: "/categories/immobilier", label: "Immobilier & travaux" },
+  { href: "/categories/finance", label: "Argent & impôts" },
+  { href: "/categories/emploi", label: "Emploi & salaire" },
+  { href: "/categories/business", label: "Entreprise & freelance" },
+  { href: "/categories/dev", label: "Développeur & web" },
+  { href: "/categories/image", label: "Image, vidéo & PDF" },
+  { href: "/categories/sante", label: "Santé" },
+  { href: "/categories/securite", label: "Sécurité" },
+  { href: "/categories/conversion", label: "Conversions & calculs" },
+  { href: "/categories/outils", label: "Quotidien" },
 ];
 
 export default function Footer() {
@@ -44,14 +45,14 @@ export default function Footer() {
               </span>
             </div>
             <p className="mt-4 max-w-xs text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-              Des outils en ligne penses pour simplifier votre quotidien.
-              Rapides, gratuits, sans inscription. Vos donnees restent sur votre navigateur.
+              Des outils en ligne pensés pour simplifier votre quotidien.
+              Rapides, gratuits, sans inscription. Vos saisies restent dans votre navigateur.
             </p>
             {/* Mini trust badges */}
             <div className="mt-5 flex gap-3">
               {[
                 { icon: "\u{1F512}", label: "100% local" },
-                { icon: "\u{26A1}", label: "Instantane" },
+                { icon: "\u{26A1}", label: "Instantané" },
               ].map((badge, i) => (
                 <span
                   key={i}
@@ -94,7 +95,7 @@ export default function Footer() {
               className="text-[11px] font-semibold uppercase tracking-[0.15em]"
               style={{ color: "var(--muted)" }}
             >
-              Categories
+              Catégories
             </h4>
             <ul className="mt-4 space-y-2.5">
               {CATEGORY_LINKS.map((link) => (
@@ -117,7 +118,7 @@ export default function Footer() {
               className="text-[11px] font-semibold uppercase tracking-[0.15em]"
               style={{ color: "var(--muted)" }}
             >
-              A propos
+              À propos
             </h4>
             <div className="mt-8">
               <h4
@@ -141,11 +142,11 @@ export default function Footer() {
               </ul>
             </div>
             <ul className="mt-4 space-y-2.5 text-sm" style={{ color: "var(--muted)" }}>
-              <li><Link href="/comment-ca-marche" className="transition-colors hover:text-[#0d4f3c] hover:underline underline-offset-4" style={{ color: "var(--foreground)" }}>Comment ca marche</Link></li>
+              <li><Link href="/comment-ca-marche" className="transition-colors hover:text-[#0d4f3c] hover:underline underline-offset-4" style={{ color: "var(--foreground)" }}>Comment ça marche</Link></li>
               <li><Link href="/contribuer" className="transition-colors hover:text-[#0d4f3c] hover:underline underline-offset-4" style={{ color: "var(--foreground)" }}>Contribuer</Link></li>
               <li><Link href="/blog" className="transition-colors hover:text-[#0d4f3c] hover:underline underline-offset-4" style={{ color: "var(--foreground)" }}>Blog</Link></li>
               <li>100% gratuit</li>
-              <li>Aucune donnee collectee</li>
+              <li>Vos saisies restent locales</li>
               <li>
                 <a
                   href="https://github.com/ghota-tech-solutions-sass/outilio"
@@ -174,7 +175,7 @@ export default function Footer() {
           className="mt-14 flex flex-col items-center justify-between gap-4 pt-8 text-xs sm:flex-row"
           style={{ borderTop: "1px solid var(--border)", color: "var(--muted)" }}
         >
-          <span>&copy; {new Date().getFullYear()} Outilis.fr &mdash; <Link href="/mentions-legales" className="underline underline-offset-2 hover:text-[var(--foreground)]">Mentions legales</Link></span>
+          <span>&copy; {new Date().getFullYear()} Outilis.fr &mdash; <Link href="/mentions-legales" className="underline underline-offset-2 hover:text-[var(--foreground)]">Mentions légales</Link></span>
           <span>Fait avec soin en France par <a href="https://ghotatechsolutions.com" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-[var(--foreground)]">Ghota Tech Solutions</a></span>
         </div>
       </div>

@@ -6,7 +6,7 @@ import { tools } from "@/data/tools";
 export const metadata: Metadata = {
   title: "Page introuvable - Erreur 404",
   description:
-    "La page demandee n'existe pas ou a ete deplacee. Decouvrez nos 88 outils gratuits sur Outilis.fr.",
+    `La page demandée n'existe pas ou a été déplacée. Découvrez nos ${tools.length} outils gratuits sur Outilis.fr.`,
   robots: { index: false, follow: true },
 };
 
@@ -20,12 +20,12 @@ const SUGGESTED_SLUGS = [
 ];
 
 const POPULAR_CATEGORIES = [
-  { label: "Finance", icon: "\u{1F4B0}", count: "20+ outils" },
-  { label: "Immobilier", icon: "\u{1F3E0}", count: "8 outils" },
-  { label: "Sante", icon: "\u{1FA7A}", count: "5 outils" },
-  { label: "Dev", icon: "\u{1F4BB}", count: "10+ outils" },
-  { label: "Image", icon: "\u{1F5BC}️", count: "5 outils" },
-  { label: "Business", icon: "\u{1F4BC}", count: "8 outils" },
+  { label: "Immobilier", slug: "immobilier", icon: "\u{1F3E0}" },
+  { label: "Argent & impôts", slug: "finance", icon: "\u{1F4B0}" },
+  { label: "Entreprise", slug: "business", icon: "\u{1F3E2}" },
+  { label: "Emploi", slug: "emploi", icon: "\u{1F4BC}" },
+  { label: "Développeur", slug: "dev", icon: "\u{1F4BB}" },
+  { label: "Image & vidéo", slug: "image", icon: "\u{1F5BC}\uFE0F" },
 ];
 
 export default function NotFound() {
@@ -70,15 +70,15 @@ export default function NotFound() {
             className="animate-fade-up stagger-2 mt-6 text-2xl font-bold md:text-3xl"
             style={{ fontFamily: "var(--font-display)", color: "var(--foreground)" }}
           >
-            Cette page s&apos;est evaporee.
+            Cette page s&apos;est évaporée.
           </h2>
 
           <p
             className="animate-fade-up stagger-3 mx-auto mt-4 max-w-xl text-base leading-relaxed"
             style={{ color: "var(--muted)" }}
           >
-            L&apos;adresse n&apos;existe pas, a ete renommee ou ne fonctionne plus. Pas de panique :
-            88 outils gratuits vous attendent juste en dessous.
+            L&apos;adresse n&apos;existe pas, a été renommée ou ne fonctionne plus. Pas de panique :
+            {tools.length} outils gratuits vous attendent juste en dessous.
           </p>
 
           <div className="animate-fade-up stagger-4 mt-8 flex flex-wrap items-center justify-center gap-3">
@@ -90,10 +90,10 @@ export default function NotFound() {
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M3 12l9-9 9 9M5 10v10a1 1 0 0 0 1 1h4v-7h4v7h4a1 1 0 0 0 1-1V10" />
               </svg>
-              Retour a l&apos;accueil
+              Retour à l&apos;accueil
             </Link>
             <Link
-              href="/outils"
+              href="/#outils"
               className="inline-flex items-center gap-2 rounded-full border px-6 py-3 text-sm font-semibold transition-all hover:-translate-y-0.5 hover:shadow-md"
               style={{
                 borderColor: "var(--border)",
@@ -101,7 +101,7 @@ export default function NotFound() {
                 color: "var(--foreground)",
               }}
             >
-              Voir les 88 outils
+              Voir les {tools.length} outils
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M5 12h14M12 5l7 7-7 7" />
               </svg>
@@ -117,13 +117,13 @@ export default function NotFound() {
               className="text-xs font-bold uppercase tracking-[0.25em]"
               style={{ color: "var(--accent)" }}
             >
-              Les plus utilises
+              Les plus utilisés
             </p>
             <h2
               className="mt-3 text-3xl font-extrabold md:text-4xl"
               style={{ fontFamily: "var(--font-display)", color: "var(--foreground)" }}
             >
-              Vous cherchiez peut-etre l&apos;un de ceux-ci ?
+              Vous cherchiez peut-être l&apos;un de ceux-ci ?
             </h2>
           </div>
 
@@ -150,7 +150,7 @@ export default function NotFound() {
               className="text-xs font-bold uppercase tracking-[0.25em]"
               style={{ color: "var(--accent)" }}
             >
-              Explorer par categorie
+              Explorer par catégorie
             </p>
             <h2
               className="mt-3 text-2xl font-extrabold md:text-3xl"
@@ -164,7 +164,7 @@ export default function NotFound() {
             {POPULAR_CATEGORIES.map((cat) => (
               <Link
                 key={cat.label}
-                href={`/categories/${cat.label.toLowerCase()}`}
+                href={`/categories/${cat.slug}`}
                 className="group flex flex-col items-center justify-center rounded-2xl border p-5 text-center transition-all hover:-translate-y-1 hover:shadow-lg"
                 style={{ background: "var(--surface)", borderColor: "var(--border)" }}
               >
@@ -178,7 +178,7 @@ export default function NotFound() {
                   {cat.label}
                 </span>
                 <span className="mt-0.5 text-[11px]" style={{ color: "var(--muted)" }}>
-                  {cat.count}
+                  {tools.filter((t) => t.category.toLowerCase() === cat.slug).length} outils
                 </span>
               </Link>
             ))}
@@ -194,7 +194,7 @@ export default function NotFound() {
           >
             Vous pensez qu&apos;une page devrait exister ici ?
             <br />
-            Ecrivez-nous a{" "}
+            Écrivez-nous à{" "}
             <a
               href="mailto:contact@outilis.fr"
               className="font-semibold underline-offset-4 hover:underline"
@@ -202,7 +202,7 @@ export default function NotFound() {
             >
               contact@outilis.fr
             </a>
-            {" "}- on cree de nouveaux outils chaque semaine.
+            {" "}- nous ajoutons régulièrement de nouveaux outils.
           </p>
         </div>
       </section>

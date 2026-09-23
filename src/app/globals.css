@@ -225,6 +225,11 @@ input:focus, select:focus, textarea:focus {
 
 /* Print */
 @media print {
-  .no-print { display: none !important; }
+  .no-print,
+  body > header,
+  body header.sticky,
+  footer,
+  aside,
+  ins.adsbygoogle { display: none !important; }
   body::before { display: none; }
 }

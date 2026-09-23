@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { categoryLabel } from "@/data/categories";
 
 interface ToolCardProps {
   title: string;
@@ -98,7 +99,7 @@ export default function ToolCard({ title, description, href, icon, badge, catego
             className="rounded-lg px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider"
             style={{ background: "var(--surface-alt)", color: "var(--muted)" }}
           >
-            {category}
+            {categoryLabel(category)}
           </span>
         </div>
       </div>

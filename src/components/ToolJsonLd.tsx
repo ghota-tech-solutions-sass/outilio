@@ -3,6 +3,7 @@
 import { useMemo } from "react";
 import { usePathname } from "next/navigation";
 import { tools } from "@/data/tools";
+import { CATEGORY_SCHEMA } from "@/data/categories";
 
 export default function ToolJsonLd() {
   const pathname = usePathname();
@@ -17,7 +18,7 @@ export default function ToolJsonLd() {
       name: current.title,
       description: current.description,
       url: `https://outilis.fr${current.href}`,
-      applicationCategory: current.category,
+      applicationCategory: CATEGORY_SCHEMA[current.category] ?? "UtilitiesApplication",
       operatingSystem: "All",
       offers: {
         "@type": "Offer",

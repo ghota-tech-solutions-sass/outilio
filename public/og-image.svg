@@ -11,11 +11,11 @@
   <circle cx="1000" cy="500" r="250" fill="#ffffff" opacity="0.04"/>
   <text x="100" y="220" font-family="Georgia, serif" font-size="72" fill="white" font-weight="bold">Outilis</text>
   <text x="370" y="220" font-family="Georgia, serif" font-size="72" fill="#e8963e" font-weight="bold">.fr</text>
-  <text x="100" y="300" font-family="Arial, sans-serif" font-size="32" fill="rgba(255,255,255,0.7)">78 outils en ligne gratuits pour le quotidien</text>
-  <text x="100" y="380" font-family="Arial, sans-serif" font-size="22" fill="rgba(255,255,255,0.5)">Calculateur salaire · Simulateur impot · Freelance vs CDI</text>
-  <text x="100" y="420" font-family="Arial, sans-serif" font-size="22" fill="rgba(255,255,255,0.5)">Generateur factures · Pret immobilier · QR Code · et plus</text>
-  <rect x="100" y="480" width="280" height="50" rx="25" fill="white"/>
-  <text x="155" y="512" font-family="Arial, sans-serif" font-size="18" fill="#0d4f3c" font-weight="bold">100% gratuit · Open source</text>
-  <rect x="400" y="480" width="340" height="50" rx="25" fill="rgba(255,255,255,0.1)" stroke="rgba(255,255,255,0.2)" stroke-width="1"/>
-  <text x="435" y="512" font-family="Arial, sans-serif" font-size="18" fill="rgba(255,255,255,0.7)">Zero donnees collectees</text>
+  <text x="100" y="300" font-family="Arial, sans-serif" font-size="32" fill="rgba(255,255,255,0.7)">92 outils en ligne gratuits pour le quotidien</text>
+  <text x="100" y="380" font-family="Arial, sans-serif" font-size="22" fill="rgba(255,255,255,0.5)">Calculateur salaire · Simulateur impôt · Freelance vs CDI</text>
+  <text x="100" y="420" font-family="Arial, sans-serif" font-size="22" fill="rgba(255,255,255,0.5)">Générateur factures · Prêt immobilier · QR Code · et plus</text>
+  <rect x="100" y="480" width="300" height="50" rx="25" fill="white"/>
+  <text x="125" y="512" font-family="Arial, sans-serif" font-size="18" fill="#0d4f3c" font-weight="bold">100% gratuit · Open source</text>
+  <rect x="420" y="480" width="400" height="50" rx="25" fill="rgba(255,255,255,0.1)" stroke="rgba(255,255,255,0.2)" stroke-width="1"/>
+  <text x="445" y="512" font-family="Arial, sans-serif" font-size="18" fill="rgba(255,255,255,0.7)">Vos saisies restent dans votre navigateur</text>
 </svg>

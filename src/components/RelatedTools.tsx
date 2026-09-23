@@ -4,6 +4,47 @@ import { useMemo } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { tools } from "@/data/tools";
+import { categoryLabel } from "@/data/categories";
+
+// Groupes thématiques : les outils d'un même groupe se recommandent entre eux
+// en priorité (maillage interne des pages à fort potentiel).
+const CLUSTERS: string[][] = [
+  [
+    "/outils/calculateur-pret-immobilier",
+    "/outils/capacite-emprunt",
+    "/outils/assurance-emprunteur",
+    "/outils/simulateur-ptz-2026",
+    "/outils/calculateur-frais-notaire",
+    "/outils/calculateur-rachat-credit",
+    "/outils/calculateur-rentabilite-locative",
+    "/outils/simulateur-plus-value-immobiliere",
+    "/outils/simulateur-apl",
+  ],
+  [
+    "/outils/calculateur-dpe",
+    "/outils/simulateur-maprimerenov",
+    "/outils/calculateur-pret-immobilier",
+    "/outils/calculateur-co2",
+  ],
+  [
+    "/outils/choisir-statut-juridique",
+    "/outils/simulateur-auto-entrepreneur",
+    "/outils/freelance-vs-cdi",
+    "/outils/calculateur-tjm-freelance",
+    "/outils/generateur-facture",
+    "/outils/calculateur-tva",
+    "/outils/calculateur-marge",
+  ],
+  [
+    "/outils/simulateur-impot",
+    "/outils/calculateur-salaire",
+    "/outils/calculateur-epargne",
+    "/outils/calculateur-inflation",
+    "/outils/simulateur-flat-tax-crypto",
+    "/outils/simulateur-droits-succession",
+    "/outils/calculateur-retraite",
+  ],
+];
 
 export default function RelatedTools() {
   const pathname = usePathname();
@@ -12,16 +53,24 @@ export default function RelatedTools() {
     const current = tools.find((t) => t.href === pathname);
     if (!current) return [];
 
-    // Same category first, then other tools
-    const sameCategory = tools.filter(
-      (t) => t.category === current.category && t.href !== pathname
-    );
+    // Same thematic cluster first, then same category, then other tools
+    const cluster = CLUSTERS.find((c) => c.includes(pathname)) ?? [];
+    const inCluster = cluster
+      .filter((href) => href !== pathname)
+      .map((href) => tools.find((t) => t.href === href))
+      .filter((t): t is (typeof tools)[number] => Boolean(t));
+    const sameCategory = [
+      ...inCluster,
+      ...tools.filter(
+        (t) => t.category === current.category && t.href !== pathname && !cluster.includes(t.href)
+      ),
+    ];
     const otherTools = tools.filter(
-      (t) => t.category !== current.category && t.href !== pathname
+      (t) => t.category !== current.category && t.href !== pathname && !cluster.includes(t.href)
     );
 
-    // Take up to 3 from same category, fill rest from others
-    const picked = sameCategory.slice(0, 3);
+    // Take up to 3 from same category (4 inside a cluster), fill rest from others
+    const picked = sameCategory.slice(0, inCluster.length >= 4 ? 4 : 3);
     const remaining = 4 - picked.length;
     if (remaining > 0) {
       // Shuffle others deterministically based on current tool name
@@ -38,7 +87,7 @@ export default function RelatedTools() {
   if (related.length === 0) return null;
 
   return (
-    <section className="border-t" style={{ borderColor: "var(--border)" }}>
+    <section className="no-print border-t" style={{ borderColor: "var(--border)" }}>
       <div className="mx-auto max-w-7xl px-6 2xl:max-w-[1400px] py-12">
         <h2
           className="text-2xl tracking-tight"
@@ -47,7 +96,7 @@ export default function RelatedTools() {
           Outils <span style={{ color: "var(--primary)" }}>similaires</span>
         </h2>
         <p className="mt-1 text-sm" style={{ color: "var(--muted)" }}>
-          Ces outils pourraient aussi vous interesser
+          Ces outils pourraient aussi vous intéresser
         </p>
 
         <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -67,7 +116,7 @@ export default function RelatedTools() {
                   className="rounded-full px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wider"
                   style={{ background: "var(--surface-alt)", color: "var(--muted)" }}
                 >
-                  {tool.category}
+                  {categoryLabel(tool.category)}
                 </span>
               </div>
               <h3

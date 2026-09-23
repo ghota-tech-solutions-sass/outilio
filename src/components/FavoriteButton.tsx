@@ -15,7 +15,7 @@ export default function FavoriteButton() {
   }, [pathname]);
 
   return (
-    <button
+    <button data-no-track
       onClick={() => {
         toggle();
         trackFavorite(pathname, !isFav);

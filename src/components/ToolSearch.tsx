@@ -3,33 +3,20 @@
 import { useState, useMemo } from "react";
 import ToolCard from "./ToolCard";
 import type { Tool } from "@/data/tools";
+import { categoryLabel } from "@/data/categories";
 
 const CATEGORY_ICONS: Record<string, string> = {
-  Finance: "\u{1F4B0}",
   Immobilier: "\u{1F3E0}",
-  Business: "\u{1F4BC}",
-  Carriere: "\u{1F4BC}",
-  Sante: "\u{2764}\uFE0F",
-  Texte: "\u{1F4DD}",
+  Finance: "\u{1F4B0}",
+  Emploi: "\u{1F4BC}",
+  Business: "\u{1F3E2}",
   Dev: "\u{1F4BB}",
-  Outils: "\u{1F527}",
-  Legal: "\u{2696}\uFE0F",
+  Image: "\u{1F5BC}\uFE0F",
+  Sante: "\u{2764}\uFE0F",
   Securite: "\u{1F512}",
   Conversion: "\u{1F504}",
-  Design: "\u{1F3A8}",
-  Maths: "\u{1F4CA}",
-  Retraite: "\u{1F9D3}",
-  Auto: "\u{1F697}",
-  Travail: "\u{23F0}",
-  Shopping: "\u{1F3F7}\uFE0F",
-  Restaurant: "\u{1F4B5}",
-  Environnement: "\u{1F331}",
-  Construction: "\u{1F3D7}\uFE0F",
-  SEO: "\u{1F916}",
-  Image: "\u{1F5BC}\uFE0F",
-  PDF: "\u{1F4C4}",
-  Video: "\u{1F3AC}",
-  Audio: "\u{1F3B5}",
+  Texte: "\u{1F4DD}",
+  Outils: "\u{1F527}",
 };
 
 export default function ToolSearchFilter({ tools }: { tools: Tool[] }) {
@@ -48,7 +35,7 @@ export default function ToolSearchFilter({ tools }: { tools: Tool[] }) {
       .sort((a, b) => b[1] - a[1])
       .map(([id, count]) => ({
         id,
-        label: id,
+        label: categoryLabel(id),
         icon: CATEGORY_ICONS[id] || "\u{1F4E6}",
         count,
       }));
@@ -66,7 +53,7 @@ export default function ToolSearchFilter({ tools }: { tools: Tool[] }) {
     if (query.trim()) {
       const q = query.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
       result = result.filter((t) => {
-        const text = `${t.title} ${t.description} ${t.category}`
+        const text = `${t.title} ${t.description} ${t.category} ${categoryLabel(t.category)}`
           .toLowerCase()
           .normalize("NFD")
           .replace(/[\u0300-\u036f]/g, "");
@@ -91,13 +78,14 @@ export default function ToolSearchFilter({ tools }: { tools: Tool[] }) {
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Rechercher un outil... (salaire, pret, image, pdf...)"
+          placeholder="Rechercher un outil... (salaire, prêt, image, pdf...)"
           className="w-full rounded-2xl border py-4 pl-12 pr-12 text-sm transition-all placeholder:text-[var(--muted)]"
           style={{ borderColor: "var(--border)", background: "var(--surface)", boxShadow: "var(--shadow-sm)" }}
         />
         {query ? (
           <button
             onClick={() => setQuery("")}
+            aria-label="Effacer la recherche"
             className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full p-1.5 transition-colors hover:bg-[#0d4f3c]/10"
             style={{ color: "var(--muted)" }}
           >
@@ -198,7 +186,7 @@ export default function ToolSearchFilter({ tools }: { tools: Tool[] }) {
           {filtered.length === tools.length ? (
             <>{tools.length} outils disponibles</>
           ) : (
-            <><strong style={{ color: "var(--foreground)" }}>{filtered.length}</strong> outil{filtered.length !== 1 ? "s" : ""} trouve{filtered.length !== 1 ? "s" : ""}</>
+            <><strong style={{ color: "var(--foreground)" }}>{filtered.length}</strong> outil{filtered.length !== 1 ? "s" : ""} trouvé{filtered.length !== 1 ? "s" : ""}</>
           )}
         </p>
         {(query || activeCategory !== "all") && (
@@ -211,7 +199,7 @@ export default function ToolSearchFilter({ tools }: { tools: Tool[] }) {
               <path d="M3 12a9 9 0 109-9 9.75 9.75 0 00-6.74 2.74L3 8"/>
               <path d="M3 3v5h5"/>
             </svg>
-            Reinitialiser
+            Réinitialiser
           </button>
         )}
       </div>
@@ -230,10 +218,10 @@ export default function ToolSearchFilter({ tools }: { tools: Tool[] }) {
         <div className="py-16 text-center">
           <span className="text-5xl">{"\u{1F50D}"}</span>
           <p className="mt-4 text-lg font-semibold" style={{ fontFamily: "var(--font-display)" }}>
-            Aucun outil trouve
+            Aucun outil trouvé
           </p>
           <p className="mt-2 text-sm" style={{ color: "var(--muted)" }}>
-            Essayez un autre terme de recherche ou changez de categorie.
+            Essayez un autre terme de recherche ou changez de catégorie.
           </p>
           <button
             onClick={() => { setQuery(""); setActiveCategory("all"); }}

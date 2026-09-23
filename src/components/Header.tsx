@@ -5,10 +5,10 @@ import { useState } from "react";
 
 const NAV_ITEMS = [
   { href: "/outils/calculateur-salaire", label: "Salaire" },
-  { href: "/outils/calculateur-pret-immobilier", label: "Pret immo" },
+  { href: "/outils/calculateur-pret-immobilier", label: "Prêt immo" },
   { href: "/outils/generateur-facture", label: "Factures" },
-  { href: "/outils/generateur-qr-code", label: "QR Code" },
-  { href: "/outils/generateur-mot-de-passe", label: "Securite" },
+  { href: "/outils/simulateur-impot", label: "Impôts" },
+  { href: "/categories/business", label: "Entreprise" },
   { href: "/blog", label: "Blog" },
 ];
 
