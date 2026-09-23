@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Comparateur de Texte en Ligne Gratuit - Diff Online",
   description:
-    "Comparez deux textes et visualisez les differences instantanement. Ajouts en vert, suppressions en rouge. Diff en ligne gratuit, sans inscription.",
+    "Comparez deux textes et visualisez les différences instantanément. Ajouts en vert, suppressions en rouge. Diff en ligne gratuit, sans inscription.",
   keywords: [
     "comparateur de texte",
     "comparateur de texte gratuit",

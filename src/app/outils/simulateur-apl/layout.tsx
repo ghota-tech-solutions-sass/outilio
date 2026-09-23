@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Simulation APL 2026 - Simulateur Aide au Logement Gratuit",
   description:
-    "Estimez vos APL 2026 gratuitement. Calcul selon votre zone, loyer, revenus et composition du foyer. Baremes CAF officiels a jour. Sans inscription.",
+    "Estimez vos APL 2026 gratuitement. Calcul selon votre zone, loyer, revenus et composition du foyer. Barèmes CAF officiels à jour. Sans inscription.",
   keywords: [
     "simulation apl",
     "simulateur apl",

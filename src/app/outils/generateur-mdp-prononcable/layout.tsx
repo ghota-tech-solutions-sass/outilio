@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Generateur de Mot de Passe Prononcable - Gratuit",
+  title: "Générateur de Mot de Passe Prononçable - Gratuit",
   description:
-    "Generez des mots de passe faciles a prononcer et retenir. Syllabes, indicateur de force. Securite et memorisation.",
+    "Générez des mots de passe faciles à prononcer et retenir. Syllabes, indicateur de force. Sécurité et mémorisation.",
   keywords: ["mot de passe prononcable", "password generator", "mot de passe memorable", "generateur mot de passe", "mot de passe facile"],
   alternates: { canonical: "https://outilis.fr/outils/generateur-mdp-prononcable" },
 };

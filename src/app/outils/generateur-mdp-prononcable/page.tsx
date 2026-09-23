@@ -4,29 +4,19 @@ import { useState, useCallback, useEffect } from "react";
 import AdPlaceholder from "@/components/AdPlaceholder";
 import ToolFaqSection from "@/components/ToolFaqSection";
 import ToolHowToSection from "@/components/ToolHowToSection";
+import { secureRandomInt } from "@/lib/random";
 
 const CONSONANTS = "bcdfghjklmnprstvwxz";
 const VOWELS = "aeiouy";
-
-// Cryptographically secure random in [0, 1)
-function secureRandom(): number {
-  const arr = new Uint32Array(1);
-  crypto.getRandomValues(arr);
-  return arr[0] / (0xffffffff + 1);
-}
-
-// Cryptographically secure integer in [0, max)
-function secureRandomInt(max: number): number {
-  return Math.floor(secureRandom() * max);
-}
+const SYLLABLE_PATTERNS = ["cv", "cvc", "cv", "cvv"];
+const SPECIALS = "!@#$%&*?";
 
 function randomChar(chars: string): string {
   return chars[secureRandomInt(chars.length)];
 }
 
 function generateSyllable(): string {
-  const patterns = ["cv", "cvc", "cv", "cvv"];
-  const pattern = patterns[secureRandomInt(patterns.length)];
+  const pattern = SYLLABLE_PATTERNS[secureRandomInt(SYLLABLE_PATTERNS.length)];
   return pattern
     .split("")
     .map((p) => (p === "c" ? randomChar(CONSONANTS) : randomChar(VOWELS)))
@@ -47,73 +37,93 @@ function generatePassword(syllables: number, includeNumbers: boolean, includeSpe
     pwd += (secureRandomInt(90) + 10).toString();
   }
   if (includeSpecial) {
-    const specials = "!@#$%&*?";
-    pwd += specials[secureRandomInt(specials.length)];
+    pwd += randomChar(SPECIALS);
   }
   return pwd;
 }
 
-function getStrength(pwd: string): { score: number; label: string; color: string } {
-  let score = 0;
-  if (pwd.length >= 8) score++;
-  if (pwd.length >= 12) score++;
-  if (pwd.length >= 16) score++;
-  if (/[A-Z]/.test(pwd)) score++;
-  if (/[0-9]/.test(pwd)) score++;
-  if (/[^a-zA-Z0-9]/.test(pwd)) score++;
+// Entropie d'une syllabe : somme sur les motifs de p(motif) × log2(nombre de combinaisons / p(motif))
+const SYLLABLE_BITS = (() => {
+  const counts: Record<string, number> = {};
+  for (const p of SYLLABLE_PATTERNS) counts[p] = (counts[p] || 0) + 1;
+  let bits = 0;
+  for (const [pattern, n] of Object.entries(counts)) {
+    const prob = n / SYLLABLE_PATTERNS.length;
+    const combos = pattern.split("").reduce((acc, c) => acc * (c === "c" ? CONSONANTS.length : VOWELS.length), 1);
+    bits += prob * Math.log2(combos / prob);
+  }
+  return bits;
+})();
 
-  if (score <= 2) return { score, label: "Faible", color: "#dc2626" };
-  if (score <= 3) return { score, label: "Moyen", color: "#f59e0b" };
-  if (score <= 4) return { score, label: "Fort", color: "#16a34a" };
-  return { score, label: "Tres fort", color: "#059669" };
+// Les majuscules sont placées de façon déterministe : elles n'ajoutent pas d'entropie.
+function entropyBits(syllables: number, includeNumbers: boolean, includeSpecial: boolean): number {
+  return syllables * SYLLABLE_BITS + (includeNumbers ? Math.log2(90) : 0) + (includeSpecial ? Math.log2(SPECIALS.length) : 0);
+}
+
+function getStrength(bits: number): { label: string; color: string } {
+  if (bits < 64) return { label: "Faible", color: "#dc2626" };
+  if (bits < 80) return { label: "Moyen", color: "#f59e0b" };
+  if (bits < 100) return { label: "Fort", color: "#16a34a" };
+  return { label: "Très fort", color: "#059669" };
+}
+
+interface Generated {
+  pwd: string;
+  bits: number;
+}
+
+function generateBatch(syllables: number, includeNumbers: boolean, includeSpecial: boolean, capitalize: boolean): Generated[] {
+  const bits = entropyBits(syllables, includeNumbers, includeSpecial);
+  return Array.from({ length: 6 }, () => ({
+    pwd: generatePassword(syllables, includeNumbers, includeSpecial, capitalize),
+    bits,
+  }));
 }
 
 export default function GenerateurMdpPrononcable() {
-  const [syllables, setSyllables] = useState(4);
+  const [syllables, setSyllables] = useState(8);
   const [includeNumbers, setIncludeNumbers] = useState(true);
   const [includeSpecial, setIncludeSpecial] = useState(true);
   const [capitalize, setCapitalize] = useState(true);
-  const [passwords, setPasswords] = useState<string[]>([]);
+  const [passwords, setPasswords] = useState<Generated[]>([]);
   const [copied, setCopied] = useState<number | null>(null);
 
   const generate = useCallback(() => {
-    const newPasswords: string[] = [];
-    for (let i = 0; i < 6; i++) {
-      newPasswords.push(generatePassword(syllables, includeNumbers, includeSpecial, capitalize));
-    }
-    setPasswords(newPasswords);
+    setPasswords(generateBatch(syllables, includeNumbers, includeSpecial, capitalize));
     setCopied(null);
   }, [syllables, includeNumbers, includeSpecial, capitalize]);
 
-  // Generate on first render
+  // Génération au premier rendu côté client (jamais dans le HTML statique)
   useEffect(() => {
     const timer = setTimeout(() => {
-      const initial: string[] = [];
-      for (let i = 0; i < 6; i++) {
-        initial.push(generatePassword(syllables, includeNumbers, includeSpecial, capitalize));
-      }
-      setPasswords(initial);
+      setPasswords(generateBatch(syllables, includeNumbers, includeSpecial, capitalize));
     }, 0);
     return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleCopy = (pwd: string, idx: number) => {
-    navigator.clipboard.writeText(pwd);
-    setCopied(idx);
-    setTimeout(() => setCopied(null), 2000);
+  const handleCopy = async (pwd: string, idx: number) => {
+    try {
+      await navigator.clipboard.writeText(pwd);
+      setCopied(idx);
+      setTimeout(() => setCopied(null), 2000);
+    } catch {
+      // Presse-papiers indisponible
+    }
   };
+
+  const currentBits = entropyBits(syllables, includeNumbers, includeSpecial);
 
   return (
     <>
       <section className="relative py-14" style={{ borderBottom: "1px solid var(--border)" }}>
         <div className="mx-auto max-w-7xl px-6 2xl:max-w-[1400px]">
-          <p className="animate-fade-up text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: "var(--accent)" }}>Securite</p>
+          <p className="animate-fade-up text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: "var(--accent)" }}>Sécurité</p>
           <h1 className="animate-fade-up stagger-1 mt-3 text-4xl tracking-tight md:text-5xl" style={{ fontFamily: "var(--font-display)" }}>
-            Mot de passe <span style={{ color: "var(--primary)" }}>prononcable</span>
+            Mot de passe <span style={{ color: "var(--primary)" }}>prononçable</span>
           </h1>
           <p className="animate-fade-up stagger-2 mt-3 max-w-xl text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-            Generez des mots de passe faciles a prononcer et a retenir, tout en restant securises.
+            Générez des mots de passe faciles à prononcer et à retenir, tout en restant sécurisés.
           </p>
         </div>
       </section>
@@ -129,7 +139,7 @@ export default function GenerateurMdpPrononcable() {
                   <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>
                     Nombre de syllabes : {syllables}
                   </label>
-                  <input type="range" min="2" max="8" value={syllables} onChange={(e) => setSyllables(Number(e.target.value))}
+                  <input type="range" min="2" max="10" value={syllables} onChange={(e) => setSyllables(Number(e.target.value))}
                     className="mt-2 w-full" />
                   <div className="flex justify-between text-xs" style={{ color: "var(--muted)" }}>
                     <span>Court</span><span>Long</span>
@@ -146,22 +156,26 @@ export default function GenerateurMdpPrononcable() {
                   </label>
                   <label className="flex items-center gap-2 text-sm font-medium cursor-pointer">
                     <input type="checkbox" checked={includeSpecial} onChange={(e) => setIncludeSpecial(e.target.checked)} className="h-4 w-4" />
-                    Caracteres speciaux
+                    Caractères spéciaux
                   </label>
                 </div>
+                <p className="text-xs" style={{ color: "var(--muted)" }}>
+                  Entropie avec ces réglages : environ {Math.round(currentBits)} bits ({getStrength(currentBits).label.toLowerCase()}).
+                  L&apos;ANSSI recommande au moins 80 bits pour un mot de passe qui constitue la principale protection d&apos;un compte.
+                </p>
               </div>
 
               <button onClick={generate}
                 className="mt-6 w-full inline-flex items-center justify-center gap-2 rounded-full px-8 py-3.5 text-sm font-semibold text-white transition-all hover:scale-[1.02]"
                 style={{ background: "linear-gradient(135deg, var(--primary) 0%, #1a6b4f 100%)" }}>
-                Generer de nouveaux mots de passe
+                Générer de nouveaux mots de passe
               </button>
             </div>
 
             {/* Generated passwords */}
             <div className="space-y-3">
-              {passwords.map((pwd, i) => {
-                const strength = getStrength(pwd);
+              {passwords.map(({ pwd, bits }, i) => {
+                const strength = getStrength(bits);
                 return (
                   <div key={i} className="rounded-2xl border p-4" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
                     <div className="flex items-center justify-between gap-4">
@@ -169,15 +183,15 @@ export default function GenerateurMdpPrononcable() {
                       <button onClick={() => handleCopy(pwd, i)}
                         className="shrink-0 rounded-full px-4 py-1.5 text-xs font-semibold text-white"
                         style={{ background: copied === i ? "#16a34a" : "var(--primary)" }}>
-                        {copied === i ? "Copie !" : "Copier"}
+                        {copied === i ? "Copié !" : "Copier"}
                       </button>
                     </div>
                     <div className="mt-3 flex items-center gap-3">
                       <div className="flex-1 h-2 rounded-full overflow-hidden" style={{ background: "var(--surface-alt)" }}>
-                        <div className="h-full rounded-full transition-all" style={{ width: `${(strength.score / 6) * 100}%`, background: strength.color }} />
+                        <div className="h-full rounded-full transition-all" style={{ width: `${Math.min(100, (bits / 128) * 100)}%`, background: strength.color }} />
                       </div>
-                      <span className="text-xs font-semibold" style={{ color: strength.color }}>{strength.label}</span>
-                      <span className="text-xs" style={{ color: "var(--muted)" }}>{pwd.length} caracteres</span>
+                      <span className="text-xs font-semibold" style={{ color: strength.color }}>{strength.label} · {Math.round(bits)} bits</span>
+                      <span className="text-xs" style={{ color: "var(--muted)" }}>{pwd.length} caractères</span>
                     </div>
                   </div>
                 );
@@ -185,23 +199,23 @@ export default function GenerateurMdpPrononcable() {
             </div>
 
             <ToolHowToSection
-              title="Comment generer un mot de passe prononcable et sur"
-              description="Le compromis : retrouver la facilite de memorisation des mots reels, sans sacrifier l&apos;entropie necessaire face aux attaques modernes."
+              title="Comment générer un mot de passe prononçable et sûr"
+              description="Le compromis : retrouver la facilité de mémorisation des mots réels, sans sacrifier l'entropie nécessaire face aux attaques modernes."
               steps={[
                 {
-                  name: "Choisir 4 a 6 syllabes",
+                  name: "Choisir 8 syllabes ou plus",
                   text:
-                    "4 syllabes produisent environ 10 a 14 caracteres : un bon point d&apos;equilibre pour un compte courant. 6 syllabes (15 a 20 caracteres) sont conseillees pour un mot de passe maitre, un compte bancaire ou un email principal. Plus de syllabes equivalent a plus d&apos;entropie : chaque syllabe ajoute environ 9 bits.",
+                    "Chaque syllabe aléatoire apporte environ 10 bits d'entropie. 4 syllabes (11 à 15 caractères avec chiffres et symbole) donnent environ 50 bits : suffisant pour un compte protégé par une double authentification, pas au-delà. 8 syllabes atteignent environ 90 bits, au-dessus du seuil de 80 bits recommandé par l'ANSSI ; 9 à 10 syllabes conviennent à un mot de passe maître.",
                 },
                 {
-                  name: "Activer majuscules + chiffres + caracteres speciaux",
+                  name: "Activer chiffres et caractères spéciaux",
                   text:
-                    "Les 3 options renforcent la diversite des caracteres et empechent les dictionnaires specialises sur le pattern consonne-voyelle de craquer le mot de passe. Avec les 3 options actives, un mot de passe prononcable de 16 caracteres atteint une entropie d&apos;environ 70 a 80 bits.",
+                    "Le nombre à deux chiffres ajoute environ 6,5 bits et le symbole final 3 bits. Les majuscules, placées une syllabe sur deux, facilitent la lecture et satisfont les sites qui les exigent, mais n'ajoutent pas d'entropie car leur position est prévisible. L'entropie réelle est affichée sous chaque suggestion.",
                 },
                 {
-                  name: "Choisir parmi les 6 suggestions et le memoriser",
+                  name: "Choisir parmi les 6 suggestions et le mémoriser",
                   text:
-                    "L&apos;outil affiche 6 suggestions simultanement : selectionnez celle qui vous parait la plus &quot;naturelle&quot; a prononcer. Lisez-la a haute voix 3 ou 4 fois pour l&apos;ancrer dans la memoire phonologique. C&apos;est l&apos;avantage principal sur un mot de passe purement aleatoire : votre cerveau retient la prononciation, pas la suite de symboles.",
+                    "L'outil affiche 6 suggestions simultanément : sélectionnez celle qui vous paraît la plus naturelle à prononcer. Lisez-la à haute voix 3 ou 4 fois pour l'ancrer dans la mémoire phonologique. C'est l'avantage principal sur un mot de passe purement aléatoire : votre cerveau retient la prononciation, pas la suite de symboles.",
                 },
               ]}
             />
@@ -214,18 +228,18 @@ export default function GenerateurMdpPrononcable() {
                 className="text-2xl md:text-3xl font-extrabold"
                 style={{ fontFamily: "var(--font-display)", color: "var(--foreground)" }}
               >
-                Cas d&apos;usage du generateur prononcable
+                Cas d&apos;usage du générateur prononçable
               </h2>
 
               <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
                   <h3 className="font-semibold" style={{ color: "var(--foreground)" }}>
-                    Mot de passe maitre du gestionnaire
+                    Mot de passe maître du gestionnaire
                   </h3>
                   <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                    C&apos;est LE mot de passe que vous DEVEZ retenir : il deverrouille tous les autres dans Bitwarden, 1Password ou
-                    KeePass. 6 a 8 syllabes (18 a 22 caracteres) avec chiffres et symboles vous donnent un mot de passe maitre qui
-                    tient face a une attaque hors-ligne sur le coffre.
+                    C&apos;est LE mot de passe que vous DEVEZ retenir : il déverrouille tous les autres dans Bitwarden, 1Password ou
+                    KeePass. 8 à 10 syllabes avec chiffres et symbole (environ 90 à 110 bits) vous donnent un mot de passe maître qui
+                    tient face à une attaque hors ligne sur le coffre.
                   </p>
                 </div>
                 <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
@@ -233,9 +247,9 @@ export default function GenerateurMdpPrononcable() {
                     Wi-Fi domestique ou bureau
                   </h3>
                   <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                    Vous le donnez a la voix a un visiteur ou un nouveau collegue : un mot de passe prononcable evite les
-                    &quot;c&apos;est un i majuscule ou un L minuscule ?&quot;. 4 a 5 syllabes + 2 chiffres + 1 symbole offrent une securite WPA2
-                    suffisante tout en restant communicables sans erreur.
+                    Vous le donnez à voix haute à un visiteur ou un nouveau collègue : un mot de passe prononçable évite les
+                    &quot;c&apos;est un i majuscule ou un L minuscule ?&quot;. 6 à 7 syllabes, 2 chiffres et 1 symbole offrent une
+                    sécurité WPA2/WPA3 solide tout en restant communicables sans erreur.
                   </p>
                 </div>
                 <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
@@ -243,18 +257,18 @@ export default function GenerateurMdpPrononcable() {
                     Compte temporaire client
                   </h3>
                   <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                    Vous creez un acces temporaire pour un client (extranet, espace de partage de fichiers) qu&apos;il devra changer a
-                    la premiere connexion. Un mot de passe prononcable se dicte plus facilement par telephone qu&apos;un
-                    Xz9!kQ@2mNvP, sans sacrifier la securite a l&apos;envoi initial.
+                    Vous créez un accès temporaire pour un client (extranet, espace de partage de fichiers) qu&apos;il devra changer à
+                    la première connexion. Un mot de passe prononçable se dicte plus facilement par téléphone qu&apos;un
+                    Xz9!kQ@2mNvP, sans sacrifier la sécurité à l&apos;envoi initial.
                   </p>
                 </div>
                 <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
                   <h3 className="font-semibold" style={{ color: "var(--foreground)" }}>
-                    Pin parental ou code partage en famille
+                    Code partagé en famille
                   </h3>
                   <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                    Code de coffre-fort numerique familial, controle parental, compte Netflix partage entre adultes : un mot de
-                    passe prononcable de 4 syllabes est plus simple a transmettre verbalement et restera dans la memoire de chaque
+                    Coffre-fort numérique familial, contrôle parental, compte de streaming partagé entre adultes : un mot de
+                    passe prononçable est plus simple à transmettre oralement et restera dans la mémoire de chaque
                     membre du foyer.
                   </p>
                 </div>
@@ -269,75 +283,74 @@ export default function GenerateurMdpPrononcable() {
                 className="text-2xl md:text-3xl font-extrabold"
                 style={{ fontFamily: "var(--font-display)", color: "var(--foreground)" }}
               >
-                Securite et compromis memorisation
+                Sécurité et compromis de mémorisation
               </h2>
 
               <div className="mt-4 space-y-4 leading-relaxed" style={{ color: "var(--foreground)" }}>
                 <p>
-                  <strong>Le compromis securite / memorisation.</strong> Un mot de passe purement aleatoire de 12 caracteres
-                  (xK9$mZ!qP2vL) est theoriquement plus dense en entropie qu&apos;un mot de passe prononcable de meme longueur
-                  (Korabu7! par exemple). Mais en pratique, il est si peu memorisable que les utilisateurs le notent quelque part :
-                  l&apos;entropie effective tombe alors a celle d&apos;un Post-it. Le prononcable est superieur des qu&apos;il sert de mot de
-                  passe maitre ou est partage verbalement.
+                  <strong>Le compromis sécurité / mémorisation.</strong> Un mot de passe purement aléatoire de 12 caractères
+                  (xK9$mZ!qP2vL, environ 78 bits) est plus dense en entropie qu&apos;un mot de passe prononçable de même longueur
+                  (environ 45 à 50 bits). Mais il est si peu mémorisable que les utilisateurs le notent quelque part. Le prononçable
+                  prend l&apos;avantage quand il doit être retenu ou dicté, à condition d&apos;être plus long.
                 </p>
                 <p>
-                  <strong>Methode XKCD vs syllabes.</strong> La methode XKCD (correct-horse-battery-staple) combine 4 mots de
-                  dictionnaire et atteint une entropie d&apos;environ 44 a 50 bits. La methode par syllabes generee aleatoirement
-                  (notre outil) produit des chaines hors-dictionnaire et atteint plus facilement 70 a 80 bits a longueur egale,
-                  car les attaques par dictionnaire de mots ne fonctionnent pas. Les deux methodes sont valables ; la notre
-                  est plus dense en entropie par caractere.
+                  <strong>Méthode XKCD ou syllabes.</strong> La méthode XKCD (correct-horse-battery-staple) combine des mots de
+                  dictionnaire tirés au hasard : 4 mots parmi les 7 776 de la liste EFF donnent environ 52 bits, 6 mots environ 78 bits.
+                  Les syllabes aléatoires apportent environ 10 bits pour 2 à 3 caractères, soit une densité voisine par caractère.
+                  Les deux méthodes sont valables : ce qui compte est le nombre total de bits, affiché par l&apos;outil.
                 </p>
                 <p>
-                  <strong>Longueur minimale recommandee.</strong> Pour un mot de passe prononcable, visez au minimum 14 a 16
-                  caracteres avec chiffres et symboles. En-dessous, l&apos;entropie devient insuffisante face aux GPU modernes
-                  (une RTX 4090 teste plusieurs centaines de milliards de hashes MD5 par seconde). L&apos;ANSSI maintient son
-                  seuil minimal de 12 caracteres, le NIST 800-63B aussi, mais pour des secrets a vie longue, montez plus haut.
+                  <strong>Longueur recommandée.</strong> Pour un mot de passe prononçable, visez au moins 8 syllabes avec chiffres et
+                  symbole (environ 23 caractères, 90 bits). En dessous, l&apos;entropie devient insuffisante face à une attaque hors
+                  ligne sur GPU si le site stocke mal ses mots de passe. Avec une double authentification active, un mot de passe plus
+                  court reste acceptable.
                 </p>
                 <p>
-                  <strong>Generation locale et confidentialite.</strong> Cet outil cree les mots de passe directement dans votre
-                  navigateur, sans aucune requete reseau. Aucune syllabe, aucun mot de passe propose ou copie n&apos;est journalise,
-                  envoye ou stocke. Vous pouvez ouvrir l&apos;onglet Reseau des DevTools pour le verifier avant utilisation.
+                  <strong>Génération locale et confidentialité.</strong> Cet outil crée les mots de passe directement dans votre
+                  navigateur avec crypto.getRandomValues. Aucune syllabe, aucun mot de passe proposé ou copié n&apos;est transmis,
+                  journalisé ou stocké.
                 </p>
               </div>
             </section>
 
             <ToolFaqSection
-              intro="Les questions les plus posees sur les mots de passe prononcables."
+              title="Questions fréquentes"
+              intro="Les questions les plus posées sur les mots de passe prononçables."
               items={[
                 {
-                  question: "Un mot de passe prononcable est-il aussi sur qu&apos;un mot de passe aleatoire ?",
+                  question: "Un mot de passe prononçable est-il aussi sûr qu'un mot de passe aléatoire ?",
                   answer:
-                    "A longueur egale, un peu moins en theorie : l&apos;alphabet effectif est plus restreint car les patterns consonne-voyelle reduisent les combinaisons. En pratique, vous compensez en allongeant : 16 caracteres prononcables avec chiffres et symboles depassent 70 bits d&apos;entropie, ce qui est largement suffisant face aux attaques modernes.",
+                    "À longueur égale, non : l'alternance consonne-voyelle réduit fortement les combinaisons (environ 4 bits par caractère contre 6,5 pour un tirage parmi 88 caractères). Il faut donc compenser par la longueur : 8 syllabes avec chiffres et symbole atteignent environ 90 bits, au-dessus des 80 bits recommandés par l'ANSSI.",
                 },
                 {
                   question: "Combien de syllabes choisir ?",
                   answer:
-                    "4 syllabes (10 a 14 caracteres) pour un compte courant, 5 a 6 (14 a 20 caracteres) pour un compte sensible, 7 a 8 (20+ caracteres) pour un mot de passe maitre. Chaque syllabe supplementaire ajoute environ 9 bits d&apos;entropie. Au-dela de 8 syllabes, la memorisation devient plus dure que la sortie aleatoire.",
+                    "4 syllabes (environ 50 bits) uniquement pour un compte protégé par une double authentification, 8 syllabes (environ 90 bits) pour un compte courant ou sensible, 9 à 10 syllabes (100 à 110 bits) pour un mot de passe maître. Chaque syllabe supplémentaire ajoute environ 10 bits d'entropie.",
                 },
                 {
-                  question: "L&apos;ANSSI valide-t-elle les mots de passe prononcables ?",
+                  question: "Que recommandent l'ANSSI et le NIST ?",
                   answer:
-                    "Oui. L&apos;ANSSI exige au minimum 12 caracteres avec un melange de types. Les mots de passe prononcables generes ici, avec majuscules, chiffres et symboles actives, respectent et depassent ces recommandations a partir de 4 syllabes. Le NIST 800-63B est sur la meme ligne et ne fait aucune distinction entre prononcable et aleatoire.",
+                    "L'ANSSI raisonne en entropie : au moins 80 bits lorsque le mot de passe est la principale protection, moins si d'autres mesures existent (double authentification, limitation des tentatives). Le NIST (SP 800-63B révision 4) exige au moins 15 caractères pour un mot de passe utilisé seul. Les mots de passe prononçables de 8 syllabes ou plus (environ 23 caractères, 90 bits) respectent ces deux repères.",
                 },
                 {
                   question: "Quel gestionnaire de mots de passe utiliser ?",
                   answer:
-                    "Bitwarden (open source, gratuit, plan famille a 40 USD par an) ou 1Password (payant, ergonomique) sont les deux references. KeePassXC est une alternative 100 % locale sans cloud. Le mot de passe prononcable est ideal comme mot de passe maitre du gestionnaire, les mots de passe individuels des sites peuvent rester totalement aleatoires.",
+                    "Bitwarden (open source, version gratuite) ou 1Password (payant, ergonomique) sont les deux références. KeePassXC est une alternative 100 % locale sans cloud. Le mot de passe prononçable est idéal comme mot de passe maître du gestionnaire ; les mots de passe individuels des sites peuvent rester totalement aléatoires.",
                 },
                 {
-                  question: "Comparaison avec la methode XKCD (correct-horse-battery-staple) ?",
+                  question: "Comparaison avec la méthode XKCD (correct-horse-battery-staple) ?",
                   answer:
-                    "La methode XKCD utilise 4 mots de dictionnaire (entropie environ 44 bits avec un dictionnaire de 7 776 mots EFF). Notre methode par syllabes aleatoires hors-dictionnaire atteint plus facilement 70 a 80 bits a longueur similaire, car aucune attaque par dictionnaire de mots ne fonctionne. Les deux sont valides, la methode syllabique est plus dense.",
+                    "La méthode XKCD tire des mots au hasard dans un dictionnaire : environ 44 bits pour 4 mots dans la liste de 2 048 mots de la bande dessinée, 52 bits avec la liste EFF de 7 776 mots. Une syllabe aléatoire vaut environ 10 bits. Les deux approches se valent à entropie égale : choisissez celle que vous mémorisez le mieux.",
                 },
                 {
-                  question: "Puis-je l&apos;utiliser pour un mot de passe maitre ?",
+                  question: "Puis-je l'utiliser pour un mot de passe maître ?",
                   answer:
-                    "Oui, c&apos;est meme un cas d&apos;usage ideal. Pour un mot de passe maitre (gestionnaire, chiffrement de disque, cle PGP), choisissez 7 a 8 syllabes avec chiffres et symboles. Repetez-le a haute voix, ecrivez-le 5 fois sur papier (que vous detruirez ensuite), puis utilisez-le quotidiennement pour ancrer la memoire musculaire au clavier.",
+                    "Oui, c'est même un cas d'usage idéal. Pour un mot de passe maître (gestionnaire, chiffrement de disque, clé PGP), choisissez 8 à 10 syllabes avec chiffres et symbole. Répétez-le à haute voix, écrivez-le quelques fois sur papier (que vous détruirez ensuite), puis utilisez-le quotidiennement pour ancrer la mémoire musculaire au clavier.",
                 },
                 {
-                  question: "Mes mots de passe sont-ils transmis a un serveur ?",
+                  question: "Mes mots de passe sont-ils transmis à un serveur ?",
                   answer:
-                    "Non. La generation est entierement locale dans votre navigateur en JavaScript. Aucune syllabe, aucune suggestion ne sort de votre machine. Vous pouvez fermer l&apos;onglet immediatement apres avoir copie le mot de passe choisi dans votre gestionnaire.",
+                    "Non. La génération est entièrement locale dans votre navigateur. Aucune syllabe, aucune suggestion n'est transmise ni stockée. Vous pouvez fermer l'onglet dès que le mot de passe choisi est copié dans votre gestionnaire.",
                 },
               ]}
             />

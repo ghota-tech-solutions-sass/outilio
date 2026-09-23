@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Compresser Image en Ligne Gratuit - JPEG, PNG, WebP",
   description:
-    "Compressez vos images JPEG, PNG, WebP en ligne. Ajustez la qualite, comparez avant/apres. Telechargement instantane, gratuit et sans inscription.",
+    "Compressez vos images JPEG, PNG, WebP en ligne. Ajustez la qualité, comparez avant/après. Téléchargement instantané, gratuit et sans inscription.",
   keywords: [
     "compresser image en ligne",
     "compresser une image",

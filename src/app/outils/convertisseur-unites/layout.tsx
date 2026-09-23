@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Convertisseur d'unites en ligne - Longueur, poids, temperature",
+  title: "Convertisseur d'unités en ligne - Longueur, poids, température",
   description:
-    "Convertissez entre unites de longueur, poids, temperature, surface et volume. Outil gratuit, instantane et sans inscription.",
+    "Convertissez entre unités de longueur, poids, température, surface et volume. Outil gratuit, instantané et sans inscription.",
   keywords: ["convertisseur unites", "conversion longueur", "conversion poids", "conversion temperature", "convertisseur mesures"],
   alternates: { canonical: "https://outilis.fr/outils/convertisseur-unites" },
 };

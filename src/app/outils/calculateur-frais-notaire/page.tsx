@@ -20,16 +20,23 @@ const PRESETS_PRIX = [
 // Emoluments du notaire - bareme proportionnel degressif par tranches
 // (article A444-91 du Code de commerce, arrete du 28/02/2020, proroge)
 const TRANCHES_EMOLUMENTS = [
-  { min: 0, max: 6500, taux: 0.03945 },
-  { min: 6500, max: 17000, taux: 0.01627 },
-  { min: 17000, max: 60000, taux: 0.01085 },
-  { min: 60000, max: Infinity, taux: 0.00814 },
+  { min: 0, max: 6500, taux: 0.0387 },
+  { min: 6500, max: 17000, taux: 0.01596 },
+  { min: 17000, max: 60000, taux: 0.01064 },
+  { min: 60000, max: Infinity, taux: 0.00799 },
 ];
 
-const TVA_TAUX = 0.20; // TVA sur emoluments
+// TVA sur emoluments : 20% en metropole, 8,5% en Guadeloupe, Martinique et a La Reunion,
+// non applicable en Guyane et a Mayotte (art. 294 et 296 CGI)
+function getTauxTVA(codeDept: string): number {
+  if (["971", "972", "974"].includes(codeDept)) return 0.085;
+  if (["973", "976"].includes(codeDept)) return 0;
+  return 0.20;
+}
 
 // Droits de mutation (DMTO) - Ancien
-// Taux departemental : 4.50% (standard) ou 5.00% (majore, loi finances 2025)
+// Taux departemental : 4.50% (standard) ou 5.00% (majore, loi finances 2025,
+// actes du 01/04/2025 au 31/03/2028 ; primo-accedants exoneres de la majoration)
 // Taxe communale : 1.20%
 // Frais d'assiette et recouvrement Etat : 2.37% du taux departemental
 const TAUX_COMMUNAL = 0.012; // 1.20%
@@ -44,25 +51,27 @@ const DEBOURS_FORFAIT = 1400; // environ 1 400 EUR (documents urbanisme, cadastr
 // Contribution de securite immobiliere (ex-salaire du conservateur)
 const TAUX_SECURITE_IMMOBILIERE = 0.001; // 0.10% du prix
 
-// Departements a taux reduit (3.80%) - source: donnees officielles 2025
+// Departements a taux reduit (3.80%) - source: tableau DGFiP au 01/06/2026
 const DEPARTEMENTS_TAUX_REDUIT: Record<string, number> = {
   "36": 0.038, // Indre
-  "976": 0.038, // Mayotte
 };
 
-// Departements restes a 4.50% (n'ayant pas vote la majoration)
+// Departements restes a 4.50% (n'ayant pas vote la majoration) - tableau DGFiP au 01/06/2026
 const DEPARTEMENTS_NON_MAJORES = [
-  "01", // Ain
-  "03", // Allier
-  "04", // Alpes-de-Haute-Provence
+  "05", // Hautes-Alpes
+  "06", // Alpes-Maritimes
+  "07", // Ardeche
+  "16", // Charente
   "26", // Drome
-  "27", // Eure
-  "40", // Landes
   "48", // Lozere
   "60", // Oise
+  "65", // Hautes-Pyrenees
   "71", // Saone-et-Loire
-  "90", // Territoire de Belfort
+  "971", // Guadeloupe
+  "976", // Mayotte (depuis le 01/06/2026)
 ];
+
+const TAUX_DEPARTEMENTAL_NORMAL = 0.045;
 
 // Liste des departements francais
 const DEPARTEMENTS = [
@@ -72,39 +81,39 @@ const DEPARTEMENTS = [
   { code: "04", nom: "Alpes-de-Haute-Provence" },
   { code: "05", nom: "Hautes-Alpes" },
   { code: "06", nom: "Alpes-Maritimes" },
-  { code: "07", nom: "Ardeche" },
+  { code: "07", nom: "Ardèche" },
   { code: "08", nom: "Ardennes" },
-  { code: "09", nom: "Ariege" },
+  { code: "09", nom: "Ariège" },
   { code: "10", nom: "Aube" },
   { code: "11", nom: "Aude" },
   { code: "12", nom: "Aveyron" },
-  { code: "13", nom: "Bouches-du-Rhone" },
+  { code: "13", nom: "Bouches-du-Rhône" },
   { code: "14", nom: "Calvados" },
   { code: "15", nom: "Cantal" },
   { code: "16", nom: "Charente" },
   { code: "17", nom: "Charente-Maritime" },
   { code: "18", nom: "Cher" },
-  { code: "19", nom: "Correze" },
+  { code: "19", nom: "Corrèze" },
   { code: "2A", nom: "Corse-du-Sud" },
   { code: "2B", nom: "Haute-Corse" },
-  { code: "21", nom: "Cote-d'Or" },
-  { code: "22", nom: "Cotes-d'Armor" },
+  { code: "21", nom: "Côte-d'Or" },
+  { code: "22", nom: "Côtes-d'Armor" },
   { code: "23", nom: "Creuse" },
   { code: "24", nom: "Dordogne" },
   { code: "25", nom: "Doubs" },
-  { code: "26", nom: "Drome" },
+  { code: "26", nom: "Drôme" },
   { code: "27", nom: "Eure" },
   { code: "28", nom: "Eure-et-Loir" },
-  { code: "29", nom: "Finistere" },
+  { code: "29", nom: "Finistère" },
   { code: "30", nom: "Gard" },
   { code: "31", nom: "Haute-Garonne" },
   { code: "32", nom: "Gers" },
   { code: "33", nom: "Gironde" },
-  { code: "34", nom: "Herault" },
+  { code: "34", nom: "Hérault" },
   { code: "35", nom: "Ille-et-Vilaine" },
   { code: "36", nom: "Indre" },
   { code: "37", nom: "Indre-et-Loire" },
-  { code: "38", nom: "Isere" },
+  { code: "38", nom: "Isère" },
   { code: "39", nom: "Jura" },
   { code: "40", nom: "Landes" },
   { code: "41", nom: "Loir-et-Cher" },
@@ -114,7 +123,7 @@ const DEPARTEMENTS = [
   { code: "45", nom: "Loiret" },
   { code: "46", nom: "Lot" },
   { code: "47", nom: "Lot-et-Garonne" },
-  { code: "48", nom: "Lozere" },
+  { code: "48", nom: "Lozère" },
   { code: "49", nom: "Maine-et-Loire" },
   { code: "50", nom: "Manche" },
   { code: "51", nom: "Marne" },
@@ -124,20 +133,20 @@ const DEPARTEMENTS = [
   { code: "55", nom: "Meuse" },
   { code: "56", nom: "Morbihan" },
   { code: "57", nom: "Moselle" },
-  { code: "58", nom: "Nievre" },
+  { code: "58", nom: "Nièvre" },
   { code: "59", nom: "Nord" },
   { code: "60", nom: "Oise" },
   { code: "61", nom: "Orne" },
   { code: "62", nom: "Pas-de-Calais" },
-  { code: "63", nom: "Puy-de-Dome" },
-  { code: "64", nom: "Pyrenees-Atlantiques" },
-  { code: "65", nom: "Hautes-Pyrenees" },
-  { code: "66", nom: "Pyrenees-Orientales" },
+  { code: "63", nom: "Puy-de-Dôme" },
+  { code: "64", nom: "Pyrénées-Atlantiques" },
+  { code: "65", nom: "Hautes-Pyrénées" },
+  { code: "66", nom: "Pyrénées-Orientales" },
   { code: "67", nom: "Bas-Rhin" },
   { code: "68", nom: "Haut-Rhin" },
-  { code: "69", nom: "Rhone" },
-  { code: "70", nom: "Haute-Saone" },
-  { code: "71", nom: "Saone-et-Loire" },
+  { code: "69", nom: "Rhône" },
+  { code: "70", nom: "Haute-Saône" },
+  { code: "71", nom: "Saône-et-Loire" },
   { code: "72", nom: "Sarthe" },
   { code: "73", nom: "Savoie" },
   { code: "74", nom: "Haute-Savoie" },
@@ -145,13 +154,13 @@ const DEPARTEMENTS = [
   { code: "76", nom: "Seine-Maritime" },
   { code: "77", nom: "Seine-et-Marne" },
   { code: "78", nom: "Yvelines" },
-  { code: "79", nom: "Deux-Sevres" },
+  { code: "79", nom: "Deux-Sèvres" },
   { code: "80", nom: "Somme" },
   { code: "81", nom: "Tarn" },
   { code: "82", nom: "Tarn-et-Garonne" },
   { code: "83", nom: "Var" },
   { code: "84", nom: "Vaucluse" },
-  { code: "85", nom: "Vendee" },
+  { code: "85", nom: "Vendée" },
   { code: "86", nom: "Vienne" },
   { code: "87", nom: "Haute-Vienne" },
   { code: "88", nom: "Vosges" },
@@ -165,7 +174,7 @@ const DEPARTEMENTS = [
   { code: "971", nom: "Guadeloupe" },
   { code: "972", nom: "Martinique" },
   { code: "973", nom: "Guyane" },
-  { code: "974", nom: "La Reunion" },
+  { code: "974", nom: "La Réunion" },
   { code: "976", nom: "Mayotte" },
 ];
 
@@ -173,14 +182,15 @@ const DEPARTEMENTS = [
 // Calcul
 // ---------------------------------------------------------------------------
 
-function getTauxDepartemental(codeDept: string): number {
+function getTauxDepartemental(codeDept: string, primoAccedant = false): number {
   if (DEPARTEMENTS_TAUX_REDUIT[codeDept] !== undefined) {
     return DEPARTEMENTS_TAUX_REDUIT[codeDept];
   }
   if (DEPARTEMENTS_NON_MAJORES.includes(codeDept)) {
-    return 0.045; // 4.50%
+    return TAUX_DEPARTEMENTAL_NORMAL; // 4.50%
   }
-  return 0.05; // 5.00% (majore - majorite des departements depuis avril 2025)
+  // 5.00% (majore - majorite des departements depuis avril 2025), sauf primo-accedant
+  return primoAccedant ? TAUX_DEPARTEMENTAL_NORMAL : 0.05;
 }
 
 function calculerEmoluments(prix: number): { total: number; details: { tranche: string; base: number; taux: number; montant: number }[] } {
@@ -216,6 +226,7 @@ interface ResultatFraisNotaire {
   totalDroitsMutation: number;
   // Emoluments
   emolumentsHT: number;
+  tvaTaux: number;
   tvaEmoluments: number;
   emolumentsTTC: number;
   emolumentsDetails: { tranche: string; base: number; taux: number; montant: number }[];
@@ -227,11 +238,12 @@ interface ResultatFraisNotaire {
   pourcentage: number;
 }
 
-function calculerFraisNotaire(prix: number, typeBien: "ancien" | "neuf", codeDept: string): ResultatFraisNotaire {
+function calculerFraisNotaire(prix: number, typeBien: "ancien" | "neuf", codeDept: string, primoAccedant = false): ResultatFraisNotaire {
   // Emoluments du notaire (identiques ancien/neuf)
   const emol = calculerEmoluments(prix);
   const emolumentsHT = emol.total;
-  const tvaEmoluments = emolumentsHT * TVA_TAUX;
+  const tvaTaux = getTauxTVA(codeDept);
+  const tvaEmoluments = emolumentsHT * tvaTaux;
   const emolumentsTTC = emolumentsHT + tvaEmoluments;
 
   // Contribution de securite immobiliere
@@ -248,7 +260,7 @@ function calculerFraisNotaire(prix: number, typeBien: "ancien" | "neuf", codeDep
 
   if (typeBien === "ancien") {
     // Droits de mutation dans l'ancien
-    tauxDepartemental = getTauxDepartemental(codeDept);
+    tauxDepartemental = getTauxDepartemental(codeDept, primoAccedant);
     droitDepartemental = prix * tauxDepartemental;
     droitCommunal = prix * TAUX_COMMUNAL;
     fraisAssiette = droitDepartemental * TAUX_ASSIETTE_ETAT;
@@ -274,6 +286,7 @@ function calculerFraisNotaire(prix: number, typeBien: "ancien" | "neuf", codeDep
     fraisAssiette,
     totalDroitsMutation,
     emolumentsHT,
+    tvaTaux,
     tvaEmoluments,
     emolumentsTTC,
     emolumentsDetails: emol.details,
@@ -359,7 +372,7 @@ function DonutChartFraisNotaire({
   const emolLen = emolPct * c;
   const deboursLen = deboursPct * c;
   return (
-    <svg width="160" height="160" viewBox="-80 -80 160 160" role="img" aria-label="Repartition des frais de notaire">
+    <svg width="160" height="160" viewBox="-80 -80 160 160" role="img" aria-label="Répartition des frais de notaire">
       <circle cx="0" cy="0" r={r} fill="none" stroke="var(--border)" strokeWidth={stroke} />
       <g transform="rotate(-90)">
         <circle
@@ -463,9 +476,13 @@ export default function CalculateurFraisNotaire() {
   const [prix, setPrix] = useState("250000");
   const [typeBien, setTypeBien] = useState<"ancien" | "neuf">("ancien");
   const [departement, setDepartement] = useState("75");
+  const [primoAccedant, setPrimoAccedant] = useState(false);
 
-  const prixNum = parseFloat(prix) || 0;
-  const result = useMemo(() => calculerFraisNotaire(prixNum, typeBien, departement), [prixNum, typeBien, departement]);
+  const prixNum = Math.max(0, parseFloat(prix) || 0);
+  const result = useMemo(
+    () => calculerFraisNotaire(prixNum, typeBien, departement, primoAccedant),
+    [prixNum, typeBien, departement, primoAccedant]
+  );
 
   const fmt = (n: number) => n.toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   const fmtPct = (n: number) => n.toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -484,7 +501,7 @@ export default function CalculateurFraisNotaire() {
             Calculateur <span style={{ color: "var(--primary)" }}>frais de notaire</span>
           </h1>
           <p className="animate-fade-up stagger-2 mt-3 max-w-xl text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-            Estimez les frais de notaire pour votre achat immobilier. Baremes officiels 2025-2026, taux departementaux mis a jour.
+            Estimez les frais de notaire pour votre achat immobilier. Barèmes officiels 2025-2026, taux départementaux mis à jour.
           </p>
         </div>
       </section>
@@ -583,7 +600,7 @@ export default function CalculateurFraisNotaire() {
                   {/* Departement */}
                   <div>
                     <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>
-                      Departement
+                      Département
                     </label>
                     <select
                       value={departement}
@@ -599,6 +616,23 @@ export default function CalculateurFraisNotaire() {
                     </select>
                   </div>
                 </div>
+
+                {typeBien === "ancien" && (
+                  <label className="flex items-start gap-3 text-sm" style={{ color: "var(--foreground)" }}>
+                    <input
+                      type="checkbox"
+                      checked={primoAccedant}
+                      onChange={(e) => setPrimoAccedant(e.target.checked)}
+                      className="mt-0.5 h-4 w-4 accent-[#0d4f3c]"
+                    />
+                    <span>
+                      Primo-accédant achetant sa résidence principale
+                      <span className="block text-xs" style={{ color: "var(--muted)" }}>
+                        Exonéré de la majoration de 0,5 point : taux départemental plafonné à 4,50 %.
+                      </span>
+                    </span>
+                  </label>
+                )}
               </div>
             </div>
 
@@ -607,12 +641,12 @@ export default function CalculateurFraisNotaire() {
               <StatBox label="Frais totaux" value={`${fmt(result.totalFrais)} \u20AC`} primary />
               <StatBox label="% du prix" value={`${fmtPct(result.pourcentage)}%`} accent />
               <StatBox label="Droits mutation" value={`${fmt(result.totalDroitsMutation)} \u20AC`} />
-              <StatBox label="Emoluments TTC" value={`${fmt(result.emolumentsTTC)} \u20AC`} />
+              <StatBox label="Émoluments TTC" value={`${fmt(result.emolumentsTTC)} \u20AC`} />
             </div>
 
             {/* Cout total acquisition */}
             <div className="rounded-2xl border p-6 text-center" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-              <p className="text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: "var(--muted)" }}>Cout total de l&apos;acquisition</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: "var(--muted)" }}>Coût total de l&apos;acquisition</p>
               <p className="mt-2 text-4xl font-bold" style={{ fontFamily: "var(--font-display)", color: "var(--primary)" }}>
                 {fmt(prixNum + result.totalFrais)} &euro;
               </p>
@@ -624,7 +658,7 @@ export default function CalculateurFraisNotaire() {
             {/* Visualisation donut */}
             <div className="animate-scale-in stagger-2 rounded-2xl border p-6" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
               <h2 className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--accent)" }}>
-                Repartition des frais
+                Répartition des frais
               </h2>
               <div className="mt-5 grid gap-6 sm:grid-cols-[180px_1fr] sm:items-center">
                 <div className="flex justify-center">
@@ -637,8 +671,8 @@ export default function CalculateurFraisNotaire() {
                 </div>
                 <div className="space-y-1">
                   <Row label="Droits de mutation" value={`${fmt(result.totalDroitsMutation)} \u20AC`} sub dotColor="#dc2626" />
-                  <Row label="Emoluments notaire (TTC)" value={`${fmt(result.emolumentsTTC)} \u20AC`} sub dotColor="#e8963e" />
-                  <Row label="Debours et formalites" value={`${fmt(result.debours + result.securiteImmobiliere)} \u20AC`} sub dotColor="#0d4f3c" />
+                  <Row label="Émoluments notaire (TTC)" value={`${fmt(result.emolumentsTTC)} \u20AC`} sub dotColor="#e8963e" />
+                  <Row label="Débours et formalités" value={`${fmt(result.debours + result.securiteImmobiliere)} \u20AC`} sub dotColor="#0d4f3c" />
                   <Row label="Total des frais" value={`${fmt(result.totalFrais)} \u20AC`} highlight primary dotColor="var(--primary)" />
                 </div>
               </div>
@@ -647,13 +681,13 @@ export default function CalculateurFraisNotaire() {
               <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div className="rounded-xl border p-4" style={{ borderColor: "var(--border)", background: "var(--surface-alt)" }}>
                   <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>
-                    Total a prevoir
+                    Total à prévoir
                   </p>
                   <p className="mt-1 text-2xl font-bold" style={{ fontFamily: "var(--font-display)", color: "var(--primary)" }}>
                     {fmt(result.totalFrais)} &euro;
                   </p>
                   <p className="mt-1 text-[11px]" style={{ color: "var(--muted)" }}>
-                    A regler le jour de la signature de l&apos;acte authentique chez le notaire.
+                    À régler le jour de la signature de l&apos;acte authentique chez le notaire.
                   </p>
                 </div>
                 <div className="rounded-xl border p-4" style={{ borderColor: "var(--border)", background: "var(--surface-alt)" }}>
@@ -665,8 +699,8 @@ export default function CalculateurFraisNotaire() {
                   </p>
                   <p className="mt-1 text-[11px]" style={{ color: "var(--muted)" }}>
                     {typeBien === "neuf"
-                      ? "Ratio typique pour du neuf (2 a 3%) grace au taux reduit de TPF."
-                      : "Ratio typique pour de l'ancien (7 a 8%) avec DMTO majoritairement a 5%."}
+                      ? "Ratio typique pour du neuf (2 à 3%) grâce au taux réduit de TPF."
+                      : "Ratio typique pour de l'ancien (7 à 8%) avec DMTO majoritairement à 5%."}
                   </p>
                 </div>
               </div>
@@ -680,21 +714,21 @@ export default function CalculateurFraisNotaire() {
               <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
                 <CrossLinkCard
                   href="/outils/calculateur-pret-immobilier"
-                  emoji="\uD83C\uDFE0"
-                  title="Simuler le pret"
-                  desc="Mensualite et capacite d&apos;emprunt selon HCSF"
+                  emoji="🏠"
+                  title="Simuler le prêt"
+                  desc="Mensualité et capacité d&apos;emprunt selon HCSF"
                 />
                 <CrossLinkCard
                   href="/outils/simulateur-plus-value-immobiliere"
-                  emoji="\uD83D\uDCC8"
+                  emoji="📈"
                   title="Plus-value immo"
                   desc="Imposition sur la revente d&apos;un bien"
                 />
                 <CrossLinkCard
                   href="/outils/simulateur-ptz-2026"
-                  emoji="\uD83C\uDD93"
+                  emoji="🆓"
                   title="PTZ 2026"
-                  desc="Pret a taux zero pour primo-accedants"
+                  desc="Prêt à taux zéro pour primo-accédants"
                 />
               </div>
             </div>
@@ -702,7 +736,7 @@ export default function CalculateurFraisNotaire() {
             {/* Detail des droits de mutation */}
             <div className="rounded-2xl border p-6" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
               <h2 className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--accent)" }}>
-                Detail des droits de mutation {typeBien === "neuf" ? "(Taxe publicite fonciere)" : "(DMTO)"}
+                Détail des droits de mutation {typeBien === "neuf" ? "(Taxe publicité foncière)" : "(DMTO)"}
               </h2>
               <div className="mt-4 overflow-x-auto">
                 <table className="w-full text-sm">
@@ -718,7 +752,7 @@ export default function CalculateurFraisNotaire() {
                       <>
                         <tr className="border-t" style={{ borderColor: "var(--surface-alt)" }}>
                           <td className="py-3">
-                            Taxe departementale ({deptNom})
+                            Taxe départementale ({deptNom})
                           </td>
                           <td className="py-3 text-right font-semibold" style={{ color: "var(--accent)" }}>{tauxDeptLabel}</td>
                           <td className="py-3 text-right">{fmt(result.droitDepartemental)} &euro;</td>
@@ -729,14 +763,14 @@ export default function CalculateurFraisNotaire() {
                           <td className="py-3 text-right">{fmt(result.droitCommunal)} &euro;</td>
                         </tr>
                         <tr className="border-t" style={{ borderColor: "var(--surface-alt)" }}>
-                          <td className="py-3">Frais d&apos;assiette et recouvrement (Etat)</td>
+                          <td className="py-3">Frais d&apos;assiette et recouvrement (État)</td>
                           <td className="py-3 text-right font-semibold" style={{ color: "var(--accent)" }}>2,37% de la taxe dept.</td>
                           <td className="py-3 text-right">{fmt(result.fraisAssiette)} &euro;</td>
                         </tr>
                       </>
                     ) : (
                       <tr className="border-t" style={{ borderColor: "var(--surface-alt)" }}>
-                        <td className="py-3">Taxe de publicite fonciere (taux reduit neuf)</td>
+                        <td className="py-3">Taxe de publicité foncière (taux réduit neuf)</td>
                         <td className="py-3 text-right font-semibold" style={{ color: "var(--accent)" }}>0,715%</td>
                         <td className="py-3 text-right">{fmt(result.droitDepartemental)} &euro;</td>
                       </tr>
@@ -755,7 +789,7 @@ export default function CalculateurFraisNotaire() {
             {/* Detail des emoluments */}
             <div className="rounded-2xl border p-6" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
               <h2 className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--accent)" }}>
-                Detail des emoluments du notaire
+                Détail des émoluments du notaire
               </h2>
               <div className="mt-4 overflow-x-auto">
                 <table className="w-full text-sm">
@@ -777,15 +811,15 @@ export default function CalculateurFraisNotaire() {
                       </tr>
                     ))}
                     <tr className="border-t" style={{ borderColor: "var(--surface-alt)" }}>
-                      <td className="py-3" colSpan={3}>Emoluments HT</td>
+                      <td className="py-3" colSpan={3}>Émoluments HT</td>
                       <td className="py-3 text-right font-semibold">{fmt(result.emolumentsHT)} &euro;</td>
                     </tr>
                     <tr className="border-t" style={{ borderColor: "var(--surface-alt)" }}>
-                      <td className="py-3" colSpan={3}>TVA (20%)</td>
+                      <td className="py-3" colSpan={3}>TVA ({(result.tvaTaux * 100).toLocaleString("fr-FR")}%)</td>
                       <td className="py-3 text-right">{fmt(result.tvaEmoluments)} &euro;</td>
                     </tr>
                     <tr className="border-t-2" style={{ borderColor: "var(--primary)" }}>
-                      <td className="py-3 font-semibold" colSpan={3}>Emoluments TTC</td>
+                      <td className="py-3 font-semibold" colSpan={3}>Émoluments TTC</td>
                       <td className="py-3 text-right text-lg font-bold" style={{ color: "var(--primary)", fontFamily: "var(--font-display)" }}>
                         {fmt(result.emolumentsTTC)} &euro;
                       </td>
@@ -798,7 +832,7 @@ export default function CalculateurFraisNotaire() {
             {/* Detail debours */}
             <div className="rounded-2xl border p-6" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
               <h2 className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--accent)" }}>
-                Debours et formalites
+                Débours et formalités
               </h2>
               <div className="mt-4 overflow-x-auto">
                 <table className="w-full text-sm">
@@ -810,15 +844,15 @@ export default function CalculateurFraisNotaire() {
                   </thead>
                   <tbody>
                     <tr className="border-t" style={{ borderColor: "var(--surface-alt)" }}>
-                      <td className="py-3">Debours (documents urbanisme, cadastre, hypotheques...)</td>
+                      <td className="py-3">Débours (documents urbanisme, cadastre, hypothèques...)</td>
                       <td className="py-3 text-right">{fmt(result.debours)} &euro;</td>
                     </tr>
                     <tr className="border-t" style={{ borderColor: "var(--surface-alt)" }}>
-                      <td className="py-3">Contribution de securite immobiliere (0,10%)</td>
+                      <td className="py-3">Contribution de sécurité immobilière (0,10%)</td>
                       <td className="py-3 text-right">{fmt(result.securiteImmobiliere)} &euro;</td>
                     </tr>
                     <tr className="border-t-2" style={{ borderColor: "var(--primary)" }}>
-                      <td className="py-3 font-semibold">Total debours et formalites</td>
+                      <td className="py-3 font-semibold">Total débours et formalités</td>
                       <td className="py-3 text-right text-lg font-bold" style={{ color: "var(--primary)", fontFamily: "var(--font-display)" }}>
                         {fmt(result.debours + result.securiteImmobiliere)} &euro;
                       </td>
@@ -831,7 +865,7 @@ export default function CalculateurFraisNotaire() {
             {/* Recap final */}
             <div className="rounded-2xl border p-6" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
               <h2 className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--accent)" }}>
-                Recapitulatif
+                Récapitulatif
               </h2>
               <div className="mt-4 overflow-x-auto">
                 <table className="w-full text-sm">
@@ -841,11 +875,11 @@ export default function CalculateurFraisNotaire() {
                       <td className="py-3 text-right font-semibold">{fmt(result.totalDroitsMutation)} &euro;</td>
                     </tr>
                     <tr className="border-t" style={{ borderColor: "var(--surface-alt)" }}>
-                      <td className="py-3">Emoluments du notaire TTC</td>
+                      <td className="py-3">Émoluments du notaire TTC</td>
                       <td className="py-3 text-right font-semibold">{fmt(result.emolumentsTTC)} &euro;</td>
                     </tr>
                     <tr className="border-t" style={{ borderColor: "var(--surface-alt)" }}>
-                      <td className="py-3">Debours et formalites</td>
+                      <td className="py-3">Débours et formalités</td>
                       <td className="py-3 text-right font-semibold">{fmt(result.debours + result.securiteImmobiliere)} &euro;</td>
                     </tr>
                     <tr className="border-t-2" style={{ borderColor: "var(--primary)" }}>
@@ -860,28 +894,28 @@ export default function CalculateurFraisNotaire() {
             </div>
 
             <ToolHowToSection
-              title="Comment estimer vos frais de notaire en 4 etapes"
-              description="Le calculateur applique les baremes officiels 2026 (loi de finances) avec gestion ancien / neuf et taux departementaux a jour."
+              title="Comment estimer vos frais de notaire en 4 étapes"
+              description="Le calculateur applique les barèmes officiels 2026 (loi de finances) avec gestion ancien / neuf et taux départementaux à jour."
               steps={[
                 {
                   name: "Saisir le prix d'achat du bien",
                   text:
-                    "Indiquez le prix net vendeur, hors mobilier et hors honoraires d'agence. Si une portion du prix correspond a du mobilier (cuisine equipee, electromenager), elle peut etre deduite de l'assiette des droits de mutation : prevoyez de la valoriser dans le compromis (typiquement 2-5 % du prix).",
+                    "Indiquez le prix net vendeur, hors mobilier et hors honoraires d'agence. Si une portion du prix correspond à du mobilier (cuisine équipée, électroménager), elle peut être déduite de l'assiette des droits de mutation : prévoyez de la valoriser dans le compromis (typiquement 2-5 % du prix).",
                 },
                 {
                   name: "Choisir ancien ou neuf",
                   text:
-                    "Bien ANCIEN (revenu vendu plus de 5 ans apres construction ou apres premiere mutation) : frais ~7 a 8 % du prix. Bien NEUF (VEFA, premiere mutation moins de 5 ans apres construction) : frais ~2 a 3 % du prix grace au taux reduit de TPF (0,715 %), la TVA est payee par le promoteur.",
+                    "Bien ANCIEN (revenu vendu plus de 5 ans après construction ou après première mutation) : frais ~7 à 8 % du prix. Bien NEUF (VEFA, première mutation moins de 5 ans après construction) : frais ~2 à 3 % du prix grâce au taux réduit de TPF (0,715 %), la TVA est payée par le promoteur.",
                 },
                 {
-                  name: "Selectionner le departement",
+                  name: "Sélectionner le département",
                   text:
-                    "Le taux departemental varie : 5,00 % dans la majorite des departements depuis avril 2025, 4,50 % dans une dizaine de departements, 3,80 % dans l'Indre et a Mayotte. Choisissez votre departement pour un calcul precis.",
+                    "Le taux départemental varie : 5,00 % dans la majorité des départements depuis avril 2025, 4,50 % dans 11 départements (et pour les primo-accédants achetant leur résidence principale), 3,80 % dans l'Indre. Choisissez votre département pour un calcul précis.",
                 },
                 {
-                  name: "Lire le detail",
+                  name: "Lire le détail",
                   text:
-                    "Le calculateur affiche : DMTO (droits de mutation, partie fiscale), emoluments du notaire (bareme proportionnel degressif), debours et TVA. Le total est arrondi et indicatif. Le notaire vous remettra un devis precis avant signature.",
+                    "Le calculateur affiche : DMTO (droits de mutation, partie fiscale), émoluments du notaire (barème proportionnel dégressif), débours et TVA. Le total est arrondi et indicatif. Le notaire vous remettra un devis précis avant signature.",
                 },
               ]}
             />
@@ -894,85 +928,85 @@ export default function CalculateurFraisNotaire() {
                 className="text-2xl md:text-3xl font-extrabold"
                 style={{ fontFamily: "var(--font-display)", color: "var(--foreground)" }}
               >
-                Comment se decomposent les frais de notaire
+                Comment se décomposent les frais de notaire
               </h2>
               <div className="mt-4 space-y-3 leading-relaxed" style={{ color: "var(--foreground)" }}>
                 <p>
-                  Les &laquo; frais de notaire &raquo; se composent en realite de{" "}
+                  Les &laquo; frais de notaire &raquo; se composent en réalité de{" "}
                   <strong>trois postes principaux</strong> :
                 </p>
                 <p>
                   <strong>1. Les droits de mutation (DMTO)</strong> : c&apos;est la part fiscale,
-                  reversee a l&apos;Etat et aux collectivites. Pour un bien ancien, ils
-                  representent environ 5,80 % a 6,32 % du prix selon le departement. Pour un bien
-                  neuf, seule la taxe de publicite fonciere au taux reduit de 0,715 % s&apos;applique.
+                  reversée à l&apos;État et aux collectivités. Pour un bien ancien, ils
+                  représentent environ 5,80 % à 6,32 % du prix selon le département. Pour un bien
+                  neuf, seule la taxe de publicité foncière au taux réduit de 0,715 % s&apos;applique.
                 </p>
                 <p>
-                  <strong>2. Les emoluments du notaire</strong> : c&apos;est la remuneration du
-                  notaire, calculee selon un bareme proportionnel degressif fixe par decret. Ils
-                  representent environ 1 % du prix de vente, auxquels s&apos;ajoute la TVA a 20 %.
+                  <strong>2. Les émoluments du notaire</strong> : c&apos;est la rémunération du
+                  notaire, calculée selon un barème proportionnel dégressif fixé par décret. Ils
+                  représentent environ 1 % du prix de vente, auxquels s&apos;ajoute la TVA (20 % en métropole, 8,5 % ou 0 % en outre-mer).
                 </p>
                 <p>
-                  <strong>3. Les debours et formalites</strong> : ce sont les frais avances par le
+                  <strong>3. Les débours et formalités</strong> : ce sont les frais avancés par le
                   notaire pour le compte de l&apos;acheteur (documents d&apos;urbanisme, cadastre,
-                  extraits hypothecaires, contribution de securite immobiliere).
+                  extraits hypothécaires, contribution de sécurité immobilière).
                 </p>
                 <p className="rounded-xl p-4" style={{ background: "var(--surface-alt)" }}>
                   <strong>Hausse 2025-2028 :</strong> La loi de finances 2025 autorise les
-                  departements a majorer de 0,5 point le taux departemental (de 4,50 % a 5 %)
-                  jusqu&apos;au 30 avril 2028. La majorite des departements ont vote cette hausse.
-                  Les primo-accedants en sont exemptes.
+                  départements à majorer de 0,5 point le taux départemental (de 4,50 % à 5 %)
+                  pour les actes signés du 1er avril 2025 au 31 mars 2028. La majorité des départements ont voté cette hausse.
+                  Les primo-accédants en sont exemptés.
                 </p>
                 <p>
-                  <strong>Source.</strong> Code general des impots art. 1594 D et 1594 H, decrets
-                  fixant les emoluments du notaire (Decret n2016-230 modifie). Verifications a
+                  <strong>Source.</strong> Code général des impôts art. 1594 D et 1594 H, décrets
+                  fixant les émoluments du notaire (Décret n2016-230 modifié). Vérifications à
                   notaires.fr.
                 </p>
               </div>
             </section>
 
             <ToolFaqSection
-              intro="Les questions les plus frequentes sur les frais de notaire en France."
+              intro="Les questions les plus fréquentes sur les frais de notaire en France."
               items={[
                 {
                   question: "Quels sont les frais de notaire pour un bien ancien en 2026 ?",
                   answer:
-                    "Environ 7,5 a 8 % du prix d'achat dans la majorite des departements (taux 5 %), un peu moins dans les departements a 4,5 % (~7 %). Exemple : pour un appartement ancien a 300 000 EUR dans un departement majore, comptez environ 23 000 a 24 000 EUR de frais.",
+                    "Environ 7,5 à 8 % du prix d'achat dans la majorité des départements (taux 5 %), un peu moins dans les départements à 4,5 % (~7 %). Exemple : pour un appartement ancien à 300 000 € dans un département majoré, comptez environ 23 000 à 24 000 € de frais.",
                 },
                 {
                   question: "Et pour un bien neuf (VEFA) ?",
                   answer:
-                    "Environ 2 a 3 % du prix car les droits de mutation sont remplaces par la taxe de publicite fonciere au taux reduit de 0,715 %. La TVA a 20 % est payee par le vendeur (incluse dans le prix de vente affiche). Exemple : pour 300 000 EUR en neuf, comptez ~7 500 EUR de frais notaire.",
+                    "Environ 2 à 3 % du prix car les droits de mutation sont remplacés par la taxe de publicité foncière au taux réduit de 0,715 %. La TVA à 20 % est payée par le vendeur (incluse dans le prix de vente affiché). Exemple : pour 300 000 € en neuf, comptez ~7 200 € de frais notaire.",
                 },
                 {
-                  question: "Les frais de notaire sont-ils negociables ?",
+                  question: "Les frais de notaire sont-ils négociables ?",
                   answer:
-                    "Les emoluments du notaire (sa remuneration) sont fixes par decret donc non negociables sur les premiers 100 000 EUR. Au-dela, depuis 2016, le notaire peut accorder une remise jusqu'a 20 % sur la partie excedant 150 000 EUR. Les DMTO (partie fiscale) ne sont pas negociables.",
+                    "Les émoluments du notaire (sa rémunération) sont fixés par décret donc non négociables sur les premiers 100 000 €. Depuis 2021, le notaire peut accorder une remise jusqu'à 20 % sur les émoluments calculés sur la partie du prix excédant 100 000 € (art. R444-10 du Code de commerce). Les DMTO (partie fiscale) ne sont pas négociables.",
                 },
                 {
                   question: "Quand paie-t-on les frais de notaire ?",
                   answer:
-                    "Le jour de la signature de l'acte authentique de vente, soit en moyenne 2-3 mois apres le compromis. Le notaire vous demandera une provision (a peu pres egale aux frais estimes) quelques jours avant. Le solde eventuel est ajuste apres regularisation des comptes.",
+                    "Le jour de la signature de l'acte authentique de vente, soit en moyenne 2-3 mois après le compromis. Le notaire vous demandera une provision (à peu près égale aux frais estimés) quelques jours avant. Le solde éventuel est ajusté après régularisation des comptes.",
                 },
                 {
-                  question: "Peut-on inclure les frais de notaire dans le pret immobilier ?",
+                  question: "Peut-on inclure les frais de notaire dans le prêt immobilier ?",
                   answer:
-                    "Oui, on parle alors de 'pret a 110 %'. Les banques l'accordent surtout aux primo-accedants ayant des revenus stables. Cela augmente le cout total du pret et peut depasser le seuil HCSF de 35 % d'endettement. Dans la pratique, un apport couvrant les frais de notaire reste fortement recommande.",
+                    "Oui, on parle alors de 'prêt à 110 %'. Les banques l'accordent surtout aux primo-accédants ayant des revenus stables. Cela augmente le coût total du prêt et peut dépasser le seuil HCSF de 35 % d'endettement. Dans la pratique, un apport couvrant les frais de notaire reste fortement recommandé.",
                 },
                 {
-                  question: "Les primo-accedants beneficient-ils d'une reduction ?",
+                  question: "Les primo-accédants bénéficient-ils d'une réduction ?",
                   answer:
-                    "Depuis avril 2025, les primo-accedants achetant leur residence principale sont exemptes de la majoration de 0,5 point du taux departemental. Le taux applicable reste a 4,50 % au lieu de 5 % dans les departements concernes. Economie typique : ~1 500 EUR pour un bien a 300 000 EUR.",
+                    "Depuis avril 2025, les primo-accédants achetant leur résidence principale sont exemptés de la majoration de 0,5 point du taux départemental. Le taux applicable reste à 4,50 % au lieu de 5 % dans les départements concernés. Économie typique : ~1 500 € pour un bien à 300 000 €.",
                 },
                 {
-                  question: "Que valent les debours dans les frais de notaire ?",
+                  question: "Que valent les débours dans les frais de notaire ?",
                   answer:
-                    "Les debours et frais de formalites representent en general 800 a 1 200 EUR, fixes pour la plupart : extrait cadastral, etat hypothecaire, copie du titre, contributions de securite immobiliere, frais d'enregistrement. Le calculateur applique une moyenne realiste.",
+                    "Les débours et frais de formalités représentent en général 800 à 1 200 €, fixes pour la plupart : extrait cadastral, état hypothécaire, copie du titre, contributions de sécurité immobilière, frais d'enregistrement. Le calculateur applique une moyenne réaliste.",
                 },
                 {
-                  question: "Le calculateur garde-t-il mes donnees ?",
+                  question: "Le calculateur garde-t-il mes données ?",
                   answer:
-                    "Non. Tous les calculs sont effectues localement dans votre navigateur. Aucune donnee saisie (prix, departement, type) n'est envoyee a un serveur ni stockee. L'outil fonctionne sans inscription.",
+                    "Non. Tous les calculs sont effectués localement dans votre navigateur. Aucune donnée saisie (prix, département, type) n'est envoyée à un serveur ni stockée. L'outil fonctionne sans inscription.",
                 },
               ]}
             />
@@ -984,18 +1018,18 @@ export default function CalculateurFraisNotaire() {
             <div className="rounded-2xl border p-6" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
               <h3 className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--accent)" }}>Ancien vs Neuf</h3>
               <ul className="mt-3 space-y-2 text-sm" style={{ color: "var(--muted)" }}>
-                <li><strong className="text-[var(--foreground)]">Ancien</strong> : DMTO ~6,32% (dept. majore) ou ~5,81% (dept. non majore)</li>
-                <li><strong className="text-[var(--foreground)]">Neuf / VEFA</strong> : TPF 0,715% seulement (TVA payee par le vendeur)</li>
+                <li><strong className="text-[var(--foreground)]">Ancien</strong> : DMTO ~6,32% (dept. majoré) ou ~5,81% (dept. non majoré)</li>
+                <li><strong className="text-[var(--foreground)]">Neuf / VEFA</strong> : TPF 0,715% seulement (TVA payée par le vendeur)</li>
                 <li><strong className="text-[var(--foreground)]">Total ancien</strong> : ~8% du prix</li>
                 <li><strong className="text-[var(--foreground)]">Total neuf</strong> : ~2-3% du prix</li>
               </ul>
             </div>
             <div className="rounded-2xl border p-6" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-              <h3 className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--accent)" }}>Taux departemental</h3>
+              <h3 className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--accent)" }}>Taux départemental</h3>
               <div className="mt-3 space-y-2 text-sm" style={{ color: "var(--muted)" }}>
-                <p><strong className="text-[var(--foreground)]">5,00%</strong> : majorite des departements (depuis avril 2025)</p>
-                <p><strong className="text-[var(--foreground)]">4,50%</strong> : Ain, Allier, Alpes-de-Haute-Provence, Drome, Eure, Landes, Lozere, Oise, Saone-et-Loire, Territoire de Belfort</p>
-                <p><strong className="text-[var(--foreground)]">3,80%</strong> : Indre, Mayotte</p>
+                <p><strong className="text-[var(--foreground)]">5,00%</strong> : majorité des départements (depuis avril 2025)</p>
+                <p><strong className="text-[var(--foreground)]">4,50%</strong> : Hautes-Alpes, Alpes-Maritimes, Ardèche, Charente, Drôme, Lozère, Oise, Hautes-Pyrénées, Saône-et-Loire, Guadeloupe, Mayotte</p>
+                <p><strong className="text-[var(--foreground)]">3,80%</strong> : Indre</p>
               </div>
             </div>
             <AdPlaceholder className="h-[600px]" />

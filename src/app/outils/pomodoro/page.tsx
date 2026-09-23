@@ -33,6 +33,17 @@ const MODE_LABELS: Record<PomodoroMode, string> = {
   longBreak: "Pause longue",
 };
 
+function durationMs(mode: PomodoroMode, settings: Settings): number {
+  switch (mode) {
+    case "work":
+      return settings.work * 60_000;
+    case "shortBreak":
+      return settings.shortBreak * 60_000;
+    case "longBreak":
+      return settings.longBreak * 60_000;
+  }
+}
+
 function formatTime(totalSeconds: number): string {
   const m = Math.floor(totalSeconds / 60);
   const s = totalSeconds % 60;
@@ -42,15 +53,26 @@ function formatTime(totalSeconds: number): string {
 function formatDuration(totalSeconds: number): string {
   const h = Math.floor(totalSeconds / 3600);
   const m = Math.floor((totalSeconds % 3600) / 60);
-  if (h > 0) return `${h}h ${m.toString().padStart(2, "0")}min`;
+  if (h > 0) return `${h} h ${m.toString().padStart(2, "0")} min`;
   return `${m} min`;
+}
+
+// Millisecondes restantes avant l'horodatage donné (appelé uniquement depuis des gestionnaires d'événements)
+function msUntil(end: number): number {
+  return Math.max(0, end - Date.now());
+}
+
+function clampInt(value: string, min: number, max: number): number {
+  return Math.min(max, Math.max(min, parseInt(value) || min));
 }
 
 export default function Pomodoro() {
   const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
   const [showSettings, setShowSettings] = useState(false);
   const [mode, setMode] = useState<PomodoroMode>("work");
-  const [timeRemaining, setTimeRemaining] = useState(DEFAULT_SETTINGS.work * 60);
+  // Durée totale de la session en cours et temps restant, en millisecondes
+  const [runDurationMs, setRunDurationMs] = useState(DEFAULT_SETTINGS.work * 60_000);
+  const [remainingMs, setRemainingMs] = useState(DEFAULT_SETTINGS.work * 60_000);
   const [isRunning, setIsRunning] = useState(false);
   const [sessionCount, setSessionCount] = useState(0);
   const [stats, setStats] = useState<DayStats>({
@@ -59,37 +81,42 @@ export default function Pomodoro() {
     totalBreakSeconds: 0,
   });
 
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const endTimeRef = useRef<number>(0);
+  // Heure de fin (horodatage) : pas de comptage de ticks, donc pas de dérive en arrière-plan
+  const endTimeRef = useRef(0);
+  const finishTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const autoStartRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const audioCtxRef = useRef<AudioContext | null>(null);
-
-  // Derive total duration for current mode
-  const totalDuration = (() => {
-    switch (mode) {
-      case "work":
-        return settings.work * 60;
-      case "shortBreak":
-        return settings.shortBreak * 60;
-      case "longBreak":
-        return settings.longBreak * 60;
-    }
-  })();
+  const completeRef = useRef<() => void>(() => {});
 
   // SVG circle calculations
   const RADIUS = 140;
   const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
-  const progress = totalDuration > 0 ? timeRemaining / totalDuration : 1;
+  const progress = runDurationMs > 0 ? Math.min(1, Math.max(0, remainingMs / runDurationMs)) : 1;
   const strokeDashoffset = CIRCUMFERENCE * (1 - progress);
+  const remainingSeconds = Math.ceil(remainingMs / 1000);
 
   // Color based on mode
   const modeColor = mode === "work" ? "var(--primary)" : "var(--accent)";
   const modeBgLight = mode === "work" ? "rgba(13, 79, 60, 0.08)" : "rgba(232, 150, 62, 0.08)";
 
-  // Play beep sound via Web Audio API
-  const playBeep = useCallback(() => {
+  // Crée ou réactive le contexte audio pendant un clic (sinon le navigateur peut bloquer le son)
+  const prepareAlerts = useCallback(() => {
     try {
-      const ctx = new AudioContext();
+      if (!audioCtxRef.current) audioCtxRef.current = new AudioContext();
+      if (audioCtxRef.current.state === "suspended") void audioCtxRef.current.resume();
+    } catch {
+      // Web Audio non disponible
+    }
+    if (typeof Notification !== "undefined" && Notification.permission === "default") {
+      Notification.requestPermission().catch(() => {});
+    }
+  }, []);
+
+  const playTones = useCallback((endedMode: PomodoroMode) => {
+    try {
+      const ctx = audioCtxRef.current ?? new AudioContext();
       audioCtxRef.current = ctx;
+      if (ctx.state === "suspended") void ctx.resume();
       const playTone = (time: number, freq: number) => {
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
@@ -102,181 +129,162 @@ export default function Pomodoro() {
         osc.start(time);
         osc.stop(time + 0.4);
       };
-      // Different sounds for work end vs break end
-      if (mode === "work") {
-        // Descending tone = relax
-        playTone(ctx.currentTime, 880);
-        playTone(ctx.currentTime + 0.5, 660);
-        playTone(ctx.currentTime + 1.0, 440);
-      } else {
-        // Ascending tone = back to work
-        playTone(ctx.currentTime, 440);
-        playTone(ctx.currentTime + 0.5, 660);
-        playTone(ctx.currentTime + 1.0, 880);
-      }
+      // Tonalité descendante = pause, montante = retour au travail
+      const freqs = endedMode === "work" ? [880, 660, 440] : [440, 660, 880];
+      freqs.forEach((f, i) => playTone(ctx.currentTime + i * 0.5, f));
     } catch {
-      // Audio not supported
-    }
-  }, [mode]);
-
-  // Switch to next mode
-  const goToNextMode = useCallback(() => {
-    if (mode === "work") {
-      // Update stats
-      setStats((prev) => ({
-        ...prev,
-        completedSessions: prev.completedSessions + 1,
-        totalWorkSeconds: prev.totalWorkSeconds + settings.work * 60,
-      }));
-      const newCount = sessionCount + 1;
-      setSessionCount(newCount);
-
-      if (newCount % settings.sessionsBeforeLong === 0) {
-        setMode("longBreak");
-        setTimeRemaining(settings.longBreak * 60);
-      } else {
-        setMode("shortBreak");
-        setTimeRemaining(settings.shortBreak * 60);
-      }
-    } else {
-      // Break finished
-      setStats((prev) => ({
-        ...prev,
-        totalBreakSeconds:
-          prev.totalBreakSeconds +
-          (mode === "shortBreak" ? settings.shortBreak : settings.longBreak) * 60,
-      }));
-      setMode("work");
-      setTimeRemaining(settings.work * 60);
-    }
-  }, [mode, sessionCount, settings]);
-
-  // Stop the timer interval
-  const clearTimer = useCallback(() => {
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-      intervalRef.current = null;
+      // Web Audio non disponible
     }
   }, []);
 
-  // Timer tick logic
-  const startInterval = useCallback(() => {
-    clearTimer();
-    endTimeRef.current = Date.now() + timeRemaining * 1000;
-    intervalRef.current = setInterval(() => {
-      const remaining = Math.max(0, Math.ceil((endTimeRef.current - Date.now()) / 1000));
-      setTimeRemaining(remaining);
-      if (remaining <= 0) {
-        clearTimer();
-        setIsRunning(false);
-      }
-    }, 100);
-  }, [timeRemaining, clearTimer]);
-
-  // Handle timer reaching zero
-  useEffect(() => {
-    if (timeRemaining === 0 && !isRunning && intervalRef.current === null) {
-      // Only trigger transition if we were previously running (endTimeRef > 0)
-      if (endTimeRef.current > 0) {
-        playBeep();
-        endTimeRef.current = 0;
-
-        if (settings.autoStart) {
-          // Small delay to let the beep play, then auto-advance
-          const timeout = setTimeout(() => {
-            goToNextMode();
-          }, 1500);
-          return () => clearTimeout(timeout);
-        } else {
-          const timeout = setTimeout(() => {
-            goToNextMode();
-          }, 0);
-          return () => clearTimeout(timeout);
-        }
-      }
+  const notify = useCallback((body: string) => {
+    if (typeof Notification === "undefined" || Notification.permission !== "granted" || !document.hidden) return;
+    try {
+      new Notification("Pomodoro", { body });
+    } catch {
+      // Constructeur Notification indisponible (Chrome Android)
     }
-  }, [timeRemaining, isRunning, playBeep, goToNextMode, settings.autoStart]);
+  }, []);
 
-  // Auto-start next session
-  useEffect(() => {
-    if (settings.autoStart && timeRemaining > 0 && !isRunning && endTimeRef.current === 0 && sessionCount > 0) {
-      // Delay auto-start so user can see the mode change
-      const timeout = setTimeout(() => {
-        setIsRunning(true);
-      }, 500);
-      return () => clearTimeout(timeout);
-    }
-  }, [mode, timeRemaining, isRunning, settings.autoStart, sessionCount]);
-
-  // Start/stop the interval when isRunning changes
-  useEffect(() => {
-    if (isRunning) {
-      startInterval();
+  const tick = useCallback(() => {
+    if (endTimeRef.current === 0) return;
+    const left = endTimeRef.current - Date.now();
+    if (left <= 0) {
+      endTimeRef.current = 0;
+      completeRef.current();
     } else {
-      clearTimer();
+      setRemainingMs(left);
     }
-    return clearTimer;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isRunning]);
+  }, []);
 
-  // Cleanup
+  const clearFinishTimeout = () => {
+    if (finishTimeoutRef.current) clearTimeout(finishTimeoutRef.current);
+    finishTimeoutRef.current = null;
+  };
+
+  const cancelAutoStart = () => {
+    if (autoStartRef.current) clearTimeout(autoStartRef.current);
+    autoStartRef.current = null;
+  };
+
+  const beginRun = (ms: number) => {
+    clearFinishTimeout();
+    endTimeRef.current = Date.now() + ms;
+    setRemainingMs(ms);
+    setIsRunning(true);
+    // Minuterie unique : plus fiable qu'un intervalle quand l'onglet est en arrière-plan
+    finishTimeoutRef.current = setTimeout(tick, ms + 20);
+  };
+
+  // Rafraîchissement de l'affichage pendant que le timer tourne
+  useEffect(() => {
+    if (!isRunning) return;
+    const id = setInterval(tick, 250);
+    return () => clearInterval(id);
+  }, [isRunning, tick]);
+
+  // Fin d'une session : statistiques, son, passage à la session suivante
+  const complete = () => {
+    clearFinishTimeout();
+    setIsRunning(false);
+    playTones(mode);
+    let next: PomodoroMode;
+    if (mode === "work") {
+      const newCount = sessionCount + 1;
+      setSessionCount(newCount);
+      setStats((prev) => ({
+        ...prev,
+        completedSessions: prev.completedSessions + 1,
+        totalWorkSeconds: prev.totalWorkSeconds + Math.round(runDurationMs / 1000),
+      }));
+      next = newCount % settings.sessionsBeforeLong === 0 ? "longBreak" : "shortBreak";
+      notify(next === "longBreak" ? "Session terminée : place à la pause longue." : "Session terminée : place à la pause.");
+    } else {
+      setStats((prev) => ({
+        ...prev,
+        totalBreakSeconds: prev.totalBreakSeconds + Math.round(runDurationMs / 1000),
+      }));
+      next = "work";
+      notify("Pause terminée : retour au travail.");
+    }
+    const nextMs = durationMs(next, settings);
+    setMode(next);
+    setRunDurationMs(nextMs);
+    setRemainingMs(nextMs);
+    if (settings.autoStart) {
+      cancelAutoStart();
+      autoStartRef.current = setTimeout(() => {
+        autoStartRef.current = null;
+        beginRun(nextMs);
+      }, 1500);
+    }
+  };
+
+  useEffect(() => {
+    completeRef.current = complete;
+  });
+
+  // Nettoyage
   useEffect(() => {
     return () => {
-      clearTimer();
-      if (audioCtxRef.current) audioCtxRef.current.close();
+      if (finishTimeoutRef.current) clearTimeout(finishTimeoutRef.current);
+      if (autoStartRef.current) clearTimeout(autoStartRef.current);
+      if (audioCtxRef.current) void audioCtxRef.current.close();
     };
-  }, [clearTimer]);
+  }, []);
+
+  // Temps restant dans le titre de l'onglet pendant une session
+  useEffect(() => {
+    if (!isRunning) return;
+    const original = document.title;
+    document.title = `${formatTime(remainingSeconds)} – ${MODE_LABELS[mode]}`;
+    return () => {
+      document.title = original;
+    };
+  }, [isRunning, remainingSeconds, mode]);
+
+  const stopAll = () => {
+    cancelAutoStart();
+    clearFinishTimeout();
+    endTimeRef.current = 0;
+    setIsRunning(false);
+  };
+
+  const loadMode = (newMode: PomodoroMode) => {
+    const ms = durationMs(newMode, settings);
+    setMode(newMode);
+    setRunDurationMs(ms);
+    setRemainingMs(ms);
+  };
 
   // Handlers
   const handleStart = () => {
-    if (timeRemaining <= 0) return;
-    setIsRunning(true);
+    if (remainingMs <= 0) return;
+    prepareAlerts();
+    cancelAutoStart();
+    beginRun(remainingMs);
   };
 
   const handlePause = () => {
-    setIsRunning(false);
-    // Recalculate remaining from end time
-    const remaining = Math.max(0, Math.ceil((endTimeRef.current - Date.now()) / 1000));
-    setTimeRemaining(remaining);
+    const left = endTimeRef.current > 0 ? msUntil(endTimeRef.current) : remainingMs;
+    stopAll();
+    setRemainingMs(left);
   };
 
   const handleReset = () => {
-    setIsRunning(false);
-    endTimeRef.current = 0;
-    switch (mode) {
-      case "work":
-        setTimeRemaining(settings.work * 60);
-        break;
-      case "shortBreak":
-        setTimeRemaining(settings.shortBreak * 60);
-        break;
-      case "longBreak":
-        setTimeRemaining(settings.longBreak * 60);
-        break;
-    }
+    stopAll();
+    loadMode(mode);
   };
 
+  // Passer : la session en cours n'est pas comptée dans les statistiques
   const handleSkip = () => {
-    setIsRunning(false);
-    endTimeRef.current = 0;
-    goToNextMode();
+    stopAll();
+    loadMode(mode === "work" ? "shortBreak" : "work");
   };
 
   const handleModeSwitch = (newMode: PomodoroMode) => {
-    setIsRunning(false);
-    endTimeRef.current = 0;
-    setMode(newMode);
-    switch (newMode) {
-      case "work":
-        setTimeRemaining(settings.work * 60);
-        break;
-      case "shortBreak":
-        setTimeRemaining(settings.shortBreak * 60);
-        break;
-      case "longBreak":
-        setTimeRemaining(settings.longBreak * 60);
-        break;
-    }
+    stopAll();
+    loadMode(newMode);
   };
 
   const handleResetStats = () => {
@@ -285,20 +293,25 @@ export default function Pomodoro() {
   };
 
   const updateSetting = (key: keyof Settings, value: number | boolean) => {
-    setSettings((prev) => {
-      const updated = { ...prev, [key]: value };
-      // Update current timer if not running
-      if (!isRunning) {
-        if (key === "work" && mode === "work") setTimeRemaining((value as number) * 60);
-        if (key === "shortBreak" && mode === "shortBreak") setTimeRemaining((value as number) * 60);
-        if (key === "longBreak" && mode === "longBreak") setTimeRemaining((value as number) * 60);
-      }
-      return updated;
-    });
+    const updated = { ...settings, [key]: value };
+    setSettings(updated);
+    // Met à jour le timer affiché s'il n'a pas encore démarré
+    const untouched = !isRunning && autoStartRef.current === null && remainingMs === runDurationMs;
+    if (untouched && key === mode) {
+      const ms = durationMs(mode, updated);
+      setRunDurationMs(ms);
+      setRemainingMs(ms);
+    }
   };
+
+  const isPaused = !isRunning && remainingMs > 0 && remainingMs < runDurationMs;
 
   // Session dots
   const sessionDots = Array.from({ length: settings.sessionsBeforeLong }, (_, i) => i);
+  const filledDots =
+    mode === "longBreak" && sessionCount > 0 && sessionCount % settings.sessionsBeforeLong === 0
+      ? settings.sessionsBeforeLong
+      : sessionCount % settings.sessionsBeforeLong;
 
   return (
     <>
@@ -308,20 +321,20 @@ export default function Pomodoro() {
             className="animate-fade-up text-xs font-semibold uppercase tracking-[0.2em]"
             style={{ color: "var(--accent)" }}
           >
-            Productivite
+            Productivité
           </p>
           <h1
             className="animate-fade-up stagger-1 mt-3 text-4xl tracking-tight md:text-5xl"
             style={{ fontFamily: "var(--font-display)" }}
           >
-            Chronometre <span style={{ color: "var(--primary)" }}>Pomodoro</span>
+            Chronomètre <span style={{ color: "var(--primary)" }}>Pomodoro</span>
           </h1>
           <p
             className="animate-fade-up stagger-2 mt-3 max-w-xl text-sm leading-relaxed"
             style={{ color: "var(--muted)" }}
           >
-            Boostez votre productivite avec la methode Pomodoro. Sessions de travail concentre
-            alternees avec des pauses regulieres.
+            Boostez votre productivité avec la méthode Pomodoro : sessions de travail concentré
+            alternées avec des pauses régulières.
           </p>
         </div>
       </section>
@@ -410,7 +423,7 @@ export default function Pomodoro() {
                       className="mt-2 text-7xl font-bold tabular-nums md:text-8xl"
                       style={{ fontFamily: "var(--font-display)", color: modeColor }}
                     >
-                      {formatTime(timeRemaining)}
+                      {formatTime(remainingSeconds)}
                     </span>
                     {/* Session dots */}
                     <div className="mt-4 flex gap-2">
@@ -422,7 +435,7 @@ export default function Pomodoro() {
                             width: 10,
                             height: 10,
                             background:
-                              i < sessionCount % settings.sessionsBeforeLong
+                              i < filledDots
                                 ? modeColor
                                 : "var(--border)",
                             transition: "background 0.3s ease",
@@ -441,7 +454,7 @@ export default function Pomodoro() {
                       className="rounded-xl px-10 py-3.5 text-sm font-semibold text-white transition-all hover:opacity-90"
                       style={{ background: modeColor }}
                     >
-                      {timeRemaining < totalDuration && timeRemaining > 0 ? "Reprendre" : "Demarrer"}
+                      {isPaused ? "Reprendre" : "Démarrer"}
                     </button>
                   ) : (
                     <button
@@ -457,14 +470,14 @@ export default function Pomodoro() {
                     className="rounded-xl border px-6 py-3.5 text-sm font-semibold transition-all hover:opacity-80"
                     style={{ borderColor: "var(--border)", color: "var(--muted)" }}
                   >
-                    Reset
+                    Réinitialiser
                   </button>
                   <button
                     onClick={handleSkip}
                     className="rounded-xl border px-6 py-3.5 text-sm font-semibold transition-all hover:opacity-80"
                     style={{ borderColor: "var(--border)", color: "var(--muted)" }}
                   >
-                    Skip
+                    Passer
                   </button>
                 </div>
               </div>
@@ -480,7 +493,7 @@ export default function Pomodoro() {
                   className="text-xs font-semibold uppercase tracking-[0.15em]"
                   style={{ color: "var(--accent)" }}
                 >
-                  Statistiques du jour
+                  Statistiques de la session
                 </h2>
                 {stats.completedSessions > 0 && (
                   <button
@@ -488,7 +501,7 @@ export default function Pomodoro() {
                     className="text-xs font-semibold transition-all hover:opacity-70"
                     style={{ color: "var(--muted)" }}
                   >
-                    Reinitialiser
+                    Réinitialiser
                   </button>
                 )}
               </div>
@@ -551,7 +564,7 @@ export default function Pomodoro() {
                   className="text-xs font-semibold uppercase tracking-[0.15em]"
                   style={{ color: "var(--accent)" }}
                 >
-                  Parametres
+                  Paramètres
                 </h2>
                 <svg
                   width="16"
@@ -588,7 +601,7 @@ export default function Pomodoro() {
                         min="1"
                         max="120"
                         value={settings.work}
-                        onChange={(e) => updateSetting("work", Math.max(1, parseInt(e.target.value) || 1))}
+                        onChange={(e) => updateSetting("work", clampInt(e.target.value, 1, 120))}
                         className="mt-2 w-full rounded-xl border px-4 py-3 text-center text-lg font-bold"
                         style={{ borderColor: "var(--border)", fontFamily: "var(--font-display)" }}
                       />
@@ -606,7 +619,7 @@ export default function Pomodoro() {
                         max="60"
                         value={settings.shortBreak}
                         onChange={(e) =>
-                          updateSetting("shortBreak", Math.max(1, parseInt(e.target.value) || 1))
+                          updateSetting("shortBreak", clampInt(e.target.value, 1, 60))
                         }
                         className="mt-2 w-full rounded-xl border px-4 py-3 text-center text-lg font-bold"
                         style={{ borderColor: "var(--border)", fontFamily: "var(--font-display)" }}
@@ -625,7 +638,7 @@ export default function Pomodoro() {
                         max="60"
                         value={settings.longBreak}
                         onChange={(e) =>
-                          updateSetting("longBreak", Math.max(1, parseInt(e.target.value) || 1))
+                          updateSetting("longBreak", clampInt(e.target.value, 1, 60))
                         }
                         className="mt-2 w-full rounded-xl border px-4 py-3 text-center text-lg font-bold"
                         style={{ borderColor: "var(--border)", fontFamily: "var(--font-display)" }}
@@ -648,7 +661,7 @@ export default function Pomodoro() {
                         onChange={(e) =>
                           updateSetting(
                             "sessionsBeforeLong",
-                            Math.max(2, parseInt(e.target.value) || 2)
+                            clampInt(e.target.value, 2, 10)
                           )
                         }
                         className="mt-2 w-full rounded-xl border px-4 py-3 text-center text-lg font-bold"
@@ -665,7 +678,7 @@ export default function Pomodoro() {
                           onChange={(e) => updateSetting("autoStart", e.target.checked)}
                           className="h-4 w-4 rounded accent-[#0d4f3c]"
                         />
-                        <span className="text-sm font-semibold">Enchainement auto</span>
+                        <span className="text-sm font-semibold">Enchaînement automatique</span>
                       </label>
                     </div>
                   </div>
@@ -682,7 +695,7 @@ export default function Pomodoro() {
                 className="text-2xl tracking-tight"
                 style={{ fontFamily: "var(--font-display)" }}
               >
-                La methode Pomodoro
+                La méthode Pomodoro
               </h2>
               <div
                 className="mt-4 space-y-3 text-sm leading-relaxed"
@@ -690,21 +703,29 @@ export default function Pomodoro() {
               >
                 <p>
                   <strong className="text-[var(--foreground)]">Qu&apos;est-ce que la technique Pomodoro ?</strong>{" "}
-                  Inventee par Francesco Cirillo dans les annees 1980, la methode Pomodoro est une
-                  technique de gestion du temps qui decoupe le travail en intervalles de 25 minutes
-                  (appeles &laquo; pomodoros &raquo;), separes par de courtes pauses.
+                  Inventée par Francesco Cirillo à la fin des années 1980, la méthode Pomodoro est une
+                  technique de gestion du temps qui découpe le travail en intervalles de 25 minutes
+                  (appelés &laquo; pomodoros &raquo;), séparés par de courtes pauses.
                 </p>
                 <p>
-                  <strong className="text-[var(--foreground)]">Comment ca marche ?</strong> Choisissez
-                  une tache, lancez le timer de 25 minutes et travaillez sans interruption. A la fin,
-                  prenez une pause de 5 minutes. Apres 4 pomodoros, accordez-vous une pause longue de
-                  15 a 30 minutes.
+                  <strong className="text-[var(--foreground)]">Comment ça marche ?</strong> Choisissez
+                  une tâche, lancez le timer de 25 minutes et travaillez sans interruption. À la fin,
+                  prenez une pause de 5 minutes. Après 4 pomodoros, accordez-vous une pause longue de
+                  15 à 30 minutes. Le bouton Passer saute la session en cours sans la comptabiliser.
                 </p>
                 <p>
-                  <strong className="text-[var(--foreground)]">Pourquoi ca fonctionne ?</strong> En
-                  fractionnant le travail, vous maintenez un haut niveau de concentration, reduisez la
-                  fatigue mentale et gardez une vision claire de votre productivite grace au compteur
+                  <strong className="text-[var(--foreground)]">Pourquoi ça fonctionne ?</strong> En
+                  fractionnant le travail, vous maintenez un haut niveau de concentration, réduisez la
+                  fatigue mentale et gardez une vision claire de votre productivité grâce au compteur
                   de sessions.
+                </p>
+                <p>
+                  <strong className="text-[var(--foreground)]">En arrière-plan.</strong> Le timer se base sur
+                  l&apos;heure de fin de la session : le décompte reste exact si vous changez d&apos;onglet, et le
+                  temps restant s&apos;affiche dans le titre de l&apos;onglet. Autorisez les notifications pour
+                  être prévenu à la fin de chaque session ; si l&apos;onglet reste longtemps masqué, le navigateur
+                  peut retarder le signal de quelques secondes, voire d&apos;une minute. Les statistiques ne sont pas enregistrées : elles
+                  repartent de zéro si vous rechargez la page.
                 </p>
               </div>
             </div>
@@ -726,11 +747,11 @@ export default function Pomodoro() {
                 className="mt-3 space-y-2 text-xs leading-relaxed"
                 style={{ color: "var(--muted)" }}
               >
-                <li>Definissez votre tache avant de demarrer</li>
-                <li>Evitez toute distraction pendant un pomodoro</li>
+                <li>Définissez votre tâche avant de démarrer</li>
+                <li>Évitez toute distraction pendant un pomodoro</li>
                 <li>Notez les interruptions pour les traiter plus tard</li>
                 <li>Utilisez les pauses pour bouger et vous hydrater</li>
-                <li>Ajustez les durees selon votre rythme</li>
+                <li>Ajustez les durées selon votre rythme</li>
               </ul>
             </div>
             <div
@@ -741,7 +762,7 @@ export default function Pomodoro() {
                 className="text-sm font-semibold"
                 style={{ fontFamily: "var(--font-display)" }}
               >
-                Raccourcis
+                Repères
               </h3>
               <ul
                 className="mt-3 space-y-2 text-xs leading-relaxed"
@@ -754,7 +775,7 @@ export default function Pomodoro() {
                   <strong className="text-[var(--foreground)]">25 + 5</strong> = 30 min par pomodoro
                 </li>
                 <li>
-                  <strong className="text-[var(--foreground)]">4 cycles</strong> = ~2h de travail
+                  <strong className="text-[var(--foreground)]">1 cycle</strong> = 1 h 40 de travail (2 h 10 avec les pauses)
                 </li>
               </ul>
             </div>

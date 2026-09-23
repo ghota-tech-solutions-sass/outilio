@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Generateur de CV Gratuit en Ligne - PDF Sans Inscription",
+  title: "Générateur de CV Gratuit en Ligne - PDF Sans Inscription",
   description:
-    "Creez un CV professionnel en ligne gratuitement. Plusieurs modeles, export PDF instantane. Sans inscription ni paiement.",
+    "Créez un CV professionnel en ligne gratuitement. 2 modèles (classique et moderne), export PDF A4 via l’impression du navigateur. Sans inscription ni paiement.",
   keywords: [
     "generateur de cv",
     "cv en ligne gratuit pdf",

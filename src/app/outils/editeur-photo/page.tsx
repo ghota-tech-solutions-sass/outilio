@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useCallback, useEffect, useMemo } from "react";
+import { useState, useRef, useCallback, useEffect, useMemo, useSyncExternalStore } from "react";
 
 /* ═══════════════════════════ TYPES ═══════════════════════════ */
 
@@ -66,12 +66,12 @@ const DEFAULT_ADJ: Adjustments = {
 };
 
 const SLIDER_DEFS: { key: keyof Adjustments; label: string; min: number; max: number; step: number }[] = [
-  { key: "brightness",  label: "Luminosite",  min: -100, max: 100, step: 1 },
+  { key: "brightness",  label: "Luminosité",  min: -100, max: 100, step: 1 },
   { key: "contrast",    label: "Contraste",    min: -100, max: 100, step: 1 },
   { key: "saturate",    label: "Saturation",   min: -100, max: 100, step: 1 },
-  { key: "temperature", label: "Temperature",  min: -100, max: 100, step: 1 },
+  { key: "temperature", label: "Température",  min: -100, max: 100, step: 1 },
   { key: "tint",        label: "Teinte",       min: -100, max: 100, step: 1 },
-  { key: "sharpness",   label: "Nettete",      min: 0,    max: 100, step: 1 },
+  { key: "sharpness",   label: "Netteté",      min: 0,    max: 100, step: 1 },
   { key: "vignette",    label: "Vignette",     min: 0,    max: 100, step: 1 },
   { key: "grain",       label: "Grain",        min: 0,    max: 100, step: 1 },
 ];
@@ -106,7 +106,41 @@ const FILTER_PRESETS: FilterPreset[] = [
   { name: "Noir Intense", css: { grayscale: 1.0, contrast: 1.5, brightness: 1.1 } },
 ];
 
-const BLEND_MODES = ["normal", "multiply", "screen", "overlay", "soft-light"];
+const LAYER_SLIDERS: { key: "brightness" | "contrast" | "saturate"; label: string }[] = [
+  { key: "brightness", label: "Lumin." },
+  { key: "contrast", label: "Contr." },
+  { key: "saturate", label: "Satur." },
+];
+
+/** Touch targets: at least 44 px on touch screens, desktop (fine pointer) unchanged */
+const TOUCH = "pointer-coarse:min-h-11 pointer-coarse:min-w-11";
+
+/* ═══════════════════════════ DEVICE HELPERS ═══════════════════════════ */
+
+function useMediaQuery(query: string): boolean {
+  const subscribe = useCallback((cb: () => void) => {
+    const m = window.matchMedia(query);
+    m.addEventListener("change", cb);
+    return () => m.removeEventListener("change", cb);
+  }, [query]);
+  return useSyncExternalStore(subscribe, () => window.matchMedia(query).matches, () => false);
+}
+
+const noopSubscribe = () => () => {};
+
+/** navigator.deviceMemory (Go, arrondi) : Chrome/Edge/Android uniquement, undefined ailleurs (Safari, Firefox) */
+function getDeviceMemory(): number | undefined {
+  if (typeof navigator === "undefined") return undefined;
+  return (navigator as Navigator & { deviceMemory?: number }).deviceMemory;
+}
+
+function isIOSDevice(): boolean {
+  if (typeof navigator === "undefined") return false;
+  return /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+}
+
+/** Au-delà de ~16,7 Mpx, Safari iOS refuse d'allouer le canvas (résultat vide) */
+const IOS_CANVAS_MAX_PIXELS = 16_777_216;
 
 /* ═══════════════════════════ UTILS ═══════════════════════════ */
 
@@ -191,6 +225,26 @@ function computeHistogram(imageData: ImageData): HistogramData {
   return { r, g, b, lum };
 }
 
+/** Unsharp-style 3x3 sharpening (amount 0..1), applied in place on the canvas */
+function sharpenCanvas(ctx: CanvasRenderingContext2D, w: number, h: number, amount: number) {
+  if (amount <= 0 || w < 3 || h < 3) return;
+  const imageData = ctx.getImageData(0, 0, w, h);
+  const s = imageData.data;
+  const out = new Uint8ClampedArray(s);
+  const center = 1 + 4 * amount;
+  const row = w * 4;
+  for (let y = 1; y < h - 1; y++) {
+    for (let x = 1; x < w - 1; x++) {
+      const i = y * row + x * 4;
+      for (let c = 0; c < 3; c++) {
+        const j = i + c;
+        out[j] = s[j] * center - amount * (s[j - 4] + s[j + 4] + s[j - row] + s[j + row]);
+      }
+    }
+  }
+  ctx.putImageData(new ImageData(out, w, h), 0, 0);
+}
+
 /* ═══════════════════════════ COMPONENT ═══════════════════════════ */
 
 export default function EditeurPhoto() {
@@ -198,6 +252,7 @@ export default function EditeurPhoto() {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [fileName, setFileName] = useState("");
   const [dragging, setDragging] = useState(false);
+  const [loadError, setLoadError] = useState("");
 
   const [adjustments, setAdjustments] = useState<Adjustments>({ ...DEFAULT_ADJ });
   const [activeFilter, setActiveFilter] = useState("Original");
@@ -239,7 +294,8 @@ export default function EditeurPhoto() {
 
   /* ---------- refs ---------- */
   const imgRef = useRef<HTMLImageElement | null>(null);
-  const originalDataRef = useRef<ImageData | null>(null);
+  // Untouched original, used as the "before" side of the A/B comparison
+  const originalImgRef = useRef<HTMLImageElement | null>(null);
   const mainCanvasRef = useRef<HTMLCanvasElement>(null);
   const offscreenCanvasRef = useRef<HTMLCanvasElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -253,6 +309,15 @@ export default function EditeurPhoto() {
     imgRef.current = img;
     setImageMeta(img ? { width: img.naturalWidth, height: img.naturalHeight } : null);
   }, []);
+
+  /* ═══════════════ DEVICE CAPABILITIES (mobile guardrails) ═══════════════ */
+
+  const coarsePointer = useMediaQuery("(pointer: coarse)");
+  const deviceMemory = useSyncExternalStore(noopSubscribe, getDeviceMemory, () => undefined);
+  // Small / low-memory device: phone or tablet (touch), or <= 4 Go of RAM when the browser tells us
+  const constrainedDevice = coarsePointer || (deviceMemory !== undefined && deviceMemory <= 4);
+  const isIOS = useSyncExternalStore(noopSubscribe, isIOSDevice, () => false);
+  const [exportError, setExportError] = useState("");
 
   /* ═══════════════ SAVE HISTORY ═══════════════ */
 
@@ -387,23 +452,35 @@ export default function EditeurPhoto() {
     const ctx = canvas.getContext("2d", { willReadFrequently: true });
     if (!ctx) return;
 
-    // Compute display size
+    // Compute display size (CSS px). Desktop: side panel layout; mobile: canvas stacked above the controls
     const container = containerRef.current;
-    const maxW = container ? container.clientWidth - 32 : 800;
-    const maxH = Math.min(600, window.innerHeight - 250);
+    const isDesktop = window.matchMedia("(min-width: 1024px)").matches;
+    const maxW = Math.max(100, container ? container.clientWidth - 32 : 800);
+    const maxH = isDesktop
+      ? Math.max(150, Math.min(600, window.innerHeight - 250))
+      : Math.max(180, Math.round(window.innerHeight * 0.42));
 
     // Account for rotation
     const isRotated = rotation === 90 || rotation === 270;
     const srcW = isRotated ? img.naturalHeight : img.naturalWidth;
     const srcH = isRotated ? img.naturalWidth : img.naturalHeight;
 
-    const scale = Math.min(maxW / srcW, maxH / srcH, 1);
-    const dw = Math.round(srcW * scale);
-    const dh = Math.round(srcH * scale);
+    const cssScale = Math.min(maxW / srcW, maxH / srcH, 1);
+    const cssW = Math.max(1, Math.round(srcW * cssScale));
+    const cssH = Math.max(1, Math.round(srcH * cssScale));
+    // Backing store in device pixels (sharp on retina / phones), capped at x2 and at the image's own resolution.
+    // The export (download) is computed separately at full resolution.
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const pxScale = Math.min(cssScale * dpr, 1);
+    const dw = Math.max(1, Math.round(srcW * pxScale));
+    const dh = Math.max(1, Math.round(srcH * pxScale));
+    const k = dw / cssW; // device px per CSS px, for overlay line widths / fonts
 
     canvas.width = dw;
     canvas.height = dh;
-    setCanvasSize({ w: dw, h: dh });
+    canvas.style.width = `${cssW}px`;
+    canvas.style.height = `${cssH}px`;
+    setCanvasSize({ w: cssW, h: cssH });
 
     ctx.save();
     ctx.clearRect(0, 0, dw, dh);
@@ -464,6 +541,11 @@ export default function EditeurPhoto() {
       ctx.putImageData(imageData, 0, 0);
     }
 
+    // Sharpness (same algorithm as the export)
+    if (adjustments.sharpness > 0) {
+      sharpenCanvas(ctx, dw, dh, adjustments.sharpness / 100);
+    }
+
     // Grain
     if (adjustments.grain > 0) {
       const imageData = ctx.getImageData(0, 0, dw, dh);
@@ -478,28 +560,13 @@ export default function EditeurPhoto() {
       ctx.putImageData(imageData, 0, 0);
     }
 
-    // Sharpness (simple unsharp mask via temporary canvas)
-    if (adjustments.sharpness > 0) {
-      const amount = adjustments.sharpness / 100;
-      const tmpCanvas = document.createElement("canvas");
-      tmpCanvas.width = dw;
-      tmpCanvas.height = dh;
-      const tmpCtx = tmpCanvas.getContext("2d")!;
-      tmpCtx.filter = `blur(1px)`;
-      tmpCtx.drawImage(canvas, 0, 0);
-      ctx.save();
-      ctx.globalAlpha = amount * 0.6;
-      ctx.globalCompositeOperation = "difference";
-      ctx.drawImage(tmpCanvas, 0, 0);
-      ctx.restore();
-    }
-
     // Compute histogram
     const finalData = ctx.getImageData(0, 0, dw, dh);
     setHistogram(computeHistogram(finalData));
 
     // Before/After mode: draw original on left side
-    if (showBeforeAfter && originalDataRef.current && imgRef.current) {
+    if (showBeforeAfter && originalImgRef.current) {
+      const beforeImg = originalImgRef.current;
       const splitX = Math.round(dw * splitPos);
       // Draw original on left
       const tmpC = document.createElement("canvas");
@@ -514,7 +581,7 @@ export default function EditeurPhoto() {
       const dW2 = isRotated ? dh : dw;
       const dH2 = isRotated ? dw : dh;
       tmpCtx2.translate(-dW2 / 2, -dH2 / 2);
-      tmpCtx2.drawImage(img, 0, 0, dW2, dH2);
+      tmpCtx2.drawImage(beforeImg, 0, 0, dW2, dH2);
       tmpCtx2.restore();
 
       ctx.save();
@@ -527,8 +594,8 @@ export default function EditeurPhoto() {
       // Draw split line
       ctx.save();
       ctx.strokeStyle = "#fff";
-      ctx.lineWidth = 2;
-      ctx.setLineDash([6, 4]);
+      ctx.lineWidth = 2 * k;
+      ctx.setLineDash([6 * k, 4 * k]);
       ctx.beginPath();
       ctx.moveTo(splitX, 0);
       ctx.lineTo(splitX, dh);
@@ -537,10 +604,10 @@ export default function EditeurPhoto() {
 
       // Labels
       ctx.save();
-      ctx.font = "bold 11px sans-serif";
+      ctx.font = `bold ${Math.round(11 * k)}px sans-serif`;
       ctx.fillStyle = "rgba(255,255,255,0.8)";
-      ctx.fillText("AVANT", 8, 20);
-      ctx.fillText("APRES", splitX + 8, 20);
+      ctx.fillText("AVANT", 8 * k, 20 * k);
+      ctx.fillText("APRÈS", splitX + 8 * k, 20 * k);
       ctx.restore();
     }
   }, [adjustments, combinedCSS, curveLUTs, curvesAreIdentity, rotation, flipH, flipV, showBeforeAfter, splitPos]);
@@ -563,12 +630,32 @@ export default function EditeurPhoto() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [adjustments, activeFilter, curvePoints, layers, rotation, flipH, flipV]);
 
-  // Resize handler
+  // Resize / orientation handler: refit the preview to its container
   useEffect(() => {
     if (!imageLoaded) return;
-    const handler = () => render();
+    let lastInnerW = window.innerWidth;
+    const handler = () => {
+      // On mobile, ignore height-only resizes (browser toolbar showing/hiding while scrolling)
+      if (!window.matchMedia("(min-width: 1024px)").matches && window.innerWidth === lastInnerW) return;
+      lastInnerW = window.innerWidth;
+      render();
+    };
+    // orientationchange can fire before the new viewport size is applied
+    const onOrientation = () => { setTimeout(() => { lastInnerW = window.innerWidth; render(); }, 150); };
     window.addEventListener("resize", handler);
-    return () => window.removeEventListener("resize", handler);
+    window.addEventListener("orientationchange", onOrientation);
+    // Container width can change without a window resize (layout breakpoint, scrollbar)
+    const el = containerRef.current;
+    let lastW = el?.clientWidth ?? 0;
+    const ro = el && typeof ResizeObserver !== "undefined"
+      ? new ResizeObserver(() => { const w = el.clientWidth; if (w !== lastW) { lastW = w; render(); } })
+      : null;
+    if (el && ro) ro.observe(el);
+    return () => {
+      window.removeEventListener("resize", handler);
+      window.removeEventListener("orientationchange", onOrientation);
+      ro?.disconnect();
+    };
   }, [imageLoaded, render]);
 
   /* ═══════════════ FILTER THUMBNAILS ═══════════════ */
@@ -596,21 +683,26 @@ export default function EditeurPhoto() {
   /* ═══════════════ FILE HANDLING ═══════════════ */
 
   const handleFile = useCallback((file: File) => {
-    if (!file.type.startsWith("image/")) return;
-    setFileName(file.name);
+    setLoadError("");
+    if (!file.type.startsWith("image/")) {
+      setLoadError("Ce fichier n'est pas une image. Formats acceptés : JPEG, PNG, WebP, GIF, BMP.");
+      return;
+    }
     const reader = new FileReader();
     reader.onload = (e) => {
       const url = e.target?.result as string;
       const img = new Image();
+      img.onerror = () => {
+        setLoadError("Impossible de lire cette image. Le format (HEIC, TIFF...) n'est peut-être pas pris en charge par votre navigateur : convertissez-la d'abord en JPEG ou PNG.");
+      };
       img.onload = () => {
+        if (!img.naturalWidth || !img.naturalHeight) {
+          setLoadError("Impossible de déterminer les dimensions de cette image.");
+          return;
+        }
+        setFileName(file.name);
         setCurrentImage(img);
-        // Store original data
-        const tmpC = document.createElement("canvas");
-        tmpC.width = img.naturalWidth;
-        tmpC.height = img.naturalHeight;
-        const tmpCtx = tmpC.getContext("2d")!;
-        tmpCtx.drawImage(img, 0, 0);
-        originalDataRef.current = tmpCtx.getImageData(0, 0, img.naturalWidth, img.naturalHeight);
+        originalImgRef.current = img;
 
         // Reset all state
         setAdjustments({ ...DEFAULT_ADJ });
@@ -636,6 +728,7 @@ export default function EditeurPhoto() {
       };
       img.src = url;
     };
+    reader.onerror = () => setLoadError("Impossible de lire ce fichier.");
     reader.readAsDataURL(file);
   }, [generateFilterThumbnails, setCurrentImage]);
 
@@ -690,8 +783,16 @@ export default function EditeurPhoto() {
     const img = imgRef.current;
     const offscreen = offscreenCanvasRef.current;
     if (!img || !offscreen) return;
+    setExportError("");
+    const pixels = img.naturalWidth * img.naturalHeight;
+    if (isIOS && pixels > IOS_CANVAS_MAX_PIXELS) {
+      setExportError(`Image trop grande pour être exportée sur iPhone/iPad (${(pixels / 1e6).toFixed(1)} Mpx, 16,7 Mpx maximum dans Safari). Réduisez-la d'abord (outil de redimensionnement) ou utilisez un ordinateur.`);
+      return;
+    }
+    if (constrainedDevice && pixels > IOS_CANVAS_MAX_PIXELS &&
+      !confirm(`Cette image fait ${(pixels / 1e6).toFixed(1)} Mpx : l'export en pleine résolution peut échouer sur un appareil mobile par manque de mémoire. Continuer ?`)) return;
     const ctx = offscreen.getContext("2d", { willReadFrequently: true });
-    if (!ctx) return;
+    if (!ctx) { setExportError("Impossible de préparer l'export : mémoire insuffisante sur cet appareil ?"); return; }
 
     const isRotated = rotation === 90 || rotation === 270;
     const ow = isRotated ? img.naturalHeight : img.naturalWidth;
@@ -750,6 +851,11 @@ export default function EditeurPhoto() {
       ctx.putImageData(imageData, 0, 0);
     }
 
+    // Sharpness (was missing from the export: preview and file now match)
+    if (adjustments.sharpness > 0) {
+      sharpenCanvas(ctx, ow, oh, adjustments.sharpness / 100);
+    }
+
     // Grain
     if (adjustments.grain > 0) {
       const imageData = ctx.getImageData(0, 0, ow, oh);
@@ -767,8 +873,10 @@ export default function EditeurPhoto() {
     const link = document.createElement("a");
     link.download = fileName.replace(/\.[^.]+$/, "") + "-edite.png";
     link.href = offscreen.toDataURL("image/png");
+    // Browsers return an empty "data:," URL when the canvas could not be allocated (mobile memory limits)
+    if (link.href.length < 32) { setExportError("L'export a échoué : l'image est probablement trop grande pour la mémoire de cet appareil."); return; }
     link.click();
-  }, [fileName, adjustments, combinedCSS, curveLUTs, curvesAreIdentity, rotation, flipH, flipV]);
+  }, [fileName, adjustments, combinedCSS, curveLUTs, curvesAreIdentity, rotation, flipH, flipV, isIOS, constrainedDevice]);
 
   /* ═══════════════ LAYER ACTIONS ═══════════════ */
 
@@ -813,13 +921,13 @@ export default function EditeurPhoto() {
 
   /* ═══════════════ BEFORE/AFTER SPLIT DRAG ═══════════════ */
 
-  const handleSplitMouseDown = useCallback((e: React.MouseEvent) => {
+  const handleSplitPointerDown = useCallback((e: React.PointerEvent) => {
     e.preventDefault();
     splitDragging.current = true;
   }, []);
 
   useEffect(() => {
-    const handleMove = (e: MouseEvent) => {
+    const handleMove = (e: PointerEvent) => {
       if (!splitDragging.current) return;
       const canvas = mainCanvasRef.current;
       if (!canvas) return;
@@ -828,11 +936,13 @@ export default function EditeurPhoto() {
       setSplitPos(pos);
     };
     const handleUp = () => { splitDragging.current = false; };
-    window.addEventListener("mousemove", handleMove);
-    window.addEventListener("mouseup", handleUp);
+    window.addEventListener("pointermove", handleMove);
+    window.addEventListener("pointerup", handleUp);
+    window.addEventListener("pointercancel", handleUp);
     return () => {
-      window.removeEventListener("mousemove", handleMove);
-      window.removeEventListener("mouseup", handleUp);
+      window.removeEventListener("pointermove", handleMove);
+      window.removeEventListener("pointerup", handleUp);
+      window.removeEventListener("pointercancel", handleUp);
     };
   }, []);
 
@@ -874,16 +984,23 @@ export default function EditeurPhoto() {
     const key = `${task}:${model}`;
     if (aiCacheRef.current.has(key)) return aiCacheRef.current.get(key);
     const tf = await loadTransformersTop();
-    setAiProgress("Telechargement du modele (premiere fois)...");
+    setAiProgress("Téléchargement du modèle (première fois)...");
     const pipe = await tf.pipeline(task, model, opts);
     aiCacheRef.current.set(key, pipe);
     return pipe;
   }, [loadTransformersTop]);
 
+  // AI models receive the current source image at full resolution. The on-screen canvas must not be
+  // used: it is downscaled, already has the adjustments applied (they would be applied twice) and may
+  // contain the A/B split line.
   const getCanvasDataURLTop = useCallback(() => {
-    const canvas = mainCanvasRef.current;
-    if (!canvas) return null;
-    return canvas.toDataURL("image/png");
+    const img = imgRef.current;
+    if (!img) return null;
+    const c = document.createElement("canvas");
+    c.width = img.naturalWidth;
+    c.height = img.naturalHeight;
+    c.getContext("2d")!.drawImage(img, 0, 0);
+    return c.toDataURL("image/png");
   }, []);
 
   // Helper: convert a RawImage (from Transformers.js) to a data URL
@@ -906,18 +1023,29 @@ export default function EditeurPhoto() {
   const [depthIntensity, setDepthIntensity] = useState(50);
   const [depthMode, setDepthMode] = useState<"preview" | "bokeh">("bokeh");
 
+  /** Mobile guardrail: heavy AI models can exhaust the memory of phones / low-RAM devices and crash the tab */
+  const checkHeavyAI = useCallback((label: string, img: HTMLImageElement): boolean => {
+    const pixels = img.naturalWidth * img.naturalHeight;
+    if (isIOS && pixels > IOS_CANVAS_MAX_PIXELS) {
+      setAiError(`Image trop grande pour ${label} sur iPhone/iPad (${(pixels / 1e6).toFixed(1)} Mpx, 16,7 Mpx maximum dans Safari). Réduisez-la d'abord.`);
+      return false;
+    }
+    if (!constrainedDevice) return true;
+    const mem = deviceMemory !== undefined ? `environ ${deviceMemory} Go de mémoire` : "une mémoire limitée";
+    return confirm(`Attention : ${label} demande beaucoup de mémoire. Votre appareil semble disposer d'${mem} : le traitement peut être très lent, ou l'onglet peut planter et perdre vos retouches. Téléchargez d'abord votre image si besoin. Continuer ?`);
+  }, [isIOS, constrainedDevice, deviceMemory]);
+
   const aiRemoveBackground = useCallback(async () => {
     if (!imgRef.current) return;
+    setAiError("");
+    if (!checkHeavyAI("la suppression d'arrière-plan", imgRef.current)) return;
     setAiLoading(true); setAiError("");
     try {
       const segmenter = await getAIPipelineTop("background-removal", "Xenova/modnet");
-      setAiProgress("Suppression de l'arriere-plan...");
+      setAiProgress("Suppression de l'arrière-plan...");
       const dataURL = getCanvasDataURLTop();
       if (!dataURL) throw new Error("Impossible de lire le canvas");
       const result = await segmenter(dataURL);
-      console.log("BG removal result:", result, "type:", typeof result, "keys:", result ? Object.keys(result) : "null", "isArray:", Array.isArray(result));
-      if (result && typeof result === "object" && !Array.isArray(result)) { console.log("props:", { width: result.width, height: result.height, channels: result.channels, data: result.data?.length, blob: result instanceof Blob }); }
-      if (Array.isArray(result)) { console.log("result[0]:", result[0], "type:", typeof result[0]); }
       // result might be a RawImage, a Blob, or an array — handle all cases
       let resultURL: string;
       if (result instanceof Blob) {
@@ -929,14 +1057,14 @@ export default function EditeurPhoto() {
         if (r instanceof Blob) resultURL = URL.createObjectURL(r);
         else if (r.width && r.height && r.data) resultURL = rawImageToDataURL(r);
         else if (r.blob && r.blob instanceof Blob) resultURL = URL.createObjectURL(r.blob);
-        else throw new Error("Format de resultat IA non reconnu: " + JSON.stringify(Object.keys(r)));
+        else throw new Error("Format de résultat IA non reconnu");
       } else {
-        throw new Error("Format de resultat IA non reconnu");
+        throw new Error("Format de résultat IA non reconnu");
       }
       const newImg = new Image();
       await new Promise<void>((resolve, reject) => {
         newImg.onload = () => resolve();
-        newImg.onerror = () => reject(new Error("Erreur chargement resultat"));
+        newImg.onerror = () => reject(new Error("Erreur au chargement du résultat"));
         newImg.src = resultURL;
       });
       pushHistoryRef.current();
@@ -948,10 +1076,12 @@ export default function EditeurPhoto() {
     } finally {
       setAiLoading(false); setAiProgress("");
     }
-  }, [getAIPipelineTop, getCanvasDataURLTop, rawImageToDataURL, setCurrentImage]);
+  }, [getAIPipelineTop, getCanvasDataURLTop, rawImageToDataURL, setCurrentImage, checkHeavyAI]);
 
   const aiDepthMap = useCallback(async () => {
     if (!imgRef.current) return;
+    setAiError("");
+    if (!checkHeavyAI(depthMode === "bokeh" ? "l'effet bokeh" : "la carte de profondeur", imgRef.current)) return;
     setAiLoading(true); setAiError("");
     try {
       const estimator = await getAIPipelineTop("depth-estimation", "Xenova/depth-anything-small-hf");
@@ -959,10 +1089,9 @@ export default function EditeurPhoto() {
       const dataURL = getCanvasDataURLTop();
       if (!dataURL) throw new Error("Impossible de lire le canvas");
       const result = await estimator(dataURL);
-      console.log("Depth result:", result, "keys:", result ? Object.keys(result) : "null");
       // result.depth or result.predicted_depth is a RawImage
       const depthRaw = result.depth || result.predicted_depth || (result[0] && (result[0].depth || result[0].predicted_depth));
-      if (!depthRaw || !depthRaw.width) throw new Error("Depth map non trouvee dans le resultat: " + JSON.stringify(Object.keys(result)));
+      if (!depthRaw || !depthRaw.width) throw new Error("Carte de profondeur introuvable dans le résultat");
       const depthDataURL = rawImageToDataURL(depthRaw);
       const depthImg = new Image();
       await new Promise<void>((res, rej) => { depthImg.onload = () => res(); depthImg.onerror = () => rej(); depthImg.src = depthDataURL; });
@@ -1002,22 +1131,32 @@ export default function EditeurPhoto() {
     } finally {
       setAiLoading(false); setAiProgress("");
     }
-  }, [getAIPipelineTop, getCanvasDataURLTop, rawImageToDataURL, depthMode, depthIntensity, setCurrentImage]);
+  }, [getAIPipelineTop, getCanvasDataURLTop, rawImageToDataURL, depthMode, depthIntensity, setCurrentImage, checkHeavyAI]);
 
   const aiSuperRes = useCallback(async () => {
     if (!imgRef.current) return;
     const img = imgRef.current;
-    if (img.naturalWidth > 1024 || img.naturalHeight > 1024) {
-      if (!confirm("L'image est grande. Le traitement peut prendre 30-60 secondes. Continuer ?")) return;
+    setAiError("");
+    // Phones / low-RAM devices: the x2 upscale of a large image does not fit in memory
+    const maxSide = constrainedDevice ? 1024 : 2048;
+    if (img.naturalWidth > maxSide || img.naturalHeight > maxSide) {
+      setAiError(constrainedDevice
+        ? `Image trop grande pour la super-résolution sur cet appareil (${maxSide} px maximum par côté sur mobile ou avec peu de mémoire) : réduisez-la d'abord ou utilisez un ordinateur.`
+        : "Image trop grande pour la super-résolution (2048 px maximum par côté) : réduisez-la d'abord.");
+      return;
+    }
+    if (constrainedDevice) {
+      if (!checkHeavyAI("la super-résolution", img)) return;
+    } else if (img.naturalWidth > 1024 || img.naturalHeight > 1024) {
+      if (!confirm("L'image est grande. Le traitement peut prendre 30 à 60 secondes, voire plus. Continuer ?")) return;
     }
     setAiLoading(true); setAiError("");
     try {
       const upscaler = await getAIPipelineTop("image-to-image", "Xenova/swin2SR-classical-sr-x2-64");
-      setAiProgress("Amelioration de la resolution (x2)...");
+      setAiProgress("Amélioration de la résolution (x2)...");
       const dataURL = getCanvasDataURLTop();
       if (!dataURL) throw new Error("Impossible de lire le canvas");
       const result = await upscaler(dataURL);
-      console.log("Super-res result:", result, "type:", typeof result);
       let srURL: string;
       if (result instanceof Blob) srURL = URL.createObjectURL(result);
       else if (result && result.width && result.data) srURL = rawImageToDataURL(result);
@@ -1036,7 +1175,7 @@ export default function EditeurPhoto() {
     } finally {
       setAiLoading(false); setAiProgress("");
     }
-  }, [getAIPipelineTop, getCanvasDataURLTop, rawImageToDataURL, setCurrentImage]);
+  }, [getAIPipelineTop, getCanvasDataURLTop, rawImageToDataURL, setCurrentImage, constrainedDevice, checkHeavyAI]);
 
   /* ═══════════════ RENDER ═══════════════ */
 
@@ -1045,24 +1184,33 @@ export default function EditeurPhoto() {
     return (
       <>
         <section className="relative py-14" style={{ borderBottom: "1px solid var(--border)" }}>
-          <div className="mx-auto max-w-7xl px-6 2xl:max-w-[1400px]">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 2xl:max-w-[1400px]">
             <p className="animate-fade-up text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: "var(--accent)" }}>Image</p>
             <h1 className="animate-fade-up stagger-1 mt-3 text-4xl tracking-tight md:text-5xl" style={{ fontFamily: "var(--font-display)" }}>
-              Editeur <span style={{ color: "var(--primary)" }}>Photo</span>
+              Éditeur <span style={{ color: "var(--primary)" }}>Photo</span>
             </h1>
             <p className="animate-fade-up stagger-2 mt-3 max-w-xl text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-              Retouche avancee : ajustements, filtres VSCO, courbes, calques. Tout dans le navigateur.
+              Retouche avancée : ajustements, filtres VSCO, courbes, calques. Tout dans le navigateur.
             </p>
           </div>
         </section>
 
-        <div className="mx-auto max-w-7xl px-6 2xl:max-w-[1400px] py-16">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 2xl:max-w-[1400px] py-10 sm:py-16">
           <div
             onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
             onDragLeave={() => setDragging(false)}
             onDrop={handleDrop}
             onClick={() => inputRef.current?.click()}
-            className="cursor-pointer rounded-2xl border-2 border-dashed p-20 text-center transition-all"
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                inputRef.current?.click();
+              }
+            }}
+            role="button"
+            tabIndex={0}
+            aria-label="Choisir une photo à éditer"
+            className="cursor-pointer rounded-2xl border-2 border-dashed px-5 py-12 text-center transition-all sm:p-20"
             style={{
               borderColor: dragging ? "var(--primary)" : "var(--border)",
               background: dragging ? "rgba(13,79,60,0.04)" : "var(--surface)",
@@ -1079,20 +1227,27 @@ export default function EditeurPhoto() {
               Glissez une photo ici
             </p>
             <p className="mt-2 text-sm" style={{ color: "var(--muted)" }}>
-              ou cliquez pour parcourir — PNG, JPEG, WebP
+              ou cliquez / touchez pour parcourir — PNG, JPEG, WebP
             </p>
             <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={(e) => {
               const file = e.target.files?.[0];
+              e.target.value = "";
               if (file) handleFile(file);
             }} />
           </div>
 
+          {loadError && (
+            <div role="alert" className="mt-4 rounded-xl border p-4 text-sm" style={{ background: "rgba(220,38,38,0.06)", borderColor: "rgba(220,38,38,0.2)", color: "#dc2626" }}>
+              {loadError}
+            </div>
+          )}
+
           {/* SEO block */}
-          <div className="mt-12 rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+          <div className="mt-12 rounded-2xl border p-5 sm:p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
             <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Retouche photo professionnelle en ligne</h2>
             <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-              <p>Un editeur photo complet avec ajustements fins (luminosite, contraste, saturation, temperature, teinte), 15 filtres style VSCO/Instagram, des courbes de luminosite interactives par canal RGB, et un systeme de calques avec modes de fusion.</p>
-              <p>Tout le traitement se fait localement dans votre navigateur. Vos photos ne sont jamais envoyees sur un serveur. Export en PNG a resolution originale.</p>
+              <p>Un éditeur photo complet avec ajustements fins (luminosité, contraste, saturation, température, teinte, netteté), 15 filtres style VSCO/Instagram, des courbes de luminosité interactives par canal RGB, des calques d&apos;ajustement et des outils IA (suppression d&apos;arrière-plan, bokeh, super-résolution).</p>
+              <p>Tout le traitement se fait localement dans votre navigateur. Vos photos ne sont jamais envoyées sur un serveur. Export en PNG a résolution originale.</p>
             </div>
           </div>
         </div>
@@ -1114,49 +1269,49 @@ export default function EditeurPhoto() {
   return (
     <div style={{ background: DARK.bg, minHeight: "100vh", color: DARK.textBright }}>
       {/* ═══════ TOP TOOLBAR ═══════ */}
-      <div className="flex items-center justify-between px-4 py-2" style={{ background: DARK.bg2, borderBottom: `1px solid ${DARK.border}` }}>
-        <div className="flex items-center gap-3">
-          <span className="text-xs font-bold uppercase tracking-widest" style={{ color: DARK.accent }}>Editeur Photo</span>
-          <span className="text-xs truncate max-w-[200px]" style={{ color: DARK.text }}>{fileName}</span>
+      <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 px-4 py-2" style={{ background: DARK.bg2, borderBottom: `1px solid ${DARK.border}` }}>
+        <div className="flex min-w-0 items-center gap-3">
+          <span className="text-xs font-bold uppercase tracking-widest" style={{ color: DARK.accent }}>Éditeur Photo</span>
+          <span className="text-xs truncate max-w-[140px] sm:max-w-[200px]" style={{ color: DARK.text }}>{fileName}</span>
         </div>
 
-        <div className="flex items-center gap-1">
+        <div className="flex flex-wrap items-center gap-1">
           {/* Undo */}
           <button onClick={undo} disabled={!canUndo} title="Annuler (Ctrl+Z)"
-            className="p-2 rounded-lg transition-colors disabled:opacity-30"
+            className={`p-2 rounded-lg transition-colors disabled:opacity-30 ${TOUCH}`}
             style={{ color: DARK.text }}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M3 7v6h6" /><path d="M21 17a9 9 0 00-9-9 9 9 0 00-6.69 3L3 13" />
             </svg>
           </button>
           {/* Redo */}
-          <button onClick={redo} disabled={!canRedo} title="Retablir (Ctrl+Shift+Z)"
-            className="p-2 rounded-lg transition-colors disabled:opacity-30"
+          <button onClick={redo} disabled={!canRedo} title="Rétablir (Ctrl+Shift+Z)"
+            className={`p-2 rounded-lg transition-colors disabled:opacity-30 ${TOUCH}`}
             style={{ color: DARK.text }}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M21 7v6h-6" /><path d="M3 17a9 9 0 019-9 9 9 0 016.69 3L21 13" />
             </svg>
           </button>
 
-          <div className="w-px h-5 mx-1" style={{ background: DARK.border }} />
+          <div className="w-px h-5 mx-1 max-sm:hidden" style={{ background: DARK.border }} />
 
           {/* Rotate left */}
           <button onClick={() => setRotation(r => (r + 270) % 360)} title="Rotation gauche"
-            className="p-2 rounded-lg transition-colors hover:bg-white/5" style={{ color: DARK.text }}>
+            className={`p-2 rounded-lg transition-colors hover:bg-white/5 ${TOUCH}`} style={{ color: DARK.text }}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M1 4v6h6" /><path d="M3.51 15a9 9 0 102.13-9.36L1 10" />
             </svg>
           </button>
           {/* Rotate right */}
           <button onClick={() => setRotation(r => (r + 90) % 360)} title="Rotation droite"
-            className="p-2 rounded-lg transition-colors hover:bg-white/5" style={{ color: DARK.text }}>
+            className={`p-2 rounded-lg transition-colors hover:bg-white/5 ${TOUCH}`} style={{ color: DARK.text }}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M23 4v6h-6" /><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10" />
             </svg>
           </button>
           {/* Flip H */}
           <button onClick={() => setFlipH(f => !f)} title="Miroir horizontal"
-            className="p-2 rounded-lg transition-colors hover:bg-white/5"
+            className={`p-2 rounded-lg transition-colors hover:bg-white/5 ${TOUCH}`}
             style={{ color: flipH ? DARK.accent : DARK.text }}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M12 3v18" /><path d="M16 7l4 5-4 5" /><path d="M8 7L4 12l4 5" />
@@ -1164,18 +1319,18 @@ export default function EditeurPhoto() {
           </button>
           {/* Flip V */}
           <button onClick={() => setFlipV(f => !f)} title="Miroir vertical"
-            className="p-2 rounded-lg transition-colors hover:bg-white/5"
+            className={`p-2 rounded-lg transition-colors hover:bg-white/5 ${TOUCH}`}
             style={{ color: flipV ? DARK.accent : DARK.text }}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M3 12h18" /><path d="M7 8L12 4l5 4" /><path d="M7 16l5 4 5-4" />
             </svg>
           </button>
 
-          <div className="w-px h-5 mx-1" style={{ background: DARK.border }} />
+          <div className="w-px h-5 mx-1 max-sm:hidden" style={{ background: DARK.border }} />
 
           {/* Before/After */}
-          <button onClick={() => setShowBeforeAfter(v => !v)} title="Avant / Apres"
-            className="px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors"
+          <button onClick={() => setShowBeforeAfter(v => !v)} title="Avant / Après"
+            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${TOUCH}`}
             style={{
               background: showBeforeAfter ? DARK.accent : "transparent",
               color: showBeforeAfter ? "#000" : DARK.text,
@@ -1183,43 +1338,53 @@ export default function EditeurPhoto() {
             A/B
           </button>
 
-          <div className="w-px h-5 mx-1" style={{ background: DARK.border }} />
+          <div className="w-px h-5 mx-1 max-sm:hidden" style={{ background: DARK.border }} />
 
           {/* New image */}
-          <button onClick={() => { setImageLoaded(false); setFileName(""); setCurrentImage(null); setHistogram(null); }}
-            className="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors hover:bg-white/5"
+          <button onClick={() => { setImageLoaded(false); setFileName(""); setCurrentImage(null); originalImgRef.current = null; setHistogram(null); setAiError(""); setExportError(""); }}
+            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors hover:bg-white/5 ${TOUCH}`}
             style={{ color: DARK.text }}>
             Nouvelle image
           </button>
 
           {/* Download */}
           <button onClick={download}
-            className="px-4 py-1.5 rounded-lg text-xs font-bold transition-all hover:brightness-110"
+            className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all hover:brightness-110 ${TOUCH}`}
             style={{ background: DARK.accent, color: "#000" }}>
-            Telecharger
+            Télécharger
           </button>
         </div>
       </div>
 
+      {exportError && (
+        <div role="alert" className="px-4 py-2 text-xs" style={{ background: "#ef444420", color: "#ef4444", borderBottom: `1px solid ${DARK.border}` }}>
+          {exportError}
+        </div>
+      )}
+
       {/* ═══════ MAIN AREA ═══════ */}
-      <div className="flex" style={{ height: "calc(100vh - 44px)" }}>
+      {/* Mobile / tablet: canvas stacked on top (sticky while scrolling the controls), panel below.
+          Desktop (lg): canvas + 320 px side panel, full viewport height. */}
+      <div className="flex flex-col lg:flex-row lg:h-[calc(100vh-44px)]">
         {/* ═══════ CANVAS AREA ═══════ */}
-        <div ref={containerRef} className="flex-1 flex items-center justify-center relative overflow-hidden"
+        <div ref={containerRef} className="flex items-center justify-center overflow-hidden max-lg:sticky max-lg:top-0 max-lg:z-[60] max-lg:py-4 lg:relative lg:flex-1"
           style={{ background: `repeating-conic-gradient(${DARK.bg3} 0% 25%, ${DARK.bg} 0% 50%) 0 0 / 20px 20px` }}>
 
-          <div className="relative">
-            <canvas ref={mainCanvasRef} style={{ borderRadius: 4, display: "block" }} />
+          <div className="relative max-w-full">
+            {/* width/height (CSS px) are set by render(); the backing store is devicePixelRatio aware */}
+            <canvas ref={mainCanvasRef} style={{ borderRadius: 4, display: "block", maxWidth: "100%" }} />
 
-            {/* Before/After split handle */}
+            {/* Before/After split handle (pointer events: mouse, touch, pen) */}
             {showBeforeAfter && canvasSize.w > 0 && (
               <div
-                onMouseDown={handleSplitMouseDown}
-                className="absolute top-0 bottom-0 flex items-center justify-center cursor-col-resize"
+                onPointerDown={handleSplitPointerDown}
+                onMouseDown={(e) => e.preventDefault()}
+                className="absolute top-0 bottom-0 flex items-center justify-center cursor-col-resize w-5 pointer-coarse:w-11"
                 style={{
                   left: `${splitPos * 100}%`,
-                  width: 20,
                   transform: "translateX(-50%)",
                   zIndex: 10,
+                  touchAction: "none",
                 }}
               >
                 <div className="w-1 h-10 rounded-full" style={{ background: "rgba(255,255,255,0.8)" }} />
@@ -1229,19 +1394,19 @@ export default function EditeurPhoto() {
 
           {/* Mini histogram overlay */}
           {histogram && !showBeforeAfter && (
-            <div className="absolute bottom-4 left-4 rounded-lg overflow-hidden" style={{ background: "rgba(0,0,0,0.6)", padding: 4 }}>
+            <div className="absolute bottom-4 left-4 rounded-lg overflow-hidden max-sm:hidden" style={{ background: "rgba(0,0,0,0.6)", padding: 4 }}>
               <MiniHistogram data={histogram} />
             </div>
           )}
         </div>
 
-        {/* ═══════ RIGHT PANEL ═══════ */}
-        <div className="flex flex-col" style={{ width: 320, background: DARK.bg2, borderLeft: `1px solid ${DARK.border}` }}>
+        {/* ═══════ RIGHT PANEL (bottom panel on mobile) ═══════ */}
+        <div className="flex w-full flex-col max-lg:border-t lg:w-[320px] lg:shrink-0 lg:border-l" style={{ background: DARK.bg2, borderColor: DARK.border }}>
           {/* Tabs */}
           <div className="flex" style={{ borderBottom: `1px solid ${DARK.border}` }}>
             {TABS.map(tab => (
               <button key={tab.id} onClick={() => setActiveTab(tab.id)}
-                className="flex-1 py-2.5 text-xs font-semibold uppercase tracking-wider transition-colors"
+                className="flex-1 py-2.5 text-xs font-semibold uppercase tracking-wider transition-colors pointer-coarse:min-h-11"
                 style={{
                   color: activeTab === tab.id ? DARK.accent : DARK.text,
                   borderBottom: activeTab === tab.id ? `2px solid ${DARK.accent}` : "2px solid transparent",
@@ -1259,7 +1424,7 @@ export default function EditeurPhoto() {
               <div className="space-y-5">
                 {/* Auto-enhance */}
                 <button onClick={autoEnhance}
-                  className="w-full py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all hover:brightness-110"
+                  className="w-full py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all hover:brightness-110 pointer-coarse:min-h-11"
                   style={{ background: DARK.accent, color: "#000" }}>
                   Auto-enhance
                 </button>
@@ -1280,7 +1445,7 @@ export default function EditeurPhoto() {
                           </span>
                           {isChanged && (
                             <button onClick={() => setAdjustments(prev => ({ ...prev, [sd.key]: DEFAULT_ADJ[sd.key] }))}
-                              className="w-5 h-5 flex items-center justify-center rounded transition-colors hover:bg-white/10"
+                              className="w-5 h-5 flex items-center justify-center rounded transition-colors hover:bg-white/10 pointer-coarse:w-11 pointer-coarse:h-11"
                               style={{ color: DARK.text, fontSize: 11 }}>
                               <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                                 <path d="M3 7v6h6" /><path d="M21 17a9 9 0 00-9-9 9 9 0 00-6.69 3L3 13" />
@@ -1291,9 +1456,9 @@ export default function EditeurPhoto() {
                       </div>
                       <input
                         type="range" min={sd.min} max={sd.max} step={sd.step} value={val}
+                        aria-label={sd.label}
                         onChange={(e) => setAdjustments(prev => ({ ...prev, [sd.key]: Number(e.target.value) }))}
-                        className="w-full accent-[#4ade80]"
-                        style={{ height: 4 }}
+                        className="w-full accent-[#4ade80] h-1 pointer-coarse:h-11"
                       />
                     </div>
                   );
@@ -1301,16 +1466,16 @@ export default function EditeurPhoto() {
 
                 {/* Reset all */}
                 <button onClick={() => setAdjustments({ ...DEFAULT_ADJ })}
-                  className="w-full py-2 rounded-lg text-xs font-medium transition-colors hover:bg-white/5"
+                  className="w-full py-2 rounded-lg text-xs font-medium transition-colors hover:bg-white/5 pointer-coarse:min-h-11"
                   style={{ color: DARK.text, border: `1px solid ${DARK.border}` }}>
-                  Reinitialiser tout
+                  Réinitialiser tout
                 </button>
               </div>
             )}
 
             {/* ═══════ FILTERS TAB ═══════ */}
             {activeTab === "filters" && (
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-4 gap-2 sm:grid-cols-6 lg:grid-cols-3">
                 {FILTER_PRESETS.map(preset => {
                   const isActive = activeFilter === preset.name;
                   return (
@@ -1346,7 +1511,7 @@ export default function EditeurPhoto() {
                     const colors: Record<CurveChannel, string> = { rgb: "#fff", r: "#ef4444", g: "#22c55e", b: "#3b82f6" };
                     return (
                       <button key={ch} onClick={() => setCurveChannel(ch)}
-                        className="flex-1 py-1.5 text-xs font-bold uppercase transition-colors"
+                        className="flex-1 py-1.5 text-xs font-bold uppercase transition-colors pointer-coarse:min-h-11"
                         style={{
                           background: isActive ? "rgba(255,255,255,0.08)" : "transparent",
                           color: isActive ? colors[ch] : DARK.text,
@@ -1362,7 +1527,7 @@ export default function EditeurPhoto() {
                 <CurveWidget channel={curveChannel} points={curvePoints[curveChannel]} histogram={histogram} onPointsChange={(pts) => setCurvePoints(prev => ({ ...prev, [curveChannel]: pts }))} />
 
                 <p className="text-[10px] leading-relaxed" style={{ color: DARK.text }}>
-                  Cliquez pour ajouter un point. Double-cliquez un point pour le supprimer. Glissez pour ajuster.
+                  Cliquez (ou touchez) pour ajouter un point. Double-cliquez (ou touchez deux fois) un point pour le supprimer. Glissez pour ajuster.
                 </p>
 
                 {/* Reset curves */}
@@ -1372,9 +1537,9 @@ export default function EditeurPhoto() {
                   g: [{ x: 0, y: 0 }, { x: 1, y: 1 }],
                   b: [{ x: 0, y: 0 }, { x: 1, y: 1 }],
                 })}
-                  className="w-full py-2 rounded-lg text-xs font-medium transition-colors hover:bg-white/5"
+                  className="w-full py-2 rounded-lg text-xs font-medium transition-colors hover:bg-white/5 pointer-coarse:min-h-11"
                   style={{ color: DARK.text, border: `1px solid ${DARK.border}` }}>
-                  Reinitialiser les courbes
+                  Réinitialiser les courbes
                 </button>
               </div>
             )}
@@ -1385,12 +1550,12 @@ export default function EditeurPhoto() {
                 {/* Add & Flatten */}
                 <div className="flex gap-2">
                   <button onClick={addAdjustmentLayer}
-                    className="flex-1 py-2 rounded-lg text-xs font-bold transition-all hover:brightness-110"
+                    className="flex-1 py-2 rounded-lg text-xs font-bold transition-all hover:brightness-110 pointer-coarse:min-h-11"
                     style={{ background: DARK.accent, color: "#000" }}>
                     + Ajustement
                   </button>
                   <button onClick={flattenLayers}
-                    className="flex-1 py-2 rounded-lg text-xs font-medium transition-colors hover:bg-white/5"
+                    className="flex-1 py-2 rounded-lg text-xs font-medium transition-colors hover:bg-white/5 pointer-coarse:min-h-11"
                     style={{ color: DARK.text, border: `1px solid ${DARK.border}` }}>
                     Aplatir
                   </button>
@@ -1401,10 +1566,12 @@ export default function EditeurPhoto() {
                   {[...layers].reverse().map((layer) => (
                     <div key={layer.id} className="rounded-lg p-3"
                       style={{ background: DARK.bg3, border: `1px solid ${DARK.border}` }}>
-                      <div className="flex items-center gap-2 mb-2">
+                      <div className="flex items-center gap-1 sm:gap-2 mb-2">
                         {/* Visibility toggle */}
                         <button onClick={() => updateLayer(layer.id, { visible: !layer.visible })}
-                          className="w-6 h-6 flex items-center justify-center rounded transition-colors hover:bg-white/10"
+                          aria-label={layer.visible ? `Masquer ${layer.name}` : `Afficher ${layer.name}`}
+                          aria-pressed={layer.visible}
+                          className="w-6 h-6 flex items-center justify-center rounded transition-colors hover:bg-white/10 pointer-coarse:w-11 pointer-coarse:h-11"
                           style={{ color: layer.visible ? DARK.accent : DARK.text }}>
                           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             {layer.visible ? (
@@ -1429,18 +1596,18 @@ export default function EditeurPhoto() {
                         {/* Move up/down */}
                         {layer.type !== "image" && (
                           <>
-                            <button onClick={() => moveLayer(layer.id, 1)}
-                              className="w-5 h-5 flex items-center justify-center rounded transition-colors hover:bg-white/10"
+                            <button onClick={() => moveLayer(layer.id, 1)} aria-label={`Monter ${layer.name}`}
+                              className="w-5 h-5 flex items-center justify-center rounded transition-colors hover:bg-white/10 pointer-coarse:w-11 pointer-coarse:h-11"
                               style={{ color: DARK.text, fontSize: 10 }}>
                               <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><path d="M18 15l-6-6-6 6" /></svg>
                             </button>
-                            <button onClick={() => moveLayer(layer.id, -1)}
-                              className="w-5 h-5 flex items-center justify-center rounded transition-colors hover:bg-white/10"
+                            <button onClick={() => moveLayer(layer.id, -1)} aria-label={`Descendre ${layer.name}`}
+                              className="w-5 h-5 flex items-center justify-center rounded transition-colors hover:bg-white/10 pointer-coarse:w-11 pointer-coarse:h-11"
                               style={{ color: DARK.text, fontSize: 10 }}>
                               <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><path d="M6 9l6 6 6-6" /></svg>
                             </button>
-                            <button onClick={() => removeLayer(layer.id)}
-                              className="w-5 h-5 flex items-center justify-center rounded transition-colors hover:bg-white/10"
+                            <button onClick={() => removeLayer(layer.id)} aria-label={`Supprimer ${layer.name}`}
+                              className="w-5 h-5 flex items-center justify-center rounded transition-colors hover:bg-white/10 pointer-coarse:w-11 pointer-coarse:h-11"
                               style={{ color: "#ef4444", fontSize: 10 }}>
                               <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><path d="M18 6L6 18M6 6l12 12" /></svg>
                             </button>
@@ -1448,27 +1615,33 @@ export default function EditeurPhoto() {
                         )}
                       </div>
 
-                      {/* Opacity */}
-                      <div className="flex items-center gap-2 mb-1.5">
-                        <span className="text-[10px] uppercase tracking-wider" style={{ color: DARK.text, width: 50 }}>Opacite</span>
-                        <input type="range" min={0} max={100} value={layer.opacity}
-                          onChange={(e) => updateLayer(layer.id, { opacity: Number(e.target.value) })}
-                          className="flex-1 accent-[#4ade80]" style={{ height: 3 }} />
-                        <span className="text-[10px] font-bold tabular-nums w-8 text-right" style={{ color: DARK.text }}>{layer.opacity}%</span>
-                      </div>
+                      {layer.type === "image" && (
+                        <p className="text-[10px]" style={{ color: DARK.text }}>Calque de base (photo d&apos;origine).</p>
+                      )}
 
-                      {/* Blend mode */}
-                      <div className="flex items-center gap-2">
-                        <span className="text-[10px] uppercase tracking-wider" style={{ color: DARK.text, width: 50 }}>Mode</span>
-                        <select value={layer.blendMode}
-                          onChange={(e) => updateLayer(layer.id, { blendMode: e.target.value })}
-                          className="flex-1 rounded px-2 py-1 text-[10px]"
-                          style={{ background: DARK.bg, color: DARK.textBright, border: `1px solid ${DARK.border}` }}>
-                          {BLEND_MODES.map(bm => (
-                            <option key={bm} value={bm}>{bm.charAt(0).toUpperCase() + bm.slice(1).replace("-", " ")}</option>
+                      {/* Adjustment layer settings (strength = opacity) */}
+                      {layer.type === "adjustment" && (
+                        <>
+                          {LAYER_SLIDERS.map((ls) => (
+                            <div key={ls.key} className="flex items-center gap-2 mb-1.5">
+                              <span className="text-[10px] uppercase tracking-wider" style={{ color: DARK.text, width: 50 }}>{ls.label}</span>
+                              <input type="range" min={-100} max={100} value={layer.adjustments?.[ls.key] ?? 0}
+                                onChange={(e) => updateLayer(layer.id, { adjustments: { ...layer.adjustments, [ls.key]: Number(e.target.value) } })}
+                                aria-label={`${ls.label} du calque ${layer.name}`}
+                                className="flex-1 accent-[#4ade80] h-[3px] pointer-coarse:h-11" />
+                              <span className="text-[10px] font-bold tabular-nums w-8 text-right" style={{ color: DARK.text }}>{layer.adjustments?.[ls.key] ?? 0}</span>
+                            </div>
                           ))}
-                        </select>
-                      </div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-[10px] uppercase tracking-wider" style={{ color: DARK.text, width: 50 }}>Opacité</span>
+                            <input type="range" min={0} max={100} value={layer.opacity}
+                              onChange={(e) => updateLayer(layer.id, { opacity: Number(e.target.value) })}
+                              aria-label={`Opacité du calque ${layer.name}`}
+                              className="flex-1 accent-[#4ade80] h-[3px] pointer-coarse:h-11" />
+                            <span className="text-[10px] font-bold tabular-nums w-8 text-right" style={{ color: DARK.text }}>{layer.opacity}%</span>
+                          </div>
+                        </>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -1479,8 +1652,17 @@ export default function EditeurPhoto() {
             {activeTab === "ai" && (
               <div className="space-y-4">
                 <p className="text-[10px] leading-relaxed" style={{ color: DARK.text }}>
-                  Traitement IA 100% local dans votre navigateur. Les modeles sont telecharges et mis en cache au premier usage.
+                  Traitement IA 100% local dans votre navigateur. Les modèles sont téléchargés et mis en cache au premier usage.
                 </p>
+
+                {constrainedDevice && (
+                  <div role="note" className="rounded-lg p-3 text-[11px] leading-relaxed" style={{ background: "#e8963e20", color: "#e8963e" }}>
+                    <strong>Appareil mobile ou peu de mémoire{deviceMemory !== undefined ? ` (environ ${deviceMemory} Go)` : ""}</strong> : les outils IA
+                    (surtout la suppression d&apos;arrière-plan et la super-résolution) peuvent être très lents ou faire planter l&apos;onglet.
+                    Préférez des images de moins de 12 Mpx, fermez les autres onglets et téléchargez votre travail avant de lancer un traitement.
+                    Super-résolution limitée à 1024 px par côté sur cet appareil.
+                  </div>
+                )}
 
                 {aiError && (
                   <div className="rounded-lg p-3 text-xs" style={{ background: "#ef444420", color: "#ef4444" }}>{aiError}</div>
@@ -1503,12 +1685,12 @@ export default function EditeurPhoto() {
                       <div className="flex items-start gap-3">
                         <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-lg" style={{ background: `${DARK.accent}15` }}>✂️</div>
                         <div className="flex-1">
-                          <p className="text-xs font-bold" style={{ color: DARK.textBright }}>Supprimer l&apos;arriere-plan</p>
-                          <p className="mt-0.5 text-[10px]" style={{ color: DARK.text }}>Modele MODNet — 6.6 Mo — Apache 2.0</p>
+                          <p className="text-xs font-bold" style={{ color: DARK.textBright }}>Supprimer l&apos;arrière-plan</p>
+                          <p className="mt-0.5 text-[10px]" style={{ color: DARK.text }}>Modèle MODNet — 6.6 Mo — Apache 2.0</p>
                         </div>
                       </div>
                       <button onClick={aiRemoveBackground} disabled={!imageMeta}
-                        className="mt-3 w-full rounded-lg py-2.5 text-xs font-bold transition-all hover:brightness-110 disabled:opacity-40"
+                        className="mt-3 w-full rounded-lg py-2.5 text-xs font-bold transition-all hover:brightness-110 disabled:opacity-40 pointer-coarse:min-h-11"
                         style={{ background: DARK.accent, color: "#000" }}>
                         Supprimer le fond
                       </button>
@@ -1525,12 +1707,12 @@ export default function EditeurPhoto() {
                       </div>
                       <div className="mt-3 flex gap-1.5">
                         <button onClick={() => setDepthMode("bokeh")}
-                          className="flex-1 rounded-lg py-1.5 text-[10px] font-bold transition-all"
+                          className="flex-1 rounded-lg py-1.5 text-[10px] font-bold transition-all pointer-coarse:min-h-11"
                           style={{ background: depthMode === "bokeh" ? "#6366f1" : DARK.bg, color: depthMode === "bokeh" ? "#fff" : DARK.text }}>
                           Effet Bokeh
                         </button>
                         <button onClick={() => setDepthMode("preview")}
-                          className="flex-1 rounded-lg py-1.5 text-[10px] font-bold transition-all"
+                          className="flex-1 rounded-lg py-1.5 text-[10px] font-bold transition-all pointer-coarse:min-h-11"
                           style={{ background: depthMode === "preview" ? "#6366f1" : DARK.bg, color: depthMode === "preview" ? "#fff" : DARK.text }}>
                           Carte de profondeur
                         </button>
@@ -1538,16 +1720,16 @@ export default function EditeurPhoto() {
                       {depthMode === "bokeh" && (
                         <div className="mt-2 flex items-center gap-2">
                           <span className="text-[10px]" style={{ color: DARK.text }}>Flou</span>
-                          <input type="range" min={10} max={100} value={depthIntensity}
+                          <input type="range" min={10} max={100} value={depthIntensity} aria-label="Intensité du flou"
                             onChange={(e) => setDepthIntensity(Number(e.target.value))}
-                            className="flex-1 accent-[#6366f1]" />
+                            className="flex-1 accent-[#6366f1] pointer-coarse:h-11" />
                           <span className="w-6 text-right text-[10px] font-bold tabular-nums" style={{ color: "#6366f1" }}>{depthIntensity}</span>
                         </div>
                       )}
                       <button onClick={aiDepthMap} disabled={!imageMeta}
-                        className="mt-2 w-full rounded-lg py-2.5 text-xs font-bold transition-all hover:brightness-110 disabled:opacity-40"
+                        className="mt-2 w-full rounded-lg py-2.5 text-xs font-bold transition-all hover:brightness-110 disabled:opacity-40 pointer-coarse:min-h-11"
                         style={{ background: "#6366f1", color: "#fff" }}>
-                        {depthMode === "bokeh" ? "Appliquer le Bokeh" : "Generer la carte"}
+                        {depthMode === "bokeh" ? "Appliquer le Bokeh" : "Générer la carte"}
                       </button>
                     </div>
 
@@ -1556,7 +1738,7 @@ export default function EditeurPhoto() {
                       <div className="flex items-start gap-3">
                         <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-lg" style={{ background: "rgba(232,150,62,0.15)" }}>🔍</div>
                         <div className="flex-1">
-                          <p className="text-xs font-bold" style={{ color: DARK.textBright }}>Super Resolution x2</p>
+                          <p className="text-xs font-bold" style={{ color: DARK.textBright }}>Super Résolution x2</p>
                           <p className="mt-0.5 text-[10px]" style={{ color: DARK.text }}>Swin2SR — 16 Mo — Apache 2.0</p>
                         </div>
                       </div>
@@ -1566,18 +1748,18 @@ export default function EditeurPhoto() {
                         </p>
                       )}
                       <button onClick={aiSuperRes} disabled={!imageMeta}
-                        className="mt-3 w-full rounded-lg py-2.5 text-xs font-bold transition-all hover:brightness-110 disabled:opacity-40"
+                        className="mt-3 w-full rounded-lg py-2.5 text-xs font-bold transition-all hover:brightness-110 disabled:opacity-40 pointer-coarse:min-h-11"
                         style={{ background: "#e8963e", color: "#000" }}>
-                        Ameliorer la resolution (x2)
+                        Améliorer la résolution (x2)
                       </button>
                     </div>
 
                     {/* Info */}
                     <div className="rounded-lg p-3" style={{ background: DARK.bg }}>
                       <p className="text-[10px] leading-relaxed" style={{ color: DARK.text }}>
-                        Les modeles IA sont telecharges depuis Hugging Face et mis en cache dans votre navigateur.
-                        Premier usage = 6-20 Mo de telechargement. Ensuite, c&apos;est instantane.
-                        Aucune donnee n&apos;est envoyee — tout est local.
+                        Les modèles IA sont téléchargés depuis Hugging Face et mis en cache dans votre navigateur.
+                        Premier usage = 6 à 20 Mo de téléchargement par modèle, puis le chargement est bien plus rapide.
+                        Vos photos ne sont jamais envoyées : le calcul se fait sur votre appareil.
                       </p>
                     </div>
                   </>
@@ -1592,39 +1774,39 @@ export default function EditeurPhoto() {
       <canvas ref={offscreenCanvasRef} className="hidden" />
 
       {/* SEO Content */}
-      <div className="mx-auto max-w-7xl px-6 2xl:max-w-[1400px] py-10 space-y-6" style={{ background: DARK.bg }}>
-        <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 2xl:max-w-[1400px] py-10 space-y-6" style={{ background: DARK.bg }}>
+        <div className="rounded-2xl border p-5 sm:p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
           <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)", color: "var(--foreground)" }}>
-            Comment utiliser l&apos;editeur photo en ligne
+            Comment utiliser l&apos;éditeur photo en ligne
           </h2>
           <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
             <p>
-              Notre editeur photo propose des fonctionnalites avancees directement dans votre navigateur, sans rien installer.
-              Importez une image pour acceder a un espace de travail professionnel avec reglages, filtres et outils IA.
+              Notre éditeur photo propose des fonctionnalités avancées directement dans votre navigateur, sans rien installer.
+              Importez une image pour accéder à un espace de travail professionnel avec réglages, filtres et outils IA.
             </p>
             <ul className="ml-4 list-disc space-y-1">
               <li><strong className="text-[var(--foreground)]">Importez votre image</strong> : glissez un fichier ou cliquez pour parcourir (JPEG, PNG, WebP)</li>
-              <li><strong className="text-[var(--foreground)]">Ajustez les parametres</strong> : luminosite, contraste, saturation, temperature, nettete, vignette et grain</li>
-              <li><strong className="text-[var(--foreground)]">Appliquez des filtres</strong> : Clarendon, Vintage, Lo-Fi et 10+ presets inspires d&apos;Instagram</li>
-              <li><strong className="text-[var(--foreground)]">Utilisez l&apos;IA</strong> : suppression d&apos;arriere-plan, flou d&apos;arriere-plan et upscaling directement dans le navigateur</li>
+              <li><strong className="text-[var(--foreground)]">Ajustez les paramètres</strong> : luminosité, contraste, saturation, température, netteté, vignette et grain</li>
+              <li><strong className="text-[var(--foreground)]">Appliquez des filtres</strong> : Clarendon, Vintage, Lo-Fi et 10+ presets inspirés d&apos;Instagram</li>
+              <li><strong className="text-[var(--foreground)]">Utilisez l&apos;IA</strong> : suppression d&apos;arrière-plan, flou d&apos;arrière-plan et upscaling directement dans le navigateur</li>
             </ul>
           </div>
         </div>
 
-        <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-          <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)", color: "var(--foreground)" }}>Questions frequentes</h2>
+        <div className="rounded-2xl border p-5 sm:p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+          <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)", color: "var(--foreground)" }}>Questions fréquentes</h2>
           <div className="mt-6 space-y-5">
             <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
-              <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Mes photos sont-elles envoyees sur un serveur ?</h3>
-              <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Non, absolument tout le traitement se fait dans votre navigateur. Vos images ne quittent jamais votre ordinateur. Les modeles IA sont telecharges depuis Hugging Face et mis en cache localement.</p>
+              <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Mes photos sont-elles envoyées sur un serveur ?</h3>
+              <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Non, absolument tout le traitement se fait dans votre navigateur. Vos images ne quittent jamais votre ordinateur. Les modèles IA sont téléchargés depuis Hugging Face et mis en cache localement.</p>
             </div>
             <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
-              <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Quels formats d&apos;image sont supportes ?</h3>
-              <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>L&apos;editeur accepte tous les formats supportes par votre navigateur : JPEG, PNG, WebP, GIF et BMP. L&apos;export se fait au format PNG pour conserver la meilleure qualite possible.</p>
+              <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Quels formats d&apos;image sont supportés ?</h3>
+              <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>L&apos;éditeur accepte les formats lus par votre navigateur : JPEG, PNG, WebP, GIF (première image) et BMP. Le HEIC des iPhone n&apos;est généralement pas pris en charge. L&apos;export se fait au format PNG, à la résolution de l&apos;image, pour conserver la meilleure qualité possible.</p>
             </div>
             <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
-              <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Comment fonctionne la suppression d&apos;arriere-plan par IA ?</h3>
-              <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>L&apos;outil utilise le modele RMBG de Hugging Face via Transformers.js. Au premier usage, le modele (environ 6 Mo) est telecharge et mis en cache. Le traitement est ensuite instantane et entierement local.</p>
+              <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Comment fonctionne la suppression d&apos;arrière-plan par IA ?</h3>
+              <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>L&apos;outil utilise le modèle MODNet (spécialisé dans les portraits) via Transformers.js. Au premier usage, le modèle (environ 7 Mo) est téléchargé depuis Hugging Face puis mis en cache. Le traitement se fait ensuite entièrement sur votre appareil, en quelques secondes selon sa puissance. Les résultats sont meilleurs sur des personnes que sur des objets.</p>
             </div>
           </div>
         </div>
@@ -1643,6 +1825,11 @@ function CurveWidget({ channel, points, histogram, onPointsChange }: {
 }) {
   const svgRef = useRef<SVGSVGElement>(null);
   const [dragIdx, setDragIdx] = useState<number | null>(null);
+  // Double-tap detection for touch / pen (dblclick is unreliable on touch screens)
+  const lastTapRef = useRef<{ idx: number; time: number } | null>(null);
+  // Offset between the grabbed point and the pointer, so a point grabbed via the large touch hit area doesn't jump
+  const dragOffsetRef = useRef({ x: 0, y: 0 });
+  const coarse = useMediaQuery("(pointer: coarse)");
   const size = 256;
 
   const channelColor = channel === "rgb" ? "#fff" : channel === "r" ? "#ef4444" : channel === "g" ? "#22c55e" : "#3b82f6";
@@ -1672,7 +1859,7 @@ function CurveWidget({ channel, points, histogram, onPointsChange }: {
     });
   }, [channel, histogram]);
 
-  const getPos = (e: React.MouseEvent | MouseEvent) => {
+  const getPos = (e: React.MouseEvent | MouseEvent | PointerEvent) => {
     const svg = svgRef.current;
     if (!svg) return { x: 0, y: 0 };
     const rect = svg.getBoundingClientRect();
@@ -1682,25 +1869,43 @@ function CurveWidget({ channel, points, histogram, onPointsChange }: {
     };
   };
 
-  const handleMouseDown = (idx: number) => (e: React.MouseEvent) => {
+  const handlePointerDown = (idx: number) => (e: React.PointerEvent) => {
     e.preventDefault();
+    e.stopPropagation();
+    if (e.pointerType !== "mouse") {
+      const now = Date.now();
+      const last = lastTapRef.current;
+      if (last && last.idx === idx && now - last.time < 350) {
+        lastTapRef.current = null;
+        if (points.length > 2) onPointsChange(points.filter((_, i) => i !== idx));
+        return;
+      }
+      lastTapRef.current = { idx, time: now };
+    }
+    const pos = getPos(e);
+    dragOffsetRef.current = { x: points[idx].x - pos.x, y: points[idx].y - pos.y };
     setDragIdx(idx);
   };
 
   useEffect(() => {
     if (dragIdx === null) return;
-    const handleMove = (e: MouseEvent) => {
+    const handleMove = (e: PointerEvent) => {
       const pos = getPos(e);
       const arr = [...points];
-      arr[dragIdx] = pos;
+      arr[dragIdx] = {
+        x: clamp(pos.x + dragOffsetRef.current.x, 0, 1),
+        y: clamp(pos.y + dragOffsetRef.current.y, 0, 1),
+      };
       onPointsChange(arr);
     };
     const handleUp = () => setDragIdx(null);
-    window.addEventListener("mousemove", handleMove);
-    window.addEventListener("mouseup", handleUp);
+    window.addEventListener("pointermove", handleMove);
+    window.addEventListener("pointerup", handleUp);
+    window.addEventListener("pointercancel", handleUp);
     return () => {
-      window.removeEventListener("mousemove", handleMove);
-      window.removeEventListener("mouseup", handleUp);
+      window.removeEventListener("pointermove", handleMove);
+      window.removeEventListener("pointerup", handleUp);
+      window.removeEventListener("pointercancel", handleUp);
     };
   }, [dragIdx, points, onPointsChange]);
 
@@ -1720,8 +1925,8 @@ function CurveWidget({ channel, points, histogram, onPointsChange }: {
   };
 
   return (
-    <svg ref={svgRef} viewBox={`0 0 ${size} ${size}`} className="w-full cursor-crosshair"
-      style={{ background: DARK.bg, border: `1px solid ${DARK.border}`, borderRadius: 8 }}
+    <svg ref={svgRef} viewBox={`0 0 ${size} ${size}`} className="mx-auto block w-full cursor-crosshair max-lg:max-w-[280px]"
+      style={{ background: DARK.bg, border: `1px solid ${DARK.border}`, borderRadius: 8, touchAction: "none" }}
       onClick={handleClick}>
       {/* Grid */}
       {[0.25, 0.5, 0.75].map(f => (
@@ -1738,12 +1943,16 @@ function CurveWidget({ channel, points, histogram, onPointsChange }: {
       <path d={pathD} fill="none" stroke={channelColor} strokeWidth={2} />
       {/* Control points */}
       {points.map((p, i) => (
-        <circle key={i} cx={p.x * size} cy={(1 - p.y) * size} r={6}
-          fill={dragIdx === i ? channelColor : DARK.bg3}
-          stroke={channelColor} strokeWidth={2}
-          style={{ cursor: "grab" }}
-          onMouseDown={handleMouseDown(i)}
-          onDoubleClick={handleDoubleClick(i)} />
+        <g key={i} onPointerDown={handlePointerDown(i)} onDoubleClick={handleDoubleClick(i)}
+          // Tapping a point must never add a new one; mousedown default is prevented to avoid text selection while dragging
+          onClick={(e) => e.stopPropagation()} onMouseDown={(e) => e.preventDefault()}
+          style={{ cursor: "grab" }}>
+          {/* Larger invisible hit area on touch screens (~44 px) */}
+          {coarse && <circle cx={p.x * size} cy={(1 - p.y) * size} r={20} fill="transparent" />}
+          <circle cx={p.x * size} cy={(1 - p.y) * size} r={6}
+            fill={dragIdx === i ? channelColor : DARK.bg3}
+            stroke={channelColor} strokeWidth={2} />
+        </g>
       ))}
     </svg>
   );

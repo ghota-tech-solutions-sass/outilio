@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "PDF vers Texte - Extracteur de texte PDF en ligne gratuit",
   description:
-    "Extrayez les metadonnees et le contenu de vos PDF. Pages, auteur, date de creation. Telechargez des pages individuelles. Gratuit et 100% local.",
+    "Extrayez le texte de vos PDF (copie ou fichier .txt), consultez les métadonnées (pages, auteur, date de création) et téléchargez des pages individuelles. Gratuit et 100% local.",
   keywords: [
     "pdf vers texte",
     "extraire texte pdf",

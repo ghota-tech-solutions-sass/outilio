@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Simulateur Plus-Value Immobiliere - Calcul IR, PS, Surtaxe - Gratuit",
+  title: "Simulateur Plus-Value Immobilière - Calcul IR, PS, Surtaxe - Gratuit",
   description:
-    "Calculez la plus-value immobiliere sur la vente de votre bien. Abattements par duree de detention, impot sur le revenu, prelevements sociaux et surtaxe. Outil gratuit et sans inscription.",
+    "Calculez la plus-value immobilière sur la vente de votre bien. Abattements par durée de détention, impôt sur le revenu, prélèvements sociaux et surtaxe. Outil gratuit et sans inscription.",
   keywords: [
     "plus-value immobiliere",
     "simulateur plus-value",

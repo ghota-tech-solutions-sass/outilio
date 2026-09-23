@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Calculateur de remise et promotion - Prix apres reduction",
+  title: "Calculateur de remise et promotion - Prix après réduction",
   description:
-    "Calculez le prix apres remise, le montant economise et cumulez plusieurs reductions. Soldes, promotions, bons de reduction. Gratuit.",
+    "Calculez le prix après remise, le montant économisé et cumulez plusieurs réductions. Soldes, promotions, bons de réduction. Gratuit.",
   keywords: [
     "calculateur remise",
     "calculateur reduction",

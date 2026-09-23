@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Simulateur Impot Revenu 2026 - Bareme + TMI + Quotient",
+  title: "Simulateur Impôt Revenu 2026 - Barème + TMI + Quotient",
   description:
-    "Calculez votre impot sur le revenu 2026 instantanement : bareme officiel a jour, quotient familial, TMI, decote, plafonnement. Resultat detaille tranche par tranche, gratuit, sans inscription.",
+    "Calculez votre impôt sur le revenu 2026 instantanément : barème officiel à jour, quotient familial, TMI, décote, plafonnement. Résultat détaillé tranche par tranche, gratuit, sans inscription.",
   keywords: [
     "simulateur impot",
     "simulateur impot gratuit",
@@ -22,9 +22,9 @@ export const metadata: Metadata = {
     canonical: "https://outilis.fr/outils/simulateur-impot",
   },
   openGraph: {
-    title: "Simulateur Impot Revenu 2026 - Bareme + TMI + Quotient",
+    title: "Simulateur Impôt Revenu 2026 - Barème + TMI + Quotient",
     description:
-      "Impot sur le revenu 2026 calcule en 1 clic. Bareme, TMI, decote et quotient familial.",
+      "Impôt sur le revenu 2026 calculé en 1 clic. Barème, TMI, décote et quotient familial.",
     url: "https://outilis.fr/outils/simulateur-impot",
     type: "website",
   },

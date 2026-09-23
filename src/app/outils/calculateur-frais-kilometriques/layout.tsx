@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Calculateur frais kilometriques 2025 - Bareme fiscal officiel",
+  title: "Calculateur frais kilométriques 2026 - Barème fiscal (revenus 2025)",
   description:
-    "Calculez vos frais kilometriques deductibles avec le bareme fiscal officiel 2025. Voiture, moto, scooter, vehicule electrique (+20%). Gratuit et instantane.",
+    "Calculez vos frais kilométriques déductibles avec le barème fiscal officiel 2026 (revenus 2025). Voiture, moto, scooter, véhicule électrique (+20%). Gratuit et instantané.",
   keywords: [
     "frais kilometriques",
+    "bareme kilometrique 2026",
     "bareme kilometrique 2025",
     "indemnites kilometriques",
     "frais reels",

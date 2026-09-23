@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Convertisseur de couleurs HEX RGB HSL - Gratuit",
+  title: "Code couleur HEX RGB HSL - Convertisseur et tableau des couleurs",
   description:
-    "Convertissez vos couleurs entre HEX, RGB et HSL instantanement. Color picker inclus. Outil gratuit pour designers et developpeurs.",
-  keywords: ["convertisseur couleur", "HEX RGB", "RGB HSL", "color picker", "code couleur"],
+    "Convertissez un code couleur HEX en RGB ou HSL (et inversement) instantanément. Color picker et tableau des codes couleur courants (rouge, bleu, vert...). Gratuit.",
+  keywords: ["code couleur hex rgb", "convertisseur couleur", "hex en rgb", "rgb en hex", "RGB HSL", "color picker", "code couleur"],
   alternates: { canonical: "https://outilis.fr/outils/convertisseur-couleurs" },
 };
 

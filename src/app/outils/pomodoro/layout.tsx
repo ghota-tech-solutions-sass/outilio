@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Chronometre Pomodoro en ligne - Timer gratuit",
+  title: "Chronomètre Pomodoro en ligne - Timer gratuit",
   description:
-    "Timer Pomodoro gratuit avec cercle anime, enchainement automatique des sessions, notification sonore et statistiques. Methode Pomodoro : 25 min travail, 5 min pause.",
+    "Timer Pomodoro gratuit avec cercle animé, enchaînement automatique des sessions, notification sonore et statistiques. Méthode Pomodoro : 25 min travail, 5 min pause.",
   keywords: [
     "pomodoro",
     "timer pomodoro",

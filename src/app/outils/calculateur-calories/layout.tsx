@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Calculateur Calories Brulees - 18 Sports, Methode MET",
+  title: "Calculateur Calories Brûlées - 18 Sports, Méthode MET",
   description:
-    "Estimez les calories brulees selon votre poids, l'activite et la duree. 18 sports (course, velo, natation, HIIT, yoga, musculation). Methode MET du Compendium of Physical Activities. Gratuit, instantane.",
+    "Estimez les calories brûlées selon votre poids, l'activité et la durée. 18 sports (course, vélo, natation, HIIT, yoga, musculation). Méthode MET du Compendium of Physical Activities. Gratuit, instantané.",
   keywords: [
     "calculateur calories",
     "calories brulees",
@@ -19,9 +19,9 @@ export const metadata: Metadata = {
     canonical: "https://outilis.fr/outils/calculateur-calories",
   },
   openGraph: {
-    title: "Calculateur Calories Brulees - 18 Sports, Methode MET",
+    title: "Calculateur Calories Brûlées - 18 Sports, Méthode MET",
     description:
-      "Depense energetique selon poids, duree et activite. Methode MET, comparaison entre sports.",
+      "Dépense énergétique selon poids, durée et activité. Méthode MET, comparaison entre sports.",
     url: "https://outilis.fr/outils/calculateur-calories",
     type: "website",
   },

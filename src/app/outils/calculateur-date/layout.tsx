@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Calculateur de Date - Jours Entre 2 Dates, Ajouter Jours",
   description:
-    "Calculez le nombre de jours, semaines, mois et annees entre deux dates. Ajoutez ou soustrayez des jours, calculez vos delais (retractation 14 jours, preavis, anciennete). Format ISO et FR. Gratuit, sans inscription.",
+    "Calculez le nombre de jours, semaines, mois et années entre deux dates. Ajoutez ou soustrayez des jours, calculez vos délais (rétractation 14 jours, préavis, ancienneté). Format ISO et FR. Gratuit, sans inscription.",
   keywords: [
     "calculateur date",
     "jours entre deux dates",
@@ -21,7 +21,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Calculateur de Date - Jours Entre 2 Dates, Ajouter Jours",
     description:
-      "Difference, addition et soustraction de jours entre deux dates. Delais juridiques, preavis, anciennete.",
+      "Différence, addition et soustraction de jours entre deux dates. Délais juridiques, préavis, ancienneté.",
     url: "https://outilis.fr/outils/calculateur-date",
     type: "website",
   },

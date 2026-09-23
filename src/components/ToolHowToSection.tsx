@@ -17,7 +17,7 @@ export default function ToolHowToSection({
   steps,
 }: Props) {
   return (
-    <section
+    <section data-no-track
       className="rounded-xl border p-6 md:p-8 shadow-sm"
       style={{ background: "var(--surface)", borderColor: "var(--border)" }}
     >

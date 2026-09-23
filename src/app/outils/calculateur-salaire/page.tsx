@@ -5,66 +5,44 @@ import Link from "next/link";
 import AdPlaceholder from "@/components/AdPlaceholder";
 import ToolFaqSection from "@/components/ToolFaqSection";
 import ToolHowToSection from "@/components/ToolHowToSection";
+import { impotRevenu } from "@/lib/impot";
 
 const RATES: Record<string, { label: string; rate: number }> = {
-  "non-cadre": { label: "Non-cadre (prive)", rate: 0.22 },
-  cadre: { label: "Cadre (prive)", rate: 0.25 },
+  "non-cadre": { label: "Non-cadre (privé)", rate: 0.22 },
+  cadre: { label: "Cadre (privé)", rate: 0.25 },
   public: { label: "Fonction publique", rate: 0.17 },
 };
 
-// Bareme IR 2026 sur revenus 2025 (LF 2026, +0.9%)
-const TAX_BRACKETS = [
-  { max: 11600, rate: 0 },
-  { max: 29579, rate: 0.11 },
-  { max: 84577, rate: 0.3 },
-  { max: 181917, rate: 0.41 },
-  { max: Infinity, rate: 0.45 },
-];
+// SMIC 2026 brut mensuel (35h) - en vigueur depuis le 1er juin 2026 (12,31 EUR/h)
+const SMIC_BRUT_2026 = 1867.02;
+const SMIC_NET_2026 = 1477.93;
 
-// SMIC 2026 brut mensuel (35h)
-const SMIC_BRUT_2026 = 1801;
-const SMIC_NET_2026 = 1426;
+// Abattement forfaitaire de 10% pour frais professionnels (revenus 2025)
+const ABATTEMENT_TAUX = 0.1;
+const ABATTEMENT_MIN = 509;
+const ABATTEMENT_MAX = 14555;
 
 const PRESETS_BRUT = [
   { label: "SMIC", value: SMIC_BRUT_2026 },
-  { label: "Median", value: 2820 },
+  { label: "Médian", value: 2820 },
   { label: "Cadre", value: 5333 },
   { label: "Top 10%", value: 10670 },
 ];
 
 const PRESETS_NET = [
   { label: "SMIC", value: SMIC_NET_2026 },
-  { label: "Median", value: 2200 },
+  { label: "Médian", value: 2200 },
   { label: "Cadre", value: 4000 },
   { label: "Top 10%", value: 8000 },
 ];
-
-function calcTax(annualNet: number) {
-  let tax = 0;
-  let prev = 0;
-  for (const b of TAX_BRACKETS) {
-    if (annualNet <= prev) break;
-    const taxable = Math.min(annualNet, b.max) - prev;
-    tax += taxable * b.rate;
-    prev = b.max;
-  }
-  return tax;
-}
-
-function getTMI(annualNetTaxable: number, parts: number): number {
-  const quotient = annualNetTaxable / parts;
-  if (quotient <= 11600) return 0;
-  if (quotient <= 29579) return 11;
-  if (quotient <= 84577) return 30;
-  if (quotient <= 181917) return 41;
-  return 45;
-}
 
 export default function CalculateurSalaire() {
   const [amount, setAmount] = useState<string>("3000");
   const [mode, setMode] = useState<"brut-to-net" | "net-to-brut">("brut-to-net");
   const [status, setStatus] = useState<string>("non-cadre");
   const [parts, setParts] = useState<string>("1");
+  const [couple, setCouple] = useState(false);
+  const [parentIsole, setParentIsole] = useState(false);
   const [period, setPeriod] = useState<"mensuel" | "annuel">("mensuel");
 
   const rawVal = parseFloat(amount) || 0;
@@ -83,12 +61,17 @@ export default function CalculateurSalaire() {
   const isHighMonthly = val > 15000;
 
   const annualNet = net * 12;
+  // Revenu imposable = net annuel apres abattement de 10% (plafonne)
+  const abattement = Math.min(Math.max(annualNet * ABATTEMENT_TAUX, ABATTEMENT_MIN), ABATTEMENT_MAX);
+  const annualTaxable = Math.max(0, annualNet - Math.min(abattement, annualNet));
   const nbParts = parseFloat(parts) || 1;
-  const annualTax = calcTax(annualNet / nbParts) * nbParts;
+  // IR au bareme 2026 (revenus 2025) : quotient familial, plafonnement et decote (src/lib/impot.ts)
+  const ir = impotRevenu({ revenuImposable: annualTaxable, parts: nbParts, couple, parentIsole: parentIsole && !couple && nbParts >= 1.5 });
+  const annualTax = ir.impotNet;
   const monthlyTax = annualTax / 12;
   const netApresImpot = net - monthlyTax;
   const charges = brut - net;
-  const tmi = getTMI(annualNet, nbParts);
+  const tmi = Math.round(ir.tmi * 100);
   const vsSmic = SMIC_NET_2026 > 0 ? ((netApresImpot / SMIC_NET_2026) - 1) * 100 : 0;
 
   const fmt = (n: number) =>
@@ -109,8 +92,8 @@ export default function CalculateurSalaire() {
             Calculateur salaire <span style={{ color: "var(--primary)" }}>net / brut</span>
           </h1>
           <p className="animate-fade-up stagger-2 mt-3 max-w-xl text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-            Convertissez instantanement votre salaire brut en net et inversement.
-            Estimation de l&apos;impot sur le revenu incluse.
+            Convertissez instantanément votre salaire brut en net et inversement.
+            Estimation de l&apos;impôt sur le revenu incluse.
           </p>
         </div>
       </section>
@@ -208,7 +191,7 @@ export default function CalculateurSalaire() {
                 {/* Presets */}
                 <div className="mt-3 flex flex-wrap gap-2">
                   {(mode === "brut-to-net" ? PRESETS_BRUT : PRESETS_NET).map((p) => {
-                    const presetVal = period === "annuel" ? p.value * 12 : p.value;
+                    const presetVal = period === "annuel" ? Math.round(p.value * 12 * 100) / 100 : p.value;
                     const isActive = parseFloat(amount) === presetVal;
                     return (
                       <button
@@ -238,13 +221,13 @@ export default function CalculateurSalaire() {
                     className="mt-2 w-full rounded-lg px-3 py-2 text-left text-xs"
                     style={{ background: "#fef3cd", color: "#856404" }}
                   >
-                    💡 {fmt(rawVal)} &euro;/mois semble eleve. Vous vouliez dire{" "}
+                    💡 {fmt(rawVal)} &euro;/mois semble élevé. Vous vouliez dire{" "}
                     <strong>{fmt(rawVal)} &euro;/an</strong> ? Cliquez ici pour corriger.
                   </button>
                 )}
               </div>
 
-              <div className="mt-4 grid grid-cols-2 gap-4">
+              <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3">
                 <div>
                   <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>Statut</label>
                   <select
@@ -256,6 +239,24 @@ export default function CalculateurSalaire() {
                     {Object.entries(RATES).map(([key, { label }]) => (
                       <option key={key} value={key}>{label}</option>
                     ))}
+                  </select>
+                </div>
+                <div>
+                  <label htmlFor="salaire-situation" className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>Situation</label>
+                  <select
+                    id="salaire-situation"
+                    value={couple ? "couple" : "seul"}
+                    onChange={(e) => {
+                      const estCouple = e.target.value === "couple";
+                      setCouple(estCouple);
+                      if (estCouple && (parseFloat(parts) || 1) < 2) setParts("2");
+                      if (!estCouple && parts === "2") setParts("1");
+                    }}
+                    className="mt-2 w-full rounded-xl border px-4 py-3 text-sm"
+                    style={{ borderColor: "var(--border)" }}
+                  >
+                    <option value="seul">Personne seule</option>
+                    <option value="couple">Couple marié ou pacsé</option>
                   </select>
                 </div>
                 <div>
@@ -271,12 +272,35 @@ export default function CalculateurSalaire() {
                   />
                 </div>
               </div>
+              {!couple && nbParts >= 1.5 && (
+                <label className="mt-4 flex items-start gap-2 text-sm" style={{ color: "var(--foreground)" }}>
+                  <input
+                    type="checkbox"
+                    checked={parentIsole}
+                    onChange={(e) => setParentIsole(e.target.checked)}
+                    className="mt-0.5 h-4 w-4"
+                    style={{ accentColor: "var(--primary)" }}
+                  />
+                  <span>
+                    Parent isolé (case T)
+                    <span className="block text-xs" style={{ color: "var(--muted)" }}>
+                      Vous vivez seul avec vos enfants à charge (2 parts avec 1 enfant en garde exclusive).
+                    </span>
+                  </span>
+                </label>
+              )}
+              {!couple && nbParts >= 2 && !parentIsole && (
+                <p className="mt-3 rounded-lg border-l-4 px-3 py-2 text-xs" style={{ borderColor: "var(--accent)", background: "var(--surface-alt)", color: "var(--foreground)" }}>
+                  Marié ou pacsé ? Choisissez « Couple » : une personne seule avec 2 parts ou plus est soumise au
+                  plafonnement du quotient familial. Si vous élevez seul vos enfants, cochez « Parent isolé ».
+                </p>
+              )}
             </div>
 
             {/* Results */}
             <div className="animate-scale-in stagger-2 rounded-2xl border p-6" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
               <h2 className="text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: "var(--accent)" }}>
-                Resultats
+                Résultats
               </h2>
               {/* Visualisation donut + détail */}
               <div className="mt-5 grid gap-6 sm:grid-cols-[180px_1fr] sm:items-center">
@@ -291,8 +315,8 @@ export default function CalculateurSalaire() {
                 <div className="space-y-1">
                   <Row label="Salaire brut mensuel" value={`${fmt(brut)} €`} />
                   <Row label="Cotisations salariales" value={`- ${fmt(charges)} €`} sub dotColor="#dc2626" />
-                  <Row label="Salaire net avant impot" value={`${fmt(net)} €`} highlight />
-                  <Row label="Impot sur le revenu (estimation)" value={`- ${fmt(monthlyTax)} €`} sub dotColor="#e8963e" />
+                  <Row label="Salaire net avant impôt" value={`${fmt(net)} €`} highlight />
+                  <Row label="Impôt sur le revenu (estimation)" value={`- ${fmt(monthlyTax)} €`} sub dotColor="#e8963e" />
                   <Row label="Salaire net en poche" value={`${fmt(netApresImpot)} €`} highlight primary dotColor="#0d4f3c" />
                 </div>
               </div>
@@ -308,23 +332,23 @@ export default function CalculateurSalaire() {
                       {tmi}%
                     </p>
                     <p className="mt-1 text-[11px]" style={{ color: "var(--muted)" }}>
-                      {tmi === 0 && "Vous n'etes pas imposable."}
-                      {tmi === 11 && "Tranche basse — chaque euro additionnel est taxe a 11%."}
-                      {tmi === 30 && "Tranche intermediaire — optimisez vos deductions (PER, dons)."}
+                      {tmi === 0 && "Vous n'êtes pas imposable."}
+                      {tmi === 11 && "Tranche basse — chaque euro additionnel est taxé à 11%."}
+                      {tmi === 30 && "Tranche intermédiaire — optimisez vos déductions (PER, dons)."}
                       {tmi === 41 && "Tranche haute — pensez au PER, dispositifs Pinel, FCPI/FIP."}
-                      {tmi === 45 && "Tranche maximale — strategie patrimoniale recommandee."}
+                      {tmi === 45 && "Tranche maximale — stratégie patrimoniale recommandée."}
                     </p>
                   </div>
                   <div className="rounded-xl border p-4" style={{ borderColor: "var(--border)", background: "var(--surface-alt)" }}>
                     <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>
-                      Repere vs SMIC net 2026
+                      Repère vs SMIC net 2026
                     </p>
                     <p className="mt-1 text-2xl font-bold" style={{ fontFamily: "var(--font-display)", color: vsSmic >= 0 ? "var(--primary)" : "#dc2626" }}>
                       {vsSmic >= 0 ? "+" : ""}{vsSmic.toFixed(0)}%
                     </p>
                     <p className="mt-1 text-[11px]" style={{ color: "var(--muted)" }}>
-                      {vsSmic > 200 && "Vous etes parmi le top 10% des salaires francais."}
-                      {vsSmic > 50 && vsSmic <= 200 && "Au-dessus du salaire median (~2 200 € net)."}
+                      {vsSmic > 200 && "Vous êtes parmi le top 10% des salaires français."}
+                      {vsSmic > 50 && vsSmic <= 200 && "Au-dessus du salaire médian (~2 200 € net)."}
                       {vsSmic >= 0 && vsSmic <= 50 && `Au-dessus du SMIC net (${fmt(SMIC_NET_2026)} €).`}
                       {vsSmic < 0 && `En-dessous du SMIC net (${fmt(SMIC_NET_2026)} €).`}
                     </p>
@@ -334,16 +358,16 @@ export default function CalculateurSalaire() {
 
               <div className="mt-6 rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
                 <h3 className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>
-                  Recapitulatif annuel
+                  Récapitulatif annuel
                 </h3>
                 <div className="mt-3 grid grid-cols-2 gap-y-2 text-sm">
                   <span style={{ color: "var(--muted)" }}>Brut annuel</span>
                   <span className="text-right font-semibold">{fmt(brut * 12)} &euro;</span>
-                  <span style={{ color: "var(--muted)" }}>Net annuel avant impot</span>
+                  <span style={{ color: "var(--muted)" }}>Net annuel avant impôt</span>
                   <span className="text-right font-semibold">{fmt(net * 12)} &euro;</span>
-                  <span style={{ color: "var(--muted)" }}>Impot annuel (estimation)</span>
+                  <span style={{ color: "var(--muted)" }}>Impôt annuel (estimation)</span>
                   <span className="text-right font-semibold">{fmt(annualTax)} &euro;</span>
-                  <span style={{ color: "var(--muted)" }}>Net annuel apres impot</span>
+                  <span style={{ color: "var(--muted)" }}>Net annuel après impôt</span>
                   <span className="text-right text-lg font-bold" style={{ fontFamily: "var(--font-display)", color: "var(--primary)" }}>
                     {fmt(netApresImpot * 12)} &euro;
                   </span>
@@ -361,31 +385,31 @@ export default function CalculateurSalaire() {
                   href="/outils/freelance-vs-cdi"
                   emoji="💼"
                   title="Comparer CDI / Freelance"
-                  desc="Quel TJM pour egaliser votre net ?"
+                  desc="Quel TJM pour égaliser votre net ?"
                 />
                 <CrossLinkCard
                   href="/outils/simulateur-impot"
                   emoji="📋"
-                  title="Simulateur impot 2026"
-                  desc="Bareme officiel + TMI detaille"
+                  title="Simulateur impôt 2026"
+                  desc="Barème officiel + TMI détaillé"
                 />
                 <CrossLinkCard
                   href="/outils/calculateur-pret-immobilier"
                   emoji="🏠"
-                  title="Capacite d'emprunt"
-                  desc="Mensualite max selon HCSF 35%"
+                  title="Capacité d'emprunt"
+                  desc="Mensualité max selon HCSF 35%"
                 />
               </div>
             </div>
 
             <ToolHowToSection
-              title="Comment calculer votre salaire net en 4 etapes"
-              description="Le calculateur applique les taux moyens de cotisations salariales 2026 par statut et integre une estimation du prelevement a la source."
+              title="Comment calculer votre salaire net en 4 étapes"
+              description="Le calculateur applique les taux moyens de cotisations salariales 2026 par statut et intègre une estimation du prélèvement à la source."
               steps={[
                 {
                   name: "Choisir votre statut",
                   text:
-                    "Non-cadre prive (~22 % de charges salariales), cadre prive (~25 %), fonction publique (~17 %). Les ecarts proviennent principalement de la retraite complementaire AGIRC-ARRCO (cadres) et des regimes specifiques de la fonction publique.",
+                    "Non-cadre privé (~22 % de charges salariales), cadre privé (~25 %), fonction publique (~17 %). Les écarts proviennent principalement de la retraite complémentaire AGIRC-ARRCO (cadres) et des régimes spécifiques de la fonction publique.",
                 },
                 {
                   name: "Saisir votre salaire brut",
@@ -395,12 +419,12 @@ export default function CalculateurSalaire() {
                 {
                   name: "Renseigner votre situation fiscale",
                   text:
-                    "Nombre de parts fiscales (1 pour celibataire, 2 pour couple, +0,5 ou +1 par enfant a charge selon le rang). Le calculateur estime le prelevement a la source en appliquant le bareme progressif 2026 sur le revenu net imposable.",
+                    "Nombre de parts fiscales (1 pour célibataire, 2 pour couple, +0,5 ou +1 par enfant à charge selon le rang). Indiquez aussi si vous êtes seul ou en couple marié ou pacsé. Le calculateur estime l'impôt annuel en appliquant le barème progressif 2026 sur le revenu net imposable (après abattement de 10% pour frais professionnels), avec le quotient familial, son plafonnement (y compris la case T des parents isolés) et la décote pour les revenus modestes.",
                 },
                 {
-                  name: "Lire le resultat",
+                  name: "Lire le résultat",
                   text:
-                    "Le calculateur affiche le net avant impot, le prelevement a la source estime et le net 'en poche' apres impot. Pour un calcul precis, comparez avec votre derniere fiche de paie ou votre avis d'imposition.",
+                    "Le calculateur affiche le net avant impôt, le prélèvement à la source estimé et le net 'en poche' après impôt. Pour un calcul précis, comparez avec votre dernière fiche de paie ou votre avis d'imposition.",
                 },
               ]}
             />
@@ -418,70 +442,70 @@ export default function CalculateurSalaire() {
 
               <div className="mt-4 space-y-4 leading-relaxed" style={{ color: "var(--foreground)" }}>
                 <p>
-                  Pour convertir un salaire brut en net, il faut deduire les cotisations salariales.
+                  Pour convertir un salaire brut en net, il faut déduire les cotisations salariales.
                   Le taux varie selon votre statut :
                 </p>
                 <ul className="ml-6 list-disc space-y-1" style={{ color: "var(--muted)" }}>
-                  <li><strong style={{ color: "var(--foreground)" }}>Non-cadre prive</strong> : ~22 % de charges (coefficient 0,78)</li>
-                  <li><strong style={{ color: "var(--foreground)" }}>Cadre prive</strong> : ~25 % de charges (coefficient 0,75)</li>
+                  <li><strong style={{ color: "var(--foreground)" }}>Non-cadre privé</strong> : ~22 % de charges (coefficient 0,78)</li>
+                  <li><strong style={{ color: "var(--foreground)" }}>Cadre privé</strong> : ~25 % de charges (coefficient 0,75)</li>
                   <li><strong style={{ color: "var(--foreground)" }}>Fonction publique</strong> : ~17 % de charges (coefficient 0,83)</li>
                 </ul>
                 <p>
-                  <strong>Formule simplifiee</strong> : Salaire net = Salaire brut x (1 - taux de cotisations).
-                  Exemple : 3 000 EUR brut non-cadre = 2 340 EUR net avant impot.
+                  <strong>Formule simplifiée</strong> : Salaire net = Salaire brut x (1 - taux de cotisations).
+                  Exemple : 3 000 € brut non-cadre = 2 340 € net avant impôt.
                 </p>
                 <p>
-                  <strong>Le PAS depuis 2019.</strong> L&apos;impot sur le revenu est preleve
-                  directement sur le salaire via le prelevement a la source. Le taux est calcule
-                  par la DGFiP en fonction de votre derniere declaration. Vous pouvez le moduler a
+                  <strong>Le PAS depuis 2019.</strong> L&apos;impôt sur le revenu est prélevé
+                  directement sur le salaire via le prélèvement à la source. Le taux est calculé
+                  par la DGFiP en fonction de votre dernière déclaration. Vous pouvez le moduler à
                   tout moment sur impots.gouv.fr en cas de changement de situation (mariage,
                   naissance, perte d&apos;emploi).
                 </p>
                 <p>
-                  <strong>Source.</strong> Taux moyens 2026 issus des baremes URSSAF, AGIRC-ARRCO,
-                  CSG/CRDS et bareme progressif IR (DGFiP). Pour un calcul exact, votre bulletin de
-                  paie reste la reference.
+                  <strong>Source.</strong> Taux moyens 2026 issus des barèmes URSSAF, AGIRC-ARRCO,
+                  CSG/CRDS et barème progressif IR (DGFiP). Pour un calcul exact, votre bulletin de
+                  paie reste la référence.
                 </p>
               </div>
             </section>
 
             <ToolFaqSection
-              intro="Les questions les plus frequentes sur le calcul du salaire net en France."
+              intro="Les questions les plus fréquentes sur le calcul du salaire net en France."
               items={[
                 {
                   question: "Comment calculer son salaire net en 2026 ?",
                   answer:
-                    "En 2026, pour obtenir votre salaire net a partir du brut, appliquez le taux de cotisations salariales correspondant a votre statut. Pour un salarie non-cadre du secteur prive, deduisez environ 22 % du salaire brut. Pour un cadre, comptez environ 25 %. Les fonctionnaires ont un taux plus faible, autour de 17 %. Le prelevement a la source de l'impot sur le revenu est ensuite retranchi pour obtenir le net 'en poche'.",
+                    "En 2026, pour obtenir votre salaire net à partir du brut, appliquez le taux de cotisations salariales correspondant à votre statut. Pour un salarié non-cadre du secteur privé, déduisez environ 22 % du salaire brut. Pour un cadre, comptez environ 25 %. Les fonctionnaires ont un taux plus faible, autour de 17 %. Le prélèvement à la source de l'impôt sur le revenu est ensuite retranché pour obtenir le net 'en poche'.",
                 },
                 {
-                  question: "Quelle difference entre salaire brut et net ?",
+                  question: "Quelle différence entre salaire brut et net ?",
                   answer:
-                    "Le salaire brut est la remuneration totale avant toute deduction. Le salaire net est ce que vous percevez reellement apres deduction des cotisations salariales (assurance maladie, retraite, chomage, CSG, CRDS). En France, la difference represente entre 17 % et 25 % du brut selon votre statut. Depuis 2019, le net 'apres impot' figurant sur votre fiche de paie tient egalement compte du prelevement a la source.",
+                    "Le salaire brut est la rémunération totale avant toute déduction. Le salaire net est ce que vous percevez réellement après déduction des cotisations salariales (assurance maladie, retraite, chômage, CSG, CRDS). En France, la différence représente entre 17 % et 25 % du brut selon votre statut. Depuis 2019, le net 'après impôt' figurant sur votre fiche de paie tient également compte du prélèvement à la source.",
                 },
                 {
                   question: "Quel est le taux de charges salariales en 2026 ?",
                   answer:
-                    "En 2026, les cotisations salariales representent en moyenne 22 % du salaire brut pour un non-cadre et 25 % pour un cadre dans le secteur prive. Ces charges incluent la CSG (9,2 % dont 6,8 % deductibles), la CRDS (0,5 %), les cotisations retraite de base et complementaire, et l'assurance chomage. Les taux exacts dependent de votre convention collective et de votre tranche de salaire.",
+                    "En 2026, les cotisations salariales représentent en moyenne 22 % du salaire brut pour un non-cadre et 25 % pour un cadre dans le secteur privé. Ces charges incluent la CSG (9,2 % dont 6,8 % déductibles), la CRDS (0,5 %), les cotisations retraite de base et complémentaire, et l'assurance chômage. Les taux exacts dépendent de votre convention collective et de votre tranche de salaire.",
                 },
                 {
-                  question: "Comment est calcule le prelevement a la source ?",
+                  question: "Comment est calculé le prélèvement à la source ?",
                   answer:
-                    "Le prelevement a la source (PAS) est preleve chaque mois directement sur votre salaire par votre employeur. Le taux est calcule par l'administration fiscale en fonction de votre derniere declaration de revenus. Il tient compte de l'ensemble de vos revenus et de votre situation familiale (nombre de parts fiscales). Vous pouvez demander une modulation de votre taux a tout moment sur impots.gouv.fr si votre situation change.",
+                    "Le prélèvement à la source (PAS) est prélevé chaque mois directement sur votre salaire par votre employeur. Le taux est calculé par l'administration fiscale en fonction de votre dernière déclaration de revenus. Il tient compte de l'ensemble de vos revenus et de votre situation familiale (nombre de parts fiscales). Vous pouvez demander une modulation de votre taux à tout moment sur impots.gouv.fr si votre situation change.",
                 },
                 {
                   question: "Pourquoi mon salaire net diminue-t-il quand je passe cadre ?",
                   answer:
-                    "Le statut cadre s'accompagne de cotisations supplementaires, notamment la retraite complementaire AGIRC-ARRCO et la prevoyance cadre. A salaire brut egal, un cadre touche donc legerement moins en net qu'un non-cadre, mais beneficie en contrepartie d'une meilleure retraite et de protections sociales etendues.",
+                    "Le statut cadre s'accompagne de cotisations supplémentaires, notamment la retraite complémentaire AGIRC-ARRCO et la prévoyance cadre. À salaire brut égal, un cadre touche donc légèrement moins en net qu'un non-cadre, mais bénéficie en contrepartie d'une meilleure retraite et de protections sociales étendues.",
                 },
                 {
                   question: "Comment calculer son salaire annuel net ?",
                   answer:
-                    "Multipliez votre net mensuel par 12 (ou 13 si vous avez un 13e mois). Attention : pour un calcul precis, n'oubliez pas les primes (interessement, participation, anciennete), qui peuvent etre soumises a des regles fiscales differentes (PEE, PERCO).",
+                    "Multipliez votre net mensuel par 12 (ou 13 si vous avez un 13e mois). Attention : pour un calcul précis, n'oubliez pas les primes (intéressement, participation, ancienneté), qui peuvent être soumises à des règles fiscales différentes (PEE, PERCO).",
                 },
                 {
-                  question: "Le calculateur garde-t-il mes donnees ?",
+                  question: "Le calculateur garde-t-il mes données ?",
                   answer:
-                    "Non. Tous les calculs sont effectues localement dans votre navigateur. Aucune donnee saisie (salaire, statut, situation familiale) n'est envoyee a un serveur ni stockee. L'outil fonctionne sans inscription.",
+                    "Non. Tous les calculs sont effectués localement dans votre navigateur. Aucune donnée saisie (salaire, statut, situation familiale) n'est envoyée à un serveur ni stockée. L'outil fonctionne sans inscription.",
                 },
               ]}
             />
@@ -490,10 +514,10 @@ export default function CalculateurSalaire() {
           <aside className="space-y-6">
             <AdPlaceholder className="h-[250px]" />
             <div className="rounded-2xl border p-6" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-              <h3 className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--accent)" }}>A propos</h3>
+              <h3 className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--accent)" }}>À propos</h3>
               <p className="mt-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
                 Ce calculateur utilise les taux moyens de cotisations salariales en France.
-                Les resultats sont des estimations. Consultez votre bulletin de paie pour un calcul precis.
+                Les résultats sont des estimations. Consultez votre bulletin de paie pour un calcul précis.
               </p>
             </div>
             <AdPlaceholder className="h-[600px]" />
@@ -564,7 +588,7 @@ function DonutChart({
   const impotLen = impotPct * c;
   const netLen = netPct * c;
   return (
-    <svg width="160" height="160" viewBox="-80 -80 160 160" role="img" aria-label="Repartition du salaire brut">
+    <svg width="160" height="160" viewBox="-80 -80 160 160" role="img" aria-label="Répartition du salaire brut">
       <circle cx="0" cy="0" r={r} fill="none" stroke="var(--border)" strokeWidth={stroke} />
       <g transform="rotate(-90)">
         <circle

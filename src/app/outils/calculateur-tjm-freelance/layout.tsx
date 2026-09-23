@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Calculateur TJM Freelance - Taux Journalier Moyen Gratuit",
   description:
-    "Calculez votre TJM freelance ideal a partir de votre salaire net souhaite. Charges, conges, frais pro inclus. Outil gratuit et sans inscription.",
+    "Calculez votre TJM freelance idéal à partir de votre salaire net souhaité. Charges, congés, frais pro inclus. Outil gratuit et sans inscription.",
   keywords: [
     "calculateur TJM",
     "TJM freelance",

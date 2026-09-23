@@ -18,27 +18,22 @@ function calcAbattementPS(annees: number): number {
   return 100;
 }
 
+// Taxe sur les plus-values immobilieres elevees (art. 1609 nonies G CGI) :
+// le taux s'applique a la TOTALITE de la plus-value imposable, avec un lissage
+// a l'entree de chaque tranche.
 function calcSurtaxe(pvNetteIR: number): number {
-  if (pvNetteIR <= 50000) return 0;
-  const tranches = [
-    { min: 50000, max: 60000, taux: 0.02 },
-    { min: 60000, max: 100000, taux: 0.02 },
-    { min: 100000, max: 110000, taux: 0.03 },
-    { min: 110000, max: 150000, taux: 0.03 },
-    { min: 150000, max: 160000, taux: 0.04 },
-    { min: 160000, max: 200000, taux: 0.04 },
-    { min: 200000, max: 210000, taux: 0.05 },
-    { min: 210000, max: 250000, taux: 0.05 },
-    { min: 250000, max: 260000, taux: 0.06 },
-    { min: 260000, max: Infinity, taux: 0.06 },
-  ];
-  let surtaxe = 0;
-  for (const t of tranches) {
-    if (pvNetteIR <= t.min) break;
-    const base = Math.min(pvNetteIR, t.max) - t.min;
-    surtaxe += base * t.taux;
-  }
-  return surtaxe;
+  const pv = Math.floor(pvNetteIR);
+  if (pv <= 50000) return 0;
+  if (pv <= 60000) return 0.02 * pv - (60000 - pv) / 20;
+  if (pv <= 100000) return 0.02 * pv;
+  if (pv <= 110000) return 0.03 * pv - (110000 - pv) / 10;
+  if (pv <= 150000) return 0.03 * pv;
+  if (pv <= 160000) return 0.04 * pv - (160000 - pv) * 0.15;
+  if (pv <= 200000) return 0.04 * pv;
+  if (pv <= 210000) return 0.05 * pv - (210000 - pv) * 0.2;
+  if (pv <= 250000) return 0.05 * pv;
+  if (pv <= 260000) return 0.06 * pv - (260000 - pv) * 0.25;
+  return 0.06 * pv;
 }
 
 export default function SimulateurPlusValueImmobiliere() {
@@ -123,10 +118,10 @@ export default function SimulateurPlusValueImmobiliere() {
         <div className="mx-auto max-w-7xl px-6 2xl:max-w-[1400px]">
           <p className="animate-fade-up text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: "var(--accent)" }}>Immobilier</p>
           <h1 className="animate-fade-up stagger-1 mt-3 text-4xl tracking-tight md:text-5xl" style={{ fontFamily: "var(--font-display)" }}>
-            Simulateur <span style={{ color: "var(--primary)" }}>Plus-Value Immobiliere</span>
+            Simulateur <span style={{ color: "var(--primary)" }}>Plus-Value Immobilière</span>
           </h1>
           <p className="animate-fade-up stagger-2 mt-3 max-w-xl text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-            Calculez l&apos;impot sur la plus-value de votre bien immobilier : IR, prelevements sociaux, surtaxe et abattements par duree de detention.
+            Calculez l&apos;impôt sur la plus-value de votre bien immobilier : IR, prélèvements sociaux, surtaxe et abattements par durée de détention.
           </p>
         </div>
       </section>
@@ -148,7 +143,7 @@ export default function SimulateurPlusValueImmobiliere() {
                     className="mt-2 w-full rounded-xl border px-4 py-4 text-2xl font-bold" style={{ borderColor: "var(--border)", fontFamily: "var(--font-display)" }} />
                 </div>
                 <div>
-                  <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>Annee d&apos;achat</label>
+                  <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>Année d&apos;achat</label>
                   <input type="number" value={anneeAchat} onChange={(e) => setAnneeAchat(e.target.value)}
                     className="mt-2 w-full rounded-xl border px-4 py-4 text-2xl font-bold" style={{ borderColor: "var(--border)", fontFamily: "var(--font-display)" }} />
                 </div>
@@ -190,7 +185,7 @@ export default function SimulateurPlusValueImmobiliere() {
                     <div>
                       <input type="number" value={fraisPourcentage} onChange={(e) => setFraisPourcentage(e.target.value)}
                         className="w-full rounded-xl border px-4 py-3 text-lg font-bold" style={{ borderColor: "var(--border)", fontFamily: "var(--font-display)" }} />
-                      <p className="mt-1 text-xs" style={{ color: "var(--muted)" }}>Defaut : 7,5% (frais de notaire estimees)</p>
+                      <p className="mt-1 text-xs" style={{ color: "var(--muted)" }}>Défaut : 7,5% (frais de notaire estimées)</p>
                     </div>
                   ) : (
                     <input type="number" value={fraisMontant} onChange={(e) => setFraisMontant(e.target.value)}
@@ -202,7 +197,7 @@ export default function SimulateurPlusValueImmobiliere() {
 
             {/* Resultats principaux */}
             <div className="rounded-2xl border p-8 text-center" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-              <p className="text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: "var(--muted)" }}>Plus-value nette apres impot</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: "var(--muted)" }}>Plus-value nette après impôt</p>
               <p className="mt-3 text-6xl font-bold" style={{
                 fontFamily: "var(--font-display)",
                 color: resultats.pvNette >= 0 ? "var(--primary)" : "#dc2626",
@@ -210,21 +205,21 @@ export default function SimulateurPlusValueImmobiliere() {
                 {fmt(resultats.pvNette)} &euro;
               </p>
               <p className="mt-2 text-sm" style={{ color: "var(--muted)" }}>
-                Duree de detention : <strong className="text-[var(--foreground)]">{resultats.dureeDetention} ans</strong>
+                Durée de détention : <strong className="text-[var(--foreground)]">{resultats.dureeDetention} ans</strong>
               </p>
             </div>
 
             {/* Detail calcul */}
             <div className="rounded-2xl border p-6" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-              <h2 className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--accent)" }}>Detail du calcul</h2>
+              <h2 className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--accent)" }}>Détail du calcul</h2>
               <div className="mt-4 space-y-3">
                 {[
                   { label: "Plus-value brute", value: `${fmt(resultats.pvBrute)} \u20AC` },
                   { label: "Frais d'acquisition", value: `${fmt(resultats.fraisAcquisition)} \u20AC` },
                   { label: "Abattement IR", value: `${fmtPct(resultats.abattementIRPct)} %` },
                   { label: "Abattement PS", value: `${fmtPct(resultats.abattementPSPct)} %` },
-                  { label: "PV nette IR (apres abattement)", value: `${fmt(resultats.pvNetteIR)} \u20AC` },
-                  { label: "PV nette PS (apres abattement)", value: `${fmt(resultats.pvNettePS)} \u20AC` },
+                  { label: "PV nette IR (après abattement)", value: `${fmt(resultats.pvNetteIR)} \u20AC` },
+                  { label: "PV nette PS (après abattement)", value: `${fmt(resultats.pvNettePS)} \u20AC` },
                 ].map((item) => (
                   <div key={item.label} className="flex justify-between items-center py-2" style={{ borderBottom: "1px solid var(--border)" }}>
                     <span className="text-sm" style={{ color: "var(--muted)" }}>{item.label}</span>
@@ -242,7 +237,7 @@ export default function SimulateurPlusValueImmobiliere() {
                   { label: "IR (19%)", value: fmt(resultats.ir), color: "#ea580c" },
                   { label: "PS (17,2%)", value: fmt(resultats.ps), color: "#ea580c" },
                   { label: "Surtaxe", value: fmt(resultats.surtaxe), color: resultats.surtaxe > 0 ? "#dc2626" : "var(--muted)" },
-                  { label: "Total impot", value: fmt(resultats.impotTotal), color: "#dc2626" },
+                  { label: "Total impôt", value: fmt(resultats.impotTotal), color: "#dc2626" },
                 ].map((item) => (
                   <div key={item.label} className="rounded-xl p-4 text-center" style={{ background: "var(--surface-alt)" }}>
                     <p className="text-xs font-semibold uppercase" style={{ color: "var(--muted)" }}>{item.label}</p>
@@ -254,24 +249,24 @@ export default function SimulateurPlusValueImmobiliere() {
 
             {/* Bareme abattements */}
             <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Bareme des abattements</h2>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Barème des abattements</h2>
               <div className="mt-4 overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
                     <tr style={{ borderBottom: "2px solid var(--border)" }}>
-                      <th className="py-2 text-left font-semibold" style={{ color: "var(--muted)" }}>Duree</th>
+                      <th className="py-2 text-left font-semibold" style={{ color: "var(--muted)" }}>Durée</th>
                       <th className="py-2 text-right font-semibold" style={{ color: "var(--muted)" }}>Abattement IR</th>
                       <th className="py-2 text-right font-semibold" style={{ color: "var(--muted)" }}>Abattement PS</th>
                     </tr>
                   </thead>
                   <tbody>
                     {[
-                      { duree: "0 a 5 ans", ir: "0%", ps: "0%" },
-                      { duree: "6 a 21 ans", ir: "6% / an", ps: "1,65% / an" },
-                      { duree: "22e annee", ir: "4%", ps: "1,60%" },
-                      { duree: "23 a 30 ans", ir: "-", ps: "9% / an" },
-                      { duree: "Au-dela 22 ans", ir: "Exonere", ps: "-" },
-                      { duree: "Au-dela 30 ans", ir: "Exonere", ps: "Exonere" },
+                      { duree: "0 à 5 ans", ir: "0%", ps: "0%" },
+                      { duree: "6 à 21 ans", ir: "6% / an", ps: "1,65% / an" },
+                      { duree: "22e année", ir: "4%", ps: "1,60%" },
+                      { duree: "23 à 30 ans", ir: "-", ps: "9% / an" },
+                      { duree: "Au-delà 22 ans", ir: "Exonéré", ps: "-" },
+                      { duree: "Au-delà 30 ans", ir: "Exonéré", ps: "Exonéré" },
                     ].map((row) => (
                       <tr key={row.duree} style={{ borderBottom: "1px solid var(--border)" }}>
                         <td className="py-2 font-medium">{row.duree}</td>
@@ -287,39 +282,39 @@ export default function SimulateurPlusValueImmobiliere() {
             {/* SEO Content */}
             <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
               <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
-                Comment calculer la plus-value immobiliere
+                Comment calculer la plus-value immobilière
               </h2>
               <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                <p>La plus-value immobiliere correspond a la difference entre le prix de vente et le prix d&apos;acquisition d&apos;un bien immobilier. Elle est soumise a l&apos;impot sur le revenu (19%) et aux prelevements sociaux (17,2%), avec des abattements progressifs selon la duree de detention.</p>
+                <p>La plus-value immobilière correspond à la différence entre le prix de vente et le prix d&apos;acquisition d&apos;un bien immobilier. Elle est soumise à l&apos;impôt sur le revenu (19%) et aux prélèvements sociaux (17,2%), avec des abattements progressifs selon la durée de détention.</p>
                 <ul className="ml-4 list-disc space-y-1">
-                  <li><strong className="text-[var(--foreground)]">Prix d&apos;acquisition</strong> : prix d&apos;achat + frais d&apos;acquisition (forfait 7,5% ou frais reels) + travaux (forfait 15% apres 5 ans ou montant reel).</li>
-                  <li><strong className="text-[var(--foreground)]">Abattements IR</strong> : exoneration totale apres 22 ans de detention. 6% par an de la 6e a la 21e annee, puis 4% la 22e annee.</li>
-                  <li><strong className="text-[var(--foreground)]">Abattements PS</strong> : exoneration totale apres 30 ans. 1,65% par an de la 6e a la 21e annee, 1,60% la 22e, puis 9% par an jusqu&apos;a la 30e annee.</li>
-                  <li><strong className="text-[var(--foreground)]">Surtaxe</strong> : si la plus-value nette depasse 50 000 &euro;, une surtaxe de 2% a 6% s&apos;applique progressivement.</li>
+                  <li><strong className="text-[var(--foreground)]">Prix d&apos;acquisition</strong> : prix d&apos;achat + frais d&apos;acquisition (forfait 7,5% ou frais réels) + travaux (forfait 15% après 5 ans ou montant réel).</li>
+                  <li><strong className="text-[var(--foreground)]">Abattements IR</strong> : exonération totale après 22 ans de détention. 6% par an de la 6e à la 21e année, puis 4% la 22e année.</li>
+                  <li><strong className="text-[var(--foreground)]">Abattements PS</strong> : exonération totale après 30 ans. 1,65% par an de la 6e à la 21e année, 1,60% la 22e, puis 9% par an jusqu&apos;à la 30e année.</li>
+                  <li><strong className="text-[var(--foreground)]">Surtaxe</strong> : si la plus-value nette dépasse 50 000 &euro;, une surtaxe de 2% à 6% s&apos;applique progressivement.</li>
                 </ul>
-                <p>La residence principale est exoneree de toute imposition sur la plus-value. Ce simulateur concerne les residences secondaires et les investissements locatifs.</p>
+                <p>La résidence principale est exonérée de toute imposition sur la plus-value. Ce simulateur concerne les résidences secondaires et les investissements locatifs.</p>
               </div>
             </div>
 
             {/* FAQ */}
             <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Questions frequentes</h2>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Questions fréquentes</h2>
               <div className="mt-6 space-y-5">
                 <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
-                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Ma residence principale est-elle concernee ?</h3>
-                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Non. La vente de votre residence principale est totalement exoneree d&apos;impot sur la plus-value, quelle que soit la duree de detention ou le montant de la plus-value. Cette exoneration est l&apos;un des principaux avantages fiscaux lies a la propriete en France.</p>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Ma résidence principale est-elle concernée ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Non. La vente de votre résidence principale est totalement exonérée d&apos;impôt sur la plus-value, quelle que soit la durée de détention ou le montant de la plus-value. Cette exonération est l&apos;un des principaux avantages fiscaux liés à la propriété en France.</p>
                 </div>
                 <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
-                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Combien de temps faut-il garder un bien pour ne pas payer d&apos;impot ?</h3>
-                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Pour etre totalement exonere d&apos;impot sur le revenu (IR), il faut detenir le bien plus de 22 ans. Pour etre aussi exonere des prelevements sociaux (PS), il faut attendre plus de 30 ans de detention. Entre 22 et 30 ans, vous ne payez que les prelevements sociaux avec un abattement progressif.</p>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Combien de temps faut-il garder un bien pour ne pas payer d&apos;impôt ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Pour être totalement exonéré d&apos;impôt sur le revenu (IR), il faut détenir le bien plus de 22 ans. Pour être aussi exonéré des prélèvements sociaux (PS), il faut attendre plus de 30 ans de détention. Entre 22 et 30 ans, vous ne payez que les prélèvements sociaux avec un abattement progressif.</p>
                 </div>
                 <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
                   <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Qu&apos;est-ce que la surtaxe sur les plus-values ?</h3>
-                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Lorsque la plus-value nette imposable (apres abattement pour duree de detention) depasse 50 000 &euro;, une surtaxe progressive s&apos;ajoute a l&apos;IR et aux PS. Son taux varie de 2% (entre 50 001 et 60 000 &euro;) a 6% (au-dela de 260 000 &euro;). Elle est calculee sur la totalite de la plus-value nette.</p>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Lorsque la plus-value nette imposable (après abattement pour durée de détention) dépasse 50 000 &euro;, une surtaxe progressive s&apos;ajoute à l&apos;IR et aux PS. Son taux varie de 2% (entre 50 001 et 60 000 &euro;) à 6% (au-delà de 260 000 &euro;). Elle est calculée sur la totalité de la plus-value nette.</p>
                 </div>
                 <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
-                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Les travaux sont-ils deductibles ?</h3>
-                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Oui. Les travaux de construction, reconstruction, agrandissement ou amelioration peuvent etre ajoutes au prix d&apos;acquisition pour reduire la plus-value. Apres 5 ans de detention, vous pouvez aussi opter pour un forfait de 15% du prix d&apos;achat sans avoir a fournir de justificatifs.</p>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Les travaux sont-ils déductibles ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Oui. Les travaux de construction, reconstruction, agrandissement ou amélioration peuvent être ajoutés au prix d&apos;acquisition pour réduire la plus-value. Après 5 ans de détention, vous pouvez aussi opter pour un forfait de 15% du prix d&apos;achat sans avoir à fournir de justificatifs.</p>
                 </div>
               </div>
             </div>

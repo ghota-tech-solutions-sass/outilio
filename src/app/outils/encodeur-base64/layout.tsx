@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Encodeur / Decodeur Base64 - Convertir texte en Base64",
+  title: "Encodeur / Décodeur Base64 - Convertir texte en Base64",
   description:
-    "Encodez du texte en Base64 ou decodez du Base64 en texte. Copie en un clic. Outil gratuit pour developpeurs.",
+    "Encodez du texte en Base64 ou décodez du Base64 en texte. Copie en un clic. Outil gratuit pour développeurs.",
   keywords: [
     "encodeur base64",
     "decodeur base64",

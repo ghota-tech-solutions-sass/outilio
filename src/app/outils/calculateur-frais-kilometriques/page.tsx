@@ -37,8 +37,8 @@ type BaremeAnnee = {
 
 /* ─────────── Baremes officiels par annee ─────────── */
 // Source : service-public.gouv.fr, legisocial.fr
-// Le bareme 2025 est identique a 2024 (pas de revalorisation).
-// La derniere revalorisation date de 2023 (+5.4%).
+// Bareme fixe par l'arrete du 27 mars 2023 (+5,4 %), reconduit a l'identique
+// pour les revenus 2023, 2024 et 2025 (declaration 2026, BOI-BAREME-000001).
 // Pour les annees futures sans bareme officiel, on extrapole avec ~2% annuel.
 
 const BAREMES_OFFICIELS: Record<number, { voitures: BaremeVehicule; motos: BaremeVehicule; cyclomoteurs: BaremeVehicule }> = {
@@ -152,7 +152,7 @@ function buildBaremes(): BaremeAnnee[] {
     const b = getBaremePourAnnee(y);
     result.push({
       annee: y,
-      label: `Revenus ${y} (declaration ${y + 1})`,
+      label: `Revenus ${y} (déclaration ${y + 1})`,
       estime: !BAREMES_OFFICIELS[y],
       vehicules: [b.voitures, b.motos, b.cyclomoteurs],
     });
@@ -180,10 +180,10 @@ function calculerFrais(
 
   if (distance <= seuil1) {
     trancheIndex = 0;
-    trancheLabel = `Jusqu'a ${seuil1.toLocaleString("fr-FR")} km`;
+    trancheLabel = `Jusqu'à ${seuil1.toLocaleString("fr-FR")} km`;
   } else if (distance <= seuil2) {
     trancheIndex = 1;
-    trancheLabel = `De ${(seuil1 + 1).toLocaleString("fr-FR")} a ${seuil2.toLocaleString("fr-FR")} km`;
+    trancheLabel = `De ${(seuil1 + 1).toLocaleString("fr-FR")} à ${seuil2.toLocaleString("fr-FR")} km`;
   } else {
     trancheIndex = 2;
     trancheLabel = `Plus de ${seuil2.toLocaleString("fr-FR")} km`;
@@ -210,10 +210,8 @@ function calculerFrais(
 /* ─────────── Composant ─────────── */
 
 function getDefaultAnnee(): number {
-  const now = new Date();
-  const year = now.getFullYear();
-  const target = now.getMonth() < 9 ? year - 1 : year;
-  return BAREMES.find((b) => b.annee <= target)?.annee ?? BAREMES[0].annee;
+  // Dernier bareme officiellement publie (jamais une annee extrapolee)
+  return BAREMES.find((b) => !b.estime)?.annee ?? BAREMES[0].annee;
 }
 
 export default function CalculateurFraisKilometriques() {
@@ -256,14 +254,14 @@ export default function CalculateurFraisKilometriques() {
       <section className="relative py-14" style={{ borderBottom: "1px solid var(--border)" }}>
         <div className="mx-auto max-w-7xl px-6 2xl:max-w-[1400px]">
           <p className="animate-fade-up text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: "var(--accent)" }}>
-            Fiscalite
+            Fiscalité
           </p>
           <h1 className="animate-fade-up stagger-1 mt-3 text-4xl tracking-tight md:text-5xl" style={{ fontFamily: "var(--font-display)" }}>
-            Calculateur <span style={{ color: "var(--primary)" }}>frais kilometriques</span>
+            Calculateur <span style={{ color: "var(--primary)" }}>frais kilométriques</span>
           </h1>
           <p className="animate-fade-up stagger-2 mt-3 max-w-xl text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-            Calculez le montant deductible de vos frais kilometriques avec le bareme fiscal officiel {annee}.
-            Voiture, moto, scooter et majoration vehicule electrique (+20%).
+            Calculez le montant déductible de vos frais kilométriques avec le barème fiscal officiel {annee}.
+            Voiture, moto, scooter et majoration véhicule électrique (+20%).
           </p>
         </div>
       </section>
@@ -278,7 +276,7 @@ export default function CalculateurFraisKilometriques() {
               <div className="space-y-4">
                 <div>
                   <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>
-                    Annee fiscale
+                    Année fiscale
                   </label>
                   <select
                     value={annee}
@@ -288,7 +286,7 @@ export default function CalculateurFraisKilometriques() {
                   >
                     {BAREMES.map((b) => (
                       <option key={b.annee} value={b.annee}>
-                        {b.label}{b.estime ? " (estime)" : ""}
+                        {b.label}{b.estime ? " (estimé)" : ""}
                       </option>
                     ))}
                   </select>
@@ -296,7 +294,7 @@ export default function CalculateurFraisKilometriques() {
 
                 <div>
                   <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>
-                    Type de vehicule
+                    Type de véhicule
                   </label>
                   <div className="mt-2 flex gap-2">
                     {(["voiture", "moto", "cyclomoteur"] as VehiculeType[]).map((type) => {
@@ -324,7 +322,7 @@ export default function CalculateurFraisKilometriques() {
             {/* Parametres */}
             <div className="rounded-2xl border p-6" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
               <h2 className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--accent)" }}>
-                Parametres
+                Paramètres
               </h2>
               <div className="mt-4 space-y-4">
                 {/* Puissance fiscale */}
@@ -370,14 +368,14 @@ export default function CalculateurFraisKilometriques() {
                   style={{ background: electrique ? "rgba(13,79,60,0.08)" : "var(--surface-alt)" }}
                 >
                   <div>
-                    <p className="text-sm font-semibold">Vehicule 100% electrique</p>
+                    <p className="text-sm font-semibold">Véhicule 100% électrique</p>
                     <p className="text-xs" style={{ color: "var(--muted)" }}>Majoration de 20% sur le montant</p>
                   </div>
                   <button
                     onClick={() => setElectrique(!electrique)}
                     className="relative h-7 w-12 rounded-full transition-all"
                     style={{ background: electrique ? "var(--primary)" : "var(--border)" }}
-                    aria-label="Activer la majoration vehicule electrique"
+                    aria-label="Activer la majoration véhicule électrique"
                     role="switch"
                     aria-checked={electrique}
                   >
@@ -394,7 +392,7 @@ export default function CalculateurFraisKilometriques() {
             {result && (
               <>
                 <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
-                  <StatBox label="Montant deductible" value={`${fmt(result.montant)} \u20AC`} primary />
+                  <StatBox label="Montant déductible" value={`${fmt(result.montant)} \u20AC`} primary />
                   <StatBox label="Par mois" value={`${fmt(result.montant / 12)} \u20AC`} />
                   <StatBox label="Par km" value={`${fmt(result.montant / distanceNum, 3)} \u20AC`} accent />
                 </div>
@@ -402,15 +400,15 @@ export default function CalculateurFraisKilometriques() {
                 {/* Detail du calcul */}
                 <div className="rounded-2xl border p-6" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
                   <h2 className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--accent)" }}>
-                    Detail du calcul
+                    Détail du calcul
                   </h2>
                   <div className="mt-4 space-y-3">
                     <div className="flex items-center justify-between rounded-xl px-4 py-3" style={{ background: "var(--surface-alt)" }}>
-                      <span className="text-xs font-semibold" style={{ color: "var(--muted)" }}>Vehicule</span>
+                      <span className="text-xs font-semibold" style={{ color: "var(--muted)" }}>Véhicule</span>
                       <span className="text-sm font-bold">{vehicule.label} &mdash; {vehicule.puissances[safePuissanceIndex].label}</span>
                     </div>
                     <div className="flex items-center justify-between rounded-xl px-4 py-3" style={{ background: "var(--surface-alt)" }}>
-                      <span className="text-xs font-semibold" style={{ color: "var(--muted)" }}>Tranche appliquee</span>
+                      <span className="text-xs font-semibold" style={{ color: "var(--muted)" }}>Tranche appliquée</span>
                       <span className="text-sm font-bold">{result.trancheLabel}</span>
                     </div>
                     <div className="flex items-center justify-between rounded-xl px-4 py-3" style={{ background: "var(--surface-alt)" }}>
@@ -423,12 +421,12 @@ export default function CalculateurFraisKilometriques() {
                     </div>
                     {electrique && (
                       <div className="flex items-center justify-between rounded-xl px-4 py-3" style={{ background: "rgba(13,79,60,0.08)" }}>
-                        <span className="text-xs font-semibold" style={{ color: "var(--primary)" }}>Majoration electrique (+20%)</span>
+                        <span className="text-xs font-semibold" style={{ color: "var(--primary)" }}>Majoration électrique (+20%)</span>
                         <span className="text-sm font-bold" style={{ color: "var(--primary)" }}>+ {fmt(result.majorationElec)} &euro;</span>
                       </div>
                     )}
                     <div className="flex items-center justify-between rounded-xl border-2 px-4 py-3" style={{ borderColor: "var(--primary)", background: "rgba(13,79,60,0.04)" }}>
-                      <span className="text-sm font-bold" style={{ color: "var(--primary)" }}>Total deductible</span>
+                      <span className="text-sm font-bold" style={{ color: "var(--primary)" }}>Total déductible</span>
                       <span className="text-xl font-bold" style={{ fontFamily: "var(--font-display)", color: "var(--primary)" }}>
                         {fmt(result.montant)} &euro;
                       </span>
@@ -441,7 +439,7 @@ export default function CalculateurFraisKilometriques() {
             {/* Tableau du bareme complet */}
             <div className="rounded-2xl border p-6" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
               <h2 className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--accent)" }}>
-                Bareme {vehicule.label.toLowerCase()} {annee}
+                Barème {vehicule.label.toLowerCase()} {annee}
               </h2>
               <div className="mt-4 overflow-x-auto">
                 <table className="w-full text-sm">
@@ -484,7 +482,7 @@ export default function CalculateurFraisKilometriques() {
               </div>
               {bareme.estime && (
                 <p className="mt-3 text-xs" style={{ color: "var(--accent)" }}>
-                  * Bareme estime (+2%/an). Les valeurs officielles seront mises a jour des publication au Journal Officiel.
+                  * Barème estimé (+2%/an). Les valeurs officielles seront mises à jour dès publication au Journal Officiel.
                 </p>
               )}
             </div>
@@ -492,23 +490,23 @@ export default function CalculateurFraisKilometriques() {
             {/* Explications */}
             <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
               <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
-                Comment fonctionnent les frais kilometriques ?
+                Comment fonctionnent les frais kilométriques ?
               </h2>
               <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
                 <p>
-                  <strong className="text-[var(--foreground)]">Principe.</strong> Les frais kilometriques permettent de deduire de votre revenu imposable les frais engages pour vos deplacements professionnels. Le bareme est publie chaque annee par l&apos;administration fiscale.
+                  <strong className="text-[var(--foreground)]">Principe.</strong> Les frais kilométriques permettent de déduire de votre revenu imposable les frais engagés pour vos déplacements professionnels. Le barème est publié chaque année par l&apos;administration fiscale.
                 </p>
                 <p>
-                  <strong className="text-[var(--foreground)]">Frais reels vs abattement de 10%.</strong> Vous pouvez opter pour la deduction des frais reels si vos depenses (trajet domicile-travail, repas, etc.) depassent l&apos;abattement forfaitaire de 10% applique automatiquement.
+                  <strong className="text-[var(--foreground)]">Frais réels vs abattement de 10%.</strong> Vous pouvez opter pour la déduction des frais réels si vos dépenses (trajet domicile-travail, repas, etc.) dépassent l&apos;abattement forfaitaire de 10% appliqué automatiquement.
                 </p>
                 <p>
-                  <strong className="text-[var(--foreground)]">Ce que couvre le bareme.</strong> Le bareme prend en compte la depreciation du vehicule, l&apos;assurance, les frais de reparation et d&apos;entretien, les pneumatiques et le carburant. Les frais de peage et de stationnement peuvent etre ajoutes en plus.
+                  <strong className="text-[var(--foreground)]">Ce que couvre le barème.</strong> Le barème prend en compte la dépréciation du véhicule, l&apos;assurance, les frais de réparation et d&apos;entretien, les pneumatiques et le carburant. Les frais de péage et de stationnement peuvent être ajoutés en plus.
                 </p>
                 <p>
-                  <strong className="text-[var(--foreground)]">Vehicules electriques.</strong> Depuis 2021, les montants calcules avec le bareme sont majores de 20% pour les vehicules 100% electriques (voitures, motos et scooters).
+                  <strong className="text-[var(--foreground)]">Véhicules électriques.</strong> Depuis 2021, les montants calculés avec le barème sont majorés de 20% pour les véhicules 100% électriques (voitures, motos et scooters).
                 </p>
                 <p>
-                  <strong className="text-[var(--foreground)]">Puissance fiscale.</strong> La puissance fiscale (en CV) figure sur votre carte grise a la rubrique P.6. Ne la confondez pas avec la puissance moteur en kW ou ch.
+                  <strong className="text-[var(--foreground)]">Puissance fiscale.</strong> La puissance fiscale (en CV) figure sur votre carte grise à la rubrique P.6. Ne la confondez pas avec la puissance moteur en kW ou ch.
                 </p>
               </div>
             </div>
@@ -523,9 +521,9 @@ export default function CalculateurFraisKilometriques() {
               </h3>
               <ul className="mt-3 space-y-2 text-sm" style={{ color: "var(--muted)" }}>
                 <li>Puissance fiscale : rubrique <strong className="text-[var(--foreground)]">P.6</strong> de la carte grise</li>
-                <li>Deduction limitee a <strong className="text-[var(--foreground)]">80 km/jour</strong> aller-retour (sauf justification)</li>
-                <li>Peages et parking : <strong className="text-[var(--foreground)]">en plus</strong> du bareme</li>
-                <li>Electrique : majoration de <strong className="text-[var(--foreground)]">+20%</strong></li>
+                <li>Déduction limitée à <strong className="text-[var(--foreground)]">80 km/jour</strong> aller-retour (sauf justification)</li>
+                <li>Péages et parking : <strong className="text-[var(--foreground)]">en plus</strong> du barème</li>
+                <li>Électrique : majoration de <strong className="text-[var(--foreground)]">+20%</strong></li>
               </ul>
             </div>
             <div className="rounded-2xl border p-6" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>

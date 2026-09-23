@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Generateur de mentions legales gratuit - RGPD conforme",
+  title: "Générateur de mentions légales gratuit - Conforme LCEN 2026",
   description:
-    "Generez des mentions legales conformes a la loi francaise et au RGPD pour votre site web. Gratuit, personnalisable, copie en un clic.",
+    "Générez les mentions légales de votre site (LCEN art. 1-1, loi SREN) : éditeur, directeur de la publication, hébergeur. Particulier, EI ou société. Gratuit, copie en un clic.",
   keywords: ["mentions legales", "generateur mentions legales", "RGPD", "mentions legales site web", "obligations legales site internet"],
   alternates: { canonical: "https://outilis.fr/outils/generateur-mentions-legales" },
 };

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -52,7 +52,21 @@ export default function GenerateurCV() {
   const [competences, setCompetences] = useState<string[]>([]);
   const [compInput, setCompInput] = useState("");
   const [template, setTemplate] = useState<Template>("classique");
-  const previewRef = useRef<HTMLDivElement>(null);
+  const previewBoxRef = useRef<HTMLDivElement>(null);
+  const [previewScale, setPreviewScale] = useState(0.48);
+
+  /* Adapte l'échelle de l'aperçu A4 à la largeur réelle du conteneur */
+  useEffect(() => {
+    const el = previewBoxRef.current;
+    if (!el || typeof ResizeObserver === "undefined") return;
+    const A4_WIDTH_PX = (210 / 25.4) * 96;
+    const ro = new ResizeObserver((entries) => {
+      const w = entries[0]?.contentRect.width;
+      if (w) setPreviewScale(w / A4_WIDTH_PX);
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
 
   /* ---------- helpers ---------- */
   const addExperience = () =>
@@ -91,6 +105,16 @@ export default function GenerateurCV() {
   /* ------------------------------------------------------------------ */
   return (
     <>
+      {/* Impression : n'imprimer que le CV (ni en-tête, ni pied de page du site) */}
+      <style>{`
+        @media print {
+          @page { size: A4; margin: 0; }
+          body > *:not(main), main > *:not([data-print-keep]), .google-auto-placed, ins.adsbygoogle { display: none !important; }
+          body { background: #fff !important; }
+          [data-print-keep], [data-print-keep] * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        }
+      `}</style>
+
       {/* ---- Hero ---- */}
       <section
         className="py-12 no-print"
@@ -101,10 +125,10 @@ export default function GenerateurCV() {
             className="text-3xl font-extrabold md:text-4xl"
             style={{ fontFamily: "var(--font-display)", color: "var(--primary)" }}
           >
-            Generateur de CV gratuit
+            Générateur de CV gratuit
           </h1>
           <p className="mt-2" style={{ color: "var(--muted)" }}>
-            Remplissez vos informations, choisissez un style et telechargez votre CV en PDF. 100% gratuit, sans inscription.
+            Remplissez vos informations, choisissez un style et téléchargez votre CV en PDF. 100 % gratuit, sans inscription.
           </p>
         </div>
       </section>
@@ -120,7 +144,7 @@ export default function GenerateurCV() {
               style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
             >
               <h2 className="text-lg font-semibold" style={{ color: "var(--foreground)" }}>
-                Modele
+                Modèle
               </h2>
               <div className="mt-3 flex gap-3">
                 {(["classique", "moderne"] as Template[]).map((t) => (
@@ -149,11 +173,11 @@ export default function GenerateurCV() {
                 Informations personnelles
               </h2>
               <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
-                <Field label="Prenom" value={infos.prenom} onChange={(v) => setInfos({ ...infos, prenom: v })} />
+                <Field label="Prénom" value={infos.prenom} onChange={(v) => setInfos({ ...infos, prenom: v })} />
                 <Field label="Nom" value={infos.nom} onChange={(v) => setInfos({ ...infos, nom: v })} />
-                <Field label="Titre / Poste recherche" value={infos.titre} onChange={(v) => setInfos({ ...infos, titre: v })} className="sm:col-span-2" />
+                <Field label="Titre / Poste recherché" value={infos.titre} onChange={(v) => setInfos({ ...infos, titre: v })} className="sm:col-span-2" />
                 <Field label="Email" value={infos.email} onChange={(v) => setInfos({ ...infos, email: v })} type="email" />
-                <Field label="Telephone" value={infos.telephone} onChange={(v) => setInfos({ ...infos, telephone: v })} type="tel" />
+                <Field label="Téléphone" value={infos.telephone} onChange={(v) => setInfos({ ...infos, telephone: v })} type="tel" />
                 <Field label="Ville" value={infos.ville} onChange={(v) => setInfos({ ...infos, ville: v })} />
               </div>
             </div>
@@ -164,13 +188,13 @@ export default function GenerateurCV() {
               style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
             >
               <h2 className="text-lg font-semibold" style={{ color: "var(--foreground)" }}>
-                Profil / Resume
+                Profil / Résumé
               </h2>
               <textarea
                 value={profil}
                 onChange={(e) => setProfil(e.target.value)}
                 rows={3}
-                placeholder="Decrivez votre profil en 2-3 phrases..."
+                placeholder="Décrivez votre profil en 2-3 phrases..."
                 className="mt-3 w-full rounded-lg px-3 py-2 text-sm"
                 style={{ border: "1px solid var(--border)", background: "var(--background)" }}
               />
@@ -182,7 +206,7 @@ export default function GenerateurCV() {
               style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
             >
               <h2 className="text-lg font-semibold" style={{ color: "var(--foreground)" }}>
-                Experiences professionnelles
+                Expériences professionnelles
               </h2>
               {experiences.map((exp, i) => (
                 <div
@@ -192,7 +216,7 @@ export default function GenerateurCV() {
                 >
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-medium" style={{ color: "var(--muted)" }}>
-                      Experience {i + 1}
+                      Expérience {i + 1}
                     </span>
                     {experiences.length > 1 && (
                       <button
@@ -207,8 +231,8 @@ export default function GenerateurCV() {
                   <div className="mt-2 grid grid-cols-1 gap-3 sm:grid-cols-2">
                     <Field label="Poste" value={exp.poste} onChange={(v) => updateExperience(i, "poste", v)} />
                     <Field label="Entreprise" value={exp.entreprise} onChange={(v) => updateExperience(i, "entreprise", v)} />
-                    <Field label="Date debut" value={exp.debut} onChange={(v) => updateExperience(i, "debut", v)} placeholder="ex: Jan 2022" />
-                    <Field label="Date fin" value={exp.fin} onChange={(v) => updateExperience(i, "fin", v)} placeholder="ex: Present" />
+                    <Field label="Date début" value={exp.debut} onChange={(v) => updateExperience(i, "debut", v)} placeholder="ex : janv. 2022" />
+                    <Field label="Date fin" value={exp.fin} onChange={(v) => updateExperience(i, "fin", v)} placeholder="ex : aujourd’hui" />
                   </div>
                   <div className="mt-3">
                     <label className="text-sm font-medium" style={{ color: "var(--foreground)" }}>
@@ -229,7 +253,7 @@ export default function GenerateurCV() {
                 className="mt-3 text-sm font-medium hover:underline"
                 style={{ color: "var(--primary)" }}
               >
-                + Ajouter une experience
+                + Ajouter une expérience
               </button>
             </div>
 
@@ -262,9 +286,9 @@ export default function GenerateurCV() {
                     )}
                   </div>
                   <div className="mt-2 grid grid-cols-1 gap-3 sm:grid-cols-3">
-                    <Field label="Diplome" value={f.diplome} onChange={(v) => updateFormation(i, "diplome", v)} />
-                    <Field label="Etablissement" value={f.etablissement} onChange={(v) => updateFormation(i, "etablissement", v)} />
-                    <Field label="Annee" value={f.annee} onChange={(v) => updateFormation(i, "annee", v)} placeholder="ex: 2020" />
+                    <Field label="Diplôme" value={f.diplome} onChange={(v) => updateFormation(i, "diplome", v)} />
+                    <Field label="Établissement" value={f.etablissement} onChange={(v) => updateFormation(i, "etablissement", v)} />
+                    <Field label="Année" value={f.annee} onChange={(v) => updateFormation(i, "annee", v)} placeholder="ex : 2020" />
                   </div>
                 </div>
               ))}
@@ -283,7 +307,7 @@ export default function GenerateurCV() {
               style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
             >
               <h2 className="text-lg font-semibold" style={{ color: "var(--foreground)" }}>
-                Competences
+                Compétences
               </h2>
               <div className="mt-3 flex gap-2">
                 <input
@@ -295,7 +319,7 @@ export default function GenerateurCV() {
                       addCompetence();
                     }
                   }}
-                  placeholder="Tapez une competence puis Entree..."
+                  placeholder="Tapez une compétence puis Entrée..."
                   className="flex-1 rounded-lg px-3 py-2 text-sm"
                   style={{ border: "1px solid var(--border)", background: "var(--background)" }}
                 />
@@ -335,10 +359,10 @@ export default function GenerateurCV() {
               className="w-full rounded-xl py-3.5 text-base font-semibold text-white transition-all hover:opacity-90 animate-fade-up stagger-7"
               style={{ background: "var(--primary)" }}
             >
-              Telecharger en PDF
+              Télécharger en PDF
             </button>
             <p className="text-center text-xs" style={{ color: "var(--muted)" }}>
-              Utilisez &laquo; Enregistrer au format PDF &raquo; dans la boite de dialogue d&apos;impression.
+              Utilisez &laquo; Enregistrer au format PDF &raquo; dans la boîte de dialogue d&apos;impression (format A4, marges « Aucune », en-têtes et pieds de page désactivés).
             </p>
           </div>
 
@@ -352,15 +376,16 @@ export default function GenerateurCV() {
                 className="mb-2 text-center text-sm font-semibold"
                 style={{ color: "var(--muted)" }}
               >
-                Apercu en temps reel
+                Aperçu en temps réel
               </h2>
               <div
+                ref={previewBoxRef}
                 className="overflow-hidden rounded-lg shadow-lg"
                 style={{ background: "#fff", aspectRatio: "210/297" }}
               >
                 <div
                   style={{
-                    transform: "scale(0.48)",
+                    transform: `scale(${previewScale})`,
                     transformOrigin: "top left",
                     width: "210mm",
                     minHeight: "297mm",
@@ -397,44 +422,44 @@ export default function GenerateurCV() {
         {/* SEO Content */}
         <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
           <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
-            Comment creer votre CV en ligne gratuitement
+            Comment créer votre CV en ligne gratuitement
           </h2>
           <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
             <p>
-              Notre generateur de CV gratuit vous permet de creer un curriculum vitae professionnel en quelques minutes.
-              Remplissez les champs, choisissez un modele et telechargez directement en PDF. Aucune inscription requise.
+              Notre générateur de CV gratuit vous permet de créer un curriculum vitae professionnel en quelques minutes.
+              Remplissez les champs, choisissez un modèle et téléchargez directement en PDF. Aucune inscription requise.
             </p>
             <ul className="ml-4 list-disc space-y-1">
-              <li><strong className="text-[var(--foreground)]">Remplissez vos informations</strong> : coordonnees, profil, experiences, formations et competences</li>
-              <li><strong className="text-[var(--foreground)]">Choisissez un modele</strong> : classique (sobre et traditionnel) ou moderne (avec barre laterale coloree)</li>
-              <li><strong className="text-[var(--foreground)]">Previsualisation en temps reel</strong> : votre CV se met a jour au fur et a mesure de la saisie</li>
-              <li><strong className="text-[var(--foreground)]">Telechargez en PDF</strong> : via la boite de dialogue d&apos;impression de votre navigateur</li>
+              <li><strong className="text-[var(--foreground)]">Remplissez vos informations</strong> : coordonnées, profil, expériences, formations et compétences</li>
+              <li><strong className="text-[var(--foreground)]">Choisissez un modèle</strong> : classique (sobre et traditionnel) ou moderne (avec barre latérale colorée)</li>
+              <li><strong className="text-[var(--foreground)]">Prévisualisation en temps réel</strong> : votre CV se met à jour au fur et à mesure de la saisie</li>
+              <li><strong className="text-[var(--foreground)]">Téléchargez en PDF</strong> : via la boîte de dialogue d&apos;impression de votre navigateur</li>
             </ul>
           </div>
         </div>
 
         {/* FAQ */}
         <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-          <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Questions frequentes</h2>
+          <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Questions fréquentes</h2>
           <div className="mt-6 space-y-5">
             <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
-              <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Le CV genere est-il au format A4 ?</h3>
-              <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Oui, les modeles sont concus au format A4 (210 x 297 mm), le standard en France et en Europe. Lors du telechargement PDF, assurez-vous de selectionner le format A4 dans les parametres d&apos;impression.</p>
+              <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Le CV généré est-il au format A4 ?</h3>
+              <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Oui, les modèles sont conçus au format A4 (210 x 297 mm), le standard en France et en Europe. Lors du téléchargement PDF, sélectionnez le format A4, des marges « Aucune » et décochez « En-têtes et pieds de page » dans les paramètres d&apos;impression. Pensez aussi à activer « Graphiques d&apos;arrière-plan » pour conserver les couleurs.</p>
             </div>
             <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
-              <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Mes donnees sont-elles sauvegardees ?</h3>
-              <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Non, aucune donnee personnelle n&apos;est stockee sur nos serveurs. Tout le traitement se fait localement dans votre navigateur. Vos informations disparaissent des que vous fermez la page.</p>
+              <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Mes données sont-elles sauvegardées ?</h3>
+              <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Non. Les informations saisies dans le formulaire ne sont ni envoyées ni stockées sur un serveur : tout le traitement se fait localement dans votre navigateur et vos informations disparaissent dès que vous fermez la page. Comme le reste du site, cette page utilise Google Analytics (mesure d&apos;audience) et Google AdSense, qui ne reçoivent pas le contenu de votre CV.</p>
             </div>
             <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
               <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Puis-je ajouter une photo sur mon CV ?</h3>
-              <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Le modele moderne affiche vos initiales dans un avatar. En France, la photo n&apos;est pas obligatoire sur un CV. De nombreux recruteurs recommandent meme de ne pas en mettre pour favoriser l&apos;egalite des chances.</p>
+              <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Le modèle moderne affiche vos initiales dans un avatar. En France, la photo n&apos;est pas obligatoire sur un CV et un recruteur ne peut pas l&apos;exiger. Le CV anonyme est même encouragé pour favoriser l&apos;égalité des chances.</p>
             </div>
           </div>
         </div>
       </div>
 
       {/* ===================== PRINT VERSION ===================== */}
-      <div ref={previewRef} className="hidden print:block">
+      <div data-print-keep className="hidden print:block">
         {template === "classique" ? (
           <CVClassique
             infos={infos}
@@ -480,7 +505,7 @@ function CVClassique({ infos, fullName, profil, experiences, formations, compete
       {/* Header */}
       <div style={{ borderBottom: "2px solid #0d4f3c", paddingBottom: 16, marginBottom: 24 }}>
         <h1 style={{ fontSize: 28, fontWeight: 700, color: "#0d4f3c", margin: 0 }}>
-          {fullName || "Votre Nom"}
+          {fullName || "Votre nom"}
         </h1>
         {infos.titre && (
           <p style={{ fontSize: 16, color: "#8a8578", marginTop: 4 }}>{infos.titre}</p>
@@ -508,7 +533,7 @@ function CVClassique({ infos, fullName, profil, experiences, formations, compete
       {experiences.some((e) => e.poste || e.entreprise) && (
         <div style={{ marginBottom: 24 }}>
           <h2 style={{ fontSize: 15, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, color: "#0d4f3c", marginBottom: 8 }}>
-            Experience professionnelle
+            Expérience professionnelle
           </h2>
           {experiences.map((exp, i) =>
             (exp.poste || exp.entreprise) ? (
@@ -561,7 +586,7 @@ function CVClassique({ infos, fullName, profil, experiences, formations, compete
       {competences.length > 0 && (
         <div>
           <h2 style={{ fontSize: 15, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, color: "#0d4f3c", marginBottom: 8 }}>
-            Competences
+            Compétences
           </h2>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
             {competences.map((c, i) => (
@@ -590,7 +615,7 @@ function CVClassique({ infos, fullName, profil, experiences, formations, compete
 function CVModerne({ infos, fullName, profil, experiences, formations, competences }: CVProps) {
   const hasContact = infos.email || infos.telephone || infos.ville;
   return (
-    <div style={{ fontFamily: "sans-serif", display: "flex", minHeight: "297mm", color: "#1a1a1a" }}>
+    <div style={{ fontFamily: "sans-serif", display: "flex", minHeight: "296mm", color: "#1a1a1a" }}>
       {/* Sidebar */}
       <div
         style={{
@@ -621,7 +646,7 @@ function CVModerne({ infos, fullName, profil, experiences, formations, competenc
         </div>
 
         <h1 style={{ fontSize: 20, fontWeight: 700, textAlign: "center", margin: 0, lineHeight: 1.3 }}>
-          {fullName || "Votre Nom"}
+          {fullName || "Votre nom"}
         </h1>
         {infos.titre && (
           <p style={{ fontSize: 12, textAlign: "center", opacity: 0.85, marginTop: 4 }}>{infos.titre}</p>
@@ -647,7 +672,7 @@ function CVModerne({ infos, fullName, profil, experiences, formations, competenc
         {competences.length > 0 && (
           <div style={{ marginTop: 32 }}>
             <h3 style={{ fontSize: 11, textTransform: "uppercase", letterSpacing: 1.5, opacity: 0.7, marginBottom: 12 }}>
-              Competences
+              Compétences
             </h3>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
               {competences.map((c, i) => (
@@ -685,7 +710,7 @@ function CVModerne({ infos, fullName, profil, experiences, formations, competenc
         {experiences.some((e) => e.poste || e.entreprise) && (
           <div style={{ marginBottom: 28 }}>
             <h2 style={{ fontSize: 15, fontWeight: 700, color: "#0d4f3c", marginBottom: 8, paddingBottom: 6, borderBottom: "2px solid #e8963e" }}>
-              Experience professionnelle
+              Expérience professionnelle
             </h2>
             {experiences.map((exp, i) =>
               (exp.poste || exp.entreprise) ? (

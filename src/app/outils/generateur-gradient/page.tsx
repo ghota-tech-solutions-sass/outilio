@@ -11,16 +11,25 @@ interface ColorStop {
 
 const PRESETS = [
   { name: "Coucher de soleil", stops: [{ color: "#ff6b6b", position: 0 }, { color: "#feca57", position: 100 }], angle: 135 },
-  { name: "Ocean", stops: [{ color: "#667eea", position: 0 }, { color: "#764ba2", position: 100 }], angle: 135 },
-  { name: "Foret", stops: [{ color: "#0d4f3c", position: 0 }, { color: "#16785c", position: 50 }, { color: "#a8e063", position: 100 }], angle: 135 },
+  { name: "Océan", stops: [{ color: "#667eea", position: 0 }, { color: "#764ba2", position: 100 }], angle: 135 },
+  { name: "Forêt", stops: [{ color: "#0d4f3c", position: 0 }, { color: "#16785c", position: 50 }, { color: "#a8e063", position: 100 }], angle: 135 },
   { name: "Aurore", stops: [{ color: "#a18cd1", position: 0 }, { color: "#fbc2eb", position: 100 }], angle: 120 },
   { name: "Nuit", stops: [{ color: "#0f0c29", position: 0 }, { color: "#302b63", position: 50 }, { color: "#24243e", position: 100 }], angle: 180 },
-  { name: "Peche", stops: [{ color: "#ffecd2", position: 0 }, { color: "#fcb69f", position: 100 }], angle: 135 },
+  { name: "Pêche", stops: [{ color: "#ffecd2", position: 0 }, { color: "#fcb69f", position: 100 }], angle: 135 },
   { name: "Menthe", stops: [{ color: "#00b09b", position: 0 }, { color: "#96c93d", position: 100 }], angle: 90 },
   { name: "Flamme", stops: [{ color: "#f83600", position: 0 }, { color: "#f9d423", position: 100 }], angle: 45 },
 ];
 
 let nextId = 3;
+
+const HEX_COLOR = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i;
+
+// <input type="color"> only accepts #rrggbb: expand #rgb, fall back to black while typing
+function toColorInputValue(color: string): string {
+  if (!HEX_COLOR.test(color)) return "#000000";
+  if (color.length === 4) return "#" + color.slice(1).split("").map((c) => c + c).join("");
+  return color.toLowerCase();
+}
 
 export default function GenerateurGradient() {
   const [type, setType] = useState<"linear" | "radial">("linear");
@@ -100,10 +109,10 @@ export default function GenerateurGradient() {
         <div className="mx-auto max-w-7xl px-6 2xl:max-w-[1400px]">
           <p className="animate-fade-up text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: "var(--accent)" }}>Design</p>
           <h1 className="animate-fade-up stagger-1 mt-3 text-4xl tracking-tight md:text-5xl" style={{ fontFamily: "var(--font-display)" }}>
-            Generateur de <span style={{ color: "var(--primary)" }}>gradient</span>
+            Générateur de <span style={{ color: "var(--primary)" }}>gradient</span>
           </h1>
           <p className="animate-fade-up stagger-2 mt-3 max-w-xl text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-            Creez des degrades CSS personnalises. Choisissez les couleurs, l&apos;angle, le type. Apercu en direct et code pret a copier.
+            Créez des dégradés CSS personnalisés. Choisissez les couleurs, l&apos;angle, le type. Aperçu en direct et code prêt à copier.
           </p>
         </div>
       </section>
@@ -123,13 +132,13 @@ export default function GenerateurGradient() {
               />
               <div className="p-5" style={{ background: "var(--surface)" }}>
                 <div className="flex items-center justify-between">
-                  <h2 className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--accent)" }}>Apercu</h2>
+                  <h2 className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--accent)" }}>Aperçu</h2>
                   <button
                     onClick={copyCSS}
                     className="rounded-lg px-4 py-1.5 text-xs font-semibold text-white transition-all hover:opacity-90"
                     style={{ background: copied ? "var(--accent)" : "var(--primary)" }}
                   >
-                    {copied ? "Copie !" : "Copier le CSS"}
+                    {copied ? "Copié !" : "Copier le CSS"}
                   </button>
                 </div>
               </div>
@@ -137,7 +146,7 @@ export default function GenerateurGradient() {
 
             {/* Type selector */}
             <div className="rounded-2xl border p-6" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-              <h2 className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--accent)" }}>Type de degrade</h2>
+              <h2 className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--accent)" }}>Type de dégradé</h2>
               <div className="mt-4 grid grid-cols-2 gap-3">
                 <button
                   onClick={() => setType("linear")}
@@ -148,7 +157,7 @@ export default function GenerateurGradient() {
                     color: type === "linear" ? "#fff" : "inherit",
                   }}
                 >
-                  Lineaire
+                  Linéaire
                 </button>
                 <button
                   onClick={() => setType("radial")}
@@ -181,7 +190,7 @@ export default function GenerateurGradient() {
                       min="0"
                       max="360"
                       value={angle}
-                      onChange={(e) => setAngle(Number(e.target.value))}
+                      onChange={(e) => setAngle(Math.min(360, Math.max(0, Number(e.target.value) || 0)))}
                       className="w-16 rounded-lg border px-3 py-2 text-center text-sm"
                       style={{ borderColor: "var(--border)" }}
                     />
@@ -250,11 +259,11 @@ export default function GenerateurGradient() {
               </div>
 
               <div className="mt-4 space-y-4">
-                {stops.sort((a, b) => a.position - b.position).map((stop) => (
+                {stops.map((stop) => (
                   <div key={stop.id} className="flex items-center gap-3 rounded-xl border p-3" style={{ borderColor: "var(--border)" }}>
                     <input
                       type="color"
-                      value={stop.color}
+                      value={toColorInputValue(stop.color)}
                       onChange={(e) => updateStop(stop.id, "color", e.target.value)}
                       className="h-10 w-10 cursor-pointer rounded-lg border-0"
                       style={{ padding: 0 }}
@@ -264,7 +273,8 @@ export default function GenerateurGradient() {
                       value={stop.color}
                       onChange={(e) => updateStop(stop.id, "color", e.target.value)}
                       className="w-24 rounded-lg border px-3 py-2 text-xs font-mono"
-                      style={{ borderColor: "var(--border)" }}
+                      style={{ borderColor: HEX_COLOR.test(stop.color) ? "var(--border)" : "#dc2626" }}
+                      aria-invalid={!HEX_COLOR.test(stop.color)}
                     />
                     <div className="flex-1 flex items-center gap-2">
                       <input
@@ -274,7 +284,7 @@ export default function GenerateurGradient() {
                         value={stop.position}
                         onChange={(e) => updateStop(stop.id, "position", Number(e.target.value))}
                         className="flex-1"
-                        style={{ accentColor: stop.color }}
+                        style={{ accentColor: toColorInputValue(stop.color) }}
                       />
                       <span className="text-xs font-semibold w-10 text-right" style={{ color: "var(--muted)" }}>{stop.position}%</span>
                     </div>
@@ -301,14 +311,14 @@ export default function GenerateurGradient() {
                 className="rounded-xl border px-5 py-3 text-sm font-semibold transition-all hover:bg-[var(--surface-alt)]"
                 style={{ borderColor: "var(--border)" }}
               >
-                Aleatoire
+                Aléatoire
               </button>
               <button
                 onClick={copyCSS}
                 className="flex-1 rounded-xl py-3 text-sm font-semibold text-white transition-all hover:opacity-90"
                 style={{ background: "var(--primary)" }}
               >
-                {copied ? "Copie !" : "Copier le CSS"}
+                {copied ? "Copié !" : "Copier le CSS"}
               </button>
             </div>
 
@@ -350,37 +360,37 @@ export default function GenerateurGradient() {
             {/* SEO Content */}
             <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
               <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
-                Comment creer un degrade CSS personnalise
+                Comment créer un dégradé CSS personnalisé
               </h2>
               <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
                 <p>
-                  Notre generateur de gradient CSS vous permet de creer des degrades lineaires et radiaux visuellement,
-                  puis de copier le code CSS pret a integrer dans vos projets web.
+                  Notre générateur de gradient CSS vous permet de créer des dégradés linéaires et radiaux visuellement,
+                  puis de copier le code CSS prêt à intégrer dans vos projets web.
                 </p>
                 <ul className="ml-4 list-disc space-y-1">
-                  <li><strong className="text-[var(--foreground)]">Choisissez le type</strong> : degrade lineaire (avec angle) ou radial (cercle ou ellipse)</li>
-                  <li><strong className="text-[var(--foreground)]">Ajoutez des color stops</strong> : jusqu&apos;a plusieurs couleurs avec position precise en pourcentage</li>
-                  <li><strong className="text-[var(--foreground)]">Utilisez les presets</strong> : 8 degrades predefinies (Coucher de soleil, Ocean, Foret...)</li>
-                  <li><strong className="text-[var(--foreground)]">Copiez le code CSS</strong> : un clic pour copier la propriete <code style={{ color: "var(--primary)" }}>background</code> complete</li>
+                  <li><strong className="text-[var(--foreground)]">Choisissez le type</strong> : dégradé linéaire (avec angle) ou radial (cercle ou ellipse)</li>
+                  <li><strong className="text-[var(--foreground)]">Ajoutez des color stops</strong> : autant de couleurs que nécessaire, chacune avec une position précise en pourcentage</li>
+                  <li><strong className="text-[var(--foreground)]">Utilisez les presets</strong> : 8 dégradés prédéfinis (Coucher de soleil, Océan, Forêt...)</li>
+                  <li><strong className="text-[var(--foreground)]">Copiez le code CSS</strong> : un clic pour copier la propriété <code style={{ color: "var(--primary)" }}>background</code> complète</li>
                 </ul>
               </div>
             </div>
 
             {/* FAQ */}
             <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Questions frequentes</h2>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Questions fréquentes</h2>
               <div className="mt-6 space-y-5">
                 <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
-                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Quelle est la difference entre un degrade lineaire et radial ?</h3>
-                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Un degrade lineaire suit une direction droite (definie par un angle), tandis qu&apos;un degrade radial part du centre vers l&apos;exterieur en forme de cercle ou d&apos;ellipse. Les degrades lineaires sont plus courants pour les fonds de section, les radiaux pour les boutons et badges.</p>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Quelle est la différence entre un dégradé linéaire et radial ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Un dégradé linéaire suit une direction droite (définie par un angle), tandis qu&apos;un dégradé radial part du centre vers l&apos;extérieur en forme de cercle ou d&apos;ellipse. Les dégradés linéaires sont plus courants pour les fonds de section, les radiaux pour les boutons et badges.</p>
                 </div>
                 <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
-                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Le CSS genere est-il compatible avec tous les navigateurs ?</h3>
-                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Oui, la syntaxe <code style={{ color: "var(--primary)" }}>linear-gradient()</code> et <code style={{ color: "var(--primary)" }}>radial-gradient()</code> est supportee par tous les navigateurs modernes (Chrome, Firefox, Safari, Edge). Les prefixes vendeurs ne sont plus necessaires.</p>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Le CSS généré est-il compatible avec tous les navigateurs ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Oui, la syntaxe <code style={{ color: "var(--primary)" }}>linear-gradient()</code> et <code style={{ color: "var(--primary)" }}>radial-gradient()</code> est supportée par tous les navigateurs modernes (Chrome, Firefox, Safari, Edge). Les préfixes vendeurs ne sont plus nécessaires.</p>
                 </div>
                 <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
                   <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Combien de color stops puis-je utiliser ?</h3>
-                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Il n&apos;y a pas de limite technique. Le CSS supporte autant de color stops que necessaire. En pratique, 2 a 4 couleurs suffisent pour la plupart des designs. Au-dela, le degrade risque de paraitre charge.</p>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Il n&apos;y a pas de limite technique. Le CSS supporte autant de color stops que nécessaire. En pratique, 2 à 4 couleurs suffisent pour la plupart des designs. Au-delà, le dégradé risque de paraître chargé.</p>
                 </div>
               </div>
             </div>
@@ -392,10 +402,10 @@ export default function GenerateurGradient() {
               <h3 className="text-sm font-semibold" style={{ fontFamily: "var(--font-display)" }}>Astuces</h3>
               <ul className="mt-3 space-y-2 text-xs leading-relaxed" style={{ color: "var(--muted)" }}>
                 <li><strong className="text-[var(--foreground)]">Angle 0&deg;</strong> : de bas en haut</li>
-                <li><strong className="text-[var(--foreground)]">Angle 90&deg;</strong> : de gauche a droite</li>
+                <li><strong className="text-[var(--foreground)]">Angle 90&deg;</strong> : de gauche à droite</li>
                 <li><strong className="text-[var(--foreground)]">Angle 135&deg;</strong> : diagonal (le plus populaire)</li>
-                <li><strong className="text-[var(--foreground)]">3+ stops</strong> : pour des degrades complexes</li>
-                <li><strong className="text-[var(--foreground)]">Radial</strong> : ideal pour les boutons et badges</li>
+                <li><strong className="text-[var(--foreground)]">3+ stops</strong> : pour des dégradés complexes</li>
+                <li><strong className="text-[var(--foreground)]">Radial</strong> : idéal pour les boutons et badges</li>
               </ul>
             </div>
             <AdPlaceholder className="h-[600px]" />

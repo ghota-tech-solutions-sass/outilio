@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Calcul Beton - Volume m3 et Nombre de Sacs Gratuit",
+  title: "Calcul Béton - Volume m³ et Nombre de Sacs Gratuit",
   description:
-    "Calculez le volume de beton en m3 pour dalle, fondation ou poteau. Nombre de sacs 25kg et 35kg. Outil gratuit pour vos travaux, sans inscription.",
+    "Calculez le volume de béton en m³ pour dalle, fondation ou poteau. Nombre de sacs 25kg et 35kg. Outil gratuit pour vos travaux, sans inscription.",
   keywords: [
     "calcul beton",
     "cubage beton",

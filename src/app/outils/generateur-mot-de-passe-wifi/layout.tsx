@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Generateur Mot de Passe Wi-Fi 2026 - Securise + QR Code",
+  title: "Générateur Mot de Passe Wi-Fi 2026 - Sécurisé + QR Code",
   description:
-    "Creez un mot de passe Wi-Fi fort, prononcable ou aleatoire, en 1 clic. QR Code de partage instantane pour vos invites (iOS et Android). 100 % local, sans inscription, gratuit.",
+    "Créez un mot de passe Wi-Fi fort, prononçable ou aléatoire, en 1 clic. QR Code de partage instantané pour vos invités (iOS et Android). 100 % local, sans inscription, gratuit.",
   keywords: [
     "generateur de mot de passe wifi",
     "generateur mot de passe wifi",
@@ -18,7 +18,7 @@ export const metadata: Metadata = {
     canonical: "https://outilis.fr/outils/generateur-mot-de-passe-wifi",
   },
   openGraph: {
-    title: "Generateur Mot de Passe Wi-Fi 2026 - Securise + QR Code",
+    title: "Générateur Mot de Passe Wi-Fi 2026 - Sécurisé + QR Code",
     description:
       "Mot de passe Wi-Fi fort + QR Code de partage. 100 % local, sans inscription.",
     url: "https://outilis.fr/outils/generateur-mot-de-passe-wifi",

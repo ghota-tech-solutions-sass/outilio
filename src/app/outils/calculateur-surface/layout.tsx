@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Calcul Surface en m2 - Calculateur d'Aire Gratuit",
+  title: "Calcul Surface en m² - Calculateur d'Aire Gratuit",
   description:
-    "Calculez la surface en m2 de toutes les formes : rectangle, cercle, triangle, trapeze. Conversion d'unites incluse. Gratuit et sans inscription.",
+    "Calculez la surface en m² de toutes les formes : rectangle, cercle, triangle, trapèze. Conversion d'unités incluse. Gratuit et sans inscription.",
   keywords: [
     "calcul surface",
     "calcul m2",

@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Editeur Markdown en ligne - Preview HTML en temps reel gratuit",
+  title: "Éditeur Markdown en ligne - Preview HTML en temps réel gratuit",
   description:
-    "Editeur Markdown avec preview HTML en temps reel. Toolbar de formatage, export HTML et .md, compteur de mots. 100% gratuit, sans inscription, traitement local.",
+    "Éditeur Markdown avec preview HTML en temps réel. Toolbar de formatage, export HTML et .md, compteur de mots. 100% gratuit, sans inscription, traitement local.",
   keywords: [
     "editeur markdown",
     "markdown en ligne",

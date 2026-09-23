@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Calculateur d'inflation - Pouvoir d'achat dans le temps",
   description:
-    "Calculez l'equivalent d'un montant dans le temps avec l'inflation francaise. Donnees IPC historiques. Pouvoir d'achat et depreciation. Gratuit.",
+    "Calculez l'équivalent d'un montant dans le temps avec l'inflation française. Données IPC historiques. Pouvoir d'achat et dépréciation. Gratuit.",
   keywords: [
     "calculateur inflation",
     "pouvoir achat",

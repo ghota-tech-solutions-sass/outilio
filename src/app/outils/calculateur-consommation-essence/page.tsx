@@ -58,7 +58,7 @@ export default function CalculateurConsommationEssence() {
             Calculateur <span style={{ color: "var(--primary)" }}>consommation essence</span>
           </h1>
           <p className="animate-fade-up stagger-2 mt-3 max-w-xl text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-            Calculez votre consommation en L/100km, le cout par kilometre et estimez le budget carburant de vos trajets.
+            Calculez votre consommation en L/100km, le coût par kilomètre et estimez le budget carburant de vos trajets.
           </p>
         </div>
       </section>
@@ -86,7 +86,7 @@ export default function CalculateurConsommationEssence() {
             {mode === "consumption" && (
               <>
                 <div className="rounded-2xl border p-6" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-                  <h2 className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--accent)" }}>Donnees du plein</h2>
+                  <h2 className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--accent)" }}>Données du plein</h2>
                   <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
                     <div>
                       <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>Distance parcourue (km)</label>
@@ -94,7 +94,7 @@ export default function CalculateurConsommationEssence() {
                         className="mt-2 w-full rounded-xl border px-4 py-3 text-lg font-bold" style={{ borderColor: "var(--border)", fontFamily: "var(--font-display)" }} />
                     </div>
                     <div>
-                      <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>Litres consommes</label>
+                      <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>Litres consommés</label>
                       <input type="number" step="0.1" value={litres} onChange={(e) => setLitres(e.target.value)}
                         className="mt-2 w-full rounded-xl border px-4 py-3 text-lg font-bold" style={{ borderColor: "var(--border)", fontFamily: "var(--font-display)" }} />
                     </div>
@@ -114,12 +114,12 @@ export default function CalculateurConsommationEssence() {
                       <p className="mt-1 text-xs font-semibold" style={{ color: "var(--muted)" }}>L / 100 km</p>
                     </div>
                     <div className="rounded-2xl border p-5 text-center" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-                      <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>Cout par km</p>
+                      <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>Coût par km</p>
                       <p className="mt-2 text-3xl font-bold" style={{ fontFamily: "var(--font-display)" }}>{fmt(consumptionResult.coutKm, 3)}</p>
                       <p className="mt-1 text-xs font-semibold" style={{ color: "var(--muted)" }}>&euro; / km</p>
                     </div>
                     <div className="rounded-2xl border p-5 text-center" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-                      <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>Cout total</p>
+                      <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>Coût total</p>
                       <p className="mt-2 text-3xl font-bold" style={{ fontFamily: "var(--font-display)" }}>{fmt(consumptionResult.coutTotal)} &euro;</p>
                     </div>
                   </div>
@@ -153,15 +153,15 @@ export default function CalculateurConsommationEssence() {
                 {tripResult && (
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                     <div className="rounded-2xl border p-5 text-center" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-                      <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>Litres necessaires</p>
+                      <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>Litres nécessaires</p>
                       <p className="mt-2 text-3xl font-bold" style={{ fontFamily: "var(--font-display)", color: "var(--primary)" }}>{fmt(tripResult.litresNeeded, 1)} L</p>
                     </div>
                     <div className="rounded-2xl border p-5 text-center" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-                      <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>Cout du trajet</p>
+                      <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>Coût du trajet</p>
                       <p className="mt-2 text-3xl font-bold" style={{ fontFamily: "var(--font-display)" }}>{fmt(tripResult.coutTrajet)} &euro;</p>
                     </div>
                     <div className="rounded-2xl border p-5 text-center" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-                      <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>Cout par km</p>
+                      <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>Coût par km</p>
                       <p className="mt-2 text-3xl font-bold" style={{ fontFamily: "var(--font-display)" }}>{fmt(tripResult.coutKm, 3)} &euro;</p>
                     </div>
                   </div>
@@ -170,28 +170,28 @@ export default function CalculateurConsommationEssence() {
             )}
 
             <ToolHowToSection
-              title="Comment mesurer votre consommation reelle"
-              description="La methode la plus fiable consiste a faire deux pleins complets et noter le kilometrage. Le calculateur s'occupe ensuite de la conversion en L/100 km et du cout au km."
+              title="Comment mesurer votre consommation réelle"
+              description="La méthode la plus fiable consiste à faire deux pleins complets et noter le kilométrage. Le calculateur s'occupe ensuite de la conversion en L/100 km et du coût au km."
               steps={[
                 {
                   name: "Faire un premier plein complet",
                   text:
-                    "Au premier plein, attendez le declic du pistolet. Notez le kilometrage exact affiche au tableau de bord. Ne complexifiez pas avec un demi-plein : la mesure serait imprecise.",
+                    "Au premier plein, attendez le déclic du pistolet. Notez le kilométrage exact affiché au tableau de bord. Ne complexifiez pas avec un demi-plein : la mesure serait imprécise.",
                 },
                 {
                   name: "Rouler normalement jusqu'au prochain plein",
                   text:
-                    "Conduisez normalement (mix ville / route / autoroute selon votre usage habituel). Plus la distance entre les deux pleins est grande, plus la mesure est precise. Ideal : 400 a 800 km entre deux pleins.",
+                    "Conduisez normalement (mix ville / route / autoroute selon votre usage habituel). Plus la distance entre les deux pleins est grande, plus la mesure est précise. Idéal : 400 à 800 km entre deux pleins.",
                 },
                 {
                   name: "Faire le second plein complet",
                   text:
-                    "Refaites un plein complet (declic). Notez le nouveau kilometrage et le volume de carburant indique sur le ticket de pompe. La distance parcourue = kilometrage final - kilometrage initial.",
+                    "Refaites un plein complet (déclic). Notez le nouveau kilométrage et le volume de carburant indiqué sur le ticket de pompe. La distance parcourue = kilométrage final - kilométrage initial.",
                 },
                 {
-                  name: "Saisir les donnees dans le calculateur",
+                  name: "Saisir les données dans le calculateur",
                   text:
-                    "Mode 'Calculer ma consommation' : entrez la distance, les litres consommes et le prix au litre paye. Le calculateur affiche votre consommation en L/100 km, le cout par km et le cout total du plein.",
+                    "Mode 'Calculer ma consommation' : entrez la distance, les litres consommés et le prix au litre payé. Le calculateur affiche votre consommation en L/100 km, le coût par km et le coût total du plein.",
                 },
               ]}
             />
@@ -210,22 +210,22 @@ export default function CalculateurConsommationEssence() {
               <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
                   <h3 className="font-semibold" style={{ color: "var(--foreground)" }}>
-                    Comparer deux vehicules avant achat
+                    Comparer deux véhicules avant achat
                   </h3>
                   <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                    Sur 15 000 km/an avec essence a 1,80 EUR/L, la difference entre une voiture a 6
-                    L/100 km et une a 9 L/100 km represente plus de 800 EUR par an. Ce calcul peut
+                    Sur 15 000 km/an avec essence à 1,80 €/L, la différence entre une voiture à 6
+                    L/100 km et une à 9 L/100 km représente plus de 800 € par an. Ce calcul peut
                     inverser le verdict d&apos;un comparatif d&apos;achat sur 5 ans.
                   </p>
                 </div>
                 <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
                   <h3 className="font-semibold" style={{ color: "var(--foreground)" }}>
-                    Estimer le cout d&apos;un long trajet
+                    Estimer le coût d&apos;un long trajet
                   </h3>
                   <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
                     Mode &quot;Estimer un trajet&quot; : indiquez la distance Lyon-Marseille (315 km),
-                    votre consommation reelle et le prix au litre. Vous savez instantanement combien
-                    de litres et combien d&apos;euros prevoir.
+                    votre consommation réelle et le prix au litre. Vous savez instantanément combien
+                    de litres et combien d&apos;euros prévoir.
                   </p>
                 </div>
                 <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
@@ -233,9 +233,9 @@ export default function CalculateurConsommationEssence() {
                     Notes de frais professionnelles
                   </h3>
                   <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                    Pour vos remboursements employeur ou indemnites kilometriques, le cout par km
-                    sert a comparer avec le bareme officiel (publie chaque annee par la DGFiP). Pour
-                    rappel, le bareme integre carburant + entretien + assurance + amortissement.
+                    Pour vos remboursements employeur ou indemnités kilométriques, le coût par km
+                    sert à comparer avec le barème officiel (publié chaque année par la DGFiP). Pour
+                    rappel, le barème intègre carburant + entretien + assurance + amortissement.
                   </p>
                 </div>
                 <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
@@ -243,9 +243,9 @@ export default function CalculateurConsommationEssence() {
                     Optimiser un covoiturage
                   </h3>
                   <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                    Pour fixer un prix juste a vos passagers : calculez le cout reel du trajet, divisez
+                    Pour fixer un prix juste à vos passagers : calculez le coût réel du trajet, divisez
                     par le nombre de passagers (vous compris) puis ajoutez 10-15 % d&apos;usure. Le
-                    resultat est generalement bien inferieur aux platformes de covoiturage.
+                    résultat est généralement bien inférieur aux platformes de covoiturage.
                   </p>
                 </div>
               </div>
@@ -259,74 +259,74 @@ export default function CalculateurConsommationEssence() {
                 className="text-2xl md:text-3xl font-extrabold"
                 style={{ fontFamily: "var(--font-display)", color: "var(--foreground)" }}
               >
-                Reduire concretement sa consommation
+                Réduire concrètement sa consommation
               </h2>
 
               <div className="mt-4 space-y-4 leading-relaxed" style={{ color: "var(--foreground)" }}>
                 <p>
-                  <strong>Eco-conduite : -10 a -25 %.</strong> Anticipez les ralentissements, utilisez
-                  le frein moteur, passez les rapports tot (avant 2 500 tours/min en essence). Une
-                  conduite souple peut faire economiser 1 a 2 litres aux 100 km, soit plus de 200 EUR
+                  <strong>Éco-conduite : -10 à -25 %.</strong> Anticipez les ralentissements, utilisez
+                  le frein moteur, passez les rapports tôt (avant 2 500 tours/min en essence). Une
+                  conduite souple peut faire économiser 1 à 2 litres aux 100 km, soit plus de 200 €
                   par an pour 15 000 km parcourus.
                 </p>
                 <p>
-                  <strong>Pression des pneus : -3 a -5 %.</strong> Une sous-pression de 0,5 bar
-                  augmente la consommation d&apos;environ 5 %, en plus d&apos;une usure prematuree.
-                  Verifiez la pression a froid au moins 1 fois par mois et avant tout long trajet (la
-                  bonne valeur est sur la portiere conducteur).
+                  <strong>Pression des pneus : -3 à -5 %.</strong> Une sous-pression de 0,5 bar
+                  augmente la consommation d&apos;environ 5 %, en plus d&apos;une usure prématurée.
+                  Vérifiez la pression à froid au moins 1 fois par mois et avant tout long trajet (la
+                  bonne valeur est sur la portière conducteur).
                 </p>
                 <p>
-                  <strong>Charge et aerodynamique : -5 a -15 %.</strong> Galerie de toit montee meme
-                  vide : +10 a 15 % de consommation. 50 kg en trop dans le coffre : +2 %. Coffre de
-                  toit a vitesse autoroute : +25 % facilement. Ne montez ces accessoires que pour
-                  l&apos;usage prevu.
+                  <strong>Charge et aérodynamique : -5 à -15 %.</strong> Galerie de toit montée même
+                  vide : +10 à 15 % de consommation. 50 kg en trop dans le coffre : +2 %. Coffre de
+                  toit à vitesse autoroute : +25 % facilement. Ne montez ces accessoires que pour
+                  l&apos;usage prévu.
                 </p>
                 <p>
-                  <strong>Climatisation : -5 a -15 %.</strong> A vitesse moderee (en ville), preferez
-                  vitres ouvertes pour ventiler. Sur autoroute, vitres ouvertes a 130 km/h consomment
-                  PLUS que la clim a cause de la trainee aerodynamique. Coupez la clim 5 minutes
-                  avant l&apos;arrivee pour eviter la condensation.
+                  <strong>Climatisation : -5 à -15 %.</strong> À vitesse modérée (en ville), préférez
+                  vitres ouvertes pour ventiler. Sur autoroute, vitres ouvertes à 130 km/h consomment
+                  PLUS que la clim à cause de la traînée aérodynamique. Coupez la clim 5 minutes
+                  avant l&apos;arrivée pour éviter la condensation.
                 </p>
                 <p>
-                  <strong>Sources.</strong> ADEME (Agence de la transition ecologique), bareme fiscal
-                  des indemnites kilometriques publie chaque annee par la DGFiP, CNAM (regles de
-                  remboursement frais kilometriques sante).
+                  <strong>Sources.</strong> ADEME (Agence de la transition écologique), barème fiscal
+                  des indemnités kilométriques publié chaque année par la DGFiP, CNAM (règles de
+                  remboursement frais kilométriques santé).
                 </p>
               </div>
             </section>
 
             <ToolFaqSection
-              intro="Les questions les plus frequentes sur la consommation de carburant et le cout au km."
+              intro="Les questions les plus fréquentes sur la consommation de carburant et le coût au km."
               items={[
                 {
-                  question: "Pourquoi ma consommation reelle est plus elevee que celle annoncee par le constructeur ?",
+                  question: "Pourquoi ma consommation réelle est plus élevée que celle annoncée par le constructeur ?",
                   answer:
-                    "Les chiffres constructeur sont mesures en cycle WLTP (depuis 2017) en conditions standardisees, sur banc d'essai. La consommation reelle est en moyenne superieure de 15 a 30 %, selon votre style de conduite, le climat, la charge transportee et l'etat de la voiture.",
+                    "Les chiffres constructeur sont mesurés en cycle WLTP (depuis 2017) en conditions standardisées, sur banc d'essai. La consommation réelle est en moyenne supérieure de 15 à 30 %, selon votre style de conduite, le climat, la charge transportée et l'état de la voiture.",
                 },
                 {
-                  question: "Combien coute un trajet de 500 km en 2026 ?",
+                  question: "Combien coûte un trajet de 500 km en 2026 ?",
                   answer:
-                    "Pour une berline diesel a 6 L/100 km avec gazole a 1,75 EUR/L : 500 x 6/100 = 30 L, soit 52,50 EUR. Pour une essence a 7,5 L/100 km a 1,85 EUR/L : 37,5 L x 1,85 = 69,40 EUR. La calculette le fait instantanement avec vos chiffres exacts.",
+                    "Pour une berline diesel à 6 L/100 km avec gazole à 1,75 €/L : 500 x 6/100 = 30 L, soit 52,50 €. Pour une essence à 7,5 L/100 km à 1,85 €/L : 37,5 L x 1,85 = 69,38 €. La calculette le fait instantanément avec vos chiffres exacts.",
                 },
                 {
-                  question: "Le calcul est-il valable pour un vehicule electrique ?",
+                  question: "Le calcul est-il valable pour un véhicule électrique ?",
                   answer:
-                    "Cet outil est concu pour les motorisations thermiques (essence, diesel, GPL). Pour un VE, la consommation s'exprime en kWh/100 km (15-20 typique) et le 'prix au litre' est remplace par le prix du kWh (variable selon recharge a domicile, borne lente ou rapide).",
+                    "Cet outil est conçu pour les motorisations thermiques (essence, diesel, GPL). Pour un VE, la consommation s'exprime en kWh/100 km (15-20 typique) et le 'prix au litre' est remplacé par le prix du kWh (variable selon recharge à domicile, borne lente ou rapide).",
                 },
                 {
                   question: "Comment obtenir une mesure plus fiable ?",
                   answer:
-                    "Faites la moyenne sur 3 a 5 pleins consecutifs. La consommation varie significativement selon la saison (hiver +10-15 %), le type de trajet (autoroute vs ville), et les conditions (pluie, vent, charge passagers). Evitez de calculer sur un seul plein avec un trajet atypique.",
+                    "Faites la moyenne sur 3 à 5 pleins consécutifs. La consommation varie significativement selon la saison (hiver +10-15 %), le type de trajet (autoroute vs ville), et les conditions (pluie, vent, charge passagers). Évitez de calculer sur un seul plein avec un trajet atypique.",
                 },
                 {
-                  question: "Le calculateur prend-il en compte le bareme kilometrique fiscal ?",
+                  question: "Le calculateur prend-il en compte le barème kilométrique fiscal ?",
                   answer:
-                    "Non, l'outil calcule uniquement le cout reel du carburant. Le bareme fiscal officiel pour les indemnites kilometriques (publie chaque annee par la DGFiP) integre en plus l'amortissement, l'entretien, l'assurance et les pneumatiques. Il est revalue chaque annee dans la loi de finances.",
+                    "Non, l'outil calcule uniquement le coût réel du carburant. Le barème fiscal officiel pour les indemnités kilométriques (publié chaque année par la DGFiP) intègre en plus l'amortissement, l'entretien, l'assurance et les pneumatiques. Il est fixé par arrêté ministériel (inchangé depuis l'arrêté du 27 mars 2023).",
                 },
                 {
-                  question: "Mes donnees sont-elles confidentielles ?",
+                  question: "Mes données sont-elles confidentielles ?",
                   answer:
-                    "Oui. Tous les calculs sont effectues localement dans votre navigateur. Aucune donnee (kilometrage, plein, prix) n'est envoyee a un serveur ni stockee. L'outil fonctionne sans inscription.",
+                    "Oui. Tous les calculs sont effectués localement dans votre navigateur. Aucune donnée (kilométrage, plein, prix) n'est envoyée à un serveur ni stockée. L'outil fonctionne sans inscription.",
                 },
               ]}
             />
@@ -342,7 +342,7 @@ export default function CalculateurConsommationEssence() {
                   { type: "Berline", conso: "6-8 L" },
                   { type: "SUV", conso: "8-12 L" },
                   { type: "Utilitaire", conso: "9-14 L" },
-                  { type: "Electrique", conso: "15-20 kWh" },
+                  { type: "Électrique", conso: "15-20 kWh" },
                 ].map((v) => (
                   <div key={v.type} className="flex items-center justify-between rounded-xl px-3 py-2" style={{ background: "var(--surface-alt)" }}>
                     <span className="text-xs font-semibold">{v.type}</span>

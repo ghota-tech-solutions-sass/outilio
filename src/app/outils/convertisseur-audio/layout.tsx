@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Convertisseur Audio - Convertir MP3, WAV, OGG, AAC gratuit",
   description:
-    "Convertissez vos fichiers audio entre MP3, WAV, OGG et AAC. Choix du bitrate, barre de progression, comparaison taille avant/apres. 100% gratuit, traitement local.",
+    "Convertissez vos fichiers audio entre MP3, WAV, OGG et AAC. Choix du bitrate, barre de progression, comparaison taille avant/après. 100% gratuit, traitement local.",
   keywords: [
     "convertisseur audio",
     "convertir mp3",

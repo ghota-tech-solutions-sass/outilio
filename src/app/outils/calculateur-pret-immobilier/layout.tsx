@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Simulateur Pret Immobilier 2026 - Mensualite + Amortissement",
+  title: "Simulateur Prêt Immobilier 2026 - Mensualité + Amortissement",
   description:
-    "Simulez votre pret immobilier 2026 : mensualite, assurance emprunteur, cout total des interets et tableau d'amortissement annuel. Regles HCSF 35 %, loi Lemoine et reperes taux a jour. Gratuit, instantane, sans inscription.",
+    "Simulez votre prêt immobilier 2026 : mensualité, assurance emprunteur, coût total des intérêts et tableau d'amortissement annuel. Règles HCSF 35 %, loi Lemoine et repères taux à jour. Gratuit, instantané, sans inscription.",
   keywords: [
     "simulateur pret immobilier",
     "simulation pret immobilier",
@@ -21,9 +21,9 @@ export const metadata: Metadata = {
     canonical: "https://outilis.fr/outils/calculateur-pret-immobilier",
   },
   openGraph: {
-    title: "Simulateur Pret Immobilier 2026 - Mensualite + Amortissement",
+    title: "Simulateur Prêt Immobilier 2026 - Mensualité + Amortissement",
     description:
-      "Mensualite, assurance, cout total des interets et tableau d'amortissement. Reperes HCSF et taux 2026.",
+      "Mensualité, assurance, coût total des intérêts et tableau d'amortissement. Repères HCSF et taux 2026.",
     url: "https://outilis.fr/outils/calculateur-pret-immobilier",
     type: "website",
   },

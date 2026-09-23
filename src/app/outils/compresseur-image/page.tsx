@@ -9,13 +9,16 @@ function formatSize(bytes: number): string {
   return (bytes / (1024 * 1024)).toFixed(2) + " Mo";
 }
 
-function dataURLtoBlob(dataURL: string): Blob {
-  const parts = dataURL.split(",");
-  const mime = parts[0].match(/:(.*?);/)?.[1] || "image/jpeg";
-  const raw = atob(parts[1]);
-  const arr = new Uint8Array(raw.length);
-  for (let i = 0; i < raw.length; i++) arr[i] = raw.charCodeAt(i);
-  return new Blob([arr], { type: mime });
+/** Size in bytes of the data encoded in a base64 data URL (without decoding it) */
+function dataURLByteSize(dataURL: string): number {
+  const b64 = dataURL.slice(dataURL.indexOf(",") + 1);
+  const padding = b64.endsWith("==") ? 2 : b64.endsWith("=") ? 1 : 0;
+  return Math.max(0, Math.floor((b64.length * 3) / 4) - padding);
+}
+
+/** Actual MIME type produced (browsers silently fall back to PNG for unsupported formats) */
+function dataURLMime(dataURL: string): string {
+  return dataURL.slice(5, dataURL.indexOf(";"));
 }
 
 export default function CompresseurImage() {
@@ -27,6 +30,8 @@ export default function CompresseurImage() {
   const [quality, setQuality] = useState(75);
   const [format, setFormat] = useState<"image/jpeg" | "image/webp">("image/jpeg");
   const [dragging, setDragging] = useState(false);
+  const [error, setError] = useState("");
+  const [outputMime, setOutputMime] = useState("");
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const imgRef = useRef<HTMLImageElement | null>(null);
@@ -38,27 +43,47 @@ export default function CompresseurImage() {
     if (!ctx) return;
     canvas.width = img.naturalWidth;
     canvas.height = img.naturalHeight;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    // JPEG has no alpha channel: transparent areas would turn black without a white background
+    if (fmt === "image/jpeg") {
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
     ctx.drawImage(img, 0, 0);
     const dataURL = canvas.toDataURL(fmt, q / 100);
+    if (dataURL.length < 30) {
+      setError("Image trop grande pour être traitée par votre navigateur.");
+      return;
+    }
+    setError("");
     setCompressedURL(dataURL);
-    setCompressedSize(dataURLtoBlob(dataURL).size);
+    setCompressedSize(dataURLByteSize(dataURL));
+    setOutputMime(dataURLMime(dataURL));
   }, []);
 
   const handleFile = useCallback((file: File) => {
-    if (!file.type.startsWith("image/")) return;
-    setOriginalFile(file);
-    setOriginalSize(file.size);
+    setError("");
+    if (!file.type.startsWith("image/")) {
+      setError("Ce fichier n'est pas une image. Formats acceptés : JPEG, PNG, WebP.");
+      return;
+    }
     const reader = new FileReader();
     reader.onload = (e) => {
       const url = e.target?.result as string;
-      setOriginalURL(url);
       const img = new Image();
       img.onload = () => {
         imgRef.current = img;
+        setOriginalFile(file);
+        setOriginalSize(file.size);
+        setOriginalURL(url);
         compress(img, quality, format);
+      };
+      img.onerror = () => {
+        setError("Impossible de lire cette image. Le format (HEIC, TIFF...) n'est peut-être pas pris en charge par votre navigateur : convertissez-la d'abord en JPEG ou PNG.");
       };
       img.src = url;
     };
+    reader.onerror = () => setError("Impossible de lire ce fichier.");
     reader.readAsDataURL(file);
   }, [quality, format, compress]);
 
@@ -81,7 +106,8 @@ export default function CompresseurImage() {
 
   const download = () => {
     if (!compressedURL || !originalFile) return;
-    const ext = format === "image/webp" ? "webp" : "jpg";
+    // Use the format really produced (e.g. PNG if the browser cannot encode WebP)
+    const ext = outputMime === "image/webp" ? "webp" : outputMime === "image/png" ? "png" : "jpg";
     const link = document.createElement("a");
     link.download = originalFile.name.replace(/\.[^.]+$/, "") + `-compresse.${ext}`;
     link.href = compressedURL;
@@ -89,6 +115,7 @@ export default function CompresseurImage() {
   };
 
   const ratio = originalSize > 0 ? ((1 - compressedSize / originalSize) * 100) : 0;
+  const formatFallback = outputMime !== "" && outputMime !== format;
 
   return (
     <>
@@ -99,7 +126,7 @@ export default function CompresseurImage() {
             Compresseur <span style={{ color: "var(--primary)" }}>Image</span>
           </h1>
           <p className="animate-fade-up stagger-2 mt-3 max-w-xl text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-            Reduisez la taille de vos images sans perte visible de qualite. Ajustez la compression et comparez avant/apres.
+            Réduisez la taille de vos images sans perte visible de qualité. Ajustez la compression et comparez avant/après.
           </p>
         </div>
       </section>
@@ -115,6 +142,15 @@ export default function CompresseurImage() {
                 onDragLeave={() => setDragging(false)}
                 onDrop={handleDrop}
                 onClick={() => inputRef.current?.click()}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    inputRef.current?.click();
+                  }
+                }}
+                role="button"
+                tabIndex={0}
+                aria-label="Choisir une image à compresser"
                 className="cursor-pointer rounded-2xl border-2 border-dashed p-16 text-center transition-all"
                 style={{
                   borderColor: dragging ? "var(--primary)" : "var(--border)",
@@ -130,8 +166,15 @@ export default function CompresseurImage() {
                 </p>
                 <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={(e) => {
                   const file = e.target.files?.[0];
+                  e.target.value = "";
                   if (file) handleFile(file);
                 }} />
+              </div>
+            )}
+
+            {error && (
+              <div role="alert" className="rounded-xl border p-4 text-sm" style={{ background: "rgba(220,38,38,0.06)", borderColor: "rgba(220,38,38,0.2)", color: "#dc2626" }}>
+                {error}
               </div>
             )}
 
@@ -140,8 +183,8 @@ export default function CompresseurImage() {
                 {/* Controls */}
                 <div className="rounded-2xl border p-6" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
                   <div className="flex items-center justify-between mb-4">
-                    <h2 className="text-lg font-semibold" style={{ fontFamily: "var(--font-display)" }}>Parametres</h2>
-                    <button onClick={() => { setOriginalFile(null); setOriginalURL(""); setCompressedURL(""); setOriginalSize(0); setCompressedSize(0); }}
+                    <h2 className="text-lg font-semibold" style={{ fontFamily: "var(--font-display)" }}>Paramètres</h2>
+                    <button onClick={() => { setOriginalFile(null); setOriginalURL(""); setCompressedURL(""); setOriginalSize(0); setCompressedSize(0); setOutputMime(""); setError(""); imgRef.current = null; }}
                       className="text-sm font-medium px-4 py-2 rounded-lg border transition-colors hover:bg-[var(--surface-alt)]"
                       style={{ borderColor: "var(--border)", color: "var(--muted)" }}>
                       Nouvelle image
@@ -155,7 +198,7 @@ export default function CompresseurImage() {
                       </label>
                       <div className="mt-2 flex gap-2">
                         {([["image/jpeg", "JPEG"], ["image/webp", "WebP"]] as const).map(([val, label]) => (
-                          <button key={val} onClick={() => handleFormatChange(val)}
+                          <button key={val} onClick={() => handleFormatChange(val)} aria-pressed={format === val}
                             className="rounded-lg border px-4 py-2 text-sm font-medium transition-all"
                             style={{
                               borderColor: format === val ? "var(--primary)" : "var(--border)",
@@ -170,16 +213,16 @@ export default function CompresseurImage() {
 
                     <div>
                       <div className="flex justify-between">
-                        <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>
-                          Qualite
+                        <label htmlFor="compress-quality" className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>
+                          Qualité
                         </label>
                         <span className="text-sm font-bold" style={{ color: "var(--primary)" }}>{quality}%</span>
                       </div>
-                      <input type="range" min="1" max="100" value={quality} onChange={(e) => handleQualityChange(Number(e.target.value))}
+                      <input id="compress-quality" type="range" min="1" max="100" value={quality} onChange={(e) => handleQualityChange(Number(e.target.value))}
                         className="mt-2 w-full" />
                       <div className="flex justify-between text-xs" style={{ color: "var(--muted)" }}>
                         <span>Petite taille</span>
-                        <span>Haute qualite</span>
+                        <span>Haute qualité</span>
                       </div>
                     </div>
                   </div>
@@ -192,16 +235,23 @@ export default function CompresseurImage() {
                     <p className="mt-1 text-xl font-bold" style={{ fontFamily: "var(--font-display)" }}>{formatSize(originalSize)}</p>
                   </div>
                   <div className="rounded-2xl border p-4 text-center" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-                    <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>Compresse</p>
+                    <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>Compressé</p>
                     <p className="mt-1 text-xl font-bold" style={{ color: "var(--primary)", fontFamily: "var(--font-display)" }}>{formatSize(compressedSize)}</p>
                   </div>
                   <div className="rounded-2xl border p-4 text-center" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-                    <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>Reduction</p>
+                    <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>Réduction</p>
                     <p className="mt-1 text-xl font-bold" style={{ color: ratio > 0 ? "var(--primary)" : "var(--accent)", fontFamily: "var(--font-display)" }}>
-                      {ratio > 0 ? `-${ratio.toFixed(1)}%` : "+0%"}
+                      {ratio > 0 ? `-${ratio.toFixed(1)}%` : `+${Math.abs(ratio).toFixed(1)}%`}
                     </p>
                   </div>
                 </div>
+
+                {(ratio <= 0 || formatFallback) && (
+                  <div className="rounded-xl border p-4 text-sm" style={{ background: "rgba(232,150,62,0.08)", borderColor: "rgba(232,150,62,0.3)", color: "var(--foreground)" }}>
+                    {formatFallback && <p>Votre navigateur ne sait pas encoder ce format : l&apos;image est produite en {outputMime === "image/png" ? "PNG" : outputMime}.</p>}
+                    {ratio <= 0 && <p>Le fichier compressé n&apos;est pas plus léger que l&apos;original : baissez la qualité, essayez WebP ou gardez l&apos;image d&apos;origine (déjà optimisée).</p>}
+                  </div>
+                )}
 
                 {/* Preview */}
                 <div className="rounded-2xl border p-6" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
@@ -215,10 +265,10 @@ export default function CompresseurImage() {
                       </div>
                     </div>
                     <div>
-                      <p className="text-xs font-semibold mb-2" style={{ color: "var(--primary)" }}>Apres ({formatSize(compressedSize)})</p>
+                      <p className="text-xs font-semibold mb-2" style={{ color: "var(--primary)" }}>Après ({formatSize(compressedSize)})</p>
                       <div className="rounded-xl overflow-hidden border" style={{ borderColor: "var(--primary)" }}>
                         {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={compressedURL} alt="Compresse" className="w-full h-auto" />
+                        <img src={compressedURL} alt="Compressé" className="w-full h-auto" />
                       </div>
                     </div>
                   </div>
@@ -226,7 +276,7 @@ export default function CompresseurImage() {
                     <button onClick={download}
                       className="inline-flex items-center gap-2 rounded-full px-8 py-3.5 text-sm font-semibold text-white transition-all hover:scale-[1.02]"
                       style={{ background: "linear-gradient(135deg, var(--primary) 0%, #1a6b4f 100%)" }}>
-                      Telecharger l&apos;image compressee
+                      Télécharger l&apos;image compressée
                     </button>
                   </div>
                 </div>
@@ -238,9 +288,10 @@ export default function CompresseurImage() {
             <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
               <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Comment fonctionne la compression ?</h2>
               <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                <p>La compression d&apos;image reduit la taille du fichier en ajustant la qualite d&apos;encodage. Les formats JPEG et WebP utilisent une compression avec perte qui elimine les details imperceptibles a l&apos;oeil nu.</p>
-                <p>WebP offre generalement une meilleure compression que JPEG pour une qualite equivalente. A 75% de qualite, vous obtiendrez un bon compromis taille/qualite pour le web.</p>
-                <p>Tout le traitement est effectue localement dans votre navigateur. Aucune image n&apos;est envoyee sur un serveur.</p>
+                <p>La compression d&apos;image réduit la taille du fichier en ajustant la qualité d&apos;encodage. Les formats JPEG et WebP utilisent une compression avec perte qui élimine les détails imperceptibles à l&apos;œil nu.</p>
+                <p>Les images PNG sont converties en JPEG ou WebP : la transparence est conservée en WebP, remplacée par un fond blanc en JPEG. Les métadonnées (EXIF, GPS) ne sont pas conservées.</p>
+                <p>WebP offre généralement une meilleure compression que JPEG pour une qualité équivalente. À 75 % de qualité, vous obtiendrez un bon compromis taille/qualité pour le web.</p>
+                <p>Tout le traitement est effectué localement dans votre navigateur. Aucune image n&apos;est envoyée sur un serveur.</p>
               </div>
             </div>
           </div>

@@ -31,14 +31,21 @@ export default function FusionneurPdf() {
   const addFiles = useCallback(async (fileList: FileList | File[]) => {
     setError("");
     const newFiles: PDFFile[] = [];
+    const errors: string[] = [];
     for (const file of Array.from(fileList)) {
-      if (file.type !== "application/pdf") {
-        setError("Seuls les fichiers PDF sont acceptes.");
+      // Some systems give an empty MIME type: also accept the .pdf extension
+      if (file.type !== "application/pdf" && !/\.pdf$/i.test(file.name)) {
+        errors.push(`« ${file.name} » n'est pas un PDF.`);
         continue;
       }
       try {
         const bytes = new Uint8Array(await file.arrayBuffer());
         const doc = await PDFDocument.load(bytes, { ignoreEncryption: true });
+        // pdf-lib cannot decrypt: merging an encrypted PDF would produce blank or broken pages
+        if (doc.isEncrypted) {
+          errors.push(`« ${file.name} » est protégé (chiffré) et ne peut pas être fusionné. Retirez d'abord la protection.`);
+          continue;
+        }
         newFiles.push({
           id: crypto.randomUUID(),
           file,
@@ -48,9 +55,10 @@ export default function FusionneurPdf() {
           bytes,
         });
       } catch {
-        setError(`Impossible de lire "${file.name}". Fichier PDF invalide ou corrompu.`);
+        errors.push(`Impossible de lire « ${file.name} » : fichier PDF invalide ou corrompu.`);
       }
     }
+    if (errors.length) setError(errors.join(" "));
     setFiles((prev) => [...prev, ...newFiles]);
   }, []);
 
@@ -121,9 +129,10 @@ export default function FusionneurPdf() {
       a.href = url;
       a.download = "fusion.pdf";
       a.click();
-      URL.revokeObjectURL(url);
+      // Revoking immediately can cancel the download in some browsers
+      setTimeout(() => URL.revokeObjectURL(url), 10_000);
     } catch {
-      setError("Erreur lors de la fusion. Verifiez que vos fichiers PDF sont valides.");
+      setError("Erreur lors de la fusion. Vérifiez que vos fichiers PDF sont valides.");
     }
     setMerging(false);
   };
@@ -145,7 +154,7 @@ export default function FusionneurPdf() {
             Fusionneur de <span style={{ color: "var(--primary)" }}>PDF</span>
           </h1>
           <p className="animate-fade-up stagger-2 mt-3 max-w-xl text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-            Glissez-deposez vos fichiers PDF, reordonnez-les par glisser-deposer, puis fusionnez-les en un seul document.
+            Glissez-déposez vos fichiers PDF, réordonnez-les par glisser-déposer, puis fusionnez-les en un seul document.
           </p>
         </div>
       </section>
@@ -162,6 +171,15 @@ export default function FusionneurPdf() {
               onDragLeave={() => setDragOver(false)}
               onDrop={handleDrop}
               onClick={() => inputRef.current?.click()}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  inputRef.current?.click();
+                }
+              }}
+              role="button"
+              tabIndex={0}
+              aria-label="Ajouter des fichiers PDF"
               className="rounded-2xl border-2 border-dashed p-10 text-center cursor-pointer transition-all"
               style={{
                 borderColor: dragOver ? "var(--primary)" : "var(--border)",
@@ -174,7 +192,12 @@ export default function FusionneurPdf() {
                 accept=".pdf,application/pdf"
                 multiple
                 className="hidden"
-                onChange={(e) => e.target.files && addFiles(e.target.files)}
+                onChange={(e) => {
+                  const list = e.target.files ? Array.from(e.target.files) : [];
+                  // Reset so that the same file can be picked again
+                  e.target.value = "";
+                  if (list.length) addFiles(list);
+                }}
               />
               <p className="text-4xl">&#128196;</p>
               <p className="mt-3 text-sm font-semibold" style={{ fontFamily: "var(--font-display)" }}>
@@ -199,7 +222,7 @@ export default function FusionneurPdf() {
                     {files.length} fichier{files.length > 1 ? "s" : ""} &middot; {totalPages} page{totalPages > 1 ? "s" : ""} &middot; {formatSize(totalSize)}
                   </h2>
                   <button
-                    onClick={() => setFiles([])}
+                    onClick={() => { setFiles([]); setError(""); }}
                     className="text-xs font-semibold transition-colors hover:opacity-70"
                     style={{ color: "#dc2626" }}
                   >
@@ -213,7 +236,16 @@ export default function FusionneurPdf() {
                       draggable
                       onDragStart={() => handleRowDragStart(i)}
                       onDragOver={(e) => handleRowDragOver(e, i)}
-                      onDrop={() => handleRowDrop(i)}
+                      onDrop={(e) => {
+                        // Without preventDefault, dropping a file here would make the browser open it
+                        e.preventDefault();
+                        if (dragIndex === null && e.dataTransfer.files.length > 0) {
+                          setDragOverIndex(null);
+                          addFiles(e.dataTransfer.files);
+                          return;
+                        }
+                        handleRowDrop(i);
+                      }}
                       onDragEnd={handleRowDragEnd}
                       className="flex items-center gap-3 px-5 py-3 transition-all"
                       style={{
@@ -238,6 +270,7 @@ export default function FusionneurPdf() {
                           disabled={i === 0}
                           className="p-1.5 rounded-lg transition-colors hover:bg-[var(--surface-alt)] disabled:opacity-30"
                           title="Monter"
+                          aria-label={`Monter ${f.name}`}
                         >
                           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 15l-6-6-6 6" /></svg>
                         </button>
@@ -246,6 +279,7 @@ export default function FusionneurPdf() {
                           disabled={i === files.length - 1}
                           className="p-1.5 rounded-lg transition-colors hover:bg-[var(--surface-alt)] disabled:opacity-30"
                           title="Descendre"
+                          aria-label={`Descendre ${f.name}`}
                         >
                           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9l6 6 6-6" /></svg>
                         </button>
@@ -254,6 +288,7 @@ export default function FusionneurPdf() {
                           className="p-1.5 rounded-lg transition-colors hover:bg-[rgba(220,38,38,0.08)]"
                           style={{ color: "#dc2626" }}
                           title="Supprimer"
+                          aria-label={`Retirer ${f.name}`}
                         >
                           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6L6 18M6 6l12 12" /></svg>
                         </button>
@@ -272,7 +307,7 @@ export default function FusionneurPdf() {
                 className="w-full rounded-xl py-3.5 text-sm font-semibold text-white transition-all hover:opacity-90 disabled:opacity-60"
                 style={{ background: "var(--primary)" }}
               >
-                {merging ? "Fusion en cours..." : `Fusionner ${files.length} PDF (${totalPages} pages)`}
+                {merging ? "Fusion en cours..." : `Fusionner ${files.length} PDF (${totalPages} pages) et télécharger`}
               </button>
             )}
 
@@ -280,21 +315,21 @@ export default function FusionneurPdf() {
               <div className="rounded-2xl border p-8 text-center" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
                 <p className="text-4xl">&#128195;</p>
                 <p className="mt-3 text-sm font-semibold" style={{ fontFamily: "var(--font-display)" }}>
-                  Aucun fichier selectionne
+                  Aucun fichier sélectionné
                 </p>
                 <p className="mt-1 text-xs" style={{ color: "var(--muted)" }}>
-                  Deposez au moins 2 fichiers PDF pour les fusionner en un seul document.
+                  Déposez au moins 2 fichiers PDF pour les fusionner en un seul document.
                 </p>
               </div>
             )}
 
             {/* About */}
             <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>A propos du fusionneur</h2>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>À propos du fusionneur</h2>
               <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                <p><strong className="text-[var(--foreground)]">Glisser-deposer</strong> : Ajoutez vos PDF par drag &amp; drop ou en cliquant sur la zone de depot.</p>
-                <p><strong className="text-[var(--foreground)]">Reordonnez</strong> : Glissez les fichiers pour changer l&apos;ordre, ou utilisez les fleches haut/bas.</p>
-                <p><strong className="text-[var(--foreground)]">100% local</strong> : Tout le traitement se fait dans votre navigateur. Aucun fichier n&apos;est envoye sur un serveur.</p>
+                <p><strong className="text-[var(--foreground)]">Glisser-déposer</strong> : Ajoutez vos PDF par drag &amp; drop ou en cliquant sur la zone de dépôt.</p>
+                <p><strong className="text-[var(--foreground)]">Réordonnez</strong> : Glissez les fichiers pour changer l&apos;ordre, ou utilisez les flèches haut/bas.</p>
+                <p><strong className="text-[var(--foreground)]">100% local</strong> : Tout le traitement se fait dans votre navigateur. Aucun fichier n&apos;est envoyé sur un serveur.</p>
               </div>
             </div>
           </div>
@@ -306,11 +341,11 @@ export default function FusionneurPdf() {
               <ol className="mt-3 space-y-3 text-xs" style={{ color: "var(--muted)" }}>
                 <li className="flex gap-2">
                   <span className="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold" style={{ background: "var(--surface-alt)" }}>1</span>
-                  <span>Deposez vos fichiers PDF</span>
+                  <span>Déposez vos fichiers PDF</span>
                 </li>
                 <li className="flex gap-2">
                   <span className="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold" style={{ background: "var(--surface-alt)" }}>2</span>
-                  <span>Reordonnez-les si besoin</span>
+                  <span>Réordonnez-les si besoin</span>
                 </li>
                 <li className="flex gap-2">
                   <span className="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold" style={{ background: "var(--surface-alt)" }}>3</span>
@@ -318,7 +353,7 @@ export default function FusionneurPdf() {
                 </li>
                 <li className="flex gap-2">
                   <span className="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold" style={{ background: "var(--surface-alt)" }}>4</span>
-                  <span>Telechargez le PDF fusionne</span>
+                  <span>Téléchargez le PDF fusionné</span>
                 </li>
               </ol>
             </div>

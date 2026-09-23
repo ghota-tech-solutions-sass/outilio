@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Compteur de mots et caracteres en ligne - Gratuit",
+  title: "Compteur de mots et caractères en ligne - Gratuit",
   description:
-    "Comptez les mots, caracteres, phrases et paragraphes de vos textes. Temps de lecture et de parole estimes. Outil gratuit et instantane.",
+    "Comptez les mots, caractères, phrases et paragraphes de vos textes. Temps de lecture et de parole estimés. Outil gratuit et instantané.",
   keywords: [
     "compteur de mots",
     "compteur caracteres",

@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Simulation Rachat de Credit 2026 - Calculatrice Regroupement Gratuite",
+  title: "Simulation Rachat de Crédit 2026 - Calculatrice Regroupement Gratuite",
   description:
-    "Simulez votre rachat de credit 2026 : comparez mensualites, calculez l'economie reelle apres frais (IRA + dossier), evaluez l'interet d'un regroupement de prets. Plusieurs credits cumulables, resultat instantane, sans inscription.",
+    "Simulez votre rachat de crédit 2026 : comparez mensualités, calculez l'économie réelle après frais (IRA + dossier), évaluez l'intérêt d'un regroupement de prêts. Plusieurs crédits cumulables, résultat instantané, sans inscription.",
   keywords: [
     "simulation rachat de credit",
     "rachat de credit simulation",
@@ -20,9 +20,9 @@ export const metadata: Metadata = {
     canonical: "https://outilis.fr/outils/calculateur-rachat-credit",
   },
   openGraph: {
-    title: "Simulation Rachat de Credit 2026 - Calculatrice Regroupement",
+    title: "Simulation Rachat de Crédit 2026 - Calculatrice Regroupement",
     description:
-      "Comparez vos mensualites avant/apres rachat, frais inclus. Plusieurs credits cumulables. Gratuit, sans inscription.",
+      "Comparez vos mensualités avant/après rachat, frais inclus. Plusieurs crédits cumulables. Gratuit, sans inscription.",
     url: "https://outilis.fr/outils/calculateur-rachat-credit",
     type: "website",
   },

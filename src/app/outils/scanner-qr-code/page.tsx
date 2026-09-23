@@ -31,39 +31,79 @@ function isUrl(text: string): boolean {
 
 function timeAgo(ts: number): string {
   const diff = Math.floor((Date.now() - ts) / 1000);
-  if (diff < 60) return "A l'instant";
+  if (diff < 60) return "À l'instant";
   if (diff < 3600) return `Il y a ${Math.floor(diff / 60)} min`;
   return `Il y a ${Math.floor(diff / 3600)} h`;
 }
 
-/** Try to decode a QR code from an ImageBitmap / canvas using BarcodeDetector, then jsQR-style canvas fallback. */
+/** Traduit les erreurs getUserMedia en messages compréhensibles. */
+function cameraErrorMessage(err: unknown): string {
+  const name = err instanceof DOMException || err instanceof Error ? err.name : "";
+  switch (name) {
+    case "NotAllowedError":
+    case "PermissionDeniedError":
+      return "Accès à la caméra refusé. Autorisez la caméra pour ce site dans les réglages de votre navigateur (icône à gauche de l'adresse), puis réessayez. Vous pouvez aussi utiliser l'onglet Image.";
+    case "NotFoundError":
+    case "DevicesNotFoundError":
+      return "Aucune caméra détectée sur cet appareil. Utilisez l'onglet Image pour importer une photo du QR code.";
+    case "NotReadableError":
+    case "TrackStartError":
+      return "La caméra est déjà utilisée par une autre application ou un autre onglet. Fermez-la puis réessayez.";
+    case "OverconstrainedError":
+      return "Aucune caméra compatible avec les réglages demandés n'a été trouvée.";
+    case "SecurityError":
+      return "L'accès à la caméra est bloqué par la politique de sécurité du navigateur (page non sécurisée ou intégrée dans un cadre).";
+    default:
+      return "Impossible d'accéder à la caméra. Vérifiez les autorisations de votre navigateur ou utilisez l'onglet Image.";
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/*  Décodage : BarcodeDetector natif, puis jsQR en secours             */
+/* ------------------------------------------------------------------ */
+
+interface NativeDetector {
+  detect: (source: CanvasImageSource) => Promise<{ rawValue: string }[]>;
+}
+
+let nativeDetector: NativeDetector | null | undefined;
+
+function getNativeDetector(): NativeDetector | null {
+  if (nativeDetector !== undefined) return nativeDetector;
+  nativeDetector = null;
+  if (typeof window !== "undefined" && "BarcodeDetector" in window) {
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      nativeDetector = new (window as any).BarcodeDetector({ formats: ["qr_code"] }) as NativeDetector;
+    } catch {
+      nativeDetector = null;
+    }
+  }
+  return nativeDetector;
+}
+
+/** Try to decode a QR code from a canvas using BarcodeDetector, then jsQR fallback. */
 async function decodeQR(canvas: HTMLCanvasElement): Promise<string | null> {
   const ctx = canvas.getContext("2d", { willReadFrequently: true });
   if (!ctx) return null;
 
-  // 1. Try native BarcodeDetector (Chrome, Edge, Opera, Android WebView)
-  if ("BarcodeDetector" in window) {
+  // 1. Native BarcodeDetector (Chrome/Edge sur Android, macOS, ChromeOS…)
+  const detector = getNativeDetector();
+  if (detector) {
     try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const detector = new (window as any).BarcodeDetector({ formats: ["qr_code"] });
       const results = await detector.detect(canvas);
       if (results.length > 0) return results[0].rawValue;
     } catch {
-      // BarcodeDetector failed, fall through to canvas fallback
+      // fall through to jsQR
     }
   }
 
-  // 2. Canvas-based fallback: try the jsQR algorithm embedded below
+  // 2. jsQR fallback (bibliothèque téléchargée depuis jsDelivr ; l'image reste locale)
   const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
   return decodeQRFromImageData(imageData);
 }
 
-/* ------------------------------------------------------------------ */
-/*  Minimal jsQR-style decoder (canvas ImageData)                      */
-/*  We load jsQR from a CDN lazily to keep bundle size at zero.        */
-/* ------------------------------------------------------------------ */
-
-let jsQRLoaded: ((data: ImageData, w: number, h: number) => { data: string } | null) | null = null;
+let jsQRLoaded: ((data: Uint8ClampedArray, w: number, h: number) => { data: string } | null) | null = null;
 let jsQRLoading: Promise<void> | null = null;
 
 async function ensureJsQR(): Promise<void> {
@@ -72,12 +112,18 @@ async function ensureJsQR(): Promise<void> {
   jsQRLoading = new Promise<void>((resolve) => {
     const script = document.createElement("script");
     script.src = "https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js";
+    script.crossOrigin = "anonymous";
     script.onload = () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       jsQRLoaded = (window as any).jsQR || null;
       resolve();
     };
-    script.onerror = () => resolve();
+    script.onerror = () => {
+      // Allow a retry on the next attempt (e.g. network came back)
+      jsQRLoading = null;
+      script.remove();
+      resolve();
+    };
     document.head.appendChild(script);
   });
   return jsQRLoading;
@@ -86,9 +132,11 @@ async function ensureJsQR(): Promise<void> {
 async function decodeQRFromImageData(imageData: ImageData): Promise<string | null> {
   await ensureJsQR();
   if (!jsQRLoaded) return null;
-  const result = jsQRLoaded(imageData, imageData.width, imageData.height);
+  const result = jsQRLoaded(imageData.data, imageData.width, imageData.height);
   return result ? result.data : null;
 }
+
+const MAX_IMAGE_SIDE = 2000;
 
 /* ------------------------------------------------------------------ */
 /*  Session history helpers                                            */
@@ -99,7 +147,8 @@ const HISTORY_KEY = "qr-scanner-history";
 function loadHistory(): ScanResult[] {
   try {
     const raw = sessionStorage.getItem(HISTORY_KEY);
-    return raw ? JSON.parse(raw) : [];
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? parsed : [];
   } catch {
     return [];
   }
@@ -109,7 +158,7 @@ function saveHistory(items: ScanResult[]) {
   try {
     sessionStorage.setItem(HISTORY_KEY, JSON.stringify(items.slice(0, 50)));
   } catch {
-    // quota exceeded
+    // quota exceeded / storage blocked
   }
 }
 
@@ -122,8 +171,9 @@ export default function ScannerQRCode() {
   const [result, setResult] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [scanning, setScanning] = useState(false);
+  const [starting, setStarting] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [history, setHistory] = useState<ScanResult[]>(() => loadHistory());
+  const [history, setHistory] = useState<ScanResult[]>([]);
   const [dragOver, setDragOver] = useState(false);
   const [cameraReady, setCameraReady] = useState(false);
 
@@ -133,6 +183,16 @@ export default function ScannerQRCode() {
   const rafRef = useRef<number>(0);
   const inputRef = useRef<HTMLInputElement>(null);
   const lastScanRef = useRef<string>("");
+  // Incremented on every start/stop so a late getUserMedia resolution can be discarded
+  const sessionRef = useRef(0);
+
+  /* ---- Load history after mount (sessionStorage n'existe pas au pré-rendu) ---- */
+  useEffect(() => {
+    const stored = loadHistory();
+    if (stored.length > 0) {
+      Promise.resolve().then(() => setHistory(stored));
+    }
+  }, []);
 
   /* ---- Add scan result ---- */
   const addResult = useCallback((value: string, source: "camera" | "image") => {
@@ -152,82 +212,91 @@ export default function ScannerQRCode() {
 
   /* ---- Camera scanning loop ---- */
   const scanFrame = useCallback(function scanFrameLoop() {
+    if (!streamRef.current) return;
     const video = videoRef.current;
     const canvas = canvasRef.current;
-    if (!video || !canvas || video.readyState !== video.HAVE_ENOUGH_DATA) {
+    const ctx = canvas?.getContext("2d", { willReadFrequently: true });
+    if (!video || !canvas || !ctx || video.readyState !== video.HAVE_ENOUGH_DATA) {
       rafRef.current = requestAnimationFrame(scanFrameLoop);
       return;
     }
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
-    const ctx = canvas.getContext("2d", { willReadFrequently: true });
-    if (!ctx) return;
     ctx.drawImage(video, 0, 0);
 
-    decodeQR(canvas).then((val) => {
-      if (val && val !== lastScanRef.current) {
-        lastScanRef.current = val;
-        addResult(val, "camera");
-      }
-      if (streamRef.current) {
-        rafRef.current = requestAnimationFrame(scanFrameLoop);
-      }
-    });
-  }, [addResult]);
-
-  /* ---- Start camera ---- */
-  const startCamera = useCallback(async () => {
-    setError("");
-    setResult(null);
-    setCameraReady(false);
-    lastScanRef.current = "";
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "environment", width: { ideal: 1280 }, height: { ideal: 720 } },
+    decodeQR(canvas)
+      .catch(() => null)
+      .then((val) => {
+        if (val && val !== lastScanRef.current) {
+          lastScanRef.current = val;
+          addResult(val, "camera");
+        }
+        if (streamRef.current) {
+          rafRef.current = requestAnimationFrame(scanFrameLoop);
+        }
       });
-      streamRef.current = stream;
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        videoRef.current.onloadedmetadata = () => {
-          videoRef.current?.play();
-          setCameraReady(true);
-          setScanning(true);
-          rafRef.current = requestAnimationFrame(scanFrame);
-        };
-      }
-    } catch {
-      setError(
-        "Impossible d'acceder a la camera. Verifiez les permissions de votre navigateur."
-      );
-    }
-  }, [scanFrame]);
+  }, [addResult]);
 
   /* ---- Stop camera ---- */
   const stopCamera = useCallback(() => {
+    sessionRef.current += 1;
     cancelAnimationFrame(rafRef.current);
     if (streamRef.current) {
       streamRef.current.getTracks().forEach((t) => t.stop());
       streamRef.current = null;
     }
+    if (videoRef.current) videoRef.current.srcObject = null;
     setScanning(false);
+    setStarting(false);
     setCameraReady(false);
     lastScanRef.current = "";
   }, []);
 
-  // Auto-start camera when tab switches to "camera"
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (tab === "camera") {
-        void startCamera();
-      } else {
-        stopCamera();
+  /* ---- Start camera (only on explicit user action) ---- */
+  const startCamera = useCallback(async () => {
+    stopCamera();
+    const session = sessionRef.current;
+    setError("");
+    setResult(null);
+    if (!window.isSecureContext || !navigator.mediaDevices?.getUserMedia) {
+      setError(
+        "Votre navigateur ne permet pas l'accès à la caméra sur cette page (connexion HTTPS requise ou navigateur trop ancien). Utilisez l'onglet Image."
+      );
+      return;
+    }
+    setStarting(true);
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: "environment", width: { ideal: 1280 }, height: { ideal: 720 } },
+      });
+      // The user switched tab / left the page while the permission prompt was open
+      if (session !== sessionRef.current || !videoRef.current) {
+        stream.getTracks().forEach((t) => t.stop());
+        return;
       }
-    }, 0);
-    return () => {
-      clearTimeout(timer);
-      stopCamera();
-    };
-  }, [tab, startCamera, stopCamera]);
+      streamRef.current = stream;
+      const video = videoRef.current;
+      video.srcObject = stream;
+      video.onloadedmetadata = () => {
+        if (session !== sessionRef.current) return;
+        video.play().catch(() => {});
+        setStarting(false);
+        setCameraReady(true);
+        setScanning(true);
+        rafRef.current = requestAnimationFrame(scanFrame);
+      };
+    } catch (err) {
+      if (session !== sessionRef.current) return;
+      setStarting(false);
+      setError(cameraErrorMessage(err));
+    }
+  }, [scanFrame, stopCamera]);
+
+  // Stop the camera when leaving the camera tab or the page
+  useEffect(() => {
+    if (tab !== "camera") stopCamera();
+  }, [tab, stopCamera]);
+  useEffect(() => stopCamera, [stopCamera]);
 
   /* ---- Image upload handler ---- */
   const handleImage = useCallback(
@@ -235,25 +304,34 @@ export default function ScannerQRCode() {
       setError("");
       setResult(null);
       if (!file.type.startsWith("image/")) {
-        setError("Seuls les fichiers image sont acceptes (PNG, JPG, WEBP, etc.).");
+        setError("Seuls les fichiers image sont acceptés (PNG, JPG, WEBP, etc.).");
         return;
       }
       try {
         const bitmap = await createImageBitmap(file);
+        const scale = Math.min(1, MAX_IMAGE_SIDE / Math.max(bitmap.width, bitmap.height));
         const canvas = document.createElement("canvas");
-        canvas.width = bitmap.width;
-        canvas.height = bitmap.height;
+        canvas.width = Math.max(1, Math.round(bitmap.width * scale));
+        canvas.height = Math.max(1, Math.round(bitmap.height * scale));
         const ctx = canvas.getContext("2d", { willReadFrequently: true });
-        if (!ctx) return;
-        ctx.drawImage(bitmap, 0, 0);
+        if (!ctx) {
+          setError("Impossible de lire cette image.");
+          return;
+        }
+        ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+        bitmap.close?.();
         const val = await decodeQR(canvas);
         if (val) {
           addResult(val, "image");
+        } else if (!getNativeDetector() && !jsQRLoaded) {
+          setError(
+            "Le décodeur n'a pas pu être chargé (connexion au CDN jsDelivr impossible). Vérifiez votre connexion ou essayez avec Chrome/Edge."
+          );
         } else {
-          setError("Aucun QR code detecte dans cette image. Essayez avec une image plus nette.");
+          setError("Aucun QR code détecté dans cette image. Essayez avec une image plus nette et mieux cadrée.");
         }
       } catch {
-        setError("Impossible de lire cette image.");
+        setError("Impossible de lire cette image (format non pris en charge par le navigateur ?).");
       }
     },
     [addResult]
@@ -272,16 +350,23 @@ export default function ScannerQRCode() {
   /* ---- Copy result ---- */
   const copyResult = () => {
     if (!result) return;
-    navigator.clipboard.writeText(result).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    });
+    navigator.clipboard
+      .writeText(result)
+      .then(() => {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      })
+      .catch(() => setError("Copie impossible : sélectionnez le texte et copiez-le manuellement."));
   };
 
   /* ---- Clear history ---- */
   const clearHistory = () => {
     setHistory([]);
-    sessionStorage.removeItem(HISTORY_KEY);
+    try {
+      sessionStorage.removeItem(HISTORY_KEY);
+    } catch {
+      // storage blocked
+    }
   };
 
   /* ================================================================ */
@@ -312,8 +397,8 @@ export default function ScannerQRCode() {
             className="animate-fade-up stagger-2 mt-3 max-w-xl text-sm leading-relaxed"
             style={{ color: "var(--muted)" }}
           >
-            Scannez un QR code depuis votre camera ou importez une image.
-            Decodage instantane, 100% local, aucun fichier envoye.
+            Scannez un QR code depuis votre caméra ou importez une image.
+            Décodage instantané dans votre navigateur : aucune image n&apos;est envoyée.
           </p>
         </div>
       </section>
@@ -343,7 +428,7 @@ export default function ScannerQRCode() {
                         <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z" />
                         <circle cx="12" cy="13" r="4" />
                       </svg>
-                      Camera
+                      Caméra
                     </>
                   ) : (
                     <>
@@ -387,15 +472,32 @@ export default function ScannerQRCode() {
                       />
                     </div>
                   )}
-                  {!cameraReady && !error && (
-                    <div className="text-center">
-                      <div
-                        className="mx-auto h-8 w-8 animate-spin rounded-full border-2"
-                        style={{ borderColor: "var(--border)", borderTopColor: "var(--primary)" }}
-                      />
-                      <p className="mt-3 text-xs text-white/60">
-                        Activation de la camera...
-                      </p>
+                  {!cameraReady && (
+                    <div className="px-6 text-center">
+                      {starting ? (
+                        <>
+                          <div
+                            className="mx-auto h-8 w-8 animate-spin rounded-full border-2"
+                            style={{ borderColor: "var(--border)", borderTopColor: "var(--primary)" }}
+                          />
+                          <p className="mt-3 text-xs text-white/60">
+                            Activation de la caméra… Autorisez l&apos;accès si votre navigateur le demande.
+                          </p>
+                        </>
+                      ) : (
+                        <>
+                          <button
+                            onClick={() => void startCamera()}
+                            className="rounded-xl px-6 py-3 text-sm font-semibold text-white transition-all hover:opacity-90"
+                            style={{ background: "var(--primary)" }}
+                          >
+                            {error ? "Réessayer" : "Activer la caméra"}
+                          </button>
+                          <p className="mt-3 text-xs text-white/60">
+                            Les images de la caméra sont analysées dans votre navigateur et ne sont jamais envoyées.
+                          </p>
+                        </>
+                      )}
                     </div>
                   )}
                 </div>
@@ -408,7 +510,14 @@ export default function ScannerQRCode() {
                       className="h-2 w-2 rounded-full animate-pulse"
                       style={{ background: "var(--primary)" }}
                     />
-                    Scan en cours... Placez un QR code devant la camera.
+                    <span className="flex-1">Scan en cours… Placez un QR code devant la caméra.</span>
+                    <button
+                      onClick={stopCamera}
+                      className="font-semibold hover:opacity-70"
+                      style={{ color: "var(--foreground)" }}
+                    >
+                      Arrêter
+                    </button>
                   </div>
                 )}
               </div>
@@ -435,9 +544,13 @@ export default function ScannerQRCode() {
                   type="file"
                   accept="image/*"
                   className="hidden"
-                  onChange={(e) =>
-                    e.target.files?.[0] && handleImage(e.target.files[0])
-                  }
+                  onClick={(e) => e.stopPropagation()}
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    // Reset so that selecting the same file again re-triggers onChange
+                    e.target.value = "";
+                    if (file) void handleImage(file);
+                  }}
                 />
                 <p className="text-4xl">&#128247;</p>
                 <p
@@ -447,7 +560,7 @@ export default function ScannerQRCode() {
                   Glissez une image contenant un QR code
                 </p>
                 <p className="mt-1 text-xs" style={{ color: "var(--muted)" }}>
-                  ou cliquez pour parcourir vos fichiers (PNG, JPG, WEBP...)
+                  ou cliquez pour parcourir vos fichiers (PNG, JPG, WEBP…)
                 </p>
               </div>
             )}
@@ -486,14 +599,14 @@ export default function ScannerQRCode() {
                     className="text-xs font-semibold uppercase tracking-[0.15em]"
                     style={{ color: "var(--primary)" }}
                   >
-                    &#10003; QR Code detecte
+                    &#10003; QR Code détecté
                   </h2>
                   <button
                     onClick={copyResult}
                     className="text-xs font-semibold transition-colors hover:opacity-70"
                     style={{ color: "var(--primary)" }}
                   >
-                    {copied ? "Copie !" : "Copier"}
+                    {copied ? "Copié !" : "Copier"}
                   </button>
                 </div>
                 <div className="p-5 space-y-4">
@@ -642,25 +755,27 @@ export default function ScannerQRCode() {
                 style={{ color: "var(--muted)" }}
               >
                 <p>
-                  <strong className="text-[var(--foreground)]">Mode camera</strong> :
-                  Autorisez l&apos;acces a votre camera, puis placez le QR code dans le
-                  cadre. Le decodage est instantane.
+                  <strong className="text-[var(--foreground)]">Mode caméra</strong> :
+                  cliquez sur « Activer la caméra », autorisez l&apos;accès, puis placez le QR
+                  code dans le cadre. Le décodage est instantané. La caméra nécessite une
+                  connexion sécurisée (HTTPS).
                 </p>
                 <p>
                   <strong className="text-[var(--foreground)]">Mode image</strong> :
-                  Glissez-deposez ou selectionnez une image contenant un QR code
-                  (capture d&apos;ecran, photo, etc.).
+                  glissez-déposez ou sélectionnez une image contenant un QR code
+                  (capture d&apos;écran, photo, etc.).
                 </p>
                 <p>
-                  <strong className="text-[var(--foreground)]">100% local</strong> :
-                  Tout le traitement se fait dans votre navigateur grace a l&apos;API
-                  BarcodeDetector (Chrome, Edge) avec un decodeur de secours pour les
-                  autres navigateurs. Aucune donnee n&apos;est envoyee.
+                  <strong className="text-[var(--foreground)]">Décodage local</strong> :
+                  l&apos;analyse se fait dans votre navigateur grâce à l&apos;API
+                  BarcodeDetector quand elle est disponible, sinon avec la bibliothèque
+                  open source jsQR, téléchargée depuis le CDN jsDelivr au premier besoin.
+                  Les images et le flux de la caméra ne quittent jamais votre appareil.
                 </p>
                 <p>
                   <strong className="text-[var(--foreground)]">Historique</strong> :
-                  Vos derniers scans sont conserves dans la session en cours. Ils
-                  disparaissent a la fermeture de l&apos;onglet.
+                  vos derniers scans sont conservés dans le stockage de session de votre
+                  navigateur. Ils disparaissent à la fermeture de l&apos;onglet.
                 </p>
               </div>
             </div>
@@ -677,7 +792,7 @@ export default function ScannerQRCode() {
                 className="text-sm font-semibold"
                 style={{ fontFamily: "var(--font-display)" }}
               >
-                Fonctionnalites
+                Fonctionnalités
               </h3>
               <ul
                 className="mt-3 space-y-2 text-xs"
@@ -685,7 +800,7 @@ export default function ScannerQRCode() {
               >
                 <li className="flex gap-2">
                   <span style={{ color: "var(--primary)" }}>&#10003;</span>
-                  <span>Scan via camera en temps reel</span>
+                  <span>Scan via caméra en temps réel</span>
                 </li>
                 <li className="flex gap-2">
                   <span style={{ color: "var(--primary)" }}>&#10003;</span>
@@ -693,7 +808,7 @@ export default function ScannerQRCode() {
                 </li>
                 <li className="flex gap-2">
                   <span style={{ color: "var(--primary)" }}>&#10003;</span>
-                  <span>Detection automatique des URLs</span>
+                  <span>Détection automatique des URL</span>
                 </li>
                 <li className="flex gap-2">
                   <span style={{ color: "var(--primary)" }}>&#10003;</span>
@@ -701,7 +816,7 @@ export default function ScannerQRCode() {
                 </li>
                 <li className="flex gap-2">
                   <span style={{ color: "var(--primary)" }}>&#10003;</span>
-                  <span>Traitement 100% local</span>
+                  <span>Décodage 100 % local</span>
                 </li>
                 <li className="flex gap-2">
                   <span style={{ color: "var(--primary)" }}>&#10003;</span>
@@ -717,7 +832,7 @@ export default function ScannerQRCode() {
                 className="text-sm font-semibold"
                 style={{ fontFamily: "var(--font-display)" }}
               >
-                Navigateurs supportes
+                Navigateurs pris en charge
               </h3>
               <div
                 className="mt-3 space-y-2 text-xs"
@@ -725,11 +840,12 @@ export default function ScannerQRCode() {
               >
                 <p>
                   <strong className="text-[var(--foreground)]">BarcodeDetector natif</strong>{" "}
-                  : Chrome 83+, Edge 83+, Opera 69+, Android WebView.
+                  : Chrome et Edge sur Android, macOS et ChromeOS, Opera, Samsung Internet.
                 </p>
                 <p>
                   <strong className="text-[var(--foreground)]">Fallback jsQR</strong>{" "}
-                  : Firefox, Safari et tous les autres navigateurs.
+                  : Firefox, Safari, Chrome sous Windows/Linux et les autres navigateurs
+                  (bibliothèque chargée depuis jsDelivr).
                 </p>
               </div>
             </div>

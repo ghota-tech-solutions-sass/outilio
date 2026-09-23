@@ -14,23 +14,40 @@ export default function EncodeurBase64() {
 
   const handleConvert = () => {
     setError("");
+    if (mode === "encode") {
+      // UTF-8 first: btoa() alone only accepts Latin-1 characters
+      const utf8Bytes = new TextEncoder().encode(input);
+      let binary = "";
+      utf8Bytes.forEach((b) => (binary += String.fromCharCode(b)));
+      setOutput(btoa(binary));
+      return;
+    }
+    // Accepts standard Base64 and Base64URL (JWT: - and _ instead of + and /),
+    // with or without padding, spaces and line breaks.
+    let b64 = input.replace(/\s+/g, "").replace(/-/g, "+").replace(/_/g, "/");
+    if (b64.length % 4 === 1 || /[^A-Za-z0-9+/=]/.test(b64)) {
+      setError("Texte Base64 invalide. Vérifiez le format (caractères autorisés : A-Z, a-z, 0-9, +, /, -, _ et = en fin de chaîne).");
+      setOutput("");
+      return;
+    }
+    b64 = b64.replace(/=+$/, "");
+    b64 += "=".repeat((4 - (b64.length % 4)) % 4);
+    let binary: string;
     try {
-      if (mode === "encode") {
-        // Handle Unicode properly
-        const utf8Bytes = new TextEncoder().encode(input);
-        let binary = "";
-        utf8Bytes.forEach((b) => (binary += String.fromCharCode(b)));
-        setOutput(btoa(binary));
-      } else {
-        const binary = atob(input.trim());
-        const bytes = new Uint8Array(binary.length);
-        for (let i = 0; i < binary.length; i++) {
-          bytes[i] = binary.charCodeAt(i);
-        }
-        setOutput(new TextDecoder().decode(bytes));
-      }
+      binary = atob(b64);
     } catch {
-      setError(mode === "decode" ? "Texte Base64 invalide. Verifiez le format." : "Erreur lors de l'encodage.");
+      setError("Texte Base64 invalide. Vérifiez le format.");
+      setOutput("");
+      return;
+    }
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) {
+      bytes[i] = binary.charCodeAt(i);
+    }
+    try {
+      setOutput(new TextDecoder("utf-8", { fatal: true }).decode(bytes));
+    } catch {
+      setError(`Base64 valide (${bytes.length} octets), mais le contenu n'est pas du texte UTF-8 : il s'agit probablement d'un fichier binaire (image, PDF, clé…) qui ne peut pas être affiché comme texte.`);
       setOutput("");
     }
   };
@@ -60,7 +77,7 @@ export default function EncodeurBase64() {
             Encodeur <span style={{ color: "var(--primary)" }}>Base64</span>
           </h1>
           <p className="animate-fade-up stagger-2 mt-3 max-w-xl text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-            Encodez du texte en Base64 ou decodez du Base64 en texte. Copie en un clic.
+            Encodez du texte en Base64 ou décodez du Base64 en texte. Copie en un clic. Base64URL (JWT) accepté au décodage.
           </p>
         </div>
       </section>
@@ -88,7 +105,7 @@ export default function EncodeurBase64() {
                     background: mode === "decode" ? "var(--primary)" : "transparent",
                     color: mode === "decode" ? "#fff" : "inherit",
                   }}>
-                  Decoder (Base64 &rarr; Texte)
+                  Décoder (Base64 &rarr; Texte)
                 </button>
               </div>
             </div>
@@ -96,7 +113,7 @@ export default function EncodeurBase64() {
             {/* Input */}
             <div className="rounded-2xl border p-6" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
               <h2 className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--accent)" }}>
-                {mode === "encode" ? "Texte a encoder" : "Base64 a decoder"}
+                {mode === "encode" ? "Texte à encoder" : "Base64 à décoder"}
               </h2>
               <textarea
                 value={input}
@@ -110,7 +127,7 @@ export default function EncodeurBase64() {
                 <button onClick={handleConvert}
                   className="flex-1 rounded-xl py-3 text-sm font-semibold text-white transition-all hover:opacity-90"
                   style={{ background: "var(--primary)" }}>
-                  {mode === "encode" ? "Encoder" : "Decoder"}
+                  {mode === "encode" ? "Encoder" : "Décoder"}
                 </button>
                 <button onClick={swapInputOutput}
                   className="rounded-xl border px-4 py-3 text-sm font-semibold transition-all hover:bg-[var(--surface-alt)]"
@@ -131,12 +148,12 @@ export default function EncodeurBase64() {
               <div className="rounded-2xl border p-6" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
                 <div className="flex items-center justify-between">
                   <h2 className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--accent)" }}>
-                    {mode === "encode" ? "Base64" : "Texte decode"}
+                    {mode === "encode" ? "Base64" : "Texte décodé"}
                   </h2>
                   <button onClick={copyToClipboard}
                     className="rounded-lg px-4 py-1.5 text-xs font-semibold text-white transition-all hover:opacity-90"
                     style={{ background: copied ? "var(--accent)" : "var(--primary)" }}>
-                    {copied ? "Copie !" : "Copier"}
+                    {copied ? "Copié !" : "Copier"}
                   </button>
                 </div>
                 <div className="mt-4 rounded-xl p-4" style={{ background: "var(--surface-alt)" }}>
@@ -145,7 +162,7 @@ export default function EncodeurBase64() {
                   </pre>
                 </div>
                 <div className="mt-3 flex gap-4 text-xs" style={{ color: "var(--muted)" }}>
-                  <span>Entree : <strong>{input.length}</strong> car.</span>
+                  <span>Entrée : <strong>{input.length}</strong> car.</span>
                   <span>Sortie : <strong>{output.length}</strong> car.</span>
                   {mode === "encode" && <span>Ratio : <strong>x{(output.length / (input.length || 1)).toFixed(2)}</strong></span>}
                 </div>
@@ -154,27 +171,27 @@ export default function EncodeurBase64() {
 
             <ToolHowToSection
               title="Comment utiliser l'encodeur Base64"
-              description="Quatre etapes pour encoder ou decoder n'importe quel texte en Base64 standard."
+              description="Quatre étapes pour encoder ou décoder n'importe quel texte en Base64 standard."
               steps={[
                 {
-                  name: "Choisir le mode (encoder ou decoder)",
+                  name: "Choisir le mode (encoder ou décoder)",
                   text:
-                    "Encoder transforme un texte lisible (avec ou sans Unicode) en chaine Base64 prete pour un email MIME, un data URI, un token JWT ou une API. Decoder fait l'inverse : recupere le texte original a partir d'une chaine Base64. Le bouton Inverser bascule rapidement entre les deux modes.",
+                    "Encoder transforme un texte lisible (avec ou sans Unicode) en chaîne Base64 prête pour un email MIME, un data URI, un token JWT ou une API. Décoder fait l'inverse : récupère le texte original à partir d'une chaîne Base64. Le bouton Inverser bascule rapidement entre les deux modes.",
                 },
                 {
                   name: "Coller votre contenu source",
                   text:
-                    "Collez votre texte ou votre Base64 dans la zone de saisie. L'outil accepte tous les caracteres Unicode (accents francais, emojis, ideogrammes asiatiques) en mode encodage et les chaines Base64 standard en mode decodage. Le caractere = en fin de chaine Base64 sert au padding et est gere automatiquement.",
+                    "Collez votre texte ou votre Base64 dans la zone de saisie. L'outil accepte tous les caractères Unicode (accents français, emojis, idéogrammes asiatiques) en mode encodage, et les chaînes Base64 standard ou Base64URL en mode décodage (espaces et retours à la ligne ignorés). Le caractère = en fin de chaîne Base64 sert au padding et est géré automatiquement.",
                 },
                 {
-                  name: "Cliquer sur Encoder ou Decoder",
+                  name: "Cliquer sur Encoder ou Décoder",
                   text:
-                    "Le bouton lance la conversion. Le resultat s'affiche dans une zone monospace avec le ratio de taille : un encodage Base64 occupe environ 1.33 fois la taille du texte source (les 3 octets deviennent 4 caracteres). Si la chaine Base64 fournie en decodage est invalide, un message d'erreur s'affiche.",
+                    "Le bouton lance la conversion. Le résultat s'affiche dans une zone monospace avec le ratio de taille : un encodage Base64 occupe environ 1.33 fois la taille du texte source (les 3 octets deviennent 4 caractères). Si la chaîne Base64 fournie en décodage est invalide, un message d'erreur s'affiche.",
                 },
                 {
-                  name: "Copier le resultat",
+                  name: "Copier le résultat",
                   text:
-                    "Le bouton Copier transfere instantanement la chaine dans le presse-papier. Vous pouvez ensuite la coller dans votre code, dans un email, dans un fichier de configuration .env ou dans un payload JSON d'API. Le resultat est compatible avec tous les decodeurs Base64 standards (RFC 4648).",
+                    "Le bouton Copier transfère instantanément la chaîne dans le presse-papier. Vous pouvez ensuite la coller dans votre code, dans un email, dans un fichier de configuration .env ou dans un payload JSON d'API. Le résultat est compatible avec tous les décodeurs Base64 standards (RFC 4648).",
                 },
               ]}
             />
@@ -193,22 +210,22 @@ export default function EncodeurBase64() {
               <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
                   <h3 className="font-semibold" style={{ color: "var(--foreground)" }}>
-                    Developpeur API et back-end
+                    Développeur API et back-end
                   </h3>
                   <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
                     Encoder un identifiant + mot de passe pour une auth Basic HTTP
-                    (Authorization: Basic [base64]), inserer un payload binaire dans un JSON,
-                    serialiser un fichier en data URI dans une reponse REST. Decoder un JWT pour
+                    (Authorization: Basic [base64]), insérer un payload binaire dans un JSON,
+                    sérialiser un fichier en data URI dans une réponse REST. Décoder un JWT pour
                     inspecter les claims.
                   </p>
                 </div>
                 <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
                   <h3 className="font-semibold" style={{ color: "var(--foreground)" }}>
-                    Developpeur front-end
+                    Développeur front-end
                   </h3>
                   <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
                     Inliner une petite image en CSS via data URI : background-image: url(data:image/png;base64,...).
-                    Evite une requete HTTP supplementaire pour les icones de moins de 4 ko. Utile
+                    Évite une requête HTTP supplémentaire pour les icônes de moins de 4 ko. Utile
                     pour les emails HTML ou les PWAs offline-first.
                   </p>
                 </div>
@@ -218,8 +235,8 @@ export default function EncodeurBase64() {
                   </h3>
                   <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
                     Encoder des secrets pour Kubernetes (les Secret manifests stockent les valeurs
-                    en Base64), inserer un certificat dans un YAML, debugger une variable
-                    d&apos;environnement encodee dans un container. Pratique pour Docker, Helm et
+                    en Base64), insérer un certificat dans un YAML, debugger une variable
+                    d&apos;environnement encodée dans un container. Pratique pour Docker, Helm et
                     Terraform.
                   </p>
                 </div>
@@ -228,9 +245,9 @@ export default function EncodeurBase64() {
                     Inspecteur de tokens et debug
                   </h3>
                   <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                    Decoder rapidement la partie payload d&apos;un JWT (les 3 segments separes par
-                    des points sont en Base64URL), lire le contenu d&apos;une cle SSH publique,
-                    inspecter une signature numerique. Indispensable pour debugger une integration
+                    Décoder rapidement la partie payload d&apos;un JWT (l&apos;en-tête et le payload, avant
+                    le deuxième point, sont en Base64URL), lire le contenu d&apos;une clé SSH publique,
+                    inspecter une signature numérique. Indispensable pour debugger une intégration
                     OAuth ou OpenID.
                   </p>
                 </div>
@@ -245,78 +262,78 @@ export default function EncodeurBase64() {
                 className="text-2xl md:text-3xl font-extrabold"
                 style={{ fontFamily: "var(--font-display)", color: "var(--foreground)" }}
               >
-                Pieges classiques avec Base64
+                Pièges classiques avec Base64
               </h2>
 
               <div className="mt-4 space-y-4 leading-relaxed" style={{ color: "var(--foreground)" }}>
                 <p>
                   <strong>Base64 n&apos;est PAS du chiffrement.</strong> C&apos;est juste un
-                  encodage reversible : n&apos;importe qui peut decoder une chaine Base64 en 1
-                  seconde. Les Secrets Kubernetes sont stockes en Base64 mais ce n&apos;est pas
-                  une protection, juste un format compatible YAML. Pour proteger un mot de passe,
-                  utilisez bcrypt, argon2 ou chiffrement AES.
+                  encodage réversible : n&apos;importe qui peut décoder une chaîne Base64 en 1
+                  seconde. Les Secrets Kubernetes sont stockés en Base64 mais ce n&apos;est pas
+                  une protection, juste un format compatible YAML. Pour stocker un mot de passe,
+                  utilisez un hachage (bcrypt, argon2) ; pour protéger une donnée, un chiffrement (AES).
                 </p>
                 <p>
-                  <strong>UTF-8 vs ASCII : attention aux accents.</strong> Le btoa() natif de
-                  JavaScript ne gere que l&apos;ASCII (0-127). Pour encoder du francais ou des
-                  emojis, il faut d&apos;abord convertir le texte en UTF-8 (TextEncoder), comme le
-                  fait cet outil. Sinon, vous obtiendrez InvalidCharacterError ou un Base64
-                  corrompu.
+                  <strong>UTF-8 vs Latin-1 : attention aux accents.</strong> Le btoa() natif de
+                  JavaScript n&apos;accepte que les caractères Latin-1 (codes 0 à 255). Pour encoder du
+                  français ou des emojis, il faut d&apos;abord convertir le texte en UTF-8 (TextEncoder),
+                  comme le fait cet outil. Sinon, vous obtiendrez une InvalidCharacterError (emojis,
+                  « œ », « € ») ou un Base64 en Latin-1 que les autres outils décoderont mal (« é »).
                 </p>
                 <p>
-                  <strong>Base64 vs Base64URL : 2 alphabets differents.</strong> Le Base64
+                  <strong>Base64 vs Base64URL : 2 alphabets différents.</strong> Le Base64
                   classique utilise + et / qui ont une signification dans une URL. Pour les JWT et
                   les liens, on utilise Base64URL : - remplace +, _ remplace /, et le padding = est
-                  souvent omis. Convertir l&apos;un en l&apos;autre necessite une etape de
-                  transformation.
+                  souvent omis. Au décodage, cet outil accepte les deux
+                  alphabets, avec ou sans padding : vous pouvez coller directement un segment de JWT.
                 </p>
                 <p>
                   <strong>Augmentation de taille de 33 %.</strong> Base64 transforme 3 octets en 4
-                  caracteres ASCII, donc augmente la taille d&apos;environ 33 %. Pour de petits
-                  payloads (icones, signatures), c&apos;est negligeable. Pour des fichiers
-                  volumineux (gros assets), preferez un envoi binaire direct ou un upload
-                  multipart, plus economique.
+                  caractères ASCII, donc augmente la taille d&apos;environ 33 %. Pour de petits
+                  payloads (icônes, signatures), c&apos;est négligeable. Pour des fichiers
+                  volumineux (gros assets), préférez un envoi binaire direct ou un upload
+                  multipart, plus économique.
                 </p>
               </div>
             </section>
 
             <ToolFaqSection
-              intro="Reponses aux questions frequentes sur l'encodage Base64."
+              intro="Réponses aux questions fréquentes sur l'encodage Base64."
               items={[
                 {
-                  question: "Base64 est-il un moyen de securiser des donnees ?",
+                  question: "Base64 est-il un moyen de sécuriser des données ?",
                   answer:
-                    "Non, Base64 est un encodage, pas un chiffrement. N'importe qui peut decoder du Base64 sans cle. Pour securiser des donnees, utilisez un vrai algorithme de chiffrement comme AES-256, ou un hash sale type bcrypt pour les mots de passe.",
+                    "Non, Base64 est un encodage, pas un chiffrement. N'importe qui peut décoder du Base64 sans clé. Pour sécuriser des données, utilisez un vrai algorithme de chiffrement comme AES-256, ou un hachage salé type bcrypt pour les mots de passe.",
                 },
                 {
                   question: "Pourquoi la taille augmente-t-elle en Base64 ?",
                   answer:
-                    "Base64 convertit 3 octets en 4 caracteres ASCII, ce qui augmente la taille d'environ 33 %. C'est le prix a payer pour representer des donnees binaires en texte pur, compatible avec les emails (RFC 822), les URLs (data URI) et les protocoles texte.",
+                    "Base64 convertit 3 octets en 4 caractères ASCII, ce qui augmente la taille d'environ 33 %. C'est le prix à payer pour représenter des données binaires en texte pur, compatible avec les emails (RFC 822), les URLs (data URI) et les protocoles texte.",
                 },
                 {
-                  question: "L'outil gere-t-il les caracteres speciaux et les accents ?",
+                  question: "L'outil gère-t-il les caractères spéciaux et les accents ?",
                   answer:
-                    "Oui, l'encodeur utilise l'API TextEncoder du navigateur pour convertir correctement les caracteres Unicode (accents francais, emojis, ideogrammes asiatiques) en UTF-8 avant l'encodage Base64. Le decodage applique l'operation inverse via TextDecoder.",
+                    "Oui, l'encodeur utilise l'API TextEncoder du navigateur pour convertir correctement les caractères Unicode (accents français, emojis, idéogrammes asiatiques) en UTF-8 avant l'encodage Base64. Le décodage applique l'opération inverse via TextDecoder.",
                 },
                 {
-                  question: "Quelle est la difference entre Base64 et Base64URL ?",
+                  question: "Quelle est la différence entre Base64 et Base64URL ?",
                   answer:
-                    "Base64 standard utilise les caracteres + et / qui ont une signification dans les URLs. Base64URL remplace + par - et / par _, et omet souvent le padding =. Cet outil utilise Base64 standard (RFC 4648), compatible avec la plupart des cas d'usage.",
+                    "Base64 standard utilise les caractères + et / qui ont une signification dans les URLs. Base64URL remplace + par - et / par _, et omet souvent le padding =. Cet outil encode en Base64 standard (RFC 4648), compatible avec la plupart des cas d'usage, et décode indifféremment les deux variantes.",
                 },
                 {
                   question: "Puis-je encoder une image en Base64 ?",
                   answer:
-                    "Pas directement avec cet outil texte, mais le concept est le meme : convertir les octets binaires de l'image en chaine Base64. Pour une image, utilisez un outil dedie ou la console DevTools : btoa(reader.result) apres lecture FileReader. Utile pour les data URIs CSS ou HTML.",
+                    "Pas directement avec cet outil texte, mais le concept est le même : convertir les octets binaires de l'image en chaîne Base64. Pour une image, utilisez un outil dédié ou, en JavaScript, FileReader.readAsDataURL() qui renvoie directement un data URI en Base64. Utile pour les data URIs CSS ou HTML.",
                 },
                 {
-                  question: "Comment fonctionne le padding (caracteres =) ?",
+                  question: "Comment fonctionne le padding (caractères =) ?",
                   answer:
-                    "Si le nombre d'octets en entree n'est pas multiple de 3, on ajoute des = en fin de Base64 pour completer un bloc de 4 caracteres. 0 a 2 caracteres = sont possibles. Certaines implementations (Base64URL) omettent le padding, mais cet outil l'inclut conformement a la RFC 4648.",
+                    "Si le nombre d'octets en entrée n'est pas multiple de 3, on ajoute des = en fin de Base64 pour compléter un bloc de 4 caractères. 0 à 2 caractères = sont possibles. Certaines implémentations (Base64URL) omettent le padding : cet outil l'inclut à l'encodage, conformément à la RFC 4648, et le reconstitue au décodage s'il manque.",
                 },
                 {
-                  question: "Mes donnees encodees sont-elles confidentielles ?",
+                  question: "Mes données encodées sont-elles confidentielles ?",
                   answer:
-                    "Oui. L'encodage et le decodage sont effectues 100 % localement dans votre navigateur via les APIs btoa, atob, TextEncoder et TextDecoder. Aucune chaine n'est envoyee a un serveur ou stockee. Vous pouvez encoder des credentials de developpement sans risque.",
+                    "Oui. L'encodage et le décodage sont effectués 100 % localement dans votre navigateur via les APIs btoa, atob, TextEncoder et TextDecoder. Aucune chaîne n'est envoyée à un serveur ou stockée. Vous pouvez encoder des credentials de développement sans risque.",
                 },
               ]}
             />
@@ -332,8 +349,8 @@ export default function EncodeurBase64() {
                 </code>
               </div>
               <ul className="mt-3 space-y-2 text-xs leading-relaxed" style={{ color: "var(--muted)" }}>
-                <li>64 caracteres + &quot;=&quot; pour le padding</li>
-                <li>3 octets &rarr; 4 caracteres</li>
+                <li>64 caractères + &quot;=&quot; pour le padding</li>
+                <li>3 octets &rarr; 4 caractères</li>
                 <li>Augmente la taille de ~33%</li>
               </ul>
             </div>

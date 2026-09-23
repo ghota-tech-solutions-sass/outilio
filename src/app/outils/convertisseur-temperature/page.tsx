@@ -8,8 +8,8 @@ import ToolHowToSection from "@/components/ToolHowToSection";
 type Unit = "celsius" | "fahrenheit" | "kelvin";
 
 const UNITS: { id: Unit; label: string; symbol: string }[] = [
-  { id: "celsius", label: "Celsius", symbol: "\u00B0C" },
-  { id: "fahrenheit", label: "Fahrenheit", symbol: "\u00B0F" },
+  { id: "celsius", label: "Celsius", symbol: "°C" },
+  { id: "fahrenheit", label: "Fahrenheit", symbol: "°F" },
   { id: "kelvin", label: "Kelvin", symbol: "K" },
 ];
 
@@ -30,18 +30,19 @@ function convert(value: number, from: Unit, to: Unit): number {
 }
 
 const REFERENCES = [
-  { label: "Zero absolu", celsius: -273.15 },
-  { label: "Congelation eau", celsius: 0 },
-  { label: "Temperature corporelle", celsius: 37 },
-  { label: "Ebullition eau", celsius: 100 },
-  { label: "Four pizza", celsius: 300 },
+  { label: "Zéro absolu", celsius: -273.15 },
+  { label: "Congélation de l'eau", celsius: 0 },
+  { label: "Température corporelle", celsius: 37 },
+  { label: "Ébullition de l'eau", celsius: 100 },
+  { label: "Four à pizza", celsius: 300 },
 ];
 
 export default function ConvertisseurTemperature() {
   const [input, setInput] = useState("20");
   const [source, setSource] = useState<Unit>("celsius");
 
-  const value = parseFloat(input) || 0;
+  const parsed = parseFloat(input);
+  const value = Number.isFinite(parsed) ? parsed : 0;
 
   const results = UNITS.map((u) => ({
     ...u,
@@ -53,7 +54,11 @@ export default function ConvertisseurTemperature() {
   const thermPct = Math.max(0, Math.min(100, ((celsiusValue + 40) / 160) * 100));
   const thermColor = celsiusValue < 0 ? "#3b82f6" : celsiusValue < 20 ? "#06b6d4" : celsiusValue < 37 ? "#16a34a" : celsiusValue < 60 ? "#f59e0b" : "#dc2626";
 
+  // En dessous du zéro absolu, la température n'a pas de sens physique
+  const belowAbsoluteZero = celsiusValue < -273.15 - 1e-9;
+
   const fmt = (n: number) => n.toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const fmtRef = (n: number) => n.toLocaleString("fr-FR", { minimumFractionDigits: 0, maximumFractionDigits: 2 });
 
   return (
     <>
@@ -61,10 +66,10 @@ export default function ConvertisseurTemperature() {
         <div className="mx-auto max-w-7xl px-6 2xl:max-w-[1400px]">
           <p className="animate-fade-up text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: "var(--accent)" }}>Conversion</p>
           <h1 className="animate-fade-up stagger-1 mt-3 text-4xl tracking-tight md:text-5xl" style={{ fontFamily: "var(--font-display)" }}>
-            Convertisseur <span style={{ color: "var(--primary)" }}>Temperature</span>
+            Convertisseur de <span style={{ color: "var(--primary)" }}>température</span>
           </h1>
           <p className="animate-fade-up stagger-2 mt-3 max-w-xl text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-            Convertissez instantanement entre Celsius, Fahrenheit et Kelvin avec thermometre visuel.
+            Convertissez instantanément entre Celsius, Fahrenheit et Kelvin, avec thermomètre visuel.
           </p>
         </div>
       </section>
@@ -83,9 +88,14 @@ export default function ConvertisseurTemperature() {
                   </button>
                 ))}
               </div>
-              <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>Temperature en {UNITS.find((u) => u.id === source)?.label}</label>
+              <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>Température en {UNITS.find((u) => u.id === source)?.label}</label>
               <input type="number" value={input} onChange={(e) => setInput(e.target.value)}
                 className="mt-2 w-full rounded-xl border px-4 py-4 text-2xl font-bold" style={{ borderColor: "var(--border)", fontFamily: "var(--font-display)" }} />
+              {belowAbsoluteZero && (
+                <p className="mt-2 text-sm font-semibold" style={{ color: "#dc2626" }}>
+                  Valeur impossible : aucune température ne peut être inférieure au zéro absolu (0 K = −273,15 °C = −459,67 °F).
+                </p>
+              )}
             </div>
 
             {/* Results */}
@@ -103,21 +113,21 @@ export default function ConvertisseurTemperature() {
 
             {/* Visual thermometer */}
             <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-              <h2 className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--accent)" }}>Thermometre</h2>
+              <h2 className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--accent)" }}>Thermomètre</h2>
               <div className="mt-6 flex items-end gap-4">
                 <div className="flex flex-col items-center">
-                  <span className="text-xs mb-1" style={{ color: "var(--muted)" }}>120\u00B0C</span>
+                  <span className="text-xs mb-1" style={{ color: "var(--muted)" }}>120°C</span>
                   <div className="relative w-10 rounded-full overflow-hidden" style={{ height: "250px", background: "var(--surface-alt)" }}>
                     <div className="absolute bottom-0 w-full rounded-full transition-all duration-500" style={{ height: `${thermPct}%`, background: thermColor }} />
                   </div>
-                  <span className="text-xs mt-1" style={{ color: "var(--muted)" }}>-40\u00B0C</span>
+                  <span className="text-xs mt-1" style={{ color: "var(--muted)" }}>-40°C</span>
                 </div>
                 <div className="flex-1 space-y-2">
                   <p className="text-4xl font-bold" style={{ fontFamily: "var(--font-display)", color: thermColor }}>
-                    {fmt(celsiusValue)} \u00B0C
+                    {fmt(celsiusValue)} °C
                   </p>
                   <p className="text-sm" style={{ color: "var(--muted)" }}>
-                    {celsiusValue < 0 ? "En dessous de zero - Gel" : celsiusValue < 15 ? "Froid" : celsiusValue < 25 ? "Temperature agreable" : celsiusValue < 35 ? "Chaud" : celsiusValue < 45 ? "Tres chaud" : "Extreme"}
+                    {belowAbsoluteZero ? "Sous le zéro absolu : valeur impossible" : celsiusValue < 0 ? "En dessous de zéro : gel" : celsiusValue < 15 ? "Froid" : celsiusValue < 25 ? "Température agréable" : celsiusValue < 35 ? "Chaud" : celsiusValue < 45 ? "Très chaud" : "Extrême"}
                   </p>
                 </div>
               </div>
@@ -125,15 +135,15 @@ export default function ConvertisseurTemperature() {
 
             {/* Reference temperatures */}
             <div className="rounded-2xl border p-6" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-              <h2 className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--accent)" }}>Temperatures de reference</h2>
+              <h2 className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--accent)" }}>Températures de référence</h2>
               <div className="mt-4 space-y-2">
                 {REFERENCES.map((ref) => (
                   <div key={ref.label} className="flex items-center justify-between rounded-lg px-3 py-2" style={{ background: "var(--surface-alt)" }}>
                     <span className="text-sm font-medium">{ref.label}</span>
                     <div className="flex gap-4 text-sm font-mono">
-                      <span>{ref.celsius}\u00B0C</span>
-                      <span style={{ color: "var(--muted)" }}>{convert(ref.celsius, "celsius", "fahrenheit").toFixed(1)}\u00B0F</span>
-                      <span style={{ color: "var(--muted)" }}>{convert(ref.celsius, "celsius", "kelvin").toFixed(1)}K</span>
+                      <span>{fmtRef(ref.celsius)} °C</span>
+                      <span style={{ color: "var(--muted)" }}>{fmtRef(convert(ref.celsius, "celsius", "fahrenheit"))} °F</span>
+                      <span style={{ color: "var(--muted)" }}>{fmtRef(convert(ref.celsius, "celsius", "kelvin"))} K</span>
                     </div>
                   </div>
                 ))}
@@ -143,31 +153,31 @@ export default function ConvertisseurTemperature() {
             <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
               <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Formules de conversion</h2>
               <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                <p><strong className="text-[var(--foreground)]">\u00B0C &rarr; \u00B0F</strong> : F = C &times; 9/5 + 32</p>
-                <p><strong className="text-[var(--foreground)]">\u00B0F &rarr; \u00B0C</strong> : C = (F - 32) &times; 5/9</p>
-                <p><strong className="text-[var(--foreground)]">\u00B0C &rarr; K</strong> : K = C + 273,15</p>
-                <p><strong className="text-[var(--foreground)]">K &rarr; \u00B0C</strong> : C = K - 273,15</p>
+                <p><strong className="text-[var(--foreground)]">°C &rarr; °F</strong> : °F = °C &times; 9/5 + 32</p>
+                <p><strong className="text-[var(--foreground)]">°F &rarr; °C</strong> : °C = (°F − 32) &times; 5/9</p>
+                <p><strong className="text-[var(--foreground)]">°C &rarr; K</strong> : K = °C + 273,15</p>
+                <p><strong className="text-[var(--foreground)]">K &rarr; °C</strong> : °C = K − 273,15</p>
               </div>
             </div>
 
             <ToolHowToSection
-              title="Comment utiliser le convertisseur de temperature"
-              description="Trois echelles, une saisie : entrez votre temperature et obtenez les equivalents Celsius, Fahrenheit et Kelvin instantanement, avec thermometre visuel et reperes contextuels."
+              title="Comment utiliser le convertisseur de température"
+              description="Trois échelles, une saisie : entrez votre température et obtenez les équivalents Celsius, Fahrenheit et Kelvin instantanément, avec thermomètre visuel et repères contextuels."
               steps={[
                 {
-                  name: "Choisir l'echelle source",
+                  name: "Choisir l'échelle source",
                   text:
-                    "Cliquez sur l'echelle qui correspond a votre valeur d'entree : Celsius (degC) pour la France et la majorite du monde, Fahrenheit (degF) pour les Etats-Unis, ou Kelvin (K) pour la physique et les calculs scientifiques.",
+                    "Cliquez sur l'échelle qui correspond à votre valeur d'entrée : Celsius (°C) pour la France et la majorité du monde, Fahrenheit (°F) pour les États-Unis, ou Kelvin (K) pour la physique et les calculs scientifiques.",
                 },
                 {
-                  name: "Saisir la valeur a convertir",
+                  name: "Saisir la valeur à convertir",
                   text:
-                    "Tapez la temperature dans le champ. Les valeurs negatives sont acceptees en Celsius et Fahrenheit. En Kelvin, la borne minimale est 0 K (zero absolu). Les conversions sont calculees en local, sans envoi serveur.",
+                    "Tapez la température dans le champ. Les valeurs négatives sont acceptées en Celsius et Fahrenheit. En Kelvin, la borne minimale est 0 K (zéro absolu) : l'outil signale toute valeur inférieure. Les conversions sont calculées dans votre navigateur, sans envoi à un serveur.",
                 },
                 {
-                  name: "Lire les trois resultats simultanement",
+                  name: "Lire les trois résultats simultanément",
                   text:
-                    "Les trois cartes affichent la valeur convertie dans chaque echelle. Le thermometre colore (bleu pour froid, vert pour tempere, orange et rouge pour chaud) donne un repere visuel rapide. Le tableau de reference contextualise la valeur (congelation, temperature corporelle, four pizza).",
+                    "Les trois cartes affichent la valeur convertie dans chaque échelle. Le thermomètre coloré (bleu pour froid, vert pour tempéré, orange et rouge pour chaud) donne un repère visuel rapide. Le tableau de référence contextualise la valeur (congélation, température corporelle, four à pizza).",
                 },
               ]}
             />
@@ -180,18 +190,18 @@ export default function ConvertisseurTemperature() {
                 className="text-2xl md:text-3xl font-extrabold"
                 style={{ fontFamily: "var(--font-display)", color: "var(--foreground)" }}
               >
-                Cas d&apos;usage du convertisseur de temperature
+                Cas d&apos;usage du convertisseur de température
               </h2>
 
               <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
                   <h3 className="font-semibold" style={{ color: "var(--foreground)" }}>
-                    Voyageur aux Etats-Unis
+                    Voyageur aux États-Unis
                   </h3>
                   <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                    La meteo americaine annonce 75 degF a New York : la conversion donne 23,9 degC,
-                    soit une journee printaniere. Indispensable pour preparer sa valise et eviter
-                    de partir en T-shirt quand 50 degF (10 degC) annonce un fond de l&apos;air frais.
+                    La météo américaine annonce 75 °F à New York : la conversion donne 23,9 °C,
+                    soit une journée printanière. Indispensable pour préparer sa valise et éviter
+                    de partir en T-shirt quand 50 °F (10 °C) annoncent un fond de l&apos;air frais.
                   </p>
                 </div>
                 <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
@@ -199,20 +209,20 @@ export default function ConvertisseurTemperature() {
                     Cuisinier sur recette anglo-saxonne
                   </h3>
                   <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                    Une recette US demande un four a 425 degF : conversion = 218 degC, soit
-                    th. 7-8. Eviter d&apos;arrondir grossierement, une difference de 10 degC change
-                    drastiquement la coloration et la cuisson d&apos;un gateau ou d&apos;un roti.
+                    Une recette américaine demande un four à 425 °F : conversion = 218 °C, soit
+                    th. 7-8. Évitez d&apos;arrondir grossièrement : une différence de 10 °C change
+                    nettement la coloration et la cuisson d&apos;un gâteau ou d&apos;un rôti.
                   </p>
                 </div>
                 <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
                   <h3 className="font-semibold" style={{ color: "var(--foreground)" }}>
-                    Etudiant en physique-chimie
+                    Étudiant en physique-chimie
                   </h3>
                   <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                    La loi des gaz parfaits PV = nRT exige des temperatures en Kelvin. Convertir
-                    25 degC en 298,15 K est un automatisme indispensable au lycee et en prepa.
-                    Le Kelvin etant additif, il evite les divisions par zero qui se produisent
-                    a 0 degC en Celsius.
+                    La loi des gaz parfaits PV = nRT exige des températures en kelvins. Convertir
+                    25 °C en 298,15 K est un automatisme indispensable au lycée et en prépa.
+                    Le kelvin étant une échelle absolue (0 K = zéro absolu), les rapports de
+                    températures ont un sens, ce qui n&apos;est pas le cas en degrés Celsius.
                   </p>
                 </div>
                 <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
@@ -220,10 +230,10 @@ export default function ConvertisseurTemperature() {
                     Bricoleur ou artisan
                   </h3>
                   <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                    Soudure a l&apos;etain (env. 230 degC = 446 degF), cuisson email ceramique
-                    (1 050 degC = 1 922 degF), point de fusion d&apos;un plastique. Les fiches
-                    techniques internationales melangent souvent les unites, le convertisseur
-                    evite les erreurs critiques sur du materiel sensible.
+                    Soudure à l&apos;étain (env. 230 °C = 446 °F), cuisson d&apos;émail sur céramique
+                    (1 050 °C = 1 922 °F), point de fusion d&apos;un plastique. Les fiches
+                    techniques internationales mélangent souvent les unités : le convertisseur
+                    évite les erreurs critiques sur du matériel sensible.
                   </p>
                 </div>
               </div>
@@ -237,77 +247,78 @@ export default function ConvertisseurTemperature() {
                 className="text-2xl md:text-3xl font-extrabold"
                 style={{ fontFamily: "var(--font-display)", color: "var(--foreground)" }}
               >
-                A savoir sur les echelles de temperature
+                À savoir sur les échelles de température
               </h2>
 
               <div className="mt-4 space-y-4 leading-relaxed" style={{ color: "var(--foreground)" }}>
                 <p>
-                  <strong>Le zero absolu vaut -273,15 degC, soit 0 K.</strong> C&apos;est la
-                  temperature theorique a laquelle toute agitation thermique cesse. Elle n&apos;a
-                  jamais ete atteinte experimentalement : les laboratoires actuels descendent en
-                  dessous du nanokelvin mais jamais a zero exact. C&apos;est aussi pour cela que
-                  le Kelvin n&apos;a pas de valeurs negatives.
+                  <strong>Le zéro absolu vaut −273,15 °C, soit 0 K.</strong> C&apos;est la
+                  température théorique la plus basse possible, où l&apos;agitation thermique est
+                  minimale. Elle n&apos;a jamais été atteinte expérimentalement : les laboratoires
+                  descendent en dessous du nanokelvin, mais jamais à zéro exact. C&apos;est pour cela
+                  que l&apos;échelle Kelvin n&apos;a pas de valeurs négatives.
                 </p>
                 <p>
-                  <strong>Celsius et Kelvin partagent la meme amplitude.</strong> Une variation
-                  de 1 degC equivaut exactement a une variation de 1 K. La seule difference est
-                  le decalage de 273,15 unites. C&apos;est pour cela qu&apos;en physique on
-                  parle d&apos;ecart en kelvins (et non en degres kelvin) lorsque l&apos;on
-                  exprime une difference de temperature.
+                  <strong>Celsius et Kelvin partagent le même pas.</strong> Une variation
+                  de 1 °C équivaut exactement à une variation de 1 K. La seule différence est
+                  le décalage de 273,15 unités. C&apos;est pour cela qu&apos;en physique on
+                  exprime volontiers un écart de température en kelvins (et jamais en « degrés
+                  kelvin »).
                 </p>
                 <p>
-                  <strong>Fahrenheit utilise une echelle plus fine.</strong> Entre la
-                  congelation (32 degF) et l&apos;ebullition (212 degF) de l&apos;eau, il y a
-                  180 degres Fahrenheit contre 100 degres Celsius. Le Fahrenheit est donc 1,8
-                  fois plus precis a chiffres ronds, ce qui explique sa popularite persistante
-                  pour les temperatures meteo aux Etats-Unis.
+                  <strong>Le Fahrenheit a un degré plus petit.</strong> Entre la
+                  congélation (32 °F) et l&apos;ébullition (212 °F) de l&apos;eau, il y a
+                  180 degrés Fahrenheit contre 100 degrés Celsius : un degré Fahrenheit vaut
+                  5/9 de degré Celsius. Les températures météo s&apos;expriment ainsi en nombres
+                  entiers plus fins, un argument souvent avancé aux États-Unis.
                 </p>
                 <p>
-                  <strong>Astuce mentale rapide.</strong> Pour passer de degF a degC, soustrayez
-                  30 puis divisez par 2 (au lieu du calcul exact -32 puis x 5/9). 70 degF donne
-                  ainsi environ 20 degC (valeur reelle 21,1). C&apos;est suffisant pour estimer
-                  une meteo ou une recette, sans calculatrice.
+                  <strong>Astuce mentale rapide.</strong> Pour passer de °F à °C, soustrayez
+                  30 puis divisez par 2 (au lieu du calcul exact : − 32 puis × 5/9). 70 °F donne
+                  ainsi environ 20 °C (valeur réelle 21,1 °C). C&apos;est suffisant pour estimer
+                  une météo, sans calculatrice ; pour une recette, préférez la conversion exacte.
                 </p>
               </div>
             </section>
 
             <ToolFaqSection
-              intro="Les questions les plus posees sur la conversion de temperatures."
+              title="Questions fréquentes"
+              intro="Les questions les plus posées sur la conversion de températures."
               items={[
                 {
                   question: "Comment convertir rapidement des Fahrenheit en Celsius ?",
                   answer:
-                    "La formule exacte est degC = (degF - 32) x 5/9. Pour une estimation rapide de tete, soustrayez 30 puis divisez par 2. Exemple : 80 degF donne environ (80-30)/2 = 25 degC (valeur exacte 26,67 degC). Cette astuce reste fiable a 1-2 degC pres pour les temperatures meteo courantes.",
+                    "La formule exacte est °C = (°F − 32) × 5/9. Pour une estimation rapide de tête, soustrayez 30 puis divisez par 2. Exemple : 80 °F donne environ (80 − 30) / 2 = 25 °C (valeur exacte 26,67 °C). Cette astuce reste fiable à 1 ou 2 °C près pour les températures météo courantes (entre 30 et 90 °F).",
                 },
                 {
-                  question: "A quoi correspond 0 Kelvin ?",
+                  question: "À quoi correspond 0 kelvin ?",
                   answer:
-                    "0 Kelvin (-273,15 degC) est le zero absolu, la temperature la plus basse theoriquement atteignable. A cette temperature, l'agitation thermique des atomes cesse. C'est pour cela que l'echelle Kelvin n'a pas de valeurs negatives. Elle est utilisee en physique car elle simplifie les calculs en thermodynamique et en chimie des gaz.",
+                    "0 kelvin (−273,15 °C, −459,67 °F) est le zéro absolu, la température la plus basse théoriquement possible, où l'agitation thermique des atomes est minimale. C'est pour cela que l'échelle Kelvin n'a pas de valeurs négatives. Elle est utilisée en physique car elle simplifie les calculs en thermodynamique et en chimie des gaz.",
                 },
                 {
-                  question: "Quelle temperature pour les recettes en Fahrenheit ?",
+                  question: "Quelle température pour les recettes en Fahrenheit ?",
                   answer:
-                    "Les recettes americaines utilisent le Fahrenheit. Equivalences cuisine courantes : 325 degF = 163 degC, 350 degF = 177 degC (four modere), 375 degF = 190 degC, 400 degF = 204 degC (four chaud), 425 degF = 218 degC, 450 degF = 232 degC (four tres chaud). Pour une recette americaine, utilisez la conversion exacte plutot qu'un arrondi.",
+                    "Les recettes américaines utilisent le Fahrenheit. Équivalences courantes en cuisine : 325 °F = 163 °C, 350 °F = 177 °C (four modéré), 375 °F = 191 °C, 400 °F = 204 °C (four chaud), 425 °F = 218 °C, 450 °F = 232 °C (four très chaud). Pour une recette américaine, utilisez la conversion exacte plutôt qu'un arrondi grossier.",
                 },
                 {
-                  question: "Pourquoi le Fahrenheit est-il encore utilise aux Etats-Unis ?",
+                  question: "Pourquoi le Fahrenheit est-il encore utilisé aux États-Unis ?",
                   answer:
-                    "Le Fahrenheit a ete conserve par habitude culturelle et inertie administrative. Il offre une echelle plus granulaire pour la meteo (180 degres entre la congelation et l'ebullition de l'eau, contre 100 en Celsius). Les Etats-Unis, le Liberia et les iles Cayman sont les principaux pays a l'utiliser officiellement. Le reste du monde, y compris la science americaine, utilise le Celsius ou le Kelvin.",
+                    "Le Fahrenheit a été conservé par habitude culturelle et inertie administrative. Son degré, plus petit, donne une échelle plus fine pour la météo (180 degrés entre la congélation et l'ébullition de l'eau, contre 100 en Celsius). Les États-Unis et quelques territoires ou pays (dont les îles Caïmans, les Bahamas, le Belize, Palaos et le Liberia) l'utilisent encore au quotidien. Le reste du monde, y compris la science américaine, utilise le Celsius ou le kelvin.",
                 },
                 {
-                  question: "Quelle est la difference entre degre Kelvin et Kelvin ?",
+                  question: "Faut-il dire degré Kelvin ou kelvin ?",
                   answer:
-                    "Il n'y a pas de degre Kelvin. La bonne notation est simplement K (sans le mot degre, ni le symbole deg). On dit 'la temperature est de 300 kelvins'. C'est une particularite du Systeme international depuis 1967 : seuls le Celsius et le Fahrenheit utilisent le mot 'degre'.",
+                    "On ne dit pas « degré Kelvin ». Depuis 1967-1968, l'unité du Système international s'appelle simplement le kelvin, de symbole K (sans le symbole °). On dit « la température est de 300 kelvins ». Seuls le Celsius et le Fahrenheit utilisent le mot « degré ».",
                 },
                 {
-                  question: "Quelle est la temperature ideale d'un frigo ou d'un congelateur ?",
+                  question: "Quelle est la température idéale d'un frigo ou d'un congélateur ?",
                   answer:
-                    "Frigo : entre 0 et 4 degC (32 a 39 degF) pour la conservation des aliments frais. Congelateur : -18 degC (0 degF) ou plus froid pour une conservation longue duree. En Fahrenheit, retenir 0 degF pour le congelo est un repere mnemotechnique pratique.",
+                    "Réfrigérateur : entre 0 et 4 °C (32 à 39 °F) pour la conservation des aliments frais. Congélateur : −18 °C (0 °F) ou plus froid pour une conservation de longue durée. En Fahrenheit, retenir 0 °F pour le congélateur est un repère mnémotechnique pratique.",
                 },
                 {
                   question: "Mes calculs sont-ils confidentiels ?",
                   answer:
-                    "Oui. Toutes les conversions sont effectuees localement dans votre navigateur en JavaScript. Aucune valeur saisie n'est envoyee a un serveur ni stockee. L'outil fonctionne sans inscription et sans tracker.",
+                    "Oui. Toutes les conversions sont effectuées localement dans votre navigateur. Aucune valeur saisie n'est envoyée à un serveur ni stockée. L'outil fonctionne sans inscription ; le site utilise des outils de mesure d'audience et de publicité, qui n'ont pas accès à vos saisies.",
                 },
               ]}
             />

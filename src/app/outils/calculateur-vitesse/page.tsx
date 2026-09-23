@@ -3,6 +3,22 @@
 import { useState, useMemo } from "react";
 import AdPlaceholder from "@/components/AdPlaceholder";
 
+// 1 mile international = 1 609,344 m exactement
+const KM_PER_MILE = 1.609344;
+
+// Formatage h / min / s à partir des secondes arrondies (évite « 59 min 59 s » pour 1 h)
+function formatDurationHours(hours: number): string {
+  const totalSeconds = Math.round(hours * 3600);
+  const h = Math.floor(totalSeconds / 3600);
+  const m = Math.floor((totalSeconds % 3600) / 60);
+  const s = totalSeconds % 60;
+  const parts: string[] = [];
+  if (h > 0) parts.push(`${h} h`);
+  if (m > 0) parts.push(`${m} min`);
+  if (s > 0 || parts.length === 0) parts.push(`${s} s`);
+  return parts.join(" ");
+}
+
 type CalcMode = "speed" | "distance" | "time";
 
 export default function CalculateurVitesse() {
@@ -21,7 +37,7 @@ export default function CalculateurVitesse() {
       switch (distanceUnit) {
         case "m": return d / 1000;
         case "km": return d;
-        case "mi": return d * 1.60934;
+        case "mi": return d * KM_PER_MILE;
         default: return d;
       }
     })();
@@ -43,7 +59,7 @@ export default function CalculateurVitesse() {
       switch (speedUnit) {
         case "kmh": return s;
         case "ms": return s * 3.6;
-        case "mph": return s * 1.60934;
+        case "mph": return s * KM_PER_MILE;
         default: return s;
       }
     })();
@@ -79,27 +95,18 @@ export default function CalculateurVitesse() {
       speed: {
         kmh: resultSpeedKmh,
         ms: resultSpeedKmh / 3.6,
-        mph: resultSpeedKmh / 1.60934,
+        mph: resultSpeedKmh / KM_PER_MILE,
       },
       distance: {
         km: resultDistKm,
         m: resultDistKm * 1000,
-        mi: resultDistKm / 1.60934,
+        mi: resultDistKm / KM_PER_MILE,
       },
       time: {
         hours: resultTimeH,
         minutes: resultTimeH * 60,
         seconds: resultTimeH * 3600,
-        formatted: (() => {
-          const h = Math.floor(resultTimeH);
-          const m = Math.floor((resultTimeH - h) * 60);
-          const s = Math.floor(((resultTimeH - h) * 60 - m) * 60);
-          const parts: string[] = [];
-          if (h > 0) parts.push(`${h}h`);
-          if (m > 0) parts.push(`${m}min`);
-          if (s > 0 || parts.length === 0) parts.push(`${s}s`);
-          return parts.join(" ");
-        })(),
+        formatted: formatDurationHours(resultTimeH),
       },
     };
   }, [mode, distance, distanceUnit, time, timeUnit, speed, speedUnit]);
@@ -122,7 +129,7 @@ export default function CalculateurVitesse() {
             Calculateur <span style={{ color: "var(--primary)" }}>vitesse</span>
           </h1>
           <p className="animate-fade-up stagger-2 mt-3 max-w-xl text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-            Calculez vitesse, distance ou temps a partir de deux valeurs connues. Conversions km/h, m/s et mph.
+            Calculez vitesse, distance ou temps à partir de deux valeurs connues. Conversions km/h, m/s et mph.
           </p>
         </div>
       </section>
@@ -161,7 +168,7 @@ export default function CalculateurVitesse() {
                         className="mt-2 w-full rounded-xl border px-4 py-3 text-lg font-bold" style={{ borderColor: "var(--border)", fontFamily: "var(--font-display)" }} />
                     </div>
                     <div className="w-28">
-                      <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>Unite</label>
+                      <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>Unité</label>
                       <select value={distanceUnit} onChange={(e) => setDistanceUnit(e.target.value)}
                         className="mt-2 w-full rounded-xl border px-3 py-3 text-sm font-bold" style={{ borderColor: "var(--border)" }}>
                         <option value="m">m</option>
@@ -179,7 +186,7 @@ export default function CalculateurVitesse() {
                         className="mt-2 w-full rounded-xl border px-4 py-3 text-lg font-bold" style={{ borderColor: "var(--border)", fontFamily: "var(--font-display)" }} />
                     </div>
                     <div className="w-28">
-                      <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>Unite</label>
+                      <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>Unité</label>
                       <select value={timeUnit} onChange={(e) => setTimeUnit(e.target.value)}
                         className="mt-2 w-full rounded-xl border px-3 py-3 text-sm font-bold" style={{ borderColor: "var(--border)" }}>
                         <option value="s">sec</option>
@@ -197,7 +204,7 @@ export default function CalculateurVitesse() {
                         className="mt-2 w-full rounded-xl border px-4 py-3 text-lg font-bold" style={{ borderColor: "var(--border)", fontFamily: "var(--font-display)" }} />
                     </div>
                     <div className="w-28">
-                      <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>Unite</label>
+                      <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>Unité</label>
                       <select value={speedUnit} onChange={(e) => setSpeedUnit(e.target.value)}
                         className="mt-2 w-full rounded-xl border px-3 py-3 text-sm font-bold" style={{ borderColor: "var(--border)" }}>
                         <option value="kmh">km/h</option>
@@ -209,6 +216,12 @@ export default function CalculateurVitesse() {
                 )}
               </div>
             </div>
+
+            {!result && (
+              <div className="rounded-2xl border p-5 text-sm" style={{ background: "var(--surface)", borderColor: "var(--border)", color: "var(--muted)" }}>
+                Saisissez deux valeurs strictement positives pour obtenir le résultat (une durée ou une vitesse nulle ne permet pas de calcul).
+              </div>
+            )}
 
             {result && (
               <>
@@ -228,7 +241,7 @@ export default function CalculateurVitesse() {
                 </div>
 
                 <div className="rounded-2xl border p-6" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-                  <h2 className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--accent)" }}>Conversions detaillees</h2>
+                  <h2 className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--accent)" }}>Conversions détaillées</h2>
                   <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
                     <div>
                       <p className="text-xs font-semibold mb-2" style={{ color: "var(--muted)" }}>Vitesse</p>
@@ -278,9 +291,9 @@ export default function CalculateurVitesse() {
               <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Formule vitesse / distance / temps</h2>
               <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
                 <p><strong className="text-[var(--foreground)]">Vitesse</strong> = Distance / Temps</p>
-                <p><strong className="text-[var(--foreground)]">Distance</strong> = Vitesse x Temps</p>
+                <p><strong className="text-[var(--foreground)]">Distance</strong> = Vitesse × Temps</p>
                 <p><strong className="text-[var(--foreground)]">Temps</strong> = Distance / Vitesse</p>
-                <p><strong className="text-[var(--foreground)]">Conversions</strong> : 1 km/h = 0,2778 m/s = 0,6214 mph</p>
+                <p><strong className="text-[var(--foreground)]">Conversions</strong> : 1 km/h = 0,2778 m/s = 0,6214 mph ; 1 mile = 1,609344 km</p>
               </div>
             </div>
 
@@ -290,31 +303,31 @@ export default function CalculateurVitesse() {
                 Comment utiliser le calculateur de vitesse
               </h2>
               <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                <p>Ce calculateur de vitesse, distance et temps vous permet de retrouver la valeur manquante a partir des deux autres. Il s&apos;appuie sur la formule fondamentale V = D / T et gere automatiquement les conversions d&apos;unites.</p>
+                <p>Ce calculateur de vitesse, distance et temps vous permet de retrouver la valeur manquante à partir des deux autres. Il s&apos;appuie sur la formule fondamentale V = D / T et gère automatiquement les conversions d&apos;unités.</p>
                 <ul className="ml-4 list-disc space-y-1">
-                  <li><strong className="text-[var(--foreground)]">Choisissez ce que vous cherchez</strong> : selectionnez le mode &laquo; Vitesse &raquo;, &laquo; Distance &raquo; ou &laquo; Temps &raquo; selon la valeur inconnue.</li>
-                  <li><strong className="text-[var(--foreground)]">Entrez les valeurs connues</strong> : saisissez les deux valeurs disponibles dans les unites de votre choix (km, miles, m/s, km/h, mph, secondes, minutes, heures).</li>
-                  <li><strong className="text-[var(--foreground)]">Obtenez le resultat</strong> : la valeur recherchee s&apos;affiche instantanement avec toutes les conversions d&apos;unites disponibles.</li>
-                  <li><strong className="text-[var(--foreground)]">Cas pratiques</strong> : estimation du temps de trajet, calcul de la vitesse moyenne d&apos;un parcours sportif, conversion km/h en m/s pour la physique.</li>
+                  <li><strong className="text-[var(--foreground)]">Choisissez ce que vous cherchez</strong> : sélectionnez le mode &laquo; Vitesse &raquo;, &laquo; Distance &raquo; ou &laquo; Temps &raquo; selon la valeur inconnue.</li>
+                  <li><strong className="text-[var(--foreground)]">Entrez les valeurs connues</strong> : saisissez les deux valeurs disponibles dans les unités de votre choix (m, km, miles, km/h, m/s, mph, secondes, minutes, heures). Pour 1 h 30, saisissez 1,5 heure ou 90 minutes.</li>
+                  <li><strong className="text-[var(--foreground)]">Obtenez le résultat</strong> : la valeur recherchée s&apos;affiche instantanément avec toutes les conversions d&apos;unités disponibles.</li>
+                  <li><strong className="text-[var(--foreground)]">Cas pratiques</strong> : estimation du temps de trajet, calcul de la vitesse moyenne d&apos;un parcours sportif, conversion de km/h en m/s pour la physique.</li>
                 </ul>
               </div>
             </div>
 
             {/* FAQ */}
             <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Questions frequentes</h2>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Questions fréquentes</h2>
               <div className="mt-6 space-y-5">
                 <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
                   <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Comment convertir des km/h en m/s ?</h3>
-                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Pour convertir des km/h en m/s, divisez la valeur par 3,6. Par exemple, 90 km/h = 25 m/s. Inversement, pour passer de m/s a km/h, multipliez par 3,6. Cette conversion est frequemment utilisee en physique et en meteorologie.</p>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Pour convertir des km/h en m/s, divisez la valeur par 3,6. Par exemple, 90 km/h = 25 m/s. Inversement, pour passer de m/s à km/h, multipliez par 3,6. Cette conversion est fréquemment utilisée en physique et en météorologie.</p>
                 </div>
                 <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
                   <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Quelles sont les limitations de vitesse en France ?</h3>
-                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>En France, les limitations de vitesse sont : 50 km/h en agglomeration, 80 km/h sur les routes a double sens sans separateur central, 110 km/h sur les voies rapides et 130 km/h sur les autoroutes. Par temps de pluie, ces limites sont reduites respectivement a 50, 80, 100 et 110 km/h.</p>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>En France, les limitations par défaut sont : 50 km/h en agglomération, 80 km/h sur les routes à double sens sans séparateur central (certains départements ont relevé la limite à 90 km/h sur une partie de leur réseau), 110 km/h sur les routes à chaussées séparées et 130 km/h sur les autoroutes. Par temps de pluie, elles passent à 80 km/h au lieu de 90, 100 km/h au lieu de 110 et 110 km/h au lieu de 130 ; les limites de 50 et 80 km/h restent inchangées. Les jeunes conducteurs sont soumis aux limites réduites par temps de pluie en permanence.</p>
                 </div>
                 <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
-                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Quelle est la difference entre vitesse moyenne et vitesse instantanee ?</h3>
-                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>La vitesse moyenne correspond a la distance totale parcourue divisee par le temps total du trajet, pauses comprises. La vitesse instantanee est celle affichee a un instant precis sur le compteur. En pratique, la vitesse moyenne est toujours inferieure a la vitesse de croisiere car elle inclut les arrets, ralentissements et accelerations.</p>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Quelle est la différence entre vitesse moyenne et vitesse instantanée ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>La vitesse moyenne correspond à la distance totale parcourue divisée par le temps total du trajet, pauses comprises. La vitesse instantanée est celle affichée à un instant précis sur le compteur. En pratique, la vitesse moyenne est généralement inférieure à la vitesse de croisière, car elle inclut les arrêts, ralentissements et accélérations.</p>
                 </div>
               </div>
             </div>
@@ -323,11 +336,11 @@ export default function CalculateurVitesse() {
           <aside className="space-y-6">
             <AdPlaceholder className="h-[250px]" />
             <div className="rounded-2xl border p-6" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-              <h3 className="text-sm font-semibold" style={{ fontFamily: "var(--font-display)" }}>Vitesses de reference</h3>
+              <h3 className="text-sm font-semibold" style={{ fontFamily: "var(--font-display)" }}>Vitesses de référence</h3>
               <div className="mt-3 space-y-2">
                 {[
                   { nom: "Marche", vitesse: "5 km/h" },
-                  { nom: "Velo", vitesse: "20 km/h" },
+                  { nom: "Vélo", vitesse: "20 km/h" },
                   { nom: "Ville (50)", vitesse: "50 km/h" },
                   { nom: "Route", vitesse: "80 km/h" },
                   { nom: "Autoroute", vitesse: "130 km/h" },

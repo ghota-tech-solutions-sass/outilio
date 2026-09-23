@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Generateur de Lorem Ipsum - Texte factice gratuit",
+  title: "Générateur de Lorem Ipsum - Texte factice gratuit",
   description:
-    "Generez du texte Lorem Ipsum pour vos maquettes et projets. Paragraphes, mots ou phrases. Copie en un clic. Gratuit.",
+    "Générez du texte Lorem Ipsum pour vos maquettes et projets. Paragraphes, mots ou phrases. Copie en un clic. Gratuit.",
   keywords: ["lorem ipsum", "generateur texte", "texte factice", "faux texte", "placeholder text"],
   alternates: { canonical: "https://outilis.fr/outils/generateur-lorem-ipsum" },
 };

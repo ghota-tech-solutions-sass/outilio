@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Reduire Taille Video en Ligne Gratuit - Compresseur Video",
+  title: "Réduire Taille Vidéo en Ligne Gratuit - Compresseur Vidéo",
   description:
-    "Compressez vos videos dans le navigateur : choisissez la qualite, visualisez le gain. 100% gratuit et local, vos fichiers restent sur votre appareil.",
+    "Compressez vos vidéos en MP4 H.264 dans le navigateur avec FFmpeg : qualité (CRF) et résolution au choix, comparaison avant/après. Gratuit et 100% local.",
   keywords: [
     "reduire taille video",
     "compresser video",

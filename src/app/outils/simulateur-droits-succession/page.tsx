@@ -14,12 +14,12 @@ type LienParente =
 
 const LIENS: { value: LienParente; label: string }[] = [
   { value: "conjoint", label: "Conjoint(e) ou partenaire de PACS" },
-  { value: "enfant", label: "Enfant" },
+  { value: "enfant", label: "Enfant ou parent (père / mère)" },
   { value: "petit_enfant", label: "Petit-enfant" },
-  { value: "frere_soeur", label: "Frere / Soeur" },
-  { value: "neveu_niece", label: "Neveu / Niece" },
-  { value: "autre_parent", label: "Autre parent" },
-  { value: "non_parent", label: "Non-parent" },
+  { value: "frere_soeur", label: "Frère / Sœur" },
+  { value: "neveu_niece", label: "Neveu / Nièce" },
+  { value: "autre_parent", label: "Autre parent jusqu'au 4e degré (oncle, tante, cousin germain...)" },
+  { value: "non_parent", label: "Parent au-delà du 4e degré ou non-parent" },
 ];
 
 const ABATTEMENTS: Record<LienParente, number> = {
@@ -104,22 +104,23 @@ function calculerSuccession(montant: number, lien: LienParente) {
     const result = calculerDroitsProgressifs(baseTaxable, TRANCHES_FRERE_SOEUR);
     droits = result.droits;
     details = result.details;
-  } else if (lien === "neveu_niece") {
+  } else if (lien === "neveu_niece" || lien === "autre_parent") {
+    // Parents jusqu'au 4e degre inclus : 55% (art. 777 CGI)
     droits = baseTaxable * 0.55;
     if (baseTaxable > 0) {
       details.push({
-        tranche: "Totalite",
+        tranche: "Totalité",
         base: baseTaxable,
         taux: 0.55,
         impot: droits,
       });
     }
   } else {
-    // autre_parent ou non_parent : 60%
+    // Parents au-dela du 4e degre et non-parents : 60%
     droits = baseTaxable * 0.60;
     if (baseTaxable > 0) {
       details.push({
-        tranche: "Totalite",
+        tranche: "Totalité",
         base: baseTaxable,
         taux: 0.60,
         impot: droits,
@@ -170,8 +171,8 @@ export default function SimulateurDroitsSuccession() {
             className="animate-fade-up stagger-2 mt-3 max-w-xl text-sm leading-relaxed"
             style={{ color: "var(--muted)" }}
           >
-            Estimez les droits de succession a payer selon le montant de l&apos;heritage
-            et votre lien de parente avec le defunt.
+            Estimez les droits de succession à payer selon le montant de l&apos;héritage
+            et votre lien de parenté avec le défunt.
           </p>
         </div>
       </section>
@@ -190,7 +191,7 @@ export default function SimulateurDroitsSuccession() {
                     className="text-xs font-semibold uppercase tracking-wider"
                     style={{ color: "var(--muted)" }}
                   >
-                    Montant de l&apos;heritage
+                    Montant de l&apos;héritage
                   </label>
                   <div className="relative mt-2">
                     <input
@@ -217,7 +218,7 @@ export default function SimulateurDroitsSuccession() {
                     className="text-xs font-semibold uppercase tracking-wider"
                     style={{ color: "var(--muted)" }}
                   >
-                    Lien de parente
+                    Lien de parenté
                   </label>
                   <select
                     value={lien}
@@ -244,13 +245,13 @@ export default function SimulateurDroitsSuccession() {
                 }}
               >
                 <p className="text-sm font-semibold" style={{ color: "#16a34a" }}>
-                  Exoneration totale des droits de succession
+                  Exonération totale des droits de succession
                 </p>
                 <p className="mt-2 text-sm leading-relaxed" style={{ color: "#166534" }}>
                   Le conjoint survivant et le partenaire de PACS sont totalement
-                  exoneres de droits de succession (art. 796-0 bis CGI, depuis la loi
-                  TEPA du 21 aout 2007). Aucun droit a payer, quel que soit le montant
-                  de l&apos;heritage.
+                  exonérés de droits de succession (art. 796-0 bis CGI, depuis la loi
+                  TEPA du 21 août 2007). Aucun droit à payer, quel que soit le montant
+                  de l&apos;héritage.
                 </p>
               </div>
             )}
@@ -266,7 +267,7 @@ export default function SimulateurDroitsSuccession() {
                 value={`${fmt(result.baseTaxable)} \u20AC`}
               />
               <StatBox
-                label="Droits a payer"
+                label="Droits à payer"
                 value={`${fmt(result.droits)} \u20AC`}
                 primary
               />
@@ -286,7 +287,7 @@ export default function SimulateurDroitsSuccession() {
                 className="text-xs font-semibold uppercase tracking-[0.2em]"
                 style={{ color: "var(--muted)" }}
               >
-                Net herite
+                Net hérité
               </p>
               <p
                 className="mt-2 text-4xl font-bold"
@@ -298,7 +299,7 @@ export default function SimulateurDroitsSuccession() {
                 {fmt(result.netHerite)} &euro;
               </p>
               <p className="mt-1 text-lg" style={{ color: "var(--muted)" }}>
-                sur {fmt(montantNum)} &euro; d&apos;heritage
+                sur {fmt(montantNum)} &euro; d&apos;héritage
               </p>
             </div>
 
@@ -312,7 +313,7 @@ export default function SimulateurDroitsSuccession() {
                   className="text-xs font-semibold uppercase tracking-[0.15em]"
                   style={{ color: "var(--accent)" }}
                 >
-                  Detail par tranche
+                  Détail par tranche
                 </h2>
                 <div className="mt-4 overflow-x-auto">
                   <table className="w-full text-sm">
@@ -376,7 +377,7 @@ export default function SimulateurDroitsSuccession() {
                 className="text-xs font-semibold uppercase tracking-[0.15em]"
                 style={{ color: "var(--accent)" }}
               >
-                Repartition de l&apos;heritage
+                Répartition de l&apos;héritage
               </h2>
               <div className="mt-4 space-y-3">
                 {[
@@ -386,7 +387,7 @@ export default function SimulateurDroitsSuccession() {
                     color: "var(--accent)",
                   },
                   {
-                    label: "Net herite",
+                    label: "Net hérité",
                     value: Math.max(result.netHerite - Math.min(result.abattement, montantNum), 0),
                     color: "var(--primary)",
                   },
@@ -447,33 +448,34 @@ export default function SimulateurDroitsSuccession() {
                 <p>
                   Les droits de succession sont un{" "}
                   <strong className="text-[var(--foreground)]">
-                    impot preleve sur la part d&apos;heritage
+                    impôt prélevé sur la part d&apos;héritage
                   </strong>{" "}
-                  recue par chaque beneficiaire. Le montant depend de deux facteurs : la
-                  valeur des biens transmis et le lien de parente avec le defunt.
+                  reçue par chaque bénéficiaire. Le montant dépend de deux facteurs : la
+                  valeur des biens transmis et le lien de parenté avec le défunt.
                 </p>
                 <p>
                   Un{" "}
                   <strong className="text-[var(--foreground)]">abattement</strong> est
-                  d&apos;abord applique : 100 000 &euro; pour un enfant, 15 932 &euro;
-                  pour un frere ou une soeur, 7 967 &euro; pour un neveu ou une niece, et
-                  1 594 &euro; pour les autres. La part qui depasse l&apos;abattement est
-                  ensuite soumise a un{" "}
-                  <strong className="text-[var(--foreground)]">bareme progressif</strong>{" "}
-                  allant de 5% a 45% en ligne directe.
+                  d&apos;abord appliqué : 100 000 &euro; pour un enfant (ou un parent), 15 932 &euro;
+                  pour un frère ou une sœur, 7 967 &euro; pour un neveu ou une nièce, et
+                  1 594 &euro; pour les autres. La part qui dépasse l&apos;abattement est
+                  ensuite soumise à un{" "}
+                  <strong className="text-[var(--foreground)]">barème progressif</strong>{" "}
+                  allant de 5% à 45% en ligne directe.
                 </p>
                 <p>
-                  Les heritiers plus eloignes paient des taux plus eleves : 35% a 45%
-                  entre freres et soeurs, 55% pour les neveux et nieces, et{" "}
-                  <strong className="text-[var(--foreground)]">60%</strong> pour les
-                  non-parents.
+                  Les héritiers plus éloignés paient des taux plus elevés : 35% à 45%
+                  entre frères et sœurs, 55% pour les parents jusqu&apos;au 4e degré
+                  (neveux, nièces, oncles, tantes, cousins germains), et{" "}
+                  <strong className="text-[var(--foreground)]">60%</strong> au-delà du
+                  4e degré et pour les non-parents.
                 </p>
                 <p>
                   <strong className="text-[var(--foreground)]">Cas particulier du conjoint</strong> :
                   le conjoint survivant et le partenaire de PACS sont{" "}
-                  <strong className="text-[var(--foreground)]">totalement exoneres</strong>{" "}
-                  de droits de succession (art. 796-0 bis CGI, loi TEPA du 21 aout 2007).
-                  Cette exoneration ne s&apos;applique pas aux concubins en union libre.
+                  <strong className="text-[var(--foreground)]">totalement exonérés</strong>{" "}
+                  de droits de succession (art. 796-0 bis CGI, loi TEPA du 21 août 2007).
+                  Cette exonération ne s&apos;applique pas aux concubins en union libre.
                 </p>
               </div>
             </div>
@@ -487,7 +489,7 @@ export default function SimulateurDroitsSuccession() {
                 className="text-2xl tracking-tight"
                 style={{ fontFamily: "var(--font-display)" }}
               >
-                Questions frequentes
+                Questions fréquentes
               </h2>
               <div className="mt-6 space-y-5">
                 <div
@@ -504,12 +506,12 @@ export default function SimulateurDroitsSuccession() {
                     className="mt-2 text-sm leading-relaxed"
                     style={{ color: "var(--muted)" }}
                   >
-                    Non. Depuis la loi TEPA du 21 aout 2007 (article 796-0 bis du Code
-                    general des impots), le conjoint survivant et le partenaire lie par
-                    un PACS sont <strong className="text-[var(--foreground)]">totalement exoneres</strong> de
+                    Non. Depuis la loi TEPA du 21 août 2007 (article 796-0 bis du Code
+                    général des impôts), le conjoint survivant et le partenaire lié par
+                    un PACS sont <strong className="text-[var(--foreground)]">totalement exonérés</strong> de
                     droits de succession, quel que soit le montant transmis. Attention :
-                    cette exoneration ne concerne pas le concubin (union libre), qui est
-                    fiscalement considere comme un tiers et taxe a 60%.
+                    cette exonération ne concerne pas le concubin (union libre), qui est
+                    fiscalement considéré comme un tiers et taxé à 60%.
                   </p>
                 </div>
 
@@ -527,11 +529,11 @@ export default function SimulateurDroitsSuccession() {
                     className="mt-2 text-sm leading-relaxed"
                     style={{ color: "var(--muted)" }}
                   >
-                    Chaque enfant beneficie d&apos;un abattement de 100 000 &euro; sur la
-                    part d&apos;heritage recue de chaque parent. Cela signifie qu&apos;un
-                    enfant peut heriter de 100 000 &euro; de son pere et 100 000 &euro; de
-                    sa mere sans payer de droits. Cet abattement se reconstitue tous les 15
-                    ans : les donations anterieures de plus de 15 ans ne sont plus prises
+                    Chaque enfant bénéficie d&apos;un abattement de 100 000 &euro; sur la
+                    part d&apos;héritage reçue de chaque parent. Cela signifie qu&apos;un
+                    enfant peut hériter de 100 000 &euro; de son père et 100 000 &euro; de
+                    sa mère sans payer de droits. Cet abattement se reconstitue tous les 15
+                    ans : les donations antérieures de plus de 15 ans ne sont plus prises
                     en compte.
                   </p>
                 </div>
@@ -544,18 +546,18 @@ export default function SimulateurDroitsSuccession() {
                     className="text-sm font-semibold"
                     style={{ color: "var(--foreground)" }}
                   >
-                    Comment reduire les droits de succession ?
+                    Comment réduire les droits de succession ?
                   </h3>
                   <p
                     className="mt-2 text-sm leading-relaxed"
                     style={{ color: "var(--muted)" }}
                   >
-                    Plusieurs strategies permettent de reduire les droits : la donation de
+                    Plusieurs stratégies permettent de réduire les droits : la donation de
                     son vivant (l&apos;abattement de 100 000 &euro; se renouvelle tous les
-                    15 ans), l&apos;assurance-vie (abattement specifique de 152 500 &euro;
-                    par beneficiaire pour les versements avant 70 ans), le demembrement de
-                    propriete, ou encore le pacte Dutreil pour les entreprises familiales
-                    (exoneration de 75% de la valeur).
+                    15 ans), l&apos;assurance-vie (abattement spécifique de 152 500 &euro;
+                    par bénéficiaire pour les versements avant 70 ans), le démembrement de
+                    propriété, ou encore le pacte Dutreil pour les entreprises familiales
+                    (exonération de 75% de la valeur).
                   </p>
                 </div>
 
@@ -567,18 +569,18 @@ export default function SimulateurDroitsSuccession() {
                     className="text-sm font-semibold"
                     style={{ color: "var(--foreground)" }}
                   >
-                    Les freres et soeurs sont-ils exoneres ?
+                    Les frères et sœurs sont-ils exonérés ?
                   </h3>
                   <p
                     className="mt-2 text-sm leading-relaxed"
                     style={{ color: "var(--muted)" }}
                   >
-                    Les freres et soeurs beneficient d&apos;un abattement de 15 932
-                    &euro;. Au-dela, le taux est de 35% jusqu&apos;a 24 430 &euro; puis 45%.
-                    Toutefois, une exoneration totale existe si le frere ou la soeur remplit
-                    trois conditions cumulatives : avoir plus de 50 ans ou etre invalide,
-                    avoir vecu avec le defunt pendant les 5 dernieres annees, et etre
-                    celibataire, veuf, divorce ou separe.
+                    Les frères et sœurs bénéficient d&apos;un abattement de 15 932
+                    &euro;. Au-delà, le taux est de 35% jusqu&apos;à 24 430 &euro; puis 45%.
+                    Toutefois, une exonération totale existe si le frère ou la sœur remplit
+                    trois conditions cumulatives : avoir plus de 50 ans ou être invalide,
+                    avoir vécu avec le défunt pendant les 5 dernières années, et être
+                    célibataire, veuf, divorcé ou séparé.
                   </p>
                 </div>
 
@@ -590,17 +592,17 @@ export default function SimulateurDroitsSuccession() {
                     className="text-sm font-semibold"
                     style={{ color: "var(--foreground)" }}
                   >
-                    Quel est le delai pour payer les droits de succession ?
+                    Quel est le délai pour payer les droits de succession ?
                   </h3>
                   <p
                     className="mt-2 text-sm leading-relaxed"
                     style={{ color: "var(--muted)" }}
                   >
-                    Les droits de succession doivent etre payes au moment du depot de la
-                    declaration de succession, soit dans les 6 mois suivant le deces (12
-                    mois si le deces a eu lieu a l&apos;etranger). Un paiement fractionne
-                    (jusqu&apos;a 3 ans) ou differe (en cas de nue-propriete) peut etre
-                    demande aupres de l&apos;administration fiscale, sous reserve de
+                    Les droits de succession doivent être payés au moment du dépôt de la
+                    déclaration de succession, soit dans les 6 mois suivant le décès (12
+                    mois si le décès a eu lieu à l&apos;étranger). Un paiement fractionné
+                    (jusqu&apos;à 3 ans) ou différé (en cas de nue-propriété) peut être
+                    demandé auprès de l&apos;administration fiscale, sous réserve de
                     fournir des garanties.
                   </p>
                 </div>
@@ -627,18 +629,18 @@ export default function SimulateurDroitsSuccession() {
               >
                 <li>
                   Conjoint / PACS :{" "}
-                  <strong style={{ color: "#16a34a" }}>Exoneration totale</strong>
+                  <strong style={{ color: "#16a34a" }}>Exonération totale</strong>
                 </li>
                 <li>
                   Enfant :{" "}
                   <strong className="text-[var(--foreground)]">100 000 &euro;</strong>
                 </li>
                 <li>
-                  Frere/soeur :{" "}
+                  Frère/sœur :{" "}
                   <strong className="text-[var(--foreground)]">15 932 &euro;</strong>
                 </li>
                 <li>
-                  Neveu/niece :{" "}
+                  Neveu/nièce :{" "}
                   <strong className="text-[var(--foreground)]">7 967 &euro;</strong>
                 </li>
                 <li>
@@ -667,14 +669,14 @@ export default function SimulateurDroitsSuccession() {
               >
                 <li>
                   Ligne directe :{" "}
-                  <strong className="text-[var(--foreground)]">5% a 45%</strong>
+                  <strong className="text-[var(--foreground)]">5% à 45%</strong>
                 </li>
                 <li>
-                  Frere/soeur :{" "}
-                  <strong className="text-[var(--foreground)]">35% a 45%</strong>
+                  Frère/sœur :{" "}
+                  <strong className="text-[var(--foreground)]">35% à 45%</strong>
                 </li>
                 <li>
-                  Neveu/niece :{" "}
+                  Neveu/nièce, oncle/tante, cousin :{" "}
                   <strong className="text-[var(--foreground)]">55%</strong>
                 </li>
                 <li>

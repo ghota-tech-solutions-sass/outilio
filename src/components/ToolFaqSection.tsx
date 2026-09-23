@@ -13,11 +13,11 @@ type Props = {
   items: FaqItem[];
 };
 
-export default function ToolFaqSection({ title = "Questions frequentes", intro, items }: Props) {
+export default function ToolFaqSection({ title = "Questions fréquentes", intro, items }: Props) {
   const [open, setOpen] = useState<number | null>(0);
 
   return (
-    <section className="rounded-xl border p-6 md:p-8 shadow-sm" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+    <section data-no-track className="rounded-xl border p-6 md:p-8 shadow-sm" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
       <h2
         className="text-2xl md:text-3xl font-extrabold"
         style={{ fontFamily: "var(--font-display)", color: "var(--foreground)" }}

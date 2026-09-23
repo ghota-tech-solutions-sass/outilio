@@ -6,11 +6,11 @@ import ToolFaqSection from "@/components/ToolFaqSection";
 import ToolHowToSection from "@/components/ToolHowToSection";
 
 const ACTIVITY_LEVELS = [
-  { label: "Sedentaire (bureau, peu d\u2019exercice)", factor: 1.2 },
-  { label: "Leger (exercice 1-3 jours/sem.)", factor: 1.375 },
-  { label: "Modere (exercice 3-5 jours/sem.)", factor: 1.55 },
+  { label: "Sédentaire (bureau, peu d\u2019exercice)", factor: 1.2 },
+  { label: "Léger (exercice 1-3 jours/sem.)", factor: 1.375 },
+  { label: "Modéré (exercice 3-5 jours/sem.)", factor: 1.55 },
   { label: "Actif (exercice 6-7 jours/sem.)", factor: 1.725 },
-  { label: "Tres actif (sport intense quotidien)", factor: 1.9 },
+  { label: "Très actif (sport intense quotidien)", factor: 1.9 },
 ];
 
 export default function CalculateurTDEE() {
@@ -50,12 +50,12 @@ export default function CalculateurTDEE() {
     <>
       <section className="relative py-14" style={{ borderBottom: "1px solid var(--border)" }}>
         <div className="mx-auto max-w-7xl px-6 2xl:max-w-[1400px]">
-          <p className="animate-fade-up text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: "var(--accent)" }}>Sante</p>
+          <p className="animate-fade-up text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: "var(--accent)" }}>Santé</p>
           <h1 className="animate-fade-up stagger-1 mt-3 text-4xl tracking-tight md:text-5xl" style={{ fontFamily: "var(--font-display)" }}>
             Calculateur <span style={{ color: "var(--primary)" }}>TDEE / Calories</span>
           </h1>
           <p className="animate-fade-up stagger-2 mt-3 max-w-xl text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-            Estimez votre depense energetique totale et vos besoins caloriques journaliers avec la formule Mifflin-St Jeor.
+            Estimez votre dépense énergétique totale et vos besoins caloriques journaliers avec la formule Mifflin-St Jeor.
           </p>
         </div>
       </section>
@@ -67,7 +67,7 @@ export default function CalculateurTDEE() {
             <div className="rounded-2xl border p-6" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>Age (ans)</label>
+                  <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>Âge (ans)</label>
                   <input type="number" value={age} onChange={(e) => setAge(e.target.value)}
                     className="mt-2 w-full rounded-xl border px-4 py-4 text-2xl font-bold" style={{ borderColor: "var(--border)", fontFamily: "var(--font-display)" }} />
                 </div>
@@ -107,7 +107,7 @@ export default function CalculateurTDEE() {
               </div>
 
               <div className="mt-4">
-                <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>Niveau d&apos;activite</label>
+                <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>Niveau d&apos;activité</label>
                 <select value={activite} onChange={(e) => setActivite(Number(e.target.value))}
                   className="mt-2 w-full rounded-xl border px-4 py-4 text-sm font-medium" style={{ borderColor: "var(--border)", background: "var(--surface)" }}>
                   {ACTIVITY_LEVELS.map((level, i) => (
@@ -130,7 +130,7 @@ export default function CalculateurTDEE() {
 
                 <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
                   <div className="rounded-2xl border p-5 text-center" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-                    <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>Metabolisme de base</p>
+                    <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>Métabolisme de base</p>
                     <p className="mt-2 text-2xl font-bold" style={{ fontFamily: "var(--font-display)" }}>{fmt(results.bmr)}</p>
                     <p className="text-xs" style={{ color: "var(--muted)" }}>kcal</p>
                   </div>
@@ -153,10 +153,10 @@ export default function CalculateurTDEE() {
 
                 {/* Macros */}
                 <div className="rounded-2xl border p-6" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-                  <h2 className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--accent)" }}>Repartition macros suggeree (maintien)</h2>
+                  <h2 className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--accent)" }}>Répartition macros suggérée (maintien)</h2>
                   <div className="mt-4 grid grid-cols-3 gap-4">
                     <div className="rounded-xl p-4 text-center" style={{ background: "var(--surface-alt)" }}>
-                      <p className="text-xs font-semibold" style={{ color: "var(--muted)" }}>Proteines (30%)</p>
+                      <p className="text-xs font-semibold" style={{ color: "var(--muted)" }}>Protéines (30%)</p>
                       <p className="mt-1 text-xl font-bold" style={{ fontFamily: "var(--font-display)", color: "#ef4444" }}>{fmt(results.proteines)}g</p>
                       <p className="text-xs" style={{ color: "var(--muted)" }}>{fmt(results.tdee * 0.3)} kcal</p>
                     </div>
@@ -179,44 +179,44 @@ export default function CalculateurTDEE() {
             <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
               <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Qu&apos;est-ce que le TDEE ?</h2>
               <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                <p>Le TDEE (Total Daily Energy Expenditure) represente la depense energetique totale quotidienne, c&apos;est-a-dire le nombre de calories que votre corps brule en 24 heures. Il comprend le metabolisme de base (BMR), la thermogenese alimentaire et l&apos;activite physique.</p>
-                <p><strong className="text-[var(--foreground)]">Formule Mifflin-St Jeor</strong> : consideree comme la plus precise pour estimer le metabolisme de base.</p>
+                <p>Le TDEE (Total Daily Energy Expenditure) représente la dépense énergétique totale quotidienne, c&apos;est-à-dire le nombre de calories que votre corps brûle en 24 heures. Il comprend le métabolisme de base (BMR), la thermogenèse alimentaire et l&apos;activité physique.</p>
+                <p><strong className="text-[var(--foreground)]">Formule Mifflin-St Jeor</strong> : considérée comme la plus précise pour estimer le métabolisme de base.</p>
                 <ul className="ml-4 list-disc space-y-1">
-                  <li><strong className="text-[var(--foreground)]">Homme</strong> : BMR = 10 x poids (kg) + 6,25 x taille (cm) - 5 x age + 5</li>
-                  <li><strong className="text-[var(--foreground)]">Femme</strong> : BMR = 10 x poids (kg) + 6,25 x taille (cm) - 5 x age - 161</li>
+                  <li><strong className="text-[var(--foreground)]">Homme</strong> : BMR = 10 x poids (kg) + 6,25 x taille (cm) - 5 x âge + 5</li>
+                  <li><strong className="text-[var(--foreground)]">Femme</strong> : BMR = 10 x poids (kg) + 6,25 x taille (cm) - 5 x âge - 161</li>
                 </ul>
-                <p>Le BMR est ensuite multiplie par un facteur d&apos;activite (de 1,2 pour sedentaire a 1,9 pour tres actif) pour obtenir le TDEE. Pour perdre du poids, on vise un deficit de 500 kcal/jour (environ 0,5 kg/semaine). Pour prendre de la masse, un surplus de 500 kcal/jour.</p>
+                <p>Le BMR est ensuite multiplié par un facteur d&apos;activité (de 1,2 pour sédentaire à 1,9 pour très actif) pour obtenir le TDEE. Pour perdre du poids, on vise un déficit de 500 kcal/jour (environ 0,5 kg/semaine). Pour prendre de la masse, un surplus de 500 kcal/jour.</p>
               </div>
             </div>
 
             <div className="rounded-2xl border-l-4 p-5" style={{ background: "var(--surface-alt)", borderColor: "var(--accent)" }}>
               <p className="text-sm leading-relaxed" style={{ color: "var(--foreground)" }}>
-                <strong>Avertissement medical.</strong> Cet outil fournit une estimation a titre
-                informatif. Pour un suivi nutritionnel personnalise, consultez un professionnel de
-                sante (medecin, dieteticien-nutritionniste). Les besoins reels peuvent varier selon
-                le metabolisme individuel, la composition corporelle, l&apos;etat de sante ou
-                d&apos;eventuelles pathologies.
+                <strong>Avertissement médical.</strong> Cet outil fournit une estimation à titre
+                informatif. Pour un suivi nutritionnel personnalisé, consultez un professionnel de
+                santé (médecin, diététicien-nutritionniste). Les besoins réels peuvent varier selon
+                le métabolisme individuel, la composition corporelle, l&apos;état de santé ou
+                d&apos;éventuelles pathologies.
               </p>
             </div>
 
             <ToolHowToSection
               title="Comment utiliser ce calculateur TDEE"
-              description="Estimez vos besoins caloriques journaliers en trois etapes, avec la formule Mifflin-St Jeor (la plus precise selon l'American Dietetic Association)."
+              description="Estimez vos besoins caloriques journaliers en trois étapes, avec la formule Mifflin-St Jeor (la plus précise selon l'American Dietetic Association)."
               steps={[
                 {
-                  name: "Renseignez vos donnees morphologiques",
+                  name: "Renseignez vos données morphologiques",
                   text:
-                    "Saisissez votre age, sexe, poids (kg) et taille (cm). Ces parametres permettent de calculer votre metabolisme de base (BMR) avec la formule Mifflin-St Jeor : 10 x poids + 6,25 x taille - 5 x age, +5 pour les hommes et -161 pour les femmes. Le BMR represente l'energie depensee au repos complet.",
+                    "Saisissez votre âge, sexe, poids (kg) et taille (cm). Ces paramètres permettent de calculer votre métabolisme de base (BMR) avec la formule Mifflin-St Jeor : 10 x poids + 6,25 x taille - 5 x âge, +5 pour les hommes et -161 pour les femmes. Le BMR représente l'énergie dépensée au repos complet.",
                 },
                 {
-                  name: "Selectionnez votre niveau d'activite",
+                  name: "Sélectionnez votre niveau d'activité",
                   text:
-                    "Choisissez parmi 5 niveaux : sedentaire (1,2), leger (1,375), modere (1,55), actif (1,725), tres actif (1,9). Soyez honnete : surestimer son activite est l'erreur la plus frequente et fausse tout le calcul. Le TDEE = BMR x facteur d'activite.",
+                    "Choisissez parmi 5 niveaux : sédentaire (1,2), léger (1,375), modéré (1,55), actif (1,725), très actif (1,9). Soyez honnête : surestimer son activité est l'erreur la plus fréquente et fausse tout le calcul. Le TDEE = BMR x facteur d'activité.",
                 },
                 {
                   name: "Lisez vos objectifs (maintien, perte, prise)",
                   text:
-                    "L'outil affiche le TDEE de maintien, le TDEE - 500 kcal pour une perte de poids saine d'environ 0,5 kg/semaine, et le TDEE + 500 kcal pour une prise de masse. La repartition macros suggeree (30% proteines / 40% glucides / 30% lipides) est un equilibre standard, a adapter avec un dieteticien selon vos objectifs.",
+                    "L'outil affiche le TDEE de maintien, le TDEE - 500 kcal pour une perte de poids saine d'environ 0,5 kg/semaine, et le TDEE + 500 kcal pour une prise de masse. La répartition macros suggérée (30% protéines / 40% glucides / 30% lipides) est un équilibre standard, à adapter avec un diététicien selon vos objectifs.",
                 },
               ]}
             />
@@ -235,13 +235,13 @@ export default function CalculateurTDEE() {
               <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
                   <h3 className="font-semibold" style={{ color: "var(--foreground)" }}>
-                    Perte de poids progressive (seche)
+                    Perte de poids progressive (sèche)
                   </h3>
                   <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                    Femme 35 ans, 70 kg, 165 cm, activite moderee : TDEE environ 2 100 kcal. Avec un
-                    deficit de 500 kcal/jour (objectif 1 600 kcal), perte attendue d&apos;environ 0,5
-                    kg/semaine, soit 2 kg/mois. Tenir 2-3 mois maximum sur ce deficit, puis
-                    repasser au maintien pour eviter le ralentissement metabolique.
+                    Femme 35 ans, 70 kg, 165 cm, activité modérée : TDEE environ 2 150 kcal. Avec un
+                    déficit de 500 kcal/jour (objectif 1 650 kcal), perte attendue d&apos;environ 0,5
+                    kg/semaine, soit 2 kg/mois. Tenir 2-3 mois maximum sur ce déficit, puis
+                    repasser au maintien pour éviter le ralentissement métabolique.
                   </p>
                 </div>
                 <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
@@ -249,32 +249,32 @@ export default function CalculateurTDEE() {
                     Prise de masse en musculation
                   </h3>
                   <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                    Homme 25 ans, 75 kg, 180 cm, actif (4 entrainements/sem) : TDEE environ 3 100
+                    Homme 25 ans, 75 kg, 180 cm, actif (4 entraînements/sem) : TDEE environ 3 000
                     kcal. Pour prendre de la masse musculaire, surplus de 300-500 kcal/jour avec un
-                    apport proteique de 1,6 a 2 g/kg de poids (soit 120-150 g/jour ici). Une prise
-                    saine vise 0,2 a 0,4 kg/semaine.
+                    apport protéique de 1,6 à 2 g/kg de poids (soit 120-150 g/jour ici). Une prise
+                    saine vise 0,2 à 0,4 kg/semaine.
                   </p>
                 </div>
                 <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
                   <h3 className="font-semibold" style={{ color: "var(--foreground)" }}>
-                    Suivi dietetique au quotidien
+                    Suivi diététique au quotidien
                   </h3>
                   <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                    Connaitre son TDEE de maintien permet de calibrer ses applications de suivi
-                    (Yazio, MyFitnessPal, Lifesum). Cela donne un plafond calorique a ne pas
-                    depasser, et permet d&apos;ajuster en cas de plateau (recalculer si poids change
+                    Connaître son TDEE de maintien permet de calibrer ses applications de suivi
+                    (Yazio, MyFitnessPal, Lifesum). Cela donne un plafond calorique à ne pas
+                    dépasser, et permet d&apos;ajuster en cas de plateau (recalculer si poids change
                     de plus de 3-5 kg).
                   </p>
                 </div>
                 <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
                   <h3 className="font-semibold" style={{ color: "var(--foreground)" }}>
-                    Reprise sportive ou changement d&apos;activite
+                    Reprise sportive ou changement d&apos;activité
                   </h3>
                   <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                    Si vous passez d&apos;un mode de vie sedentaire (1,2) a actif (1,725), votre
-                    TDEE peut augmenter de 500 a 800 kcal/jour. Un recalcul est utile pour ajuster
-                    son alimentation et eviter une fonte musculaire involontaire ou une fatigue
-                    chronique liees a un apport insuffisant.
+                    Si vous passez d&apos;un mode de vie sédentaire (1,2) à actif (1,725), votre
+                    TDEE peut augmenter de 500 à 800 kcal/jour. Un recalcul est utile pour ajuster
+                    son alimentation et éviter une fonte musculaire involontaire ou une fatigue
+                    chronique liées à un apport insuffisant.
                   </p>
                 </div>
               </div>
@@ -288,79 +288,79 @@ export default function CalculateurTDEE() {
                 className="text-2xl md:text-3xl font-extrabold"
                 style={{ fontFamily: "var(--font-display)", color: "var(--foreground)" }}
               >
-                A savoir sur le TDEE et les calories
+                À savoir sur le TDEE et les calories
               </h2>
 
               <div className="mt-4 space-y-4 leading-relaxed" style={{ color: "var(--foreground)" }}>
                 <p>
-                  <strong>La formule Mifflin-St Jeor (1990) est la plus precise selon l&apos;ADA</strong>
+                  <strong>La formule Mifflin-St Jeor (1990) est la plus précise selon l&apos;ADA</strong>
                   (American Dietetic Association). Elle remplace l&apos;ancienne Harris-Benedict
-                  (1919, surestime de 5%) et la formule Katch-McArdle (necessite la masse maigre,
+                  (1919, surestime de 5%) et la formule Katch-McArdle (nécessite la masse maigre,
                   rarement disponible). Marge d&apos;erreur d&apos;environ 10% sur des sujets sains
-                  non-obeses, ce qui reste une estimation.
+                  non-obèses, ce qui reste une estimation.
                 </p>
                 <p>
-                  <strong>TDEE = BMR x Facteur d&apos;activite (FA).</strong> FA = 1,2 (sedentaire,
-                  bureau, peu d&apos;exercice), 1,375 (leger, 1-3 entrainements/sem), 1,55 (modere,
-                  3-5 entrainements/sem), 1,725 (actif, 6-7 entrainements/sem), 1,9 (tres actif,
-                  sport intense quotidien ou metier physique). Surestimer son FA est l&apos;erreur
-                  numero 1 qui empeche la perte de poids.
+                  <strong>TDEE = BMR x Facteur d&apos;activité (FA).</strong> FA = 1,2 (sédentaire,
+                  bureau, peu d&apos;exercice), 1,375 (léger, 1-3 entraînements/sem), 1,55 (modéré,
+                  3-5 entraînements/sem), 1,725 (actif, 6-7 entraînements/sem), 1,9 (très actif,
+                  sport intense quotidien ou métier physique). Surestimer son FA est l&apos;erreur
+                  numéro 1 qui empêche la perte de poids.
                 </p>
                 <p>
-                  <strong>Un deficit calorique sain est de 500 kcal/jour</strong>, soit environ
-                  0,5 kg/semaine de perte (1 kg de graisse = 7 700 kcal). Au-dela de 1 000
-                  kcal/jour de deficit, le corps active des mecanismes de protection : perte de
-                  masse musculaire, ralentissement du metabolisme (effet yoyo), troubles
-                  hormonaux. Pour une perte durable, viser 0,5 a 1% du poids corporel par semaine.
+                  <strong>Un déficit calorique sain est de 500 kcal/jour</strong>, soit environ
+                  0,5 kg/semaine de perte (1 kg de graisse = 7 700 kcal). Au-delà de 1 000
+                  kcal/jour de déficit, le corps active des mécanismes de protection : perte de
+                  masse musculaire, ralentissement du métabolisme (effet yoyo), troubles
+                  hormonaux. Pour une perte durable, viser 0,5 à 1% du poids corporel par semaine.
                 </p>
                 <p>
                   <strong>Le TDEE n&apos;inclut pas tous les facteurs individuels.</strong>
-                  Genetique, microbiote, qualite du sommeil, stress, conditions medicales (thyroide,
-                  diabete, syndrome ovarien polykystique), grossesse ou allaitement modifient
-                  significativement les besoins reels. Cet outil donne un point de depart, pas une
-                  prescription. Un dieteticien-nutritionniste est indispensable en cas de
-                  pathologie ou d&apos;objectif precis.
+                  Génétique, microbiote, qualité du sommeil, stress, conditions médicales (thyroïde,
+                  diabète, syndrome ovarien polykystique), grossesse ou allaitement modifient
+                  significativement les besoins réels. Cet outil donne un point de départ, pas une
+                  prescription. Un diététicien-nutritionniste est indispensable en cas de
+                  pathologie ou d&apos;objectif précis.
                 </p>
               </div>
             </section>
 
             <ToolFaqSection
-              intro="Les questions frequentes sur le TDEE, le BMR et les besoins caloriques journaliers."
+              intro="Les questions fréquentes sur le TDEE, le BMR et les besoins caloriques journaliers."
               items={[
                 {
-                  question: "Quelle est la difference entre BMR et TDEE ?",
+                  question: "Quelle est la différence entre BMR et TDEE ?",
                   answer:
-                    "Le BMR (Basal Metabolic Rate) est l'energie depensee au repos complet pour maintenir les fonctions vitales (respiration, circulation, regulation thermique). Le TDEE inclut le BMR plus l'energie depensee par l'activite physique et la digestion (thermogenese). Le TDEE est toujours superieur au BMR.",
+                    "Le BMR (Basal Metabolic Rate) est l'énergie dépensée au repos complet pour maintenir les fonctions vitales (respiration, circulation, régulation thermique). Le TDEE inclut le BMR plus l'énergie dépensée par l'activité physique et la digestion (thermogenèse). Le TDEE est toujours supérieur au BMR.",
                 },
                 {
                   question: "Combien de calories pour perdre 1 kg par semaine ?",
                   answer:
-                    "Un deficit de 7 700 kcal est necessaire pour perdre environ 1 kg de graisse. Cela correspond a un deficit quotidien d'environ 1 100 kcal, ce qui est tres agressif et peu soutenable. Un deficit de 500 kcal/jour (environ 0,5 kg/semaine) est plus sain, mieux soutenable, et preserve la masse musculaire.",
+                    "Un déficit de 7 700 kcal est nécessaire pour perdre environ 1 kg de graisse. Cela correspond à un déficit quotidien d'environ 1 100 kcal, ce qui est très agressif et peu soutenable. Un déficit de 500 kcal/jour (environ 0,5 kg/semaine) est plus sain, mieux soutenable, et préserve la masse musculaire.",
                 },
                 {
-                  question: "Pourquoi la repartition 30/40/30 pour les macros ?",
+                  question: "Pourquoi la répartition 30/40/30 pour les macros ?",
                   answer:
-                    "La repartition 30% proteines, 40% glucides, 30% lipides est un equilibre couramment recommande pour la population generale active. Les proteines soutiennent la masse musculaire, les glucides fournissent l'energie pour l'effort, et les lipides sont essentiels aux hormones et a l'absorption des vitamines liposolubles. Cette repartition peut etre ajustee avec un dieteticien selon les objectifs (perte, prise, sport).",
+                    "La répartition 30% protéines, 40% glucides, 30% lipides est un équilibre couramment recommandé pour la population générale active. Les protéines soutiennent la masse musculaire, les glucides fournissent l'énergie pour l'effort, et les lipides sont essentiels aux hormones et à l'absorption des vitamines liposolubles. Cette répartition peut être ajustée avec un diététicien selon les objectifs (perte, prise, sport).",
                 },
                 {
-                  question: "La formule Mifflin-St Jeor est-elle precise ?",
+                  question: "La formule Mifflin-St Jeor est-elle précise ?",
                   answer:
-                    "La formule Mifflin-St Jeor (1990) est consideree comme la plus precise des equations predictives du BMR par l'American Dietetic Association, avec une marge d'erreur d'environ 10%. Elle est plus fiable que l'ancienne formule de Harris-Benedict (qui surestime souvent). Elle reste une estimation : genetique, composition corporelle et conditions medicales peuvent influencer le metabolisme reel.",
+                    "La formule Mifflin-St Jeor (1990) est considérée comme la plus précise des équations prédictives du BMR par l'American Dietetic Association, avec une marge d'erreur d'environ 10%. Elle est plus fiable que l'ancienne formule de Harris-Benedict (qui surestime souvent). Elle reste une estimation : génétique, composition corporelle et conditions médicales peuvent influencer le métabolisme réel.",
                 },
                 {
-                  question: "Comment choisir son niveau d'activite physique ?",
+                  question: "Comment choisir son niveau d'activité physique ?",
                   answer:
-                    "Sedentaire (1,2) : travail de bureau, peu ou pas d'exercice. Leger (1,375) : 1 a 3 sessions/semaine de sport modere. Modere (1,55) : 3 a 5 sessions/semaine. Actif (1,725) : 6 a 7 sessions/semaine ou metier physique. Tres actif (1,9) : sport intense quotidien ou athlete. La majorite des gens surestiment ce facteur — en cas de doute, prenez un cran en dessous.",
+                    "Sédentaire (1,2) : travail de bureau, peu ou pas d'exercice. Léger (1,375) : 1 à 3 sessions/semaine de sport modéré. Modéré (1,55) : 3 à 5 sessions/semaine. Actif (1,725) : 6 à 7 sessions/semaine ou métier physique. Très actif (1,9) : sport intense quotidien ou athlète. La majorité des gens surestiment ce facteur — en cas de doute, prenez un cran en dessous.",
                 },
                 {
                   question: "Faut-il manger ses macros exactes chaque jour ?",
                   answer:
-                    "Non. Vise une moyenne hebdomadaire plutot qu'une exactitude quotidienne. Les variations de plus ou moins 10-15% sur une journee sont normales et n'ont aucun impact. L'important est la coherence sur 1-2 semaines. Pour la perte de poids, l'apport calorique total compte plus que la repartition exacte des macros.",
+                    "Non. Vise une moyenne hebdomadaire plutôt qu'une exactitude quotidienne. Les variations de plus ou moins 10-15% sur une journée sont normales et n'ont aucun impact. L'important est la cohérence sur 1-2 semaines. Pour la perte de poids, l'apport calorique total compte plus que la répartition exacte des macros.",
                 },
                 {
-                  question: "Mes donnees saisies sont-elles privees ?",
+                  question: "Mes données saisies sont-elles privées ?",
                   answer:
-                    "Oui. Tous les calculs sont effectues localement dans votre navigateur. Aucune donnee saisie (age, poids, taille, sexe) n'est envoyee a un serveur ni stockee. L'outil fonctionne sans inscription et sans tracker de profilage.",
+                    "Oui. Tous les calculs sont effectués localement dans votre navigateur. Aucune donnée saisie (âge, poids, taille, sexe) n'est envoyée à un serveur ni stockée. L'outil fonctionne sans inscription et sans tracker de profilage.",
                 },
               ]}
             />

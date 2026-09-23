@@ -11,28 +11,36 @@ const MOTIFS: { value: MotifFin; label: string }[] = [
   { value: "fin_cdd", label: "Fin de CDD" },
 ];
 
-const PLANCHER_JOURNALIER = 31.59; // 2026
-const PART_FIXE = 12.95; // euros/jour
+const PLANCHER_JOURNALIER = 32.13; // depuis le 1er juillet 2025 (pas de revalorisation au 1er juillet 2026)
+const PART_FIXE = 13.18; // euros/jour (idem)
 const TAUX_1 = 0.404; // 40.4%
 const TAUX_2 = 0.57; // 57%
 const PLAFOND_SJR_RATIO = 0.75; // 75% du SJR
+const COEFFICIENT_DUREE = 0.75; // coefficient de conjoncture applique a la duree (-25%)
+const DUREE_MIN = 6; // 182 jours minimum
 
-function calculerDureeIndemnisation(moisTravailles: number, age: number): number {
-  // Duree en mois selon mois travailles et age
-  // Minimum 6 mois travailles sur 24 derniers mois
-  if (moisTravailles < 6) return 0;
-
-  // Duree = mois travailles (plafonnee)
-  if (age < 53) {
-    return Math.min(moisTravailles, 18);
-  } else if (age < 55) {
-    return Math.min(moisTravailles, 22.5);
-  } else {
-    return Math.min(moisTravailles, 27);
+// Durees maximales (en mois) selon l'age et le motif de fin de contrat.
+// Rupture conventionnelle : durees reduites pour les contrats rompus a compter du 1er septembre 2026
+// (loi n2026-470 du 11 juin 2026 transposant l'avenant n3 du 25 fevrier 2026).
+function getDureeMax(age: number, motif: MotifFin): number {
+  if (motif === "rupture_conventionnelle") {
+    return age < 55 ? 15 : 20.5;
   }
+  if (age < 55) return 18;
+  if (age < 57) return 22.5;
+  return 27;
 }
 
-function calculerARE(salaireBrutMensuel: number, moisTravailles: number, age: number) {
+function calculerDureeIndemnisation(moisTravailles: number, age: number, motif: MotifFin): number {
+  // Minimum 6 mois travailles sur 24 derniers mois (36 mois a partir de 55 ans)
+  if (moisTravailles < 6) return 0;
+
+  // Duree = mois travailles x 0,75, avec un minimum de 6 mois et un plafond selon l'age
+  const duree = Math.max(DUREE_MIN, moisTravailles * COEFFICIENT_DUREE);
+  return Math.min(duree, getDureeMax(age, motif));
+}
+
+function calculerARE(salaireBrutMensuel: number, moisTravailles: number, age: number, motif: MotifFin) {
   const salaireBrutTotal = salaireBrutMensuel * moisTravailles;
   const joursTravailes = moisTravailles * 30.42; // jours calendaires moyens par mois
   const sjr = joursTravailes > 0 ? salaireBrutTotal / joursTravailes : 0;
@@ -52,7 +60,7 @@ function calculerARE(salaireBrutMensuel: number, moisTravailles: number, age: nu
   }
 
   const areMensuelle = areJournaliere * 30;
-  const dureeIndemnisation = calculerDureeIndemnisation(moisTravailles, age);
+  const dureeIndemnisation = calculerDureeIndemnisation(moisTravailles, age, motif);
   const montantTotal = areJournaliere * dureeIndemnisation * 30.42;
   const tauxRemplacement = salaireBrutMensuel > 0 ? (areMensuelle / salaireBrutMensuel) * 100 : 0;
 
@@ -80,8 +88,8 @@ export default function SimulateurAllocationChomage() {
   const ageNum = parseInt(age) || 0;
 
   const result = useMemo(
-    () => calculerARE(salaireNum, moisNum, ageNum),
-    [salaireNum, moisNum, ageNum]
+    () => calculerARE(salaireNum, moisNum, ageNum, motif),
+    [salaireNum, moisNum, ageNum, motif]
   );
 
   const eligible = moisNum >= 6 && salaireNum > 0;
@@ -106,13 +114,13 @@ export default function SimulateurAllocationChomage() {
             style={{ fontFamily: "var(--font-display)" }}
           >
             Simulateur{" "}
-            <span style={{ color: "var(--primary)" }}>allocation chomage (ARE)</span>
+            <span style={{ color: "var(--primary)" }}>allocation chômage (ARE)</span>
           </h1>
           <p
             className="animate-fade-up stagger-2 mt-3 max-w-xl text-sm leading-relaxed"
             style={{ color: "var(--muted)" }}
           >
-            Estimez votre allocation de retour a l&apos;emploi (ARE), la duree
+            Estimez votre allocation de retour à l&apos;emploi (ARE), la durée
             d&apos;indemnisation et le montant total de vos droits.
           </p>
         </div>
@@ -160,12 +168,12 @@ export default function SimulateurAllocationChomage() {
                       className="text-xs font-semibold uppercase tracking-wider"
                       style={{ color: "var(--muted)" }}
                     >
-                      Mois travailles (24 derniers mois)
+                      Mois travaillés (24 derniers mois, 36 dès 55 ans)
                     </label>
                     <input
                       type="number"
                       min="0"
-                      max="24"
+                      max="36"
                       value={moisTravailles}
                       onChange={(e) => setMoisTravailles(e.target.value)}
                       className="mt-2 w-full rounded-xl border px-4 py-3 text-sm"
@@ -177,7 +185,7 @@ export default function SimulateurAllocationChomage() {
                       className="text-xs font-semibold uppercase tracking-wider"
                       style={{ color: "var(--muted)" }}
                     >
-                      Age
+                      Âge
                     </label>
                     <input
                       type="number"
@@ -226,7 +234,7 @@ export default function SimulateurAllocationChomage() {
               >
                 <p className="text-sm font-semibold">
                   {moisNum < 6
-                    ? "Il faut avoir travaille au moins 6 mois sur les 24 derniers mois pour etre eligible a l'ARE."
+                    ? "Il faut avoir travaillé au moins 6 mois sur les 24 derniers mois (36 mois à partir de 55 ans) pour être éligible à l'ARE."
                     : "Renseignez un salaire brut pour lancer le calcul."}
                 </p>
               </div>
@@ -237,7 +245,7 @@ export default function SimulateurAllocationChomage() {
               <>
                 <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
                   <StatBox
-                    label="ARE journaliere"
+                    label="ARE journalière"
                     value={`${fmt(result.areJournaliere)} \u20AC`}
                     primary
                   />
@@ -246,7 +254,7 @@ export default function SimulateurAllocationChomage() {
                     value={`${fmt(result.areMensuelle)} \u20AC`}
                   />
                   <StatBox
-                    label="Duree"
+                    label="Durée"
                     value={`${fmtPct(result.dureeIndemnisation)} mois`}
                   />
                   <StatBox
@@ -265,7 +273,7 @@ export default function SimulateurAllocationChomage() {
                     className="text-xs font-semibold uppercase tracking-[0.2em]"
                     style={{ color: "var(--muted)" }}
                   >
-                    Montant total estime
+                    Montant total estimé
                   </p>
                   <p
                     className="mt-2 text-4xl font-bold"
@@ -290,7 +298,7 @@ export default function SimulateurAllocationChomage() {
                     className="text-xs font-semibold uppercase tracking-[0.15em]"
                     style={{ color: "var(--accent)" }}
                   >
-                    Detail du calcul
+                    Détail du calcul
                   </h2>
                   <div className="mt-4 overflow-x-auto">
                     <table className="w-full text-sm">
@@ -305,7 +313,7 @@ export default function SimulateurAllocationChomage() {
                         </tr>
                         <tr className="border-t" style={{ borderColor: "var(--surface-alt)" }}>
                           <td className="py-3" style={{ color: "var(--muted)" }}>
-                            Jours calendaires travailles
+                            Jours calendaires travaillés
                           </td>
                           <td className="py-3 text-right font-semibold">
                             {fmt(moisNum * 30.42)} jours
@@ -313,7 +321,7 @@ export default function SimulateurAllocationChomage() {
                         </tr>
                         <tr className="border-t" style={{ borderColor: "var(--surface-alt)" }}>
                           <td className="py-3" style={{ color: "var(--muted)" }}>
-                            SJR (Salaire Journalier de Reference)
+                            SJR (Salaire Journalier de Référence)
                           </td>
                           <td
                             className="py-3 text-right font-semibold"
@@ -324,7 +332,7 @@ export default function SimulateurAllocationChomage() {
                         </tr>
                         <tr className="border-t" style={{ borderColor: "var(--surface-alt)" }}>
                           <td className="py-3" style={{ color: "var(--muted)" }}>
-                            Formule 1 : 40,4% SJR + 12,95 &euro;
+                            Formule 1 : 40,4% SJR + 13,18 &euro;
                           </td>
                           <td className="py-3 text-right font-semibold">
                             {fmt(result.formule1)} &euro;/jour
@@ -350,7 +358,7 @@ export default function SimulateurAllocationChomage() {
                           className="border-t-2"
                           style={{ borderColor: "var(--primary)" }}
                         >
-                          <td className="py-3 font-semibold">ARE journaliere retenue</td>
+                          <td className="py-3 font-semibold">ARE journalière retenue</td>
                           <td
                             className="py-3 text-right text-lg font-bold"
                             style={{
@@ -375,18 +383,15 @@ export default function SimulateurAllocationChomage() {
                     className="text-xs font-semibold uppercase tracking-[0.15em]"
                     style={{ color: "var(--accent)" }}
                   >
-                    Duree d&apos;indemnisation
+                    Durée d&apos;indemnisation
                   </h2>
                   <div className="mt-4 space-y-3">
                     {[
-                      { label: "Moins de 53 ans", max: 18 },
-                      { label: "53-54 ans", max: 22.5 },
-                      { label: "55 ans et plus", max: 27 },
-                    ].map((tranche) => {
-                      const isActive =
-                        (tranche.max === 18 && ageNum < 53) ||
-                        (tranche.max === 22.5 && ageNum >= 53 && ageNum < 55) ||
-                        (tranche.max === 27 && ageNum >= 55);
+                      { label: "Moins de 55 ans", ageRef: 54, minAge: 0, maxAge: 55 },
+                      { label: "55-56 ans", ageRef: 55, minAge: 55, maxAge: 57 },
+                      { label: "57 ans et plus", ageRef: 57, minAge: 57, maxAge: Infinity },
+                    ].map((t) => ({ ...t, max: getDureeMax(t.ageRef, motif) })).map((tranche) => {
+                      const isActive = ageNum >= tranche.minAge && ageNum < tranche.maxAge;
                       const fill = isActive
                         ? (result.dureeIndemnisation / tranche.max) * 100
                         : 0;
@@ -439,34 +444,37 @@ export default function SimulateurAllocationChomage() {
                 className="text-2xl tracking-tight"
                 style={{ fontFamily: "var(--font-display)" }}
               >
-                Comment est calculee l&apos;allocation chomage ?
+                Comment est calculée l&apos;allocation chômage ?
               </h2>
               <div
                 className="mt-4 space-y-3 text-sm leading-relaxed"
                 style={{ color: "var(--muted)" }}
               >
                 <p>
-                  L&apos;allocation de retour a l&apos;emploi (ARE) est calculee a partir du{" "}
+                  L&apos;allocation de retour à l&apos;emploi (ARE) est calculée à partir du{" "}
                   <strong className="text-[var(--foreground)]">
-                    Salaire Journalier de Reference (SJR)
+                    Salaire Journalier de Référence (SJR)
                   </strong>
                   , obtenu en divisant le total des salaires bruts des 12 derniers mois par
-                  le nombre de jours calendaires de la periode d&apos;emploi.
+                  le nombre de jours calendaires de la période d&apos;emploi.
                 </p>
                 <p>
-                  Deux formules sont appliquees, et France Travail retient{" "}
+                  Deux formules sont appliquées, et France Travail retient{" "}
                   <strong className="text-[var(--foreground)]">la plus avantageuse</strong>{" "}
-                  : soit 40,4% du SJR + 12,95 &euro;/jour, soit 57% du SJR. Le montant ne
-                  peut pas depasser 75% du SJR ni etre inferieur a 31,59 &euro;/jour.
+                  : soit 40,4% du SJR + 13,18 &euro;/jour, soit 57% du SJR. Le montant ne
+                  peut pas dépasser 75% du SJR ni être inférieur à 32,13 &euro;/jour (montants
+                  en vigueur depuis le 1er juillet 2025, non revalorisés au 1er juillet 2026).
                 </p>
                 <p>
                   La{" "}
                   <strong className="text-[var(--foreground)]">
-                    duree d&apos;indemnisation
+                    durée d&apos;indemnisation
                   </strong>{" "}
-                  depend du nombre de mois travailles et de l&apos;age : jusqu&apos;a 18
-                  mois avant 53 ans, 22,5 mois entre 53 et 54 ans, et 27 mois a partir de
-                  55 ans.
+                  est égale au nombre de mois travaillés multiplié par 0,75 (6 mois minimum),
+                  dans la limite de 18 mois avant 55 ans, 22,5 mois entre 55 et 56 ans, et 27
+                  mois à partir de 57 ans. Pour une rupture conventionnelle avec fin de contrat
+                  à compter du 1er septembre 2026, ces plafonds sont ramenés à 15 mois avant
+                  55 ans et 20,5 mois à partir de 55 ans.
                 </p>
               </div>
             </div>
@@ -480,7 +488,7 @@ export default function SimulateurAllocationChomage() {
                 className="text-2xl tracking-tight"
                 style={{ fontFamily: "var(--font-display)" }}
               >
-                Questions frequentes
+                Questions fréquentes
               </h2>
               <div className="mt-6 space-y-5">
                 <div
@@ -491,18 +499,18 @@ export default function SimulateurAllocationChomage() {
                     className="text-sm font-semibold"
                     style={{ color: "var(--foreground)" }}
                   >
-                    Quelles sont les conditions pour toucher le chomage ?
+                    Quelles sont les conditions pour toucher le chômage ?
                   </h3>
                   <p
                     className="mt-2 text-sm leading-relaxed"
                     style={{ color: "var(--muted)" }}
                   >
-                    Pour beneficier de l&apos;ARE, il faut avoir travaille au moins 6 mois
+                    Pour bénéficier de l&apos;ARE, il faut avoir travaillé au moins 6 mois
                     (130 jours ou 910 heures) au cours des 24 derniers mois (36 mois pour
-                    les plus de 53 ans). Il faut egalement etre inscrit a France Travail,
-                    etre en recherche active d&apos;emploi et ne pas avoir quitte
-                    volontairement son emploi (sauf cas particuliers comme la demission
-                    legitime).
+                    les 55 ans et plus). Il faut également être inscrit à France Travail,
+                    être en recherche active d&apos;emploi et ne pas avoir quitte
+                    volontairement son emploi (sauf cas particuliers comme la démission
+                    légitime).
                   </p>
                 </div>
 
@@ -514,17 +522,17 @@ export default function SimulateurAllocationChomage() {
                     className="text-sm font-semibold"
                     style={{ color: "var(--foreground)" }}
                   >
-                    Quelle est la difference entre SJR et ARE ?
+                    Quelle est la différence entre SJR et ARE ?
                   </h3>
                   <p
                     className="mt-2 text-sm leading-relaxed"
                     style={{ color: "var(--muted)" }}
                   >
-                    Le SJR (Salaire Journalier de Reference) est la base de calcul : il
-                    represente le salaire brut moyen par jour calendaire. L&apos;ARE
-                    (Allocation de Retour a l&apos;Emploi) est le montant effectivement
-                    verse chaque jour, calcule a partir du SJR avec les formules de France
-                    Travail. L&apos;ARE represente generalement entre 57% et 75% du SJR.
+                    Le SJR (Salaire Journalier de Référence) est la base de calcul : il
+                    représente le salaire brut moyen par jour calendaire. L&apos;ARE
+                    (Allocation de Retour à l&apos;Emploi) est le montant effectivement
+                    versé chaque jour, calculé à partir du SJR avec les formules de France
+                    Travail. L&apos;ARE représente généralement entre 57% et 75% du SJR.
                   </p>
                 </div>
 
@@ -536,17 +544,19 @@ export default function SimulateurAllocationChomage() {
                     className="text-sm font-semibold"
                     style={{ color: "var(--foreground)" }}
                   >
-                    La rupture conventionnelle donne-t-elle droit au chomage ?
+                    La rupture conventionnelle donne-t-elle droit au chômage ?
                   </h3>
                   <p
                     className="mt-2 text-sm leading-relaxed"
                     style={{ color: "var(--muted)" }}
                   >
-                    Oui, la rupture conventionnelle ouvre les memes droits au chomage
-                    qu&apos;un licenciement. Attention toutefois : un delai de carence
-                    (minimum 7 jours) s&apos;applique, augmente d&apos;un differ
-                    d&apos;indemnisation si l&apos;indemnite de rupture depasse le minimum
-                    legal. Le versement de l&apos;ARE peut ainsi etre retarde de plusieurs
+                    Oui, la rupture conventionnelle ouvre droit au chômage. Mais pour les
+                    contrats rompus à compter du 1er septembre 2026, la durée maximale
+                    d&apos;indemnisation est plus courte qu&apos;après un licenciement : 15 mois
+                    avant 55 ans et 20,5 mois à partir de 55 ans. Attention également : un délai de carence
+                    (minimum 7 jours) s&apos;applique, augmenté d&apos;un différé
+                    d&apos;indemnisation si l&apos;indemnité de rupture dépasse le minimum
+                    légal. Le versement de l&apos;ARE peut ainsi être retardé de plusieurs
                     semaines.
                   </p>
                 </div>
@@ -565,10 +575,10 @@ export default function SimulateurAllocationChomage() {
                     className="mt-2 text-sm leading-relaxed"
                     style={{ color: "var(--muted)" }}
                   >
-                    Oui, l&apos;allocation chomage est soumise a l&apos;impot sur le
-                    revenu. Elle est egalement soumise a la CSG (6,2%) et a la CRDS
-                    (0,5%), sauf si le prelevement ferait passer l&apos;allocation en
-                    dessous du plancher journalier. Le prelevement a la source
+                    Oui, l&apos;allocation chômage est soumise à l&apos;impôt sur le
+                    revenu. Elle est également soumise à la CSG (6,2%) et à la CRDS
+                    (0,5%), sauf si le prélèvement ferait passer l&apos;allocation en
+                    dessous du plancher journalier. Le prélèvement à la source
                     s&apos;applique directement sur le versement mensuel.
                   </p>
                 </div>
@@ -587,23 +597,27 @@ export default function SimulateurAllocationChomage() {
                 className="text-xs font-semibold uppercase tracking-[0.15em]"
                 style={{ color: "var(--accent)" }}
               >
-                Duree maximale ARE
+                Durée maximale ARE
               </h3>
               <ul
                 className="mt-3 space-y-2 text-sm"
                 style={{ color: "var(--muted)" }}
               >
                 <li>
-                  Moins de 53 ans :{" "}
+                  Moins de 55 ans :{" "}
                   <strong className="text-[var(--foreground)]">18 mois max</strong>
                 </li>
                 <li>
-                  53-54 ans :{" "}
+                  55-56 ans :{" "}
                   <strong className="text-[var(--foreground)]">22,5 mois max</strong>
                 </li>
                 <li>
-                  55 ans et plus :{" "}
+                  57 ans et plus :{" "}
                   <strong className="text-[var(--foreground)]">27 mois max</strong>
+                </li>
+                <li>
+                  Rupture conventionnelle (depuis le 01/09/2026) :{" "}
+                  <strong className="text-[var(--foreground)]">15 mois (20,5 mois dès 55 ans)</strong>
                 </li>
               </ul>
             </div>
@@ -615,7 +629,7 @@ export default function SimulateurAllocationChomage() {
                 className="text-xs font-semibold uppercase tracking-[0.15em]"
                 style={{ color: "var(--accent)" }}
               >
-                Reperes 2026
+                Repères 2026
               </h3>
               <ul
                 className="mt-3 space-y-2 text-sm"
@@ -623,11 +637,11 @@ export default function SimulateurAllocationChomage() {
               >
                 <li>
                   Plancher ARE :{" "}
-                  <strong className="text-[var(--foreground)]">31,59 &euro;/jour</strong>
+                  <strong className="text-[var(--foreground)]">32,13 &euro;/jour</strong>
                 </li>
                 <li>
                   Part fixe :{" "}
-                  <strong className="text-[var(--foreground)]">12,95 &euro;/jour</strong>
+                  <strong className="text-[var(--foreground)]">13,18 &euro;/jour</strong>
                 </li>
                 <li>
                   Plafond :{" "}

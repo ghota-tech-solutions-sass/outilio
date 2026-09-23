@@ -6,7 +6,9 @@ import ToolFaqSection from "@/components/ToolFaqSection";
 import ToolHowToSection from "@/components/ToolHowToSection";
 
 function hexToRgb(hex: string): [number, number, number] | null {
-  const m = hex.replace("#", "").match(/^([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i);
+  let h = hex.trim().replace("#", "");
+  if (/^[0-9a-f]{3}$/i.test(h)) h = h.split("").map((c) => c + c).join("");
+  const m = h.match(/^([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i);
   return m ? [parseInt(m[1], 16), parseInt(m[2], 16), parseInt(m[3], 16)] : null;
 }
 
@@ -43,6 +45,25 @@ function hslToRgb(h: number, s: number, l: number): [number, number, number] {
   return [Math.round(hue2rgb(p, q, h + 1 / 3) * 255), Math.round(hue2rgb(p, q, h) * 255), Math.round(hue2rgb(p, q, h - 1 / 3) * 255)];
 }
 
+const COMMON_COLORS = [
+  { name: "Noir", hex: "#000000" },
+  { name: "Blanc", hex: "#FFFFFF" },
+  { name: "Gris", hex: "#808080" },
+  { name: "Rouge", hex: "#FF0000" },
+  { name: "Vert", hex: "#008000" },
+  { name: "Bleu", hex: "#0000FF" },
+  { name: "Jaune", hex: "#FFFF00" },
+  { name: "Orange", hex: "#FFA500" },
+  { name: "Violet", hex: "#800080" },
+  { name: "Rose", hex: "#FFC0CB" },
+  { name: "Marron", hex: "#A52A2A" },
+  { name: "Cyan", hex: "#00FFFF" },
+  { name: "Magenta", hex: "#FF00FF" },
+  { name: "Bleu marine", hex: "#000080" },
+  { name: "Turquoise", hex: "#40E0D0" },
+  { name: "Or", hex: "#FFD700" },
+];
+
 export default function ConvertisseurCouleurs() {
   const [hex, setHex] = useState("#0d4f3c");
   const [copied, setCopied] = useState("");
@@ -76,7 +97,7 @@ export default function ConvertisseurCouleurs() {
             Convertisseur de <span style={{ color: "var(--primary)" }}>couleurs</span>
           </h1>
           <p className="animate-fade-up stagger-2 mt-3 max-w-xl text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-            HEX, RGB, HSL — convertissez vos couleurs instantanement. Color picker inclus.
+            HEX, RGB, HSL — convertissez vos codes couleur instantanément. Color picker et tableau des couleurs courantes inclus.
           </p>
         </div>
       </section>
@@ -140,7 +161,7 @@ export default function ConvertisseurCouleurs() {
                   const suffix = i === 0 ? "\u00B0" : "%";
                   return (
                     <div key={c}>
-                      <label className="text-xs font-bold" style={{ color: "var(--foreground)" }}>{c === "H" ? "Teinte" : c === "S" ? "Saturation" : "Luminosite"}</label>
+                      <label className="text-xs font-bold" style={{ color: "var(--foreground)" }}>{c === "H" ? "Teinte" : c === "S" ? "Saturation" : "Luminosité"}</label>
                       <input type="range" min="0" max={max} value={hsl[i]}
                         onChange={(e) => { const v = [...hsl] as [number, number, number]; v[i] = parseInt(e.target.value); updateFromHsl(...v); }}
                         className="mt-1 w-full" />
@@ -171,31 +192,65 @@ export default function ConvertisseurCouleurs() {
                     <div className="flex items-center gap-2">
                       <code className="font-mono text-sm">{val}</code>
                       <button onClick={() => copy(val, label)} className="text-xs font-semibold" style={{ color: "var(--primary)" }}>
-                        {copied === label ? "Copie !" : "Copier"}
+                        {copied === label ? "Copié !" : "Copier"}
                       </button>
                     </div>
                   </div>
                 ))}
               </div>
             </div>
+            {/* Common colors */}
+            <div className="rounded-2xl border p-6" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+              <h2 className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--accent)" }}>Codes couleur HEX et RGB courants</h2>
+              <div className="mt-4 overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="text-left text-xs uppercase tracking-wider" style={{ color: "var(--muted)" }}>
+                      <th className="py-2 pr-3">Couleur</th>
+                      <th className="py-2 pr-3">HEX</th>
+                      <th className="py-2">RGB</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {COMMON_COLORS.map((c) => {
+                      const [r, g, b] = hexToRgb(c.hex) || [0, 0, 0];
+                      return (
+                        <tr key={c.hex} onClick={() => setHex(c.hex.toLowerCase())}
+                          className="cursor-pointer border-t transition-opacity hover:opacity-70" style={{ borderColor: "var(--border)" }}>
+                          <td className="py-2 pr-3">
+                            <span className="inline-flex items-center gap-2 font-semibold">
+                              <span className="inline-block h-4 w-4 rounded border" style={{ background: c.hex, borderColor: "var(--border)" }} />
+                              {c.name}
+                            </span>
+                          </td>
+                          <td className="py-2 pr-3 font-mono">{c.hex}</td>
+                          <td className="py-2 font-mono">rgb({r}, {g}, {b})</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
             <ToolHowToSection
               title="Comment utiliser le convertisseur de couleurs"
-              description="Choisissez visuellement ou saisissez un code, et obtenez instantanement les equivalents HEX, RGB et HSL prets a copier dans votre CSS ou votre logiciel de design."
+              description="Choisissez visuellement ou saisissez un code, et obtenez instantanément les équivalents HEX, RGB et HSL prêts à copier dans votre CSS ou votre logiciel de design."
               steps={[
                 {
                   name: "Choisir la couleur source",
                   text:
-                    "Trois methodes au choix : cliquez sur le color picker pour la selectionner visuellement, tapez un code hexadecimal comme #0d4f3c, ou ajustez les curseurs RGB ou HSL pour affiner. La preview en haut de page se met a jour en temps reel.",
+                    "Trois méthodes au choix : cliquez sur le color picker pour la sélectionner visuellement, tapez un code hexadécimal comme #0d4f3c, ou ajustez les curseurs RGB ou HSL pour affiner. La preview en haut de page se met à jour en temps réel.",
                 },
                 {
                   name: "Comparer les trois formats",
                   text:
-                    "La carte HEX, RGB et HSL affiche simultanement les trois representations de la meme couleur. Chaque format est utile dans un contexte different : HEX pour le HTML, RGB pour la transparence avec rgba, HSL pour generer des variations harmonieuses.",
+                    "La carte HEX, RGB et HSL affiche simultanément les trois représentations de la même couleur. Chaque format est utile dans un contexte différent : HEX pour le HTML, RGB pour la transparence avec rgba, HSL pour générer des variations harmonieuses.",
                 },
                 {
                   name: "Copier la valeur dans son projet",
                   text:
-                    "Chaque format dispose d&apos;un bouton Copier qui place la valeur formatee dans le presse-papiers : par exemple rgb(13, 79, 60) ou hsl(160, 72%, 18%). Collez directement dans votre fichier CSS, Tailwind config, Figma ou Photoshop.",
+                    "Chaque format dispose d'un bouton Copier qui place la valeur formatée dans le presse-papiers : par exemple rgb(13, 79, 60) ou hsl(160, 72%, 18%). Collez directement dans votre fichier CSS, Tailwind config, Figma ou Photoshop.",
                 },
               ]}
             />
@@ -218,19 +273,19 @@ export default function ConvertisseurCouleurs() {
                   </h3>
                   <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
                     Vous recevez une charte graphique en HEX mais Figma exporte en RGB. Le
-                    convertisseur unifie tout en un clic. Pour creer des variations (hover,
-                    focus, disabled), ajustez la luminosite HSL de 10 % en plus ou en moins,
-                    sans toucher a la teinte. Plus rapide qu&apos;un selecteur visuel.
+                    convertisseur unifie tout en un clic. Pour créer des variations (hover,
+                    focus, disabled), ajustez la luminosité HSL de 10 % en plus ou en moins,
+                    sans toucher à la teinte. Plus rapide qu&apos;un sélecteur visuel.
                   </p>
                 </div>
                 <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
                   <h3 className="font-semibold" style={{ color: "var(--foreground)" }}>
-                    Developpeur Tailwind ou CSS variables
+                    Développeur Tailwind ou CSS variables
                   </h3>
                   <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
                     Tailwind v4 supporte les couleurs en HSL pour des manipulations runtime
                     (theming dark mode). Le convertisseur transforme un brand color HEX en hsl()
-                    pret a coller dans tailwind.config ou globals.css. Pour les CSS variables :
+                    prêt à coller dans tailwind.config ou globals.css. Pour les CSS variables :
                     --color-primary: 160 72% 18% permet de moduler l&apos;alpha sans dupliquer.
                   </p>
                 </div>
@@ -240,20 +295,20 @@ export default function ConvertisseurCouleurs() {
                   </h3>
                   <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
                     L&apos;impression utilise CMJN (cyan, magenta, jaune, noir), pas RGB.
-                    Attention : un rouge eclatant a l&apos;ecran (RGB 255,0,0) sortira terne en
+                    Attention : un rouge éclatant à l&apos;écran (RGB 255,0,0) sortira terne en
                     print. Le convertisseur donne une indication CMJN approximative pour estimer
-                    le rendu, mais validez toujours avec un BAT (bon a tirer) chez l&apos;imprimeur.
+                    le rendu, mais validez toujours avec un BAT (bon à tirer) chez l&apos;imprimeur.
                   </p>
                 </div>
                 <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
                   <h3 className="font-semibold" style={{ color: "var(--foreground)" }}>
-                    Verification de contraste accessibilite
+                    Vérification de contraste accessibilité
                   </h3>
                   <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                    Pour le respect des criteres WCAG AA, le ratio de contraste texte/fond doit
-                    etre superieur a 4,5:1 (3:1 pour les grands titres). Le convertisseur HSL
-                    aide a moduler la luminosite jusqu&apos;a obtenir un contraste conforme,
-                    sans perdre l&apos;identite chromatique de la marque.
+                    Pour le respect des critères WCAG AA, le ratio de contraste texte/fond doit
+                    être supérieur à 4,5:1 (3:1 pour les grands titres). Le convertisseur HSL
+                    aide à moduler la luminosité jusqu&apos;à obtenir un contraste conforme,
+                    sans perdre l&apos;identité chromatique de la marque.
                   </p>
                 </div>
               </div>
@@ -267,80 +322,80 @@ export default function ConvertisseurCouleurs() {
                 className="text-2xl md:text-3xl font-extrabold"
                 style={{ fontFamily: "var(--font-display)", color: "var(--foreground)" }}
               >
-                A savoir sur les couleurs en design numerique
+                À savoir sur les couleurs en design numérique
               </h2>
 
               <div className="mt-4 space-y-4 leading-relaxed" style={{ color: "var(--foreground)" }}>
                 <p>
-                  <strong>HEX, RGB et HSL representent strictement la meme couleur.</strong>
-                  Ce sont juste trois notations differentes du meme point dans l&apos;espace
-                  colorimetrique sRGB. HEX est compact (#0d4f3c, 7 caracteres). RGB est lisible
+                  <strong>HEX, RGB et HSL représentent strictement la même couleur.</strong>
+                  Ce sont juste trois notations différentes du même point dans l&apos;espace
+                  colorimétrique sRGB. HEX est compact (#0d4f3c, 7 caractères). RGB est lisible
                   par humain (rouge/vert/bleu sur 0-255). HSL est manipulable intuitivement (la
-                  teinte, la saturation et la luminosite correspondent a la perception visuelle).
+                  teinte, la saturation et la luminosité correspondent à la perception visuelle).
                 </p>
                 <p>
-                  <strong>WCAG impose un contraste minimal pour l&apos;accessibilite.</strong>
-                  Le ratio doit etre superieur a 4,5:1 entre texte normal et fond (niveau AA),
-                  et superieur a 7:1 pour le niveau AAA. Pour les titres de plus de 18px, la
-                  barre tombe a 3:1. Plus de 60 % des sites webs francais sont non conformes :
-                  c&apos;est une obligation legale (loi Handicap 2005, RGAA) pour les services
+                  <strong>WCAG impose un contraste minimal pour l&apos;accessibilité.</strong>
+                  Le ratio doit être supérieur à 4,5:1 entre texte normal et fond (niveau AA),
+                  et supérieur à 7:1 pour le niveau AAA. Pour les titres de plus de 18px, la
+                  barre tombe à 3:1. Plus de 60 % des sites webs français sont non conformes :
+                  c&apos;est une obligation légale (loi Handicap 2005, RGAA) pour les services
                   publics et les entreprises de plus de 250 millions de chiffre d&apos;affaires.
                 </p>
                 <p>
-                  <strong>Web et print n&apos;utilisent pas le meme espace colorimetrique.</strong>
-                  Le web travaille en sRGB additif (lumiere). L&apos;impression travaille en
-                  CMJN soustractif (encre). Certaines couleurs sRGB (tres saturees, fluo) sont
-                  hors gamut CMJN et sortiront ternes a l&apos;impression. C&apos;est pourquoi
-                  les chartes graphiques pro fournissent toujours les deux equivalents.
+                  <strong>Web et print n&apos;utilisent pas le même espace colorimétrique.</strong>
+                  Le web travaille en sRGB additif (lumière). L&apos;impression travaille en
+                  CMJN soustractif (encre). Certaines couleurs sRGB (très saturées, fluo) sont
+                  hors gamut CMJN et sortiront ternes à l&apos;impression. C&apos;est pourquoi
+                  les chartes graphiques pro fournissent toujours les deux équivalents.
                 </p>
                 <p>
-                  <strong>Le format HSL est ideal pour generer des palettes.</strong> Pour
-                  obtenir une couleur complementaire, ajoutez 180 a la teinte. Pour des
-                  triadiques, espacez par 120. Pour creer une variation plus claire, augmentez
-                  la luminosite. Cette logique geometrique est reproductible et evite les choix
-                  esthetiques arbitraires, ce qui plait aussi bien aux designers qu&apos;aux
-                  developpeurs qui generent des themes par script.
+                  <strong>Le format HSL est idéal pour générer des palettes.</strong> Pour
+                  obtenir une couleur complémentaire, ajoutez 180 à la teinte. Pour des
+                  triadiques, espacez par 120. Pour créer une variation plus claire, augmentez
+                  la luminosité. Cette logique géométrique est reproductible et évite les choix
+                  esthétiques arbitraires, ce qui plait aussi bien aux designers qu&apos;aux
+                  développeurs qui génèrent des thèmes par script.
                 </p>
               </div>
             </section>
 
             <ToolFaqSection
-              intro="Les questions les plus posees sur la conversion de couleurs."
+              intro="Les questions les plus posées sur la conversion de couleurs."
               items={[
                 {
-                  question: "Quelle est la difference entre HEX, RGB et HSL ?",
+                  question: "Quelle est la différence entre HEX, RGB et HSL ?",
                   answer:
-                    "HEX represente une couleur en 6 caracteres precedes d'un # (ex : #0d4f3c). RGB definit une couleur par ses composantes Rouge, Vert, Bleu (0-255). HSL utilise la Teinte (0-360 deg), la Saturation (0-100 %) et la Luminosite (0-100 %). Les trois formats sont interchangeables et representent strictement les memes couleurs.",
+                    "HEX représente une couleur en 6 caractères précédés d'un # (ex : #0d4f3c). RGB définit une couleur par ses composantes Rouge, Vert, Bleu (0-255). HSL utilise la Teinte (0-360 deg), la Saturation (0-100 %) et la Luminosité (0-100 %). Les trois formats sont interchangeables et représentent strictement les mêmes couleurs.",
                 },
                 {
                   question: "Quel format de couleur utiliser en CSS ?",
                   answer:
-                    "Les trois sont valides. HEX est le plus repandu et le plus compact. RGB est pratique quand vous devez ajouter de la transparence (rgba). HSL est ideal pour creer des palettes harmonieuses car il suffit de modifier la teinte en gardant la meme saturation et luminosite. Tailwind v4 utilise HSL pour le theming runtime (dark mode dynamique).",
+                    "Les trois sont valides. HEX est le plus répandu et le plus compact. RGB est pratique quand vous devez ajouter de la transparence (rgba). HSL est idéal pour créer des palettes harmonieuses car il suffit de modifier la teinte en gardant la même saturation et luminosité. Tailwind v4 utilise HSL pour le theming runtime (dark mode dynamique).",
                 },
                 {
-                  question: "Comment trouver la couleur complementaire ?",
+                  question: "Comment trouver la couleur complémentaire ?",
                   answer:
-                    "En utilisant le format HSL, ajoutez 180 deg a la valeur de teinte (H). Par exemple, si votre couleur a une teinte de 150 deg, sa complementaire sera a 330 deg. Les couleurs complementaires creent un contraste fort et sont tres utilisees en design graphique pour des CTA visibles ou des accents qui se detachent du fond.",
+                    "En utilisant le format HSL, ajoutez 180 deg à la valeur de teinte (H). Par exemple, si votre couleur a une teinte de 150 deg, sa complémentaire sera à 330 deg. Les couleurs complémentaires créent un contraste fort et sont très utilisées en design graphique pour des CTA visibles ou des accents qui se détachent du fond.",
                 },
                 {
                   question: "Comment savoir si mon contraste est accessible ?",
                   answer:
-                    "Le ratio de contraste WCAG AA exige superieur a 4,5:1 entre texte normal et fond. Niveau AAA : superieur a 7:1. Pour des grands titres : superieur a 3:1. Modifiez la luminosite HSL jusqu'a respecter le seuil. Des outils dedies comme WebAIM Contrast Checker calculent automatiquement le ratio entre deux couleurs.",
+                    "Le ratio de contraste WCAG AA exige supérieur à 4,5:1 entre texte normal et fond. Niveau AAA : supérieur à 7:1. Pour des grands titres : supérieur à 3:1. Modifiez la luminosité HSL jusqu'à respecter le seuil. Des outils dédiés comme WebAIM Contrast Checker calculent automatiquement le ratio entre deux couleurs.",
                 },
                 {
-                  question: "Pourquoi mon ecran et mon impression n'affichent pas la meme couleur ?",
+                  question: "Pourquoi mon écran et mon impression n'affichent pas la même couleur ?",
                   answer:
-                    "L'ecran travaille en sRGB additif (lumiere emise), l'impression en CMJN soustractif (encre absorbante). Certaines couleurs vives sont hors gamut CMJN et perdent leur eclat a l'impression. Pour des projets print, demandez toujours un BAT papier a l'imprimeur avant validation finale, surtout pour des rouges purs ou des bleus tres satures.",
+                    "L'écran travaille en sRGB additif (lumière émise), l'impression en CMJN soustractif (encre absorbante). Certaines couleurs vives sont hors gamut CMJN et perdent leur éclat à l'impression. Pour des projets print, demandez toujours un BAT papier à l'imprimeur avant validation finale, surtout pour des rouges purs ou des bleus très saturés.",
                 },
                 {
-                  question: "Comment integrer une couleur HEX dans Tailwind ?",
+                  question: "Comment intégrer une couleur HEX dans Tailwind ?",
                   answer:
-                    "Dans tailwind.config (v3) ou directement dans une CSS variable (v4), declarez votre couleur : '--color-primary: #0d4f3c'. Pour utiliser HSL et permettre des manipulations runtime (alpha, dark mode), preferez '--color-primary: 160 72% 18%' puis utilisez hsl(var(--color-primary) / 0.5) pour la transparence.",
+                    "Dans tailwind.config (v3) ou directement dans une CSS variable (v4), déclarez votre couleur : '--color-primary: #0d4f3c'. Pour utiliser HSL et permettre des manipulations runtime (alpha, dark mode), préférez '--color-primary: 160 72% 18%' puis utilisez hsl(var(--color-primary) / 0.5) pour la transparence.",
                 },
                 {
                   question: "Mes couleurs sont-elles confidentielles ?",
                   answer:
-                    "Oui. Toutes les conversions sont effectuees localement dans votre navigateur en JavaScript. Aucun code couleur n'est envoye a un serveur. L'outil fonctionne sans inscription, sans cookie de tracking et sans connexion internet active une fois la page chargee.",
+                    "Oui. Toutes les conversions sont effectuées localement dans votre navigateur en JavaScript. Aucun code couleur n'est envoyé à un serveur. L'outil fonctionne sans inscription, sans cookie de tracking et sans connexion internet active une fois la page chargée.",
                 },
               ]}
             />
@@ -359,7 +414,7 @@ export default function ConvertisseurCouleurs() {
 function CopyBtn({ text, label, copied, onClick }: { text: string; label: string; copied: string; onClick: (text: string, label: string) => void }) {
   return (
     <button onClick={() => onClick(text, label)} className="rounded-lg px-3 py-1.5 text-xs font-semibold text-white" style={{ background: copied === label ? "var(--primary-light)" : "var(--primary)" }}>
-      {copied === label ? "Copie !" : "Copier"}
+      {copied === label ? "Copié !" : "Copier"}
     </button>
   );
 }

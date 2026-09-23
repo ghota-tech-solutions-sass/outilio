@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Editeur Video en Ligne Gratuit - Couper, Convertir, Redimensionner",
+  title: "Éditeur Vidéo en Ligne Gratuit - Couper, Convertir, Redimensionner",
   description:
-    "Editez vos videos dans le navigateur : couper, convertir MP4/WebM, extraire GIF, redimensionner. 100% gratuit, local et sans inscription.",
+    "Éditez vos vidéos dans le navigateur : couper, convertir MP4/WebM, extraire GIF, redimensionner. 100% gratuit, local et sans inscription.",
   keywords: [
     "editeur video en ligne",
     "editer video en ligne",

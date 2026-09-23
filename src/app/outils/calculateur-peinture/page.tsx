@@ -40,8 +40,8 @@ export default function CalculateurPeinture() {
     const nFenetres = parseInt(nbFenetres) || 0;
     const fL = parseFloat(fenetreLargeur) || 0;
     const fH = parseFloat(fenetreHauteur) || 0;
-    const nCouches = parseInt(couches) || 2;
-    const rend = parseFloat(rendement) || 10;
+    const nCouches = Math.max(1, parseInt(couches) || 2);
+    const rend = parseFloat(rendement) > 0 ? parseFloat(rendement) : 10;
 
     if (l <= 0 || w <= 0 || h <= 0) return null;
 
@@ -52,7 +52,7 @@ export default function CalculateurPeinture() {
     // Surface des ouvertures
     const surfacePortes = nPortes * pL * pH;
     const surfaceFenetres = nFenetres * fL * fH;
-    const surfaceOuvertures = surfacePortes + surfaceFenetres;
+    const surfaceOuvertures = Math.max(0, surfacePortes) + Math.max(0, surfaceFenetres);
     // Surface nette murs
     const surfaceNetteMurs = Math.max(0, surfaceMurs - surfaceOuvertures);
     // Surface plafond
@@ -97,7 +97,7 @@ export default function CalculateurPeinture() {
             Calculateur de <span style={{ color: "var(--primary)" }}>peinture</span>
           </h1>
           <p className="animate-fade-up stagger-2 mt-3 max-w-xl text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-            Calculez la quantite de peinture necessaire pour votre piece. Deduction des portes et fenetres, choix du nombre de couches et du rendement.
+            Calculez la quantité de peinture nécessaire pour votre pièce. Déduction des portes et fenêtres, choix du nombre de couches et du rendement.
           </p>
         </div>
       </section>
@@ -108,7 +108,7 @@ export default function CalculateurPeinture() {
             {/* Dimensions de la piece */}
             <div className="animate-fade-up stagger-3 rounded-2xl border p-6" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
               <h2 className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--accent)" }}>
-                Dimensions de la piece
+                Dimensions de la pièce
               </h2>
               <div className="mt-4 grid grid-cols-3 gap-4">
                 <div>
@@ -159,7 +159,7 @@ export default function CalculateurPeinture() {
             {/* Ouvertures */}
             <div className="animate-fade-up stagger-4 rounded-2xl border p-6" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
               <h2 className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--accent)" }}>
-                Ouvertures a deduire
+                Ouvertures à déduire
               </h2>
 
               {/* Portes */}
@@ -213,7 +213,7 @@ export default function CalculateurPeinture() {
 
               {/* Fenetres */}
               <div className="mt-5">
-                <p className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Fenetres</p>
+                <p className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Fenêtres</p>
                 <div className="mt-2 grid grid-cols-3 gap-4">
                   <div>
                     <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>
@@ -331,7 +331,7 @@ export default function CalculateurPeinture() {
                 {/* Surface totale a peindre */}
                 <div className="rounded-2xl border p-8 text-center" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
                   <p className="text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: "var(--muted)" }}>
-                    Surface totale a peindre
+                    Surface totale à peindre
                   </p>
                   <p className="mt-3 text-6xl font-bold" style={{ fontFamily: "var(--font-display)", color: "var(--primary)" }}>
                     {fmt(result.surfaceTotale)}
@@ -361,7 +361,7 @@ export default function CalculateurPeinture() {
                 {/* Litres necessaires */}
                 <div className="rounded-2xl border p-8 text-center" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
                   <p className="text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: "var(--muted)" }}>
-                    Peinture necessaire ({result.nCouches} couche{result.nCouches > 1 ? "s" : ""})
+                    Peinture nécessaire ({result.nCouches} couche{result.nCouches > 1 ? "s" : ""})
                   </p>
                   <p className="mt-3 text-6xl font-bold" style={{ fontFamily: "var(--font-display)", color: "var(--accent)" }}>
                     {fmt(result.litres, 1)}
@@ -384,7 +384,7 @@ export default function CalculateurPeinture() {
                         {pot.nombre}
                       </p>
                       <p className="mt-1 text-xs" style={{ color: "var(--muted)" }}>
-                        pot{pot.nombre > 1 ? "s" : ""} necessaire{pot.nombre > 1 ? "s" : ""}
+                        pot{pot.nombre > 1 ? "s" : ""} nécessaire{pot.nombre > 1 ? "s" : ""}
                       </p>
                     </div>
                   ))}
@@ -399,16 +399,16 @@ export default function CalculateurPeinture() {
               </h2>
               <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
                 <p>
-                  <strong className="text-[var(--foreground)]">2 couches minimum</strong> sont recommandees pour un rendu uniforme, surtout si vous changez de couleur.
+                  <strong className="text-[var(--foreground)]">2 couches minimum</strong> sont recommandées pour un rendu uniforme, surtout si vous changez de couleur.
                 </p>
                 <p>
-                  Le <strong className="text-[var(--foreground)]">rendement reel</strong> depend de la nature du support (platre, beton, papier peint) et du type de peinture (acrylique, glycero). Consultez l&apos;etiquette du pot.
+                  Le <strong className="text-[var(--foreground)]">rendement réel</strong> dépend de la nature du support (plâtre, béton, papier peint) et du type de peinture (acrylique, glycéro). Consultez l&apos;étiquette du pot.
                 </p>
                 <p>
-                  Prevoyez <strong className="text-[var(--foreground)]">5 a 10% de peinture en plus</strong> pour les retouches et les pertes lors de l&apos;application.
+                  Prévoyez <strong className="text-[var(--foreground)]">5 à 10% de peinture en plus</strong> pour les retouches et les pertes lors de l&apos;application.
                 </p>
                 <p>
-                  Pour le plafond, utilisez une peinture <strong className="text-[var(--foreground)]">speciale plafond</strong> (plus epaisse, anti-goutte) et appliquez en bandes paralleles a la source de lumiere.
+                  Pour le plafond, utilisez une peinture <strong className="text-[var(--foreground)]">spéciale plafond</strong> (plus épaisse, anti-goutte) et appliquez en bandes parallèles à la source de lumiere.
                 </p>
               </div>
             </div>
@@ -419,31 +419,31 @@ export default function CalculateurPeinture() {
                 Comment utiliser le calculateur de peinture
               </h2>
               <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                <p>Ce calculateur de peinture vous permet d&apos;estimer avec precision la quantite de peinture necessaire pour peindre une piece. Il prend en compte les ouvertures (portes et fenetres) pour eviter de surestimer vos besoins, et calcule le nombre de pots selon les formats courants.</p>
+                <p>Ce calculateur de peinture vous permet d&apos;estimer avec précision la quantité de peinture nécessaire pour peindre une pièce. Il prend en compte les ouvertures (portes et fenêtres) pour éviter de surestimer vos besoins, et calcule le nombre de pots selon les formats courants.</p>
                 <ul className="ml-4 list-disc space-y-1">
-                  <li><strong className="text-[var(--foreground)]">Dimensions de la piece</strong> : saisissez la longueur, la largeur et la hauteur sous plafond en metres.</li>
-                  <li><strong className="text-[var(--foreground)]">Ouvertures a deduire</strong> : indiquez le nombre et les dimensions de vos portes et fenetres. Les dimensions standard sont pre-remplies.</li>
-                  <li><strong className="text-[var(--foreground)]">Options</strong> : choisissez le nombre de couches (1 a 3), le rendement de votre peinture (indique sur le pot) et si vous souhaitez inclure le plafond.</li>
+                  <li><strong className="text-[var(--foreground)]">Dimensions de la pièce</strong> : saisissez la longueur, la largeur et la hauteur sous plafond en mètres.</li>
+                  <li><strong className="text-[var(--foreground)]">Ouvertures à déduire</strong> : indiquez le nombre et les dimensions de vos portes et fenêtres. Les dimensions standard sont pré-remplies.</li>
+                  <li><strong className="text-[var(--foreground)]">Options</strong> : choisissez le nombre de couches (1 à 3), le rendement de votre peinture (indiqué sur le pot) et si vous souhaitez inclure le plafond.</li>
                 </ul>
-                <p>L&apos;outil calcule la surface nette a peindre, le volume de peinture en litres et le nombre de pots necessaires en formats 0,5 L, 2,5 L, 5 L et 10 L. Prevoyez 5 a 10% de peinture supplementaire pour les retouches.</p>
+                <p>L&apos;outil calcule la surface nette à peindre, le volume de peinture en litres et le nombre de pots nécessaires en formats 0,5 L, 2,5 L, 5 L et 10 L. Prévoyez 5 à 10% de peinture supplémentaire pour les retouches.</p>
               </div>
             </div>
 
             {/* FAQ */}
             <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Questions frequentes</h2>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Questions fréquentes</h2>
               <div className="mt-6 space-y-5">
                 <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
-                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Combien de litres de peinture pour une piece de 20 m&sup2; ?</h3>
-                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Pour une piece de 20 m&sup2; au sol (par exemple 5 x 4 m) avec une hauteur de 2,50 m, la surface des murs est d&apos;environ 45 m&sup2; apres deduction d&apos;une porte et deux fenetres. Avec 2 couches et un rendement de 10 m&sup2;/L, il faut environ 9 litres de peinture, soit 1 pot de 10 L ou 2 pots de 5 L. Ajoutez le plafond (20 m&sup2;) si vous souhaitez le peindre aussi.</p>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Combien de litres de peinture pour une pièce de 20 m&sup2; ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Pour une pièce de 20 m&sup2; au sol (par exemple 5 x 4 m) avec une hauteur de 2,50 m, la surface des murs est d&apos;environ 45 m&sup2; après déduction d&apos;une porte et deux fenêtres. Avec 2 couches et un rendement de 10 m&sup2;/L, il faut environ 9 litres de peinture, soit 1 pot de 10 L ou 2 pots de 5 L. Ajoutez le plafond (20 m&sup2;) si vous souhaitez le peindre aussi.</p>
                 </div>
                 <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
                   <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Faut-il appliquer une sous-couche avant de peindre ?</h3>
-                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Une sous-couche (ou primaire d&apos;accrochage) est recommandee sur les supports neufs (platre, placoplatre), absorbants ou lorsque vous changez radicalement de couleur (par exemple du fonce vers du clair). Elle ameliore l&apos;adherence de la peinture, uniformise l&apos;absorption du support et peut reduire le nombre de couches de finition necessaires. Son rendement est legerement inferieur (8 a 10 m&sup2;/L).</p>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Une sous-couche (ou primaire d&apos;accrochage) est recommandée sur les supports neufs (plâtre, placoplâtre), absorbants ou lorsque vous changez radicalement de couleur (par exemple du foncé vers du clair). Elle améliore l&apos;adhérence de la peinture, uniformise l&apos;absorption du support et peut réduire le nombre de couches de finition nécessaires. Son rendement est légèrement inférieur (8 à 10 m&sup2;/L).</p>
                 </div>
                 <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
-                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Quelle peinture choisir : acrylique ou glycero ?</h3>
-                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>La peinture acrylique (a l&apos;eau) est la plus utilisee : elle seche vite, degage peu d&apos;odeur et se nettoie a l&apos;eau. Elle convient a la plupart des pieces. La peinture glycero (a l&apos;huile) offre une meilleure resistance a l&apos;humidite et aux chocs, ce qui la rend adaptee aux cuisines, salles de bain et boiseries. Cependant, la reglementation francaise limite de plus en plus les peintures a solvants au profit des formules aqueuses.</p>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Quelle peinture choisir : acrylique ou glycéro ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>La peinture acrylique (à l&apos;eau) est la plus utilisée : elle sèche vite, dégage peu d&apos;odeur et se nettoie à l&apos;eau. Elle convient à la plupart des pièces. La peinture glycéro (à l&apos;huile) offre une meilleure résistance à l&apos;humidité et aux chocs, ce qui la rend adaptée aux cuisines, salles de bain et boiseries. Cependant, la réglementation française limite de plus en plus les peintures à solvants au profit des formules aqueuses.</p>
                 </div>
               </div>
             </div>
@@ -459,11 +459,11 @@ export default function CalculateurPeinture() {
               <div className="mt-3 space-y-2">
                 {[
                   { type: "Peinture acrylique", rend: "10-12 m\u00B2/L" },
-                  { type: "Peinture glycero", rend: "10-12 m\u00B2/L" },
+                  { type: "Peinture glycéro", rend: "10-12 m\u00B2/L" },
                   { type: "Sous-couche", rend: "8-10 m\u00B2/L" },
-                  { type: "Laque / Satinee", rend: "10-14 m\u00B2/L" },
+                  { type: "Laque / Satinée", rend: "10-14 m\u00B2/L" },
                   { type: "Peinture plafond", rend: "8-12 m\u00B2/L" },
-                  { type: "Peinture facade", rend: "5-8 m\u00B2/L" },
+                  { type: "Peinture façade", rend: "5-8 m\u00B2/L" },
                 ].map((r) => (
                   <div
                     key={r.type}
@@ -483,10 +483,10 @@ export default function CalculateurPeinture() {
               <div className="mt-3 space-y-2">
                 {[
                   { element: "Porte standard", dim: "0,90 x 2,10 m" },
-                  { element: "Porte-fenetre", dim: "1,40 x 2,15 m" },
-                  { element: "Fenetre standard", dim: "1,20 x 1,20 m" },
-                  { element: "Velux / Fenetre toit", dim: "0,78 x 0,98 m" },
-                  { element: "Baie vitree", dim: "2,40 x 2,15 m" },
+                  { element: "Porte-fenêtre", dim: "1,40 x 2,15 m" },
+                  { element: "Fenêtre standard", dim: "1,20 x 1,20 m" },
+                  { element: "Velux / Fenêtre toit", dim: "0,78 x 0,98 m" },
+                  { element: "Baie vitrée", dim: "2,40 x 2,15 m" },
                 ].map((r) => (
                   <div
                     key={r.element}

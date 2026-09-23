@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Calculateur de Pourcentage 2026 - 3 Modes Gratuits",
   description:
-    "3 modes de calcul de pourcentage : X % de Y, variation entre 2 valeurs, part en %. Pour remises, evolution de prix, conversion, repartition de budget. Pieges classiques expliques. Gratuit, sans inscription.",
+    "3 modes de calcul de pourcentage : X % de Y, variation entre 2 valeurs, part en %. Pour remises, évolution de prix, conversion, répartition de budget. Pièges classiques expliqués. Gratuit, sans inscription.",
   keywords: [
     "calculateur pourcentage",
     "pourcentage",
@@ -20,7 +20,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Calculateur de Pourcentage 2026 - 3 Modes Gratuits",
     description:
-      "Pourcentage, variation et part en %. Pour remises, evolution, repartition. Calculs locaux gratuits.",
+      "Pourcentage, variation et part en %. Pour remises, évolution, répartition. Calculs locaux gratuits.",
     url: "https://outilis.fr/outils/calculateur-pourcentage",
     type: "website",
   },

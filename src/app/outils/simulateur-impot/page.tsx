@@ -10,7 +10,7 @@ type Tranche = { min: number; max: number; rate: number; label: string };
 
 const PRESETS_REVENU = [
   { label: "SMIC", value: 17100 },
-  { label: "Median", value: 26400 },
+  { label: "Médian", value: 26400 },
   { label: "Cadre", value: 48000 },
   { label: "Top 10%", value: 96000 },
 ];
@@ -23,31 +23,50 @@ const REVENU_STEP = 1000;
 // Les seuils sont revalorises chaque annee en fonction de l'inflation.
 // Pour les annees futures sans bareme officiel, on extrapole a partir du dernier
 // bareme connu avec le taux de revalorisation moyen (~2%).
-const BAREMES_OFFICIELS: Record<number, number[]> = {
-  // [seuil_0%, seuil_11%, seuil_30%, seuil_41%]
-  // Source: lois de finances successives
-  2023: [11294, 28797, 82341, 177106],
-  2024: [11497, 29315, 83823, 180294],  // LF 2024 (+4.8%)
-  2025: [11600, 29579, 84577, 181917],  // LF 2026 applicable revenus 2025 (+0.9%)
+// Cle = annee des revenus (imposition l'annee suivante).
+type ParamsAnnee = {
+  seuils: number[]; // [seuil_0%, seuil_11%, seuil_30%, seuil_41%]
+  plafondDemiPart: number; // plafonnement du quotient familial par demi-part
+  decoteSeul: number; // forfait decote celibataire (decote = forfait - 45,25% x impot brut)
+  decoteCouple: number; // forfait decote imposition commune
+  plafondParentIsole: number; // plafond de la part du 1er enfant d'un parent isole (case T, CGI 194-II)
 };
+
+const BAREMES_OFFICIELS: Record<number, ParamsAnnee> = {
+  // Revenus 2023 (LF 2024, +4,8%)
+  2023: { seuils: [11294, 28797, 82341, 177106], plafondDemiPart: 1759, decoteSeul: 873, decoteCouple: 1444, plafondParentIsole: 4149 },
+  // Revenus 2024 (LF 2025, +1,8%)
+  2024: { seuils: [11497, 29315, 83823, 180294], plafondDemiPart: 1791, decoteSeul: 889, decoteCouple: 1470, plafondParentIsole: 4224 },
+  // Revenus 2025 (LF 2026, +0,9%) - service-public.gouv.fr F1419 et F35120 (parent isole), BOI-IR-LIQ-20-20-20
+  2025: { seuils: [11600, 29579, 84577, 181917], plafondDemiPart: 1807, decoteSeul: 897, decoteCouple: 1483, plafondParentIsole: 4262 },
+};
+
+const TAUX_DECOTE = 0.4525;
 
 const TAUX = [0, 0.11, 0.30, 0.41, 0.45];
 const TAUX_LABELS = ["0%", "11%", "30%", "41%", "45%"];
 const REVALORISATION = 0.02; // ~2% annuel moyen
 
-function getLastOfficiel(): { annee: number; seuils: number[] } {
+function getLastOfficiel(): { annee: number; params: ParamsAnnee } {
   const annees = Object.keys(BAREMES_OFFICIELS).map(Number).sort((a, b) => b - a);
   const annee = annees[0];
-  return { annee, seuils: BAREMES_OFFICIELS[annee] };
+  return { annee, params: BAREMES_OFFICIELS[annee] };
 }
 
-function getSeuilsPourAnnee(annee: number): number[] {
+function getParamsPourAnnee(annee: number): ParamsAnnee {
   if (BAREMES_OFFICIELS[annee]) return BAREMES_OFFICIELS[annee];
   const last = getLastOfficiel();
   const delta = annee - last.annee;
-  if (delta <= 0) return last.seuils; // annee avant le plus ancien connu
+  if (delta <= 0) return last.params; // annee avant le plus ancien connu
   const factor = Math.pow(1 + REVALORISATION, delta);
-  return last.seuils.map((s) => Math.round(s * factor));
+  const p = last.params;
+  return {
+    seuils: p.seuils.map((s) => Math.round(s * factor)),
+    plafondDemiPart: Math.round(p.plafondDemiPart * factor),
+    decoteSeul: Math.round(p.decoteSeul * factor),
+    decoteCouple: Math.round(p.decoteCouple * factor),
+    plafondParentIsole: Math.round(p.plafondParentIsole * factor),
+  };
 }
 
 function buildTranches(seuils: number[]): Tranche[] {
@@ -66,12 +85,14 @@ function buildBaremes() {
   // Couvrir de 2023 jusqu'a l'annee en cours
   const startYear = Math.min(...Object.keys(BAREMES_OFFICIELS).map(Number));
   const endYear = currentYear;
-  const result: { annee: number; label: string; tranches: Tranche[]; estime: boolean }[] = [];
+  const result: { annee: number; label: string; tranches: Tranche[]; params: ParamsAnnee; estime: boolean }[] = [];
   for (let y = endYear; y >= startYear; y--) {
+    const params = getParamsPourAnnee(y);
     result.push({
       annee: y,
-      label: `Revenus ${y} (declaration ${y + 1})`,
-      tranches: buildTranches(getSeuilsPourAnnee(y)),
+      label: `Revenus ${y} (déclaration ${y + 1})`,
+      tranches: buildTranches(params.seuils),
+      params,
       estime: !BAREMES_OFFICIELS[y],
     });
   }
@@ -81,14 +102,21 @@ function buildBaremes() {
 const BAREMES = buildBaremes();
 
 function getDefaultAnnee(): number {
-  const now = new Date();
-  const year = now.getFullYear();
-  // Avant septembre : on declare les revenus de l'annee precedente
-  const target = now.getMonth() < 9 ? year - 1 : year;
-  return BAREMES.find((b) => b.annee <= target)?.annee ?? BAREMES[0].annee;
+  // Par defaut : dernier bareme officiel connu (jamais une annee extrapolee)
+  return BAREMES.find((b) => !b.estime)?.annee ?? BAREMES[0].annee;
 }
 
-function simulerImpot(revenuNet: number, parts: number, tranches: Tranche[]) {
+function impotBareme(revenuNet: number, parts: number, tranches: Tranche[]): number {
+  const quotient = revenuNet / parts;
+  let impotParPart = 0;
+  for (const t of tranches) {
+    if (quotient <= t.min) break;
+    impotParPart += (Math.min(quotient, t.max) - t.min) * t.rate;
+  }
+  return impotParPart * parts;
+}
+
+function simulerImpot(revenuNet: number, parts: number, partsBase: number, couple: boolean, tranches: Tranche[], params: ParamsAnnee, parentIsole = false) {
   const quotient = revenuNet / parts;
   let impotParPart = 0;
   const details: { tranche: string; base: number; taux: number; impot: number }[] = [];
@@ -103,25 +131,54 @@ function simulerImpot(revenuNet: number, parts: number, tranches: Tranche[]) {
     }
   }
 
-  const impotTotal = impotParPart * parts;
+  const impotQuotient = impotParPart * parts;
+
+  // Plafonnement du quotient familial (art. 197 I-2 CGI) : l'avantage procure par
+  // chaque demi-part au-dela de 1 part (celibataire) ou 2 parts (couple) est plafonne.
+  // Parent isole (case T, CGI 194-II) : la part du 1er enfant (2 demi-parts) est plafonnee a
+  // plafondParentIsole (4 262 EUR pour les revenus 2025), les demi-parts suivantes au plafond general.
+  const demiPartsSupp = Math.max(0, (parts - partsBase) * 2);
+  const impotSansQF = impotBareme(revenuNet, partsBase, tranches);
+  const demiPartsIsole = parentIsole && !couple ? Math.min(2, demiPartsSupp) : 0;
+  const plafondTotal = (params.plafondParentIsole / 2) * demiPartsIsole + params.plafondDemiPart * (demiPartsSupp - demiPartsIsole);
+  const impotPlafonne = impotSansQF - plafondTotal;
+  const plafonnement = Math.max(0, impotPlafonne - impotQuotient);
+  const impotBrut = Math.max(impotQuotient, impotPlafonne);
+
+  // Decote (art. 197 I-4 CGI)
+  const forfaitDecote = couple ? params.decoteCouple : params.decoteSeul;
+  const seuilDecote = forfaitDecote / TAUX_DECOTE;
+  const decote = impotBrut > 0 && impotBrut < seuilDecote
+    ? Math.min(impotBrut, Math.max(0, forfaitDecote - TAUX_DECOTE * impotBrut))
+    : 0;
+
+  const impotTotal = Math.max(0, impotBrut - decote);
   const tauxMoyen = revenuNet > 0 ? (impotTotal / revenuNet) * 100 : 0;
   const tauxMarginal = tranches.findLast((t) => quotient > t.min)?.rate ?? 0;
   const revenuApresImpot = revenuNet - impotTotal;
 
-  return { impotTotal, tauxMoyen, tauxMarginal, revenuApresImpot, details, impotParPart };
+  return { impotTotal, impotQuotient, plafonnement, decote, tauxMoyen, tauxMarginal, revenuApresImpot, details, impotParPart };
 }
 
 export default function SimulateurImpot() {
   const [revenu, setRevenu] = useState("35000");
   const [parts, setParts] = useState("1");
   const [situation, setSituation] = useState("celibataire");
+  const [parentIsole, setParentIsole] = useState(false);
   const [annee, setAnnee] = useState(() => getDefaultAnnee());
 
-  const partsNum = parseFloat(parts) || 1;
+  const partsNum = Math.max(1, parseFloat(parts) || 1);
   const revenuNum = parseFloat(revenu) || 0;
   const bareme = BAREMES.find((b) => b.annee === annee) ?? BAREMES[0];
+  const couple = situation === "couple";
+  const partsBase = Math.min(couple ? 2 : 1, partsNum);
+  const parentIsolePossible = !couple && partsNum >= 1.5;
+  const parentIsoleActif = parentIsole && parentIsolePossible;
 
-  const result = useMemo(() => simulerImpot(revenuNum, partsNum, bareme.tranches), [revenuNum, partsNum, bareme.tranches]);
+  const result = useMemo(
+    () => simulerImpot(revenuNum, partsNum, partsBase, couple, bareme.tranches, bareme.params, parentIsoleActif),
+    [revenuNum, partsNum, partsBase, couple, bareme.tranches, bareme.params, parentIsoleActif]
+  );
 
   const fmt = (n: number) => n.toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   const fmtPct = (n: number) => n.toLocaleString("fr-FR", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
@@ -132,10 +189,10 @@ export default function SimulateurImpot() {
         <div className="mx-auto max-w-7xl px-6 2xl:max-w-[1400px]">
           <p className="animate-fade-up text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: "var(--accent)" }}>Finance</p>
           <h1 className="animate-fade-up stagger-1 mt-3 text-4xl tracking-tight md:text-5xl" style={{ fontFamily: "var(--font-display)" }}>
-            Simulateur <span style={{ color: "var(--primary)" }}>impot sur le revenu</span>
+            Simulateur <span style={{ color: "var(--primary)" }}>impôt sur le revenu</span>
           </h1>
           <p className="animate-fade-up stagger-2 mt-3 max-w-xl text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-            Estimez votre impot sur les revenus {annee} avec le bareme officiel. Quotient familial et taux marginal inclus.
+            Estimez votre impôt sur les revenus {annee} avec le barème officiel. Quotient familial et taux marginal inclus.
           </p>
         </div>
       </section>
@@ -148,7 +205,7 @@ export default function SimulateurImpot() {
                 {/* Annee de revenus */}
                 <div>
                   <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>
-                    Annee de revenus
+                    Année de revenus
                   </label>
                   <select
                     value={annee}
@@ -158,7 +215,7 @@ export default function SimulateurImpot() {
                   >
                     {BAREMES.map((b) => (
                       <option key={b.annee} value={b.annee}>
-                        {b.label}{b.estime ? " (estime)" : ""}
+                        {b.label}{b.estime ? " (estimé)" : ""}
                       </option>
                     ))}
                   </select>
@@ -213,10 +270,15 @@ export default function SimulateurImpot() {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>Situation</label>
-                    <select value={situation} onChange={(e) => setSituation(e.target.value)}
+                    <select value={situation} onChange={(e) => {
+                      const v = e.target.value;
+                      setSituation(v);
+                      if (v === "couple" && (parseFloat(parts) || 1) < 2) setParts("2");
+                      if (v === "celibataire" && parts === "2") setParts("1");
+                    }}
                       className="mt-2 w-full rounded-xl border px-4 py-3 text-sm" style={{ borderColor: "var(--border)" }}>
-                      <option value="celibataire">Celibataire</option>
-                      <option value="couple">Couple (marie/pacse)</option>
+                      <option value="celibataire">Célibataire</option>
+                      <option value="couple">Couple (marié/pacsé)</option>
                     </select>
                   </div>
                   <div>
@@ -225,12 +287,24 @@ export default function SimulateurImpot() {
                       className="mt-2 w-full rounded-xl border px-4 py-3 text-sm" style={{ borderColor: "var(--border)" }} />
                   </div>
                 </div>
+                {parentIsolePossible && (
+                  <label className="mt-4 flex items-start gap-2 text-sm" style={{ color: "var(--foreground)" }}>
+                    <input type="checkbox" checked={parentIsole} onChange={(e) => setParentIsole(e.target.checked)}
+                      className="mt-0.5 h-4 w-4" style={{ accentColor: "var(--primary)" }} />
+                    <span>
+                      Parent isolé (case T)
+                      <span className="block text-xs" style={{ color: "var(--muted)" }}>
+                        Vous vivez seul avec vos enfants à charge : 2 parts avec 1 enfant, 2,5 avec 2 enfants (garde exclusive). La part du 1er enfant est plafonnée à {bareme.params.plafondParentIsole.toLocaleString("fr-FR")} €.
+                      </span>
+                    </span>
+                  </label>
+                )}
               </div>
             </div>
 
             {/* Big results */}
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-              <StatBox label="Impot total" value={`${fmt(result.impotTotal)} €`} primary />
+              <StatBox label="Impôt total" value={`${fmt(result.impotTotal)} €`} primary />
               <StatBox label="Par mois" value={`${fmt(result.impotTotal / 12)} €`} />
               <StatBox label="Taux moyen" value={`${fmtPct(result.tauxMoyen)}%`} />
               <StatBox label="Taux marginal" value={`${(result.tauxMarginal * 100).toFixed(0)}%`} accent />
@@ -239,7 +313,7 @@ export default function SimulateurImpot() {
             {/* Remaining income + Donut visualisation */}
             <div className="rounded-2xl border p-6" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
               <h2 className="text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: "var(--accent)" }}>
-                Repartition du revenu
+                Répartition du revenu
               </h2>
               <div className="mt-5 grid gap-6 sm:grid-cols-[180px_1fr] sm:items-center">
                 <div className="flex justify-center">
@@ -251,8 +325,8 @@ export default function SimulateurImpot() {
                 </div>
                 <div className="space-y-1">
                   <Row label="Revenu net imposable" value={`${fmt(revenuNum)} €`} />
-                  <Row label="Impot sur le revenu" value={`- ${fmt(result.impotTotal)} €`} sub dotColor="#dc2626" />
-                  <Row label="Revenu net apres impot" value={`${fmt(result.revenuApresImpot)} €`} highlight primary dotColor="#0d4f3c" />
+                  <Row label="Impôt sur le revenu" value={`- ${fmt(result.impotTotal)} €`} sub dotColor="#dc2626" />
+                  <Row label="Revenu net après impôt" value={`${fmt(result.revenuApresImpot)} €`} highlight primary dotColor="#0d4f3c" />
                   <Row label="Soit par mois" value={`${fmt(result.revenuApresImpot / 12)} €`} />
                 </div>
               </div>
@@ -268,11 +342,11 @@ export default function SimulateurImpot() {
                       {(result.tauxMarginal * 100).toFixed(0)}%
                     </p>
                     <p className="mt-1 text-[11px]" style={{ color: "var(--muted)" }}>
-                      {result.tauxMarginal === 0 && "Vous n'etes pas imposable."}
-                      {result.tauxMarginal === 0.11 && "Tranche basse — chaque euro additionnel taxe a 11%."}
-                      {result.tauxMarginal === 0.30 && "Tranche intermediaire — optimisez vos deductions (PER, dons)."}
+                      {result.tauxMarginal === 0 && "Vous n'êtes pas imposable."}
+                      {result.tauxMarginal === 0.11 && "Tranche basse — chaque euro additionnel taxé à 11%."}
+                      {result.tauxMarginal === 0.30 && "Tranche intermédiaire — optimisez vos déductions (PER, dons)."}
                       {result.tauxMarginal === 0.41 && "Tranche haute — pensez au PER, Pinel, FCPI/FIP."}
-                      {result.tauxMarginal === 0.45 && "Tranche maximale — strategie patrimoniale recommandee."}
+                      {result.tauxMarginal === 0.45 && "Tranche maximale — stratégie patrimoniale recommandée."}
                     </p>
                   </div>
                   <div className="rounded-xl border p-4" style={{ borderColor: "var(--border)", background: "var(--surface-alt)" }}>
@@ -283,10 +357,10 @@ export default function SimulateurImpot() {
                       {fmtPct(result.tauxMoyen)}%
                     </p>
                     <p className="mt-1 text-[11px]" style={{ color: "var(--muted)" }}>
-                      {result.tauxMoyen < 5 && "Imposition tres faible — profitez-en pour epargner."}
-                      {result.tauxMoyen >= 5 && result.tauxMoyen < 12 && "Imposition moderee — proche de la moyenne francaise."}
-                      {result.tauxMoyen >= 12 && result.tauxMoyen < 20 && "Imposition consequente — un PER peut reduire la facture."}
-                      {result.tauxMoyen >= 20 && "Imposition elevee — strategie de defiscalisation conseillee."}
+                      {result.tauxMoyen < 5 && "Imposition très faible — profitez-en pour épargner."}
+                      {result.tauxMoyen >= 5 && result.tauxMoyen < 12 && "Imposition modérée — proche de la moyenne française."}
+                      {result.tauxMoyen >= 12 && result.tauxMoyen < 20 && "Imposition conséquente — un PER peut réduire la facture."}
+                      {result.tauxMoyen >= 20 && "Imposition élevée — stratégie de défiscalisation conseillée."}
                     </p>
                   </div>
                 </div>
@@ -303,19 +377,19 @@ export default function SimulateurImpot() {
                   href="/outils/calculateur-salaire"
                   emoji="💼"
                   title="Salaire net en poche"
-                  desc="Brut vers net + impot mensuel estime"
+                  desc="Brut vers net + impôt mensuel estimé"
                 />
                 <CrossLinkCard
                   href="/outils/freelance-vs-cdi"
                   emoji="🏢"
                   title="Statut freelance"
-                  desc="Quel TJM pour egaliser votre net ?"
+                  desc="Quel TJM pour égaliser votre net ?"
                 />
                 <CrossLinkCard
                   href="/outils/simulateur-prime-activite"
                   emoji="💰"
-                  title="Prime d'activite"
-                  desc="Eligibilite et montant CAF estime"
+                  title="Prime d'activité"
+                  desc="Éligibilité et montant CAF estimé"
                 />
               </div>
             </div>
@@ -323,7 +397,7 @@ export default function SimulateurImpot() {
             {/* Breakdown by bracket */}
             <div className="rounded-2xl border p-6" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
               <h2 className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--accent)" }}>
-                Detail par tranche
+                Détail par tranche
               </h2>
               <div className="mt-4 overflow-x-auto">
                 <table className="w-full text-sm">
@@ -332,7 +406,7 @@ export default function SimulateurImpot() {
                       <th className="pb-3 text-left font-medium">Tranche</th>
                       <th className="pb-3 text-right font-medium">Taux</th>
                       <th className="pb-3 text-right font-medium">Base imposable</th>
-                      <th className="pb-3 text-right font-medium">Impot</th>
+                      <th className="pb-3 text-right font-medium">Impôt</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -344,8 +418,24 @@ export default function SimulateurImpot() {
                         <td className="py-3 text-right font-semibold">{fmt(d.impot)} &euro;</td>
                       </tr>
                     ))}
+                    <tr className="border-t" style={{ borderColor: "var(--surface-alt)" }}>
+                      <td className="py-3" colSpan={3}>Impôt brut (x {partsNum} part{partsNum > 1 ? "s" : ""})</td>
+                      <td className="py-3 text-right font-semibold">{fmt(result.impotQuotient)} &euro;</td>
+                    </tr>
+                    {result.plafonnement > 0 && (
+                      <tr className="border-t" style={{ borderColor: "var(--surface-alt)" }}>
+                        <td className="py-3" colSpan={3}>Plafonnement du quotient familial</td>
+                        <td className="py-3 text-right font-semibold">+ {fmt(result.plafonnement)} &euro;</td>
+                      </tr>
+                    )}
+                    {result.decote > 0 && (
+                      <tr className="border-t" style={{ borderColor: "var(--surface-alt)" }}>
+                        <td className="py-3" colSpan={3}>Décote</td>
+                        <td className="py-3 text-right font-semibold">- {fmt(result.decote)} &euro;</td>
+                      </tr>
+                    )}
                     <tr className="border-t-2" style={{ borderColor: "var(--primary)" }}>
-                      <td className="py-3 font-semibold" colSpan={3}>Total (x {partsNum} part{partsNum > 1 ? "s" : ""})</td>
+                      <td className="py-3 font-semibold" colSpan={3}>Impôt net</td>
                       <td className="py-3 text-right text-lg font-bold" style={{ color: "var(--primary)", fontFamily: "var(--font-display)" }}>
                         {fmt(result.impotTotal)} &euro;
                       </td>
@@ -357,7 +447,7 @@ export default function SimulateurImpot() {
 
             {/* Visual bar chart */}
             <div className="rounded-2xl border p-6" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-              <h2 className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--accent)" }}>Bareme {annee + 1} (revenus {annee})</h2>
+              <h2 className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--accent)" }}>Barème {annee + 1} (revenus {annee})</h2>
               <div className="mt-4 space-y-2">
                 {bareme.tranches.map((t, i) => {
                   const quotient = revenuNum / partsNum;
@@ -376,28 +466,28 @@ export default function SimulateurImpot() {
             </div>
 
             <ToolHowToSection
-              title="Comment simuler votre impot sur le revenu en 4 etapes"
-              description="Le simulateur applique le bareme officiel 2026 (loi de finances) avec quotient familial, decote pour faibles revenus et plafonnement."
+              title="Comment simuler votre impôt sur le revenu en 4 étapes"
+              description="Le simulateur applique le barème officiel 2026 (loi de finances) avec quotient familial, décote pour faibles revenus et plafonnement."
               steps={[
                 {
                   name: "Saisir votre revenu net imposable",
                   text:
-                    "C'est votre revenu net annuel APRES abattement de 10 % (salaires) ou frais reels. Si vous avez votre avis d'imposition, prenez la ligne 'Revenu net imposable'. Sinon, multipliez votre net mensuel par 12 et soustrayez 10 %.",
+                    "C'est votre revenu net annuel APRÈS abattement de 10 % (salaires) ou frais réels. Si vous avez votre avis d'imposition, prenez la ligne 'Revenu net imposable'. Sinon, multipliez votre net mensuel par 12 et soustrayez 10 %.",
                 },
                 {
                   name: "Renseigner votre situation familiale",
                   text:
-                    "Celibataire = 1 part. Couple marie ou pacse = 2 parts. Chacun des 2 premiers enfants ajoute 0,5 part. A partir du 3e enfant : +1 part. Parent isole avec enfant : +0,5 part supplementaire.",
+                    "Célibataire = 1 part. Couple marié ou pacsé = 2 parts. Chacun des 2 premiers enfants ajoute 0,5 part. À partir du 3e enfant : +1 part. Parent isolé (case T, vivant seul avec ses enfants) : +0,5 part supplémentaire, soit 2 parts avec 1 enfant ; cochez alors la case « Parent isolé ».",
                 },
                 {
-                  name: "Choisir l'annee fiscale",
+                  name: "Choisir l'année fiscale",
                   text:
-                    "Selectionnez l'annee de declaration. Le bareme 2026 (revenus 2025) integre la revalorisation de 0,9 % decidee par la loi de finances pour neutraliser l'inflation. Les seuils des tranches sont releves chaque annee.",
+                    "Sélectionnez l'année de déclaration. Le barème 2026 (revenus 2025) intègre la revalorisation de 0,9 % décidée par la loi de finances pour neutraliser l'inflation. Les seuils des tranches sont relevés chaque année.",
                 },
                 {
-                  name: "Lire le detail par tranche",
+                  name: "Lire le détail par tranche",
                   text:
-                    "Le simulateur affiche : le quotient familial, l'impot total, le taux moyen, le TMI (Taux Marginal d'Imposition) et la repartition par tranche d'imposition. Pour declarer officiellement, utilisez impots.gouv.fr.",
+                    "Le simulateur affiche : le quotient familial, l'impôt total, le taux moyen, le TMI (Taux Marginal d'Imposition) et la répartition par tranche d'imposition. Pour déclarer officiellement, utilisez impots.gouv.fr.",
                 },
               ]}
             />
@@ -410,79 +500,81 @@ export default function SimulateurImpot() {
                 className="text-2xl md:text-3xl font-extrabold"
                 style={{ fontFamily: "var(--font-display)", color: "var(--foreground)" }}
               >
-                Comment fonctionne l&apos;impot sur le revenu en France
+                Comment fonctionne l&apos;impôt sur le revenu en France
               </h2>
               <div className="mt-4 space-y-3 leading-relaxed" style={{ color: "var(--foreground)" }}>
                 <p>
-                  L&apos;impot sur le revenu en France est <strong>progressif</strong> : il augmente
-                  par tranches. Votre revenu est divise par le nombre de parts fiscales (quotient
-                  familial), puis chaque tranche est imposee a son taux.
+                  L&apos;impôt sur le revenu en France est <strong>progressif</strong> : il augmente
+                  par tranches. Votre revenu est divisé par le nombre de parts fiscales (quotient
+                  familial), puis chaque tranche est imposée à son taux.
                 </p>
                 <p>
-                  <strong>Taux marginal (TMI)</strong> : c&apos;est le taux de la derniere tranche
-                  atteinte. Il s&apos;applique uniquement a la partie du revenu dans cette tranche.
+                  <strong>Taux marginal (TMI)</strong> : c&apos;est le taux de la dernière tranche
+                  atteinte. Il s&apos;applique uniquement à la partie du revenu dans cette tranche.
                   Beaucoup confondent TMI et taux moyen.
                 </p>
                 <p>
-                  <strong>Taux moyen</strong> : c&apos;est le rapport entre l&apos;impot total et le
-                  revenu. Il est toujours inferieur au TMI. C&apos;est lui qui represente votre vrai
+                  <strong>Taux moyen</strong> : c&apos;est le rapport entre l&apos;impôt total et le
+                  revenu. Il est toujours inférieur au TMI. C&apos;est lui qui représente votre vrai
                   taux d&apos;imposition global.
                 </p>
                 <p>
-                  <strong>Decote.</strong> Pour les revenus modestes, une decote reduit
-                  automatiquement l&apos;impot. Plafonds 2026 : 1 964 EUR pour un celibataire,
-                  3 248 EUR pour un couple marie/pacse.
+                  <strong>Décote.</strong> Pour les revenus modestes, une décote réduit
+                  automatiquement l&apos;impôt. Elle s&apos;applique si l&apos;impôt brut est inférieur à
+                  1 982 € (célibataire) ou 3 277 € (couple marié/pacsé) pour les revenus 2025 :
+                  décote = 897 € (ou 1 483 €) - 45,25 % de l&apos;impôt brut.
                 </p>
                 <p>
-                  <strong>Plafonnement du quotient familial.</strong> L&apos;avantage fiscal procure
-                  par chaque demi-part supplementaire est plafonne (1 759 EUR par demi-part en
-                  2026). Au-dela, l&apos;avantage est ramene a ce plafond.
+                  <strong>Plafonnement du quotient familial.</strong> L&apos;avantage fiscal procuré
+                  par chaque demi-part supplémentaire est plafonné (1 807 € par demi-part pour
+                  les revenus 2025). Au-delà, l&apos;avantage est ramené à ce plafond. Pour un parent
+                  isolé (case T), la part du premier enfant est plafonnée à 4 262 €.
                 </p>
                 <p>
-                  <strong>Source.</strong> Bareme officiel issu de la loi de finances 2026 et
-                  articles 197 a 197 bis du Code general des impots. Pour declaration officielle :
+                  <strong>Source.</strong> Barème officiel issu de la loi de finances 2026 et
+                  articles 197 à 197 bis du Code général des impôts. Pour déclaration officielle :
                   impots.gouv.fr.
                 </p>
               </div>
             </section>
 
             <ToolFaqSection
-              intro="Les questions les plus posees sur le calcul de l'impot sur le revenu en France."
+              intro="Les questions les plus posées sur le calcul de l'impôt sur le revenu en France."
               items={[
                 {
-                  question: "Quel est le bareme de l'impot sur le revenu 2026 ?",
+                  question: "Quel est le barème de l'impôt sur le revenu 2026 ?",
                   answer:
-                    "Le bareme 2026 (applicable aux revenus 2025) a ete revalorise de 0,9 % par la loi de finances 2026 pour tenir compte de l'inflation. Les tranches sont les suivantes : 0 % jusqu'a 11 600 EUR, 11 % de 11 601 a 29 579 EUR, 30 % de 29 580 a 84 577 EUR, 41 % de 84 578 a 181 917 EUR, et 45 % au-dela. Ces seuils s'appliquent par part de quotient familial.",
+                    "Le barème 2026 (applicable aux revenus 2025) a été revalorisé de 0,9 % par la loi de finances 2026 pour tenir compte de l'inflation. Les tranches sont les suivantes : 0 % jusqu'à 11 600 €, 11 % de 11 601 à 29 579 €, 30 % de 29 580 à 84 577 €, 41 % de 84 578 à 181 917 €, et 45 % au-delà. Ces seuils s'appliquent par part de quotient familial.",
                 },
                 {
                   question: "Comment fonctionne le quotient familial ?",
                   answer:
-                    "Le quotient familial divise votre revenu net imposable par le nombre de parts fiscales de votre foyer. Un celibataire a 1 part, un couple marie ou pacse a 2 parts. Chacun des deux premiers enfants a charge ajoute 0,5 part, et chaque enfant a partir du troisieme ajoute 1 part. L'impot est calcule sur ce quotient, puis multiplie par le nombre de parts. Le plafonnement limite l'avantage a environ 1 759 EUR par demi-part supplementaire en 2026.",
+                    "Le quotient familial divise votre revenu net imposable par le nombre de parts fiscales de votre foyer. Un célibataire a 1 part, un couple marié ou pacsé a 2 parts. Chacun des deux premiers enfants à charge ajoute 0,5 part, et chaque enfant à partir du troisième ajoute 1 part. L'impôt est calculé sur ce quotient, puis multiplié par le nombre de parts. Le plafonnement limite l'avantage à 1 807 € par demi-part supplémentaire pour les revenus 2025 (4 262 € pour la part du premier enfant d'un parent isolé, case T, prise en compte par le simulateur en garde exclusive).",
                 },
                 {
-                  question: "Quand declarer ses impots en 2026 ?",
+                  question: "Quand déclarer ses impôts en 2026 ?",
                   answer:
-                    "La declaration des revenus 2025 s'effectue au printemps 2026. Le service en ligne sur impots.gouv.fr ouvre generalement mi-avril. Les dates limites varient selon votre departement : fin mai pour les departements 01 a 19, debut juin pour les 20 a 54, et mi-juin pour les 55 et au-dela. La declaration papier doit etre deposee fin mai. Le prelevement a la source est ajuste en septembre apres traitement.",
+                    "La déclaration des revenus 2025 s'effectue au printemps 2026. Le service en ligne sur impots.gouv.fr ouvre généralement mi-avril. Les dates limites varient selon votre département : fin mai pour les départements 01 à 19, début juin pour les 20 à 54, et mi-juin pour les 55 et au-delà. La déclaration papier doit être déposée fin mai. Le prélèvement à la source est ajusté en septembre après traitement.",
                 },
                 {
-                  question: "Quelle est la difference entre TMI et taux moyen ?",
+                  question: "Quelle est la différence entre TMI et taux moyen ?",
                   answer:
-                    "Le TMI (Taux Marginal d'Imposition) est le taux de la derniere tranche atteinte. Il s'applique uniquement a la partie du revenu dans cette tranche. Le taux moyen est l'impot total divise par le revenu : c'est votre veritable taux global, toujours inferieur au TMI. Exemple : un TMI de 30 % peut correspondre a un taux moyen de 12 %.",
+                    "Le TMI (Taux Marginal d'Imposition) est le taux de la dernière tranche atteinte. Il s'applique uniquement à la partie du revenu dans cette tranche. Le taux moyen est l'impôt total divisé par le revenu : c'est votre véritable taux global, toujours inférieur au TMI. Exemple : un TMI de 30 % peut correspondre à un taux moyen de 12 %.",
                 },
                 {
-                  question: "Le simulateur prend-il en compte les credits et reductions d'impot ?",
+                  question: "Le simulateur prend-il en compte les crédits et réductions d'impôt ?",
                   answer:
-                    "Non. Le simulateur calcule l'impot brut a partir du bareme et du quotient familial. Il ne deduit pas les reductions et credits d'impot (dons, emploi a domicile, frais de garde d'enfants, etc.). Pour un calcul complet, utilisez le simulateur officiel sur impots.gouv.fr.",
+                    "Non. Le simulateur calcule l'impôt brut à partir du barème et du quotient familial. Il ne déduit pas les réductions et crédits d'impôt (dons, emploi à domicile, frais de garde d'enfants, etc.). Pour un calcul complet, utilisez le simulateur officiel sur impots.gouv.fr.",
                 },
                 {
-                  question: "Quels revenus declarer dans le revenu net imposable ?",
+                  question: "Quels revenus déclarer dans le revenu net imposable ?",
                   answer:
-                    "Le revenu net imposable inclut : salaires (apres abattement 10 % ou frais reels), pensions de retraite, revenus fonciers (locations), BIC, BNC, dividendes (apres abattement 40 % si option bareme), plus-values mobilieres et immobilieres. L'abattement de 10 % sur salaires est plafonne a environ 14 426 EUR par actif en 2026.",
+                    "Le revenu net imposable inclut : salaires (après abattement 10 % ou frais réels), pensions de retraite, revenus fonciers (locations), BIC, BNC, dividendes (après abattement 40 % si option barème), plus-values mobilières et immobilières. L'abattement de 10 % sur salaires est compris entre 509 € et 14 555 € par personne sur les revenus 2025.",
                 },
                 {
-                  question: "Le simulateur garde-t-il mes donnees ?",
+                  question: "Le simulateur garde-t-il mes données ?",
                   answer:
-                    "Non. Tous les calculs sont effectues localement dans votre navigateur. Aucune donnee saisie (revenus, situation familiale) n'est envoyee a un serveur ni stockee. L'outil fonctionne sans inscription.",
+                    "Non. Tous les calculs sont effectués localement dans votre navigateur. Aucune donnée saisie (revenus, situation familiale) n'est envoyée à un serveur ni stockée. L'outil fonctionne sans inscription.",
                 },
               ]}
             />
@@ -493,10 +585,11 @@ export default function SimulateurImpot() {
             <div className="rounded-2xl border p-6" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
               <h3 className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--accent)" }}>Parts fiscales</h3>
               <ul className="mt-3 space-y-2 text-sm" style={{ color: "var(--muted)" }}>
-                <li>Celibataire : <strong className="text-[var(--foreground)]">1 part</strong></li>
+                <li>Célibataire : <strong className="text-[var(--foreground)]">1 part</strong></li>
                 <li>Couple : <strong className="text-[var(--foreground)]">2 parts</strong></li>
                 <li>1er et 2e enfant : <strong className="text-[var(--foreground)]">+0,5 part</strong></li>
                 <li>3e enfant et suivants : <strong className="text-[var(--foreground)]">+1 part</strong></li>
+                <li>Parent isolé (case T) : <strong className="text-[var(--foreground)]">+0,5 part</strong></li>
               </ul>
             </div>
             <AdPlaceholder className="h-[600px]" />
@@ -575,7 +668,7 @@ function DonutChart({
   const impotLen = impotPct * c;
   const netLen = netPct * c;
   return (
-    <svg width="160" height="160" viewBox="-80 -80 160 160" role="img" aria-label="Repartition net vs impot">
+    <svg width="160" height="160" viewBox="-80 -80 160 160" role="img" aria-label="Répartition net vs impôt">
       <circle cx="0" cy="0" r={r} fill="none" stroke="var(--border)" strokeWidth={stroke} />
       <g transform="rotate(-90)">
         <circle
@@ -608,7 +701,7 @@ function DonutChart({
         fill="var(--muted)"
         style={{ fontFamily: "var(--font-body)" }}
       >
-        Net conserve
+        Net conservé
       </text>
       <text
         x="0"

@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Generateur robots.txt - Creer un fichier robots.txt valide",
+  title: "Générateur robots.txt - Créer un fichier robots.txt valide",
   description:
-    "Generez un fichier robots.txt valide pour votre site web. Bloquer des chemins, autoriser les robots, definir le sitemap. Gratuit.",
+    "Générez un fichier robots.txt valide pour votre site web. Bloquer des chemins, autoriser les robots, définir le sitemap. Gratuit.",
   keywords: [
     "generateur robots.txt",
     "robots txt generator",

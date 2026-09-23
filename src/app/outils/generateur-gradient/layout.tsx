@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Generateur de gradient CSS - Degrades en ligne",
+  title: "Générateur de gradient CSS - Dégradés en ligne",
   description:
-    "Creez des degrades CSS lineaires et radiaux. Choisissez les couleurs, l'angle, les stops. Apercu en direct et code CSS pret a copier.",
+    "Créez des dégradés CSS linéaires et radiaux. Choisissez les couleurs, l'angle, les stops. Aperçu en direct et code CSS prêt à copier.",
   keywords: [
     "gradient css",
     "generateur degrade",

@@ -5,12 +5,13 @@ import Link from "next/link";
 import AdPlaceholder from "@/components/AdPlaceholder";
 import ToolFaqSection from "@/components/ToolFaqSection";
 import ToolHowToSection from "@/components/ToolHowToSection";
+import { impotRevenu as calculerImpotRevenu } from "@/lib/impot";
 
 const PRESETS_CA = [
-  { label: "Demarrage", value: 15000 },
-  { label: "Confirme", value: 35000 },
-  { label: "Bien etabli", value: 60000 },
-  { label: "Plafond services", value: 77700 },
+  { label: "Démarrage", value: 15000 },
+  { label: "Confirmé", value: 35000 },
+  { label: "Bien établi", value: 60000 },
+  { label: "Plafond services", value: 83600 },
 ];
 
 // ---------------------------------------------------------------------------
@@ -28,7 +29,7 @@ const ACTIVITIES: Record<ActivityType, ActivityConfig> = {
   vente: {
     label: "Vente de marchandises (BIC)",
     shortLabel: "Vente BIC",
-    description: "Achat-revente, fourniture de denrees, hebergement",
+    description: "Achat-revente, fourniture de denrées, hébergement",
   },
   service_bic: {
     label: "Prestation de services (BIC)",
@@ -36,9 +37,9 @@ const ACTIVITIES: Record<ActivityType, ActivityConfig> = {
     description: "Artisanat, services commerciaux",
   },
   liberal_bnc: {
-    label: "Activite liberale (BNC)",
-    shortLabel: "Liberal BNC",
-    description: "Professions liberales, conseil, formation",
+    label: "Activité libérale (BNC)",
+    shortLabel: "Libéral BNC",
+    description: "Professions libérales, conseil, formation",
   },
 };
 
@@ -49,7 +50,7 @@ const ACTIVITIES: Record<ActivityType, ActivityConfig> = {
 interface YearRates {
   // Cotisations sociales (taux normal)
   cotisations: Record<ActivityType, number>;
-  // ACRE : taux reduit de 50% la premiere annee d'activite
+  // ACRE : taux reduit pendant ~12 mois (exoneration de 50% avant le 01/07/2026, 25% ensuite)
   acre: Record<ActivityType, number>;
   // Versement liberatoire IR
   versementLiberatoire: Record<ActivityType, number>;
@@ -72,24 +73,14 @@ const RATES_BY_YEAR: Record<number, YearRates> = {
   },
   2026: {
     cotisations: { vente: 0.123, service_bic: 0.212, liberal_bnc: 0.256 },
-    acre: { vente: 0.0615, service_bic: 0.106, liberal_bnc: 0.128 },
+    // ACRE 2026 : creations a compter du 01/07/2026 = exoneration de 25% (75% du taux normal)
+    acre: { vente: 0.09225, service_bic: 0.159, liberal_bnc: 0.192 },
     versementLiberatoire: { vente: 0.01, service_bic: 0.017, liberal_bnc: 0.022 },
     abattementIR: { vente: 0.71, service_bic: 0.50, liberal_bnc: 0.34 },
     cfp: { vente: 0.001, service_bic: 0.003, liberal_bnc: 0.002 },
     plafondCA: { vente: 203100, service_bic: 83600, liberal_bnc: 83600 },
   },
 };
-
-// ---------------------------------------------------------------------------
-// Bareme IR 2026 (revenus 2025, declaration 2026) - LF 2026 +0.9%
-// ---------------------------------------------------------------------------
-const IR_TRANCHES = [
-  { min: 0, max: 11600, rate: 0 },
-  { min: 11600, max: 29579, rate: 0.11 },
-  { min: 29579, max: 84577, rate: 0.30 },
-  { min: 84577, max: 181917, rate: 0.41 },
-  { min: 181917, max: Infinity, rate: 0.45 },
-];
 
 // ---------------------------------------------------------------------------
 // CFE : estimation par tranche de CA (montant median, tres variable par commune)
@@ -123,14 +114,10 @@ function getAvailableYears(): number[] {
   return years;
 }
 
-function calcImpotIR(revenuImposable: number, parts: number): number {
-  const q = revenuImposable / parts;
-  let impot = 0;
-  for (const t of IR_TRANCHES) {
-    if (q <= t.min) break;
-    impot += (Math.min(q, t.max) - t.min) * t.rate;
-  }
-  return Math.max(0, impot * parts);
+// IR au bareme 2026 (revenus 2025, declaration 2026) : quotient familial, plafonnement
+// du quotient familial et decote, via le module partage src/lib/impot.ts
+function calcImpotIR(revenuImposable: number, parts: number, couple: boolean, parentIsole = false): number {
+  return calculerImpotRevenu({ revenuImposable, parts, couple, parentIsole }).impotNet;
 }
 
 // ---------------------------------------------------------------------------
@@ -161,6 +148,8 @@ function simuler(
   acre: boolean,
   versementLiberatoire: boolean,
   partsIR: number,
+  coupleIR: boolean = false,
+  parentIsoleIR: boolean = false,
 ): SimulationResult {
   const rates = getRatesForYear(annee);
 
@@ -178,13 +167,13 @@ function simuler(
 
   if (versementLiberatoire) {
     impotRevenu = caAnnuel * rates.versementLiberatoire[activite];
-    modeIR = "Versement liberatoire";
+    modeIR = "Versement libératoire";
     revenuImposableIR = caAnnuel * (1 - rates.abattementIR[activite]);
   } else {
     // Regime classique : abattement forfaitaire puis bareme progressif
     revenuImposableIR = caAnnuel * (1 - rates.abattementIR[activite]);
-    impotRevenu = calcImpotIR(revenuImposableIR, partsIR);
-    modeIR = "Bareme progressif";
+    impotRevenu = calcImpotIR(revenuImposableIR, partsIR, coupleIR, parentIsoleIR);
+    modeIR = "Barème progressif";
   }
 
   // CFE
@@ -314,17 +303,19 @@ export default function SimulateurAutoEntrepreneur() {
   const [acre, setAcre] = useState(false);
   const [versementLiberatoire, setVersementLiberatoire] = useState(false);
   const [partsIR, setPartsIR] = useState("1");
+  const [coupleIR, setCoupleIR] = useState(false);
+  const [parentIsoleIR, setParentIsoleIR] = useState(false);
 
   const caNum = parseFloat(caInput) || 0;
   const caAnnuel = periodeCA === "mensuel" ? caNum * 12 : caNum;
-  const partsNum = parseFloat(partsIR) || 1;
+  const partsNum = Math.max(1, parseFloat(partsIR) || 1);
   const years = useMemo(() => getAvailableYears(), []);
   const rates = useMemo(() => getRatesForYear(annee), [annee]);
   const isEstime = !RATES_BY_YEAR[annee];
 
   const result = useMemo(
-    () => simuler(caAnnuel, activite, annee, acre, versementLiberatoire, partsNum),
-    [caAnnuel, activite, annee, acre, versementLiberatoire, partsNum],
+    () => simuler(caAnnuel, activite, annee, acre, versementLiberatoire, partsNum, coupleIR, parentIsoleIR && !coupleIR && partsNum >= 1.5),
+    [caAnnuel, activite, annee, acre, versementLiberatoire, partsNum, coupleIR, parentIsoleIR],
   );
 
   const fmt = (n: number) =>
@@ -336,7 +327,7 @@ export default function SimulateurAutoEntrepreneur() {
   // Repartition graphique
   const parts = [
     { label: "Cotisations sociales", value: result.cotisationsSociales, color: "var(--primary)" },
-    { label: "Impot sur le revenu", value: result.impotRevenu, color: "var(--accent)" },
+    { label: "Impôt sur le revenu", value: result.impotRevenu, color: "var(--accent)" },
     { label: "CFE (estimation)", value: result.cfeEstime, color: "#8a8578" },
     { label: "CFP", value: result.cfp, color: "#c0a875" },
   ];
@@ -364,9 +355,9 @@ export default function SimulateurAutoEntrepreneur() {
             className="animate-fade-up stagger-2 mt-3 max-w-xl text-sm leading-relaxed"
             style={{ color: "var(--muted)" }}
           >
-            Estimez vos cotisations sociales, impot sur le revenu, CFE et revenu net en tant
-            qu&apos;auto-entrepreneur. Taux {annee} a jour
-            {isEstime ? " (estimes)" : ""}.
+            Estimez vos cotisations sociales, impôt sur le revenu, CFE et revenu net en tant
+            qu&apos;auto-entrepreneur. Taux {annee} à jour
+            {isEstime ? " (estimés)" : ""}.
           </p>
         </div>
       </section>
@@ -387,7 +378,7 @@ export default function SimulateurAutoEntrepreneur() {
                     className="text-xs font-semibold uppercase tracking-wider"
                     style={{ color: "var(--muted)" }}
                   >
-                    Annee
+                    Année
                   </label>
                   <select
                     value={annee}
@@ -398,7 +389,7 @@ export default function SimulateurAutoEntrepreneur() {
                     {years.map((y) => (
                       <option key={y} value={y}>
                         {y}
-                        {!RATES_BY_YEAR[y] ? " (estime)" : ""}
+                        {!RATES_BY_YEAR[y] ? " (estimé)" : ""}
                       </option>
                     ))}
                   </select>
@@ -410,7 +401,7 @@ export default function SimulateurAutoEntrepreneur() {
                     className="text-xs font-semibold uppercase tracking-wider"
                     style={{ color: "var(--muted)" }}
                   >
-                    Type d&apos;activite
+                    Type d&apos;activité
                   </label>
                   <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-3">
                     {(Object.entries(ACTIVITIES) as [ActivityType, ActivityConfig][]).map(
@@ -485,8 +476,8 @@ export default function SimulateurAutoEntrepreneur() {
                   </div>
                   {result.depassePlafond && (
                     <p className="mt-2 text-xs font-semibold" style={{ color: "#c0392b" }}>
-                      Attention : votre CA depasse le plafond micro-entreprise de{" "}
-                      {fmtInt(result.plafondCA)} &euro; pour cette activite.
+                      Attention : votre CA dépasse le plafond micro-entreprise de{" "}
+                      {fmtInt(result.plafondCA)} &euro; pour cette activité.
                     </p>
                   )}
                   {/* Slider CA annuel */}
@@ -532,22 +523,75 @@ export default function SimulateurAutoEntrepreneur() {
 
                 {/* Parts IR (seulement si pas versement liberatoire) */}
                 {!versementLiberatoire && (
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <div>
+                      <label
+                        htmlFor="ae-situation"
+                        className="text-xs font-semibold uppercase tracking-wider"
+                        style={{ color: "var(--muted)" }}
+                      >
+                        Situation (pour estimation IR)
+                      </label>
+                      <select
+                        id="ae-situation"
+                        value={coupleIR ? "couple" : "seul"}
+                        onChange={(e) => {
+                          const estCouple = e.target.value === "couple";
+                          setCoupleIR(estCouple);
+                          if (estCouple && (parseFloat(partsIR) || 1) < 2) setPartsIR("2");
+                          if (!estCouple && partsIR === "2") setPartsIR("1");
+                        }}
+                        className="mt-2 w-full rounded-xl border px-4 py-3 text-sm"
+                        style={{ borderColor: "var(--border)", background: "var(--surface)" }}
+                      >
+                        <option value="seul">Personne seule</option>
+                        <option value="couple">Couple marié ou pacsé</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label
+                        className="text-xs font-semibold uppercase tracking-wider"
+                        style={{ color: "var(--muted)" }}
+                      >
+                        Parts fiscales (pour estimation IR)
+                      </label>
+                      <input
+                        type="number"
+                        step="0.5"
+                        min="1"
+                        value={partsIR}
+                        onChange={(e) => setPartsIR(e.target.value)}
+                        className="mt-2 w-full rounded-xl border px-4 py-3 text-sm"
+                        style={{ borderColor: "var(--border)" }}
+                      />
+                    </div>
+                  </div>
+                )}
+                {!versementLiberatoire && !coupleIR && partsNum >= 1.5 && (
                   <div>
-                    <label
-                      className="text-xs font-semibold uppercase tracking-wider"
-                      style={{ color: "var(--muted)" }}
-                    >
-                      Parts fiscales (pour estimation IR)
-                    </label>
-                    <input
-                      type="number"
-                      step="0.5"
-                      min="1"
-                      value={partsIR}
-                      onChange={(e) => setPartsIR(e.target.value)}
-                      className="mt-2 w-full rounded-xl border px-4 py-3 text-sm"
-                      style={{ borderColor: "var(--border)" }}
-                    />
+                    {!coupleIR && partsNum >= 1.5 && (
+                      <label className="flex items-start gap-2 text-sm" style={{ color: "var(--foreground)" }}>
+                        <input
+                          type="checkbox"
+                          checked={parentIsoleIR}
+                          onChange={(e) => setParentIsoleIR(e.target.checked)}
+                          className="mt-0.5 h-4 w-4"
+                          style={{ accentColor: "var(--primary)" }}
+                        />
+                        <span>
+                          Parent isolé (case T)
+                          <span className="block text-xs" style={{ color: "var(--muted)" }}>
+                            Vous vivez seul avec vos enfants à charge (2 parts avec 1 enfant en garde exclusive).
+                          </span>
+                        </span>
+                      </label>
+                    )}
+                    {!coupleIR && partsNum >= 2 && !parentIsoleIR && (
+                      <p className="mt-3 rounded-lg border-l-4 px-3 py-2 text-xs" style={{ borderColor: "var(--accent)", background: "var(--surface-alt)", color: "var(--foreground)" }}>
+                        Marié ou pacsé ? Choisissez « Couple » : une personne seule avec 2 parts ou plus est soumise au
+                        plafonnement du quotient familial. Si vous élevez seul vos enfants, cochez « Parent isolé ».
+                      </p>
+                    )}
                   </div>
                 )}
 
@@ -557,13 +601,13 @@ export default function SimulateurAutoEntrepreneur() {
                     checked={acre}
                     onChange={setAcre}
                     label="ACRE"
-                    description="Taux reduit la 1ere annee"
+                    description={annee >= 2026 ? "Création depuis le 01/07/2026 : -25 %" : "Taux réduit de 50 % (~12 mois)"}
                   />
                   <Toggle
                     checked={versementLiberatoire}
                     onChange={setVersementLiberatoire}
-                    label="Versement liberatoire"
-                    description="IR preleve sur le CA"
+                    label="Versement libératoire"
+                    description="IR prélevé sur le CA"
                   />
                 </div>
               </div>
@@ -601,7 +645,7 @@ export default function SimulateurAutoEntrepreneur() {
                 className="text-xs font-semibold uppercase tracking-[0.2em]"
                 style={{ color: "var(--muted)" }}
               >
-                Revenu net apres charges
+                Revenu net après charges
               </p>
               <p
                 className="mt-2 text-4xl font-bold"
@@ -664,8 +708,8 @@ export default function SimulateurAutoEntrepreneur() {
                         </p>
                         <p className="mt-1 text-[11px]" style={{ color: "var(--muted)" }}>
                           {proche
-                            ? `Vous approchez du plafond ${fmtInt(plafond)} EUR. Envisagez le passage en SASU/EURL.`
-                            : `CA actuel ${fmtInt(caAnnuel)} EUR / plafond ${fmtInt(plafond)} EUR.`}
+                            ? `Vous approchez du plafond ${fmtInt(plafond)} €. Envisagez le passage en SASU/EURL.`
+                            : `CA actuel ${fmtInt(caAnnuel)} € / plafond ${fmtInt(plafond)} €.`}
                         </p>
                       </div>
                     );
@@ -696,8 +740,8 @@ export default function SimulateurAutoEntrepreneur() {
                         </p>
                         <p className="mt-1 text-[11px]" style={{ color: "var(--muted)" }}>
                           {redevableTVA
-                            ? `Au-dela de ${fmtInt(seuilTVA)} EUR, vous devez facturer la TVA et la reverser.`
-                            : `Sous le seuil ${fmtInt(seuilTVA)} EUR — mention "TVA non applicable, art. 293 B du CGI".`}
+                            ? `Au-delà de ${fmtInt(seuilTVA)} €, vous devez facturer la TVA et la reverser.`
+                            : `Sous le seuil ${fmtInt(seuilTVA)} € — mention "TVA non applicable, art. 293 B du CGI".`}
                         </p>
                       </div>
                     );
@@ -715,7 +759,7 @@ export default function SimulateurAutoEntrepreneur() {
                 className="text-xs font-semibold uppercase tracking-[0.15em]"
                 style={{ color: "var(--accent)" }}
               >
-                Detail des charges
+                Détail des charges
               </h2>
               <div className="mt-4 overflow-x-auto">
                 <table className="w-full text-sm">
@@ -750,7 +794,7 @@ export default function SimulateurAutoEntrepreneur() {
                     </tr>
                     <tr className="border-t" style={{ borderColor: "var(--surface-alt)" }}>
                       <td className="py-3">
-                        Impot sur le revenu
+                        Impôt sur le revenu
                         <span
                           className="ml-2 inline-block rounded-full px-2 py-0.5 text-[10px]"
                           style={{ background: "var(--surface-alt)", color: "var(--muted)" }}
@@ -819,7 +863,7 @@ export default function SimulateurAutoEntrepreneur() {
                 className="text-xs font-semibold uppercase tracking-[0.15em]"
                 style={{ color: "var(--accent)" }}
               >
-                Repartition des charges
+                Répartition des charges
               </h2>
               {totalForBar > 0 && (
                 <div className="mt-4 flex h-8 overflow-hidden rounded-full" style={{ background: "var(--surface-alt)" }}>
@@ -900,46 +944,50 @@ export default function SimulateurAutoEntrepreneur() {
                 className="text-2xl md:text-3xl font-extrabold"
                 style={{ fontFamily: "var(--font-display)", color: "var(--foreground)" }}
               >
-                Comment sont calculees les charges
+                Comment sont calculées les charges
               </h2>
               <div
                 className="mt-4 space-y-3 leading-relaxed"
                 style={{ color: "var(--foreground)" }}
               >
                 <p>
-                  <strong>Cotisations sociales</strong> : elles sont calculees en pourcentage de
-                  votre chiffre d&apos;affaires. Le taux depend de votre type d&apos;activite
+                  <strong>Cotisations sociales</strong> : elles sont calculées en pourcentage de
+                  votre chiffre d&apos;affaires. Le taux dépend de votre type d&apos;activité
                   ({fmtPct(rates.cotisations.vente * 100)} % en vente,{" "}
                   {fmtPct(rates.cotisations.service_bic * 100)} % en prestation BIC,{" "}
-                  {fmtPct(rates.cotisations.liberal_bnc * 100)} % en liberal BNC pour {annee}).
+                  {fmtPct(rates.cotisations.liberal_bnc * 100)} % en libéral BNC pour {annee}).
                 </p>
                 <p>
-                  <strong>ACRE</strong> : l&apos;Aide a la Creation ou Reprise d&apos;Entreprise
-                  reduit vos cotisations de 50 % la premiere annee d&apos;activite (exoneration
-                  ramenee a 25 % a compter du 1er juillet 2026).
+                  <strong>ACRE</strong> : l&apos;Aide à la Création ou Reprise d&apos;Entreprise
+                  réduit vos cotisations pendant environ 12 mois (jusqu&apos;à la fin du 3e trimestre
+                  civil suivant le début d&apos;activité). Pour les créations à compter du 1er juillet
+                  2026, l&apos;exonération est de 25 % (taux appliqué par le simulateur en 2026) ; les
+                  créations antérieures conservent l&apos;exonération de 50 %.
                 </p>
                 <p>
-                  <strong>Versement liberatoire</strong> : vous payez l&apos;IR directement sur
-                  votre CA a un taux fixe ({fmtPct(rates.versementLiberatoire.vente * 100)} %,{" "}
+                  <strong>Versement libératoire</strong> : vous payez l&apos;IR directement sur
+                  votre CA à un taux fixe ({fmtPct(rates.versementLiberatoire.vente * 100)} %,{" "}
                   {fmtPct(rates.versementLiberatoire.service_bic * 100)} % ou{" "}
-                  {fmtPct(rates.versementLiberatoire.liberal_bnc * 100)} % selon l&apos;activite) au
-                  lieu du bareme progressif avec abattement forfaitaire (
+                  {fmtPct(rates.versementLiberatoire.liberal_bnc * 100)} % selon l&apos;activité) au
+                  lieu du barème progressif avec abattement forfaitaire (
                   {(rates.abattementIR.vente * 100).toFixed(0)} %,{" "}
                   {(rates.abattementIR.service_bic * 100).toFixed(0)} % ou{" "}
-                  {(rates.abattementIR.liberal_bnc * 100).toFixed(0)} %).
+                  {(rates.abattementIR.liberal_bnc * 100).toFixed(0)} %). Au barème, le simulateur
+                  applique le quotient familial, son plafonnement et la décote (barème 2026 sur les
+                  revenus 2025), en supposant qu&apos;il n&apos;y a pas d&apos;autre revenu dans le foyer.
                 </p>
                 <p>
-                  <strong>CFE</strong> : la Cotisation Fonciere des Entreprises varie
-                  considerablement selon votre commune. Le montant affiche est une estimation
-                  mediane. Vous etes exonere si votre CA est inferieur a 5 000 EUR.
+                  <strong>CFE</strong> : la Cotisation Foncière des Entreprises varie
+                  considérablement selon votre commune. Le montant affiché est une estimation
+                  médiane. Vous êtes exonéré si votre CA est inférieur à 5 000 €.
                 </p>
                 <p>
-                  <strong>CFP</strong> : la Contribution a la Formation Professionnelle est
-                  prelevee une fois par an en novembre.
+                  <strong>CFP</strong> : la Contribution à la Formation Professionnelle est
+                  calculée sur le CA et payée avec chaque déclaration mensuelle ou trimestrielle.
                 </p>
                 <p>
                   <strong>Source.</strong> URSSAF, articles L613-7 et suivants du Code de la
-                  securite sociale, articles 102 ter et 151-0 du CGI. Verifications a urssaf.fr et
+                  sécurité sociale, articles 102 ter et 151-0 du CGI. Vérifications à urssaf.fr et
                   autoentrepreneur.urssaf.fr.
                 </p>
               </div>
@@ -960,7 +1008,7 @@ export default function SimulateurAutoEntrepreneur() {
                 <CrossLinkCard
                   href="/outils/generateur-facture"
                   emoji="📄"
-                  title="Generer facture"
+                  title="Générer facture"
                   desc="Devis et factures conformes en PDF"
                 />
                 <CrossLinkCard
@@ -974,73 +1022,73 @@ export default function SimulateurAutoEntrepreneur() {
 
             <ToolHowToSection
               title="Comment estimer vos cotisations d'auto-entrepreneur"
-              description="Le simulateur applique les taux URSSAF officiels par type d'activite et integre ACRE, versement liberatoire et CFE."
+              description="Le simulateur applique les taux URSSAF officiels par type d'activité et intègre ACRE, versement libératoire et CFE."
               steps={[
                 {
-                  name: "Choisir votre type d'activite",
+                  name: "Choisir votre type d'activité",
                   text:
-                    "Vente de marchandises ou hebergement (12,3 % cotisations en 2026), prestation de service BIC (21,2 %), profession liberale BNC (24,6 %). Le taux depend de votre code APE et de la nature exacte de votre activite. Verifiez avec votre attestation INSEE.",
+                    "Vente de marchandises ou hébergement (12,3 % cotisations en 2026), prestation de service BIC (21,2 %), profession libérale BNC non réglementée (25,6 %, 23,2 % pour la CIPAV). Le taux dépend de votre code APE et de la nature exacte de votre activité. Vérifiez avec votre attestation INSEE.",
                 },
                 {
                   name: "Saisir votre CA mensuel ou annuel",
                   text:
-                    "Le CA est le total des facturations encaissees, hors TVA si vous etes en franchise (cas standard). Plafonds 2026 : 188 700 EUR pour la vente, 77 700 EUR pour les services et BNC. Au-dela, vous basculez en regime reel.",
+                    "Le CA est le total des facturations encaissées, hors TVA si vous êtes en franchise (cas standard). Plafonds 2026 : 203 100 € pour la vente, 83 600 € pour les services et BNC. Au-delà, vous basculez en régime réel.",
                 },
                 {
                   name: "Cocher ACRE si applicable",
                   text:
-                    "L'ACRE divise vos cotisations par 2 la premiere annee (jusqu'au 30 juin 2026), 25 % les annees 2-3. Conditions : moins de 30 ans, demandeur d'emploi, RSA, ou createur dans les 12 mois suivant l'installation. La demande se fait sur autoentrepreneur.urssaf.fr.",
+                    "L'ACRE réduit vos cotisations pendant environ 12 mois (jusqu'à la fin du 3e trimestre suivant le début d'activité) : -50 % pour les créations avant le 1er juillet 2026, -25 % depuis. Elle est réservée à certains publics (demandeurs d'emploi, bénéficiaires du RSA ou de l'ASS, jeunes de 18 à 25 ans, etc.). La demande se fait auprès de l'Urssaf dans les 60 jours suivant le début d'activité.",
                 },
                 {
-                  name: "Choisir entre IR bareme ou versement liberatoire",
+                  name: "Choisir entre IR barème ou versement libératoire",
                   text:
-                    "Versement liberatoire = paiement IR au taux forfaitaire chaque mois/trimestre (1 %, 1,7 % ou 2,2 % selon activite). IR bareme classique = abattement forfaitaire (71 %, 50 % ou 34 %) puis bareme progressif. Le simulateur compare les deux options pour votre situation.",
+                    "Versement libératoire = paiement IR au taux forfaitaire chaque mois/trimestre (1 %, 1,7 % ou 2,2 % selon activité). IR barème classique = abattement forfaitaire (71 %, 50 % ou 34 %) puis barème progressif. Activez ou non l'option dans le simulateur pour comparer les deux.",
                 },
               ]}
             />
 
             <ToolFaqSection
-              intro="Les questions les plus posees sur le statut d'auto-entrepreneur en France."
+              intro="Les questions les plus posées sur le statut d'auto-entrepreneur en France."
               items={[
                 {
                   question: "Quels sont les plafonds de CA en 2026 ?",
                   answer:
-                    "188 700 EUR pour la vente de marchandises et hebergement (BIC). 77 700 EUR pour les prestations de services BIC et les professions liberales BNC. Si vous depassez ces plafonds 2 annees consecutives, vous basculez automatiquement au regime reel (BIC ou BNC). Pendant la 1re annee de depassement, vous restez en micro.",
+                    "203 100 € pour la vente de marchandises et hébergement (BIC). 83 600 € pour les prestations de services BIC et les professions libérales BNC. Si vous dépassez ces plafonds 2 années consécutives, vous basculez automatiquement au régime réel (BIC ou BNC). Pendant la 1re année de dépassement, vous restez en micro.",
                 },
                 {
                   question: "Quel est le taux de cotisations sociales auto-entrepreneur 2026 ?",
                   answer:
-                    "Pour 2026 : 12,3 % en vente / hebergement, 21,2 % en prestation de services BIC, 24,6 % en profession liberale BNC. Ces taux incluent les cotisations URSSAF, retraite et la CSG/CRDS. Ils sont appliques directement sur le CA encaisse, sans abattement.",
+                    "Pour 2026 : 12,3 % en vente / hébergement, 21,2 % en prestation de services BIC, 25,6 % en profession libérale BNC non réglementée (23,2 % pour la CIPAV). Ces taux incluent les cotisations URSSAF, retraite et la CSG/CRDS. Ils sont appliqués directement sur le CA encaissé, sans abattement.",
                 },
                 {
-                  question: "Quand vaut-il mieux choisir le versement liberatoire ?",
+                  question: "Quand vaut-il mieux choisir le versement libératoire ?",
                   answer:
-                    "Le versement liberatoire (IR forfaitaire au moment du CA) est avantageux si votre revenu fiscal de reference est superieur a un certain plafond (28 797 EUR par part en 2026). En dessous, le bareme progressif classique avec abattement est plus interessant. Le simulateur affiche les deux options pour votre situation.",
+                    "Le versement libératoire (IR forfaitaire payé avec les cotisations) n'est accessible que si le revenu fiscal de référence N-2 ne dépasse pas 29 315 € par part (RFR 2024 pour 2026). Il est surtout intéressant si votre taux marginal d'imposition est élevé ; avec un foyer peu ou pas imposable, le barème progressif avec abattement est souvent plus avantageux. Activez ou non l'option dans le simulateur pour comparer.",
                 },
                 {
                   question: "L'ACRE est-elle automatique ?",
                   answer:
-                    "Non. L'ACRE doit etre demandee dans les 45 jours suivant la creation de votre auto-entreprise via le formulaire en ligne sur autoentrepreneur.urssaf.fr. Si elle est accordee, elle s'applique automatiquement aux cotisations URSSAF. Pas de retroactivite : tardez et vous perdez le benefice.",
+                    "Non. L'ACRE doit être demandée au plus tard 60 jours après la création de votre auto-entreprise via le formulaire en ligne sur autoentrepreneur.urssaf.fr. Si elle est accordée, elle s'applique automatiquement aux cotisations URSSAF. Pas de rétroactivité : tardez et vous perdez le bénéfice.",
                 },
                 {
                   question: "Comment fonctionne la franchise en base TVA ?",
                   answer:
-                    "Tant que vous etes sous le seuil de franchise en base (verifier les seuils en vigueur sur impots.gouv.fr), vous facturez sans TVA et la mention 'TVA non applicable, art. 293 B du CGI' doit figurer. Au-dela des seuils, la TVA devient obligatoire et vous devez facturer, collecter et reverser via vos declarations periodiques.",
+                    "Tant que vous êtes sous le seuil de franchise en base (vérifier les seuils en vigueur sur impots.gouv.fr), vous facturez sans TVA et la mention 'TVA non applicable, art. 293 B du CGI' doit figurer. Au-delà des seuils, la TVA devient obligatoire et vous devez facturer, collecter et reverser via vos déclarations périodiques.",
                 },
                 {
                   question: "Suis-je redevable de la CFE en tant qu'auto-entrepreneur ?",
                   answer:
-                    "Oui apres la 1re annee d'activite (exoneration la 1re annee). Le montant depend de votre commune et de votre CA. Plafond plancher de 237 EUR a 562 EUR par an selon le CA pour 2026. Exoneration totale si votre CA annuel reste inferieur a 5 000 EUR (preuve par avis de situation a fournir).",
+                    "Oui après la 1re année d'activité (exonération la 1re année). Le montant dépend de votre commune et de votre CA. Plafond plancher de 237 € à 562 € par an selon le CA pour 2026. Exonération totale si votre CA annuel reste inférieur à 5 000 € (preuve par avis de situation à fournir).",
                 },
                 {
                   question: "Puis-je cumuler micro-entreprise et salariat ?",
                   answer:
-                    "Oui, c'est meme tres frequent. Un salarie peut creer son auto-entreprise sans en informer son employeur, sauf clause d'exclusivite ou conflit d'interets. Verifiez votre contrat et votre convention collective. Vos cotisations sociales sont separees : salariat = regime general, auto-entreprise = micro-social.",
+                    "Oui, c'est même très fréquent. Un salarié peut créer son auto-entreprise sans en informer son employeur, sauf clause d'exclusivité ou conflit d'intérêts. Vérifiez votre contrat et votre convention collective. Vos cotisations sociales sont séparées : salariat = régime général, auto-entreprise = micro-social.",
                 },
                 {
-                  question: "Le simulateur garde-t-il mes donnees ?",
+                  question: "Le simulateur garde-t-il mes données ?",
                   answer:
-                    "Non. Tous les calculs sont effectues localement dans votre navigateur. Aucune donnee saisie (CA, type d'activite, ACRE) n'est envoyee a un serveur ni stockee. L'outil fonctionne sans inscription.",
+                    "Non. Tous les calculs sont effectués localement dans votre navigateur. Aucune donnée saisie (CA, type d'activité, ACRE) n'est envoyée à un serveur ni stockée. L'outil fonctionne sans inscription.",
                 },
               ]}
             />
@@ -1060,7 +1108,7 @@ export default function SimulateurAutoEntrepreneur() {
                 style={{ color: "var(--accent)" }}
               >
                 Taux {annee}
-                {isEstime ? " (estimes)" : ""}
+                {isEstime ? " (estimés)" : ""}
               </h3>
               <ul className="mt-3 space-y-2 text-xs" style={{ color: "var(--muted)" }}>
                 <li>
@@ -1076,7 +1124,7 @@ export default function SimulateurAutoEntrepreneur() {
                   </strong>
                 </li>
                 <li>
-                  Liberal BNC :{" "}
+                  Libéral BNC :{" "}
                   <strong className="text-[var(--foreground)]">
                     {fmtPct(rates.cotisations.liberal_bnc * 100)}%
                   </strong>
@@ -1126,7 +1174,7 @@ export default function SimulateurAutoEntrepreneur() {
                 className="text-xs font-semibold uppercase tracking-[0.15em]"
                 style={{ color: "var(--accent)" }}
               >
-                Versement liberatoire
+                Versement libératoire
               </h3>
               <ul className="mt-3 space-y-2 text-xs" style={{ color: "var(--muted)" }}>
                 <li>
@@ -1142,7 +1190,7 @@ export default function SimulateurAutoEntrepreneur() {
                   </strong>
                 </li>
                 <li>
-                  Liberal BNC :{" "}
+                  Libéral BNC :{" "}
                   <strong className="text-[var(--foreground)]">
                     {fmtPct(rates.versementLiberatoire.liberal_bnc * 100)}%
                   </strong>
@@ -1185,7 +1233,7 @@ function DonutChart({
   const impotLen = impotPct * c;
   const netLen = netPct * c;
   return (
-    <svg width="160" height="160" viewBox="-80 -80 160 160" role="img" aria-label="Repartition du chiffre d'affaires">
+    <svg width="160" height="160" viewBox="-80 -80 160 160" role="img" aria-label="Répartition du chiffre d'affaires">
       <circle cx="0" cy="0" r={r} fill="none" stroke="var(--border)" strokeWidth={stroke} />
       <g transform="rotate(-90)">
         <circle

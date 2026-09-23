@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Calculateur Partage de Frais - Qui doit combien a qui ? Gratuit",
+  title: "Calculateur Partage de Frais - Qui doit combien à qui ? Gratuit",
   description:
-    "Partagez les frais equitablement entre amis, colocs ou collegues. Ajoutez les depenses, l'outil calcule qui doit rembourser qui. Gratuit et sans inscription.",
+    "Partagez les frais équitablement entre amis, colocs ou collègues. Ajoutez les dépenses, l'outil calcule qui doit rembourser qui. Gratuit et sans inscription.",
   keywords: [
     "partage de frais",
     "calculateur partage depenses",

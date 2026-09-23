@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Fusionneur PDF - Combiner des PDF en ligne gratuit",
   description:
-    "Fusionnez plusieurs fichiers PDF en un seul document. Glissez-deposez, reordonnez, telechargez. 100% gratuit, traitement local.",
+    "Fusionnez plusieurs fichiers PDF en un seul document. Glissez-déposez, réordonnez, téléchargez. 100% gratuit, traitement local.",
   keywords: [
     "fusionner pdf",
     "combiner pdf",

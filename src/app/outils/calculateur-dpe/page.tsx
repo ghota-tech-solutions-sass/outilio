@@ -4,7 +4,7 @@ import { useState, useMemo } from "react";
 import AdPlaceholder from "@/components/AdPlaceholder";
 
 /* ------------------------------------------------------------------ */
-/*  DPE scale (2024 reform)                                            */
+/*  DPE scale (methode 3CL-DPE 2021)                                   */
 /* ------------------------------------------------------------------ */
 const DPE_CLASSES = [
   { letter: "A", maxKwh: 70,  maxCo2: 6,   color: "#2d9a46" },
@@ -22,11 +22,12 @@ const DPE_CLASSES = [
 type EnergyType = "electricite" | "gaz" | "fioul" | "bois";
 
 const ENERGIES: Record<EnergyType, { label: string; prixKwh: number; facteurCo2: number; facteurEP: number }> = {
-  // Prix TTC moyens 2026 (sources: CRE tarif reglemente, indices INSEE)
-  electricite: { label: "Electricite",      prixKwh: 0.2065, facteurCo2: 0.079, facteurEP: 2.3 },
+  // Prix TTC moyens 2026 (sources: CRE tarif reglemente, indices INSEE) - electricite : TRV Base 6 kVA au 1er fevrier 2026
+  // Facteur EP electricite : 1,9 depuis le 1er janvier 2026 (arrete du 13 aout 2025), 1,7 prevu au 1er janvier 2027
+  electricite: { label: "Électricité",      prixKwh: 0.194,  facteurCo2: 0.079, facteurEP: 1.9 },
   gaz:         { label: "Gaz naturel",      prixKwh: 0.10,   facteurCo2: 0.227, facteurEP: 1.0 },
   fioul:       { label: "Fioul domestique",  prixKwh: 0.12,   facteurCo2: 0.324, facteurEP: 1.0 },
-  bois:        { label: "Bois / Granules",   prixKwh: 0.07,   facteurCo2: 0.030, facteurEP: 1.0 },
+  bois:        { label: "Bois / Granulés",   prixKwh: 0.07,   facteurCo2: 0.030, facteurEP: 1.0 },
 };
 
 /* ------------------------------------------------------------------ */
@@ -92,13 +93,13 @@ export default function CalculateurDPE() {
 
   const result = useMemo(() => {
     if (mode === "manuel") {
-      const s = parseFloat(surface) || 1;
+      const s = Math.max(1, parseFloat(surface) || 1);
       const e = ENERGIES[energie];
       let consoKwh: number;
       if (consoType === "euros") {
-        consoKwh = (parseFloat(consoValue) || 0) / e.prixKwh;
+        consoKwh = Math.max(0, parseFloat(consoValue) || 0) / e.prixKwh;
       } else {
-        consoKwh = parseFloat(consoValue) || 0;
+        consoKwh = Math.max(0, parseFloat(consoValue) || 0);
       }
       const consoEP = consoKwh * e.facteurEP; // energie primaire
       const kwhM2 = consoEP / s;
@@ -108,7 +109,7 @@ export default function CalculateurDPE() {
       const dpe = getDpeClass(kwhM2, co2M2);
       return { kwhM2, co2M2, co2Total, coutAnnuel, consoKwh, consoEP, surface: s, dpe };
     } else {
-      const s = parseFloat(surfaceSimp) || 1;
+      const s = Math.max(1, parseFloat(surfaceSimp) || 1);
       const e = ENERGIES[chauffage];
       const baseConso = BASE_CONSO[periode];
       const consoM2Final = baseConso * ISOLATION_COEFF[isolation] * CHAUFFAGE_COEFF[chauffage];
@@ -134,13 +135,13 @@ export default function CalculateurDPE() {
       <section className="relative py-14" style={{ borderBottom: "1px solid var(--border)" }}>
         <div className="mx-auto max-w-7xl px-6 2xl:max-w-[1400px]">
           <p className="animate-fade-up text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: "var(--accent)" }}>
-            Immobilier & Energie
+            Immobilier & Énergie
           </p>
           <h1 className="animate-fade-up stagger-1 mt-3 text-4xl tracking-tight md:text-5xl" style={{ fontFamily: "var(--font-display)" }}>
             Calculateur <span style={{ color: "var(--primary)" }}>DPE</span>
           </h1>
           <p className="animate-fade-up stagger-2 mt-3 max-w-xl text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-            Estimez la classe energetique de votre logement (A a G), la consommation en kWh/m&sup2;/an, les emissions CO2 et le cout annuel.
+            Estimez la classe énergétique de votre logement (A à G), la consommation en kWh/m&sup2;/an, les émissions CO2 et le coût annuel.
           </p>
         </div>
       </section>
@@ -152,18 +153,18 @@ export default function CalculateurDPE() {
             {/* Mode toggle */}
             <div className="animate-fade-up flex gap-2">
               <ModeButton active={mode === "manuel"} onClick={() => setMode("manuel")} label="Mode manuel" />
-              <ModeButton active={mode === "simplifie"} onClick={() => setMode("simplifie")} label="Mode simplifie" />
+              <ModeButton active={mode === "simplifie"} onClick={() => setMode("simplifie")} label="Mode simplifié" />
             </div>
 
             {/* Inputs */}
             {mode === "manuel" ? (
               <div className="animate-fade-up stagger-1 rounded-2xl border p-6" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
                 <h2 className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--accent)" }}>
-                  Donnees du logement
+                  Données du logement
                 </h2>
                 <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <Field label="Surface (m2)" value={surface} onChange={setSurface} type="number" />
-                  <SelectField label="Energie principale" value={energie} onChange={(v) => setEnergie(v as EnergyType)}
+                  <SelectField label="Énergie principale" value={energie} onChange={(v) => setEnergie(v as EnergyType)}
                     options={Object.entries(ENERGIES).map(([k, v]) => ({ value: k, label: v.label }))} />
                   <SelectField label="Saisie en" value={consoType} onChange={(v) => setConsoType(v as "kwh" | "euros")}
                     options={[{ value: "kwh", label: "kWh/an" }, { value: "euros", label: "Euros/an" }]} />
@@ -173,25 +174,25 @@ export default function CalculateurDPE() {
             ) : (
               <div className="animate-fade-up stagger-1 rounded-2xl border p-6" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
                 <h2 className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--accent)" }}>
-                  Caracteristiques du logement
+                  Caractéristiques du logement
                 </h2>
                 <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <Field label="Surface (m2)" value={surfaceSimp} onChange={setSurfaceSimp} type="number" />
-                  <SelectField label="Annee de construction" value={periode} onChange={(v) => setPeriode(v as PeriodeConstruction)}
+                  <SelectField label="Année de construction" value={periode} onChange={(v) => setPeriode(v as PeriodeConstruction)}
                     options={[
                       { value: "avant1975", label: "Avant 1975" },
                       { value: "1975-1988", label: "1975 - 1988" },
                       { value: "1989-2000", label: "1989 - 2000" },
                       { value: "2001-2012", label: "2001 - 2012" },
-                      { value: "apres2012", label: "Apres 2012 (RT 2012+)" },
+                      { value: "apres2012", label: "Après 2012 (RT 2012+)" },
                     ]} />
                   <SelectField label="Type de chauffage" value={chauffage} onChange={(v) => setChauffage(v as EnergyType)}
                     options={Object.entries(ENERGIES).map(([k, v]) => ({ value: k, label: v.label }))} />
                   <SelectField label="Niveau d'isolation" value={isolation} onChange={(v) => setIsolation(v as NiveauIsolation)}
                     options={[
-                      { value: "aucune", label: "Aucune / tres faible" },
+                      { value: "aucune", label: "Aucune / très faible" },
                       { value: "partielle", label: "Partielle (combles ou murs)" },
-                      { value: "complete", label: "Complete (murs + combles + fenetres)" },
+                      { value: "complete", label: "Complète (murs + combles + fenêtres)" },
                       { value: "performante", label: "Performante (BBC / RE2020)" },
                     ]} />
                 </div>
@@ -201,7 +202,7 @@ export default function CalculateurDPE() {
             {/* DPE Gauge */}
             <div className="animate-fade-up stagger-2 rounded-2xl border p-6" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
               <h2 className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--accent)" }}>
-                Etiquette energie (DPE)
+                Étiquette énergie (DPE)
               </h2>
               <div className="mt-5 space-y-1.5">
                 {DPE_CLASSES.map((c, i) => {
@@ -243,23 +244,23 @@ export default function CalculateurDPE() {
               <StatCard label="Classe DPE" value={result.dpe.letter} color={result.dpe.color} large />
               <StatCard label="kWh/m2/an" value={fmt(result.kwhM2)} color={result.dpe.color} />
               <StatCard label="kg CO2/m2/an" value={fmt1(result.co2M2)} color={result.co2M2 > 70 ? "#d32a2a" : result.co2M2 > 30 ? "#f0943a" : "var(--primary)"} />
-              <StatCard label="Cout annuel" value={`${fmt(result.coutAnnuel)} \u20AC`} color="var(--foreground)" />
+              <StatCard label="Coût annuel" value={`${fmt(result.coutAnnuel)} \u20AC`} color="var(--foreground)" />
             </div>
 
             {/* Detail summary */}
             <div className="animate-fade-up stagger-4 rounded-2xl border p-6" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
               <h2 className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--accent)" }}>
-                Detail de l&apos;estimation
+                Détail de l&apos;estimation
               </h2>
               <div className="mt-4 space-y-2 text-sm">
                 <Row label="Surface" value={`${fmt(result.surface)} m\u00B2`} />
-                <Row label="Consommation annuelle (energie finale)" value={`${fmt(result.consoKwh)} kWh`} />
-                <Row label="Consommation annuelle (energie primaire)" value={`${fmt(result.consoEP)} kWh EP`} />
-                <Row label="Consommation par m2 (energie primaire)" value={`${fmt(result.kwhM2)} kWh/m\u00B2/an`} highlight primary />
-                <Row label="Emissions CO2 totales" value={`${fmt(result.co2Total)} kg CO\u2082/an`} />
-                <Row label="Emissions CO2 par m2" value={`${fmt1(result.co2M2)} kg CO\u2082/m\u00B2/an`} />
-                <Row label="Cout annuel estime" value={`${fmt(result.coutAnnuel)} \u20AC/an`} highlight primary />
-                <Row label="Cout mensuel estime" value={`${fmt(result.coutAnnuel / 12)} \u20AC/mois`} />
+                <Row label="Consommation annuelle (énergie finale)" value={`${fmt(result.consoKwh)} kWh`} />
+                <Row label="Consommation annuelle (énergie primaire)" value={`${fmt(result.consoEP)} kWh EP`} />
+                <Row label="Consommation par m2 (énergie primaire)" value={`${fmt(result.kwhM2)} kWh/m\u00B2/an`} highlight primary />
+                <Row label="Émissions CO2 totales" value={`${fmt(result.co2Total)} kg CO\u2082/an`} />
+                <Row label="Émissions CO2 par m2" value={`${fmt1(result.co2M2)} kg CO\u2082/m\u00B2/an`} />
+                <Row label="Coût annuel estimé" value={`${fmt(result.coutAnnuel)} \u20AC/an`} highlight primary />
+                <Row label="Coût mensuel estimé" value={`${fmt(result.coutAnnuel / 12)} \u20AC/mois`} />
               </div>
             </div>
 
@@ -273,14 +274,14 @@ export default function CalculateurDPE() {
                       Passoire thermique (classe {result.dpe.letter})
                     </h3>
                     <p className="mt-1 text-sm" style={{ color: "#991b1b" }}>
-                      Ce logement est classe comme passoire thermique. Depuis le 1er janvier 2025, les logements en classe G ne peuvent plus etre mis en location.
-                      Les logements en classe F seront interdits a la location a partir de 2028, et les classe E a partir de 2034.
+                      Ce logement est classé comme passoire thermique. Depuis le 1er janvier 2025, les logements en classe G ne peuvent plus être mis en location.
+                      Les logements en classe F seront interdits à la location à partir de 2028, et les classe E à partir de 2034.
                     </p>
                     <ul className="mt-3 space-y-1 text-sm" style={{ color: "#991b1b" }}>
                       <li>Isolation des murs et combles</li>
-                      <li>Remplacement des fenetres simple vitrage</li>
-                      <li>Installation d&apos;une pompe a chaleur ou chaudiere performante</li>
-                      <li>Ventilation mecanique controlee (VMC)</li>
+                      <li>Remplacement des fenêtres simple vitrage</li>
+                      <li>Installation d&apos;une pompe à chaleur ou chaudière performante</li>
+                      <li>Ventilation mécanique contrôlée (VMC)</li>
                     </ul>
                   </div>
                 </div>
@@ -290,7 +291,7 @@ export default function CalculateurDPE() {
             {/* Comparison table */}
             <div className="animate-fade-up stagger-5 rounded-2xl border p-6" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
               <h2 className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--accent)" }}>
-                Seuils reglementaires DPE
+                Seuils réglementaires DPE
               </h2>
               <div className="mt-4 overflow-x-auto">
                 <table className="w-full text-sm">
@@ -350,31 +351,31 @@ export default function CalculateurDPE() {
                 Comment utiliser le simulateur DPE
               </h2>
               <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                <p>Notre simulateur de Diagnostic de Performance Energetique (DPE) vous permet d&apos;estimer la classe energetique de votre logement selon l&apos;echelle officielle de A a G. Les seuils utilises correspondent a la reforme DPE 2024, qui introduit le double critere energie + CO2.</p>
+                <p>Notre simulateur de Diagnostic de Performance Énergétique (DPE) vous permet d&apos;estimer la classe énergétique de votre logement selon l&apos;échelle officielle de A à G. Les seuils utilisés sont ceux du DPE en vigueur depuis juillet 2021 (double critère énergie + CO2), avec le coefficient de conversion de l&apos;électricité abaissé de 2,3 à 1,9 depuis le 1er janvier 2026.</p>
                 <ul className="ml-4 list-disc space-y-1">
-                  <li><strong className="text-[var(--foreground)]">Mode manuel</strong> : saisissez la surface, le type d&apos;energie et votre consommation annuelle en kWh ou en euros pour obtenir une estimation precise.</li>
-                  <li><strong className="text-[var(--foreground)]">Mode simplifie</strong> : renseignez la surface, l&apos;annee de construction, le type de chauffage et le niveau d&apos;isolation pour une estimation rapide sans facture.</li>
-                  <li><strong className="text-[var(--foreground)]">Resultats detailles</strong> : classe DPE, consommation en kWh/m&sup2;/an (energie primaire), emissions CO2/m&sup2;/an, et cout annuel estime.</li>
+                  <li><strong className="text-[var(--foreground)]">Mode manuel</strong> : saisissez la surface, le type d&apos;énergie et votre consommation annuelle en kWh ou en euros pour obtenir une estimation précise.</li>
+                  <li><strong className="text-[var(--foreground)]">Mode simplifié</strong> : renseignez la surface, l&apos;année de construction, le type de chauffage et le niveau d&apos;isolation pour une estimation rapide sans facture.</li>
+                  <li><strong className="text-[var(--foreground)]">Résultats détaillés</strong> : classe DPE, consommation en kWh/m&sup2;/an (énergie primaire), émissions CO2/m&sup2;/an, et coût annuel estimé.</li>
                 </ul>
-                <p>Attention : cet outil fournit une estimation indicative. Seul un diagnostiqueur certifie peut etablir un DPE officiel, obligatoire pour toute vente ou mise en location en France depuis 2006.</p>
+                <p>Attention : cet outil fournit une estimation indicative. Seul un diagnostiqueur certifié peut établir un DPE officiel, obligatoire pour toute vente ou mise en location en France depuis 2006.</p>
               </div>
             </div>
 
             {/* FAQ */}
             <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Questions frequentes</h2>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Questions fréquentes</h2>
               <div className="mt-6 space-y-5">
                 <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
                   <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Qu&apos;est-ce qu&apos;une passoire thermique ?</h3>
-                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Une passoire thermique est un logement classe F ou G au DPE, c&apos;est-a-dire avec une consommation superieure a 330 kWh/m&sup2;/an en energie primaire. En France, cela concerne environ 5 millions de logements. Depuis le 1er janvier 2025, les logements classes G sont interdits a la location, les classes F le seront en 2028 et les classes E en 2034.</p>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Une passoire thermique est un logement classé F ou G au DPE, c&apos;est-à-dire avec une consommation supérieure à 330 kWh/m&sup2;/an en énergie primaire. En France, cela concerne environ 5 millions de logements. Depuis le 1er janvier 2025, les logements classés G sont interdits à la location, les classes F le seront en 2028 et les classes E en 2034.</p>
                 </div>
                 <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
-                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Combien coute un DPE officiel ?</h3>
-                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Le cout d&apos;un DPE realise par un diagnostiqueur certifie varie generalement entre 100 &euro; et 250 &euro; selon la taille du logement et la region. Ce diagnostic est valable 10 ans et doit obligatoirement etre fourni lors de la vente ou la mise en location d&apos;un bien immobilier en France.</p>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Combien coûte un DPE officiel ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Le coût d&apos;un DPE réalisé par un diagnostiqueur certifié varie généralement entre 100 &euro; et 250 &euro; selon la taille du logement et la région. Ce diagnostic est valable 10 ans et doit obligatoirement être fourni lors de la vente ou la mise en location d&apos;un bien immobilier en France.</p>
                 </div>
                 <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
-                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Comment ameliorer la classe DPE de son logement ?</h3>
-                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Les travaux les plus efficaces sont l&apos;isolation des combles et des murs (gain de 1 a 2 classes), le remplacement des fenetres simple vitrage par du double vitrage, l&apos;installation d&apos;une pompe a chaleur ou d&apos;une chaudiere a condensation, et la mise en place d&apos;une VMC. Des aides comme MaPrimeRenov&apos; et les CEE peuvent financer une partie de ces travaux.</p>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Comment améliorer la classe DPE de son logement ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Les travaux les plus efficaces sont l&apos;isolation des combles et des murs (gain de 1 à 2 classes), le remplacement des fenêtres simple vitrage par du double vitrage, l&apos;installation d&apos;une pompe à chaleur ou d&apos;une chaudière à condensation, et la mise en place d&apos;une VMC. Des aides comme MaPrimeRénov&apos; et les CEE peuvent financer une partie de ces travaux.</p>
                 </div>
               </div>
             </div>
@@ -385,7 +386,7 @@ export default function CalculateurDPE() {
             <AdPlaceholder className="h-[250px]" />
             <div className="rounded-2xl border p-6" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
               <h3 className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--accent)" }}>
-                Prix par energie
+                Prix par énergie
               </h3>
               <ul className="mt-3 space-y-2 text-sm" style={{ color: "var(--muted)" }}>
                 {Object.entries(ENERGIES).map(([, e]) => (
@@ -408,12 +409,13 @@ export default function CalculateurDPE() {
             </div>
             <div className="rounded-2xl border p-6" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
               <h3 className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--accent)" }}>
-                A propos
+                À propos
               </h3>
               <p className="mt-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
                 Ce simulateur fournit une estimation indicative.
-                Seul un diagnostiqueur certifie peut etablir un DPE officiel.
-                Les seuils utilises sont ceux de la reforme DPE 2024.
+                Seul un diagnostiqueur certifié peut établir un DPE officiel.
+                Seuils du DPE 2021, coefficient électricité de 1,9 (2026).
+                Les seuils adaptés aux petites surfaces (moins de 40 m&sup2;) ne sont pas pris en compte.
               </p>
             </div>
             <AdPlaceholder className="h-[600px]" />

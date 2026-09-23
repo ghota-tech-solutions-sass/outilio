@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Generateur de texte stylise - Bold, italic, monospace Unicode",
+  title: "Générateur de texte stylisé - Bold, italic, monospace Unicode",
   description:
-    "Convertissez votre texte en caracteres Unicode stylises : gras, italique, monospace, barre, bulle et plus. Copiez et collez partout. Gratuit.",
+    "Convertissez votre texte en caractères Unicode stylisés : gras, italique, monospace, barré, bulle et plus. Copiez et collez partout. Gratuit.",
   keywords: [
     "texte stylise",
     "texte unicode",

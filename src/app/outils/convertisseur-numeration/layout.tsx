@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Convertisseur de Base Numerique - Gratuit",
+  title: "Convertisseur de Base Numérique - Gratuit",
   description:
-    "Convertissez entre decimal, binaire, octal et hexadecimal. Conversion bidirectionnelle instantanee entre bases de numeration.",
+    "Convertissez entre décimal, binaire, octal et hexadécimal. Conversion bidirectionnelle instantanée entre bases de numération.",
   keywords: ["convertisseur binaire", "decimal hexadecimal", "conversion base", "binaire decimal", "octal hexadecimal"],
   alternates: { canonical: "https://outilis.fr/outils/convertisseur-numeration" },
 };

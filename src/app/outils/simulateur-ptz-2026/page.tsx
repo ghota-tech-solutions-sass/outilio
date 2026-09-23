@@ -3,63 +3,59 @@
 import { useState, useMemo } from "react";
 import AdPlaceholder from "@/components/AdPlaceholder";
 
-type Zone = "Abis" | "A" | "B1" | "B2C";
+type Zone = "Abis" | "A" | "B1" | "B2" | "C";
 type TypeBien = "neuf-collectif" | "neuf-individuel" | "ancien";
 
-// Plafonds de revenus par zone et nombre de personnes (grille indicative, art. L31-10-3 CCH)
-// TODO: revalidation barème PTZ 2026 sur service-public.fr
-const PLAFONDS_REVENUS: Record<Zone, number[]> = {
-  Abis: [49000, 73000, 87500, 104500, 121500, 138500, 155500, 172500],
-  A:    [49000, 73000, 87500, 104500, 121500, 138500, 155500, 172500],
-  B1:   [34500, 48000, 57500, 69000, 80000, 91500, 103000, 114500],
-  B2C:  [31500, 43500, 52000, 62500, 73000, 83500, 94000, 104500],
+// Bareme PTZ en vigueur en 2026 (offres emises depuis le 1er avril 2025, decret 2025-299 ;
+// dispositif proroge jusqu'au 31/12/2027, plafonds inchanges par la LF 2026).
+// Sources : service-public.gouv.fr (F10871), ANIL (offres de pret PTZ a compter du 1er avril 2025).
+
+// Coefficient familial (1 a 8 personnes et plus)
+const COEF_FAMILIAL = [1, 1.5, 1.8, 2.1, 2.4, 2.7, 3.0, 3.3];
+
+// Plafonds des tranches de revenus (ressources / coefficient familial), tranches 1 a 4.
+// Le plafond de la tranche 4 correspond au plafond de ressources pour 1 personne.
+const TRANCHES: Record<Zone, number[]> = {
+  Abis: [25000, 31000, 37000, 49000],
+  A:    [25000, 31000, 37000, 49000],
+  B1:   [21500, 26000, 30000, 34500],
+  B2:   [18000, 22500, 27000, 31500],
+  C:    [15000, 19500, 24000, 28500],
 };
 
-// Plafonds de l'operation par zone (art. L31-10-3 CCH, par tranche de coefficient familial)
-// TODO: revalidation barème PTZ 2026 sur service-public.fr
+// Plafond du cout de l'operation pour 1 personne (multiplie par le coefficient familial, plafonne a 2,4)
 const PLAFONDS_OPERATION: Record<Zone, number> = {
   Abis: 150000,
-  A:    135000,
-  B1:   110000,
-  B2C:  100000,
+  A:    150000,
+  B1:   135000,
+  B2:   110000,
+  C:    100000,
 };
 
-// Quotite par zone et type de bien (LFI 2025 + decret 2025-XXX modifiant decret 2024-484, 4 mars 2025)
-// Neuf collectif : elargissement a toute la France (avant : zones tendues uniquement)
-const QUOTITE: Record<TypeBien, Record<Zone, number>> = {
-  "neuf-collectif": {
-    Abis: 0.5,
-    A:    0.5,
-    B1:   0.5,
-    B2C:  0.3,
-  },
-  "neuf-individuel": {
-    Abis: 0.3,
-    A:    0.3,
-    B1:   0.3,
-    B2C:  0.2,
-  },
-  ancien: {
-    Abis: 0.4,
-    A:    0.4,
-    B1:   0.4,
-    B2C:  0.4,
-  },
+// Quotite par type de bien et tranche de revenus (tranches 1 a 4)
+const QUOTITE: Record<TypeBien, number[]> = {
+  "neuf-collectif":  [0.5, 0.4, 0.4, 0.2],
+  "neuf-individuel": [0.3, 0.2, 0.2, 0.1],
+  ancien:            [0.5, 0.4, 0.4, 0.2],
 };
 
-// Duree et differe selon tranche de revenus (simplifie)
-function getDureeRemboursement(revenus: number, plafond: number): { dureeTotale: number; differe: number } {
-  const ratio = revenus / plafond;
-  if (ratio <= 0.5) return { dureeTotale: 25, differe: 15 };
-  if (ratio <= 0.75) return { dureeTotale: 22, differe: 10 };
-  return { dureeTotale: 20, differe: 5 };
-}
+// Duree totale et differe par tranche de revenus (art. D31-10-11 CCH)
+const DUREES: { dureeTotale: number; differe: number }[] = [
+  { dureeTotale: 25, differe: 10 },
+  { dureeTotale: 20, differe: 8 },
+  { dureeTotale: 15, differe: 2 },
+  { dureeTotale: 10, differe: 0 },
+];
+
+// L'ancien avec travaux n'est eligible qu'en zones B2 et C
+const ZONES_ANCIEN: Zone[] = ["B2", "C"];
 
 const ZONE_LABELS: Record<Zone, string> = {
   Abis: "A bis (Paris et communes limitrophes)",
-  A: "A (grandes agglomerations)",
-  B1: "B1 (agglomerations moyennes)",
-  B2C: "B2 / C (reste du territoire)",
+  A: "A (grandes agglomérations)",
+  B1: "B1 (agglomérations moyennes)",
+  B2: "B2 (villes moyennes)",
+  C: "C (reste du territoire)",
 };
 
 export default function SimulateurPTZ2026() {
@@ -76,22 +72,31 @@ export default function SimulateurPTZ2026() {
 
     if (rev <= 0 || prix <= 0) return null;
 
-    const plafondRevenu = PLAFONDS_REVENUS[zone][nb - 1];
-    const eligible = rev <= plafondRevenu;
+    const coef = COEF_FAMILIAL[nb - 1];
+    // Ressources retenues : le plus eleve entre le RFR N-2 et le cout total de l'operation / 9
+    const ressources = Math.max(rev, prix / 9);
+    const tranches = TRANCHES[zone];
+    const plafondRevenu = tranches[3] * coef;
+    const zoneEligible = typeBien !== "ancien" || ZONES_ANCIEN.includes(zone);
+    const trancheIndex = tranches.findIndex((t) => ressources / coef <= t);
+    const eligible = zoneEligible && trancheIndex !== -1;
 
-    const plafondOperation = PLAFONDS_OPERATION[zone];
+    const plafondOperation = PLAFONDS_OPERATION[zone] * Math.min(coef, 2.4);
     const montantRetenu = Math.min(prix, plafondOperation);
-    const quotite = QUOTITE[typeBien][zone];
+    const quotite = eligible ? QUOTITE[typeBien][trancheIndex] : 0;
     const montantPTZ = montantRetenu * quotite;
 
-    const { dureeTotale, differe } = getDureeRemboursement(rev, plafondRevenu);
+    const { dureeTotale, differe } = DUREES[eligible ? trancheIndex : 3];
     const dureeRemboursement = dureeTotale - differe;
     const mensualite = montantPTZ / (dureeRemboursement * 12);
 
     return {
       eligible,
+      zoneEligible,
+      tranche: trancheIndex + 1,
       plafondRevenu,
       revenus: rev,
+      ressources,
       plafondOperation,
       montantRetenu,
       quotite,
@@ -117,7 +122,7 @@ export default function SimulateurPTZ2026() {
             Simulateur <span style={{ color: "var(--primary)" }}>PTZ 2026</span>
           </h1>
           <p className="animate-fade-up stagger-2 mt-3 max-w-xl text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-            Verifiez votre eligibilite au Pret a Taux Zero et estimez le montant, la duree et les mensualites.
+            Vérifiez votre éligibilité au Prêt à Taux Zéro et estimez le montant, la durée et les mensualités.
           </p>
         </div>
       </section>
@@ -130,7 +135,7 @@ export default function SimulateurPTZ2026() {
               <h2 className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--accent)" }}>Votre projet</h2>
               <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="sm:col-span-2">
-                  <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>Zone geographique</label>
+                  <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>Zone géographique</label>
                   <select value={zone} onChange={(e) => setZone(e.target.value as Zone)}
                     className="mt-2 w-full rounded-xl border px-4 py-4 text-lg font-semibold" style={{ borderColor: "var(--border)", background: "var(--surface)" }}>
                     {(Object.entries(ZONE_LABELS) as [Zone, string][]).map(([value, label]) => (
@@ -139,7 +144,7 @@ export default function SimulateurPTZ2026() {
                   </select>
                 </div>
                 <div>
-                  <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>Revenus fiscaux de reference (euros)</label>
+                  <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>Revenus fiscaux de référence (euros)</label>
                   <input type="number" value={revenus} onChange={(e) => setRevenus(e.target.value)}
                     className="mt-2 w-full rounded-xl border px-4 py-4 text-2xl font-bold" style={{ borderColor: "var(--border)", fontFamily: "var(--font-display)" }} />
                 </div>
@@ -163,7 +168,7 @@ export default function SimulateurPTZ2026() {
                     className="mt-2 w-full rounded-xl border px-4 py-4 text-lg font-semibold" style={{ borderColor: "var(--border)", background: "var(--surface)" }}>
                     <option value="neuf-collectif">Neuf - collectif (appartement)</option>
                     <option value="neuf-individuel">Neuf - individuel (maison)</option>
-                    <option value="ancien">Ancien avec travaux</option>
+                    <option value="ancien">Ancien avec travaux (zones B2 et C)</option>
                   </select>
                 </div>
               </div>
@@ -176,7 +181,7 @@ export default function SimulateurPTZ2026() {
                   <>
                     <div className="rounded-2xl border p-8 text-center" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
                       <div className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-semibold" style={{ background: "#16a34a20", color: "#16a34a" }}>
-                        Eligible au PTZ
+                        Éligible au PTZ
                       </div>
                       <p className="mt-4 text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: "var(--muted)" }}>Montant du PTZ</p>
                       <p className="mt-3 text-6xl font-bold" style={{ fontFamily: "var(--font-display)", color: "var(--primary)" }}>
@@ -189,11 +194,11 @@ export default function SimulateurPTZ2026() {
 
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
                       <div className="rounded-2xl border p-5" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-                        <p className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--muted)" }}>Duree totale</p>
+                        <p className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--muted)" }}>Durée totale</p>
                         <p className="mt-2 text-2xl font-bold" style={{ fontFamily: "var(--font-display)" }}>{result.dureeTotale} ans</p>
                       </div>
                       <div className="rounded-2xl border p-5" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-                        <p className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--muted)" }}>Differe</p>
+                        <p className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--muted)" }}>Différé</p>
                         <p className="mt-2 text-2xl font-bold" style={{ fontFamily: "var(--font-display)" }}>{result.differe} ans</p>
                       </div>
                       <div className="rounded-2xl border p-5" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
@@ -201,14 +206,14 @@ export default function SimulateurPTZ2026() {
                         <p className="mt-2 text-2xl font-bold" style={{ fontFamily: "var(--font-display)" }}>{result.dureeRemboursement} ans</p>
                       </div>
                       <div className="rounded-2xl border p-5" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-                        <p className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--muted)" }}>Mensualite apres differe</p>
+                        <p className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--muted)" }}>Mensualité après différé</p>
                         <p className="mt-2 text-2xl font-bold" style={{ fontFamily: "var(--font-display)", color: "#16a34a" }}>{fmt2(result.mensualite)} euros</p>
                       </div>
                     </div>
 
                     {/* Detail */}
                     <div className="rounded-2xl border p-6" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-                      <h2 className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--accent)" }}>Detail du calcul</h2>
+                      <h2 className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--accent)" }}>Détail du calcul</h2>
                       <div className="mt-4 space-y-3 text-sm" style={{ color: "var(--muted)" }}>
                         <div className="flex justify-between">
                           <span>Plafond de revenus (zone {zone}, {nbPersonnes} pers.)</span>
@@ -218,9 +223,17 @@ export default function SimulateurPTZ2026() {
                           <span>Vos revenus</span>
                           <span className="font-semibold" style={{ color: "var(--foreground)" }}>{fmt(result.revenus)} euros</span>
                         </div>
+                        <div className="flex justify-between">
+                          <span>Ressources retenues (max. RFR / coût de l&apos;opération divisé par 9)</span>
+                          <span className="font-semibold" style={{ color: "var(--foreground)" }}>{fmt(result.ressources)} euros</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Tranche de revenus</span>
+                          <span className="font-semibold" style={{ color: "var(--foreground)" }}>Tranche {result.tranche}</span>
+                        </div>
                         <hr style={{ borderColor: "var(--border)" }} />
                         <div className="flex justify-between">
-                          <span>Plafond de l&apos;operation (zone {zone})</span>
+                          <span>Plafond de l&apos;opération (zone {zone})</span>
                           <span className="font-semibold" style={{ color: "var(--foreground)" }}>{fmt(result.plafondOperation)} euros</span>
                         </div>
                         <div className="flex justify-between">
@@ -232,7 +245,7 @@ export default function SimulateurPTZ2026() {
                           <span className="font-semibold" style={{ color: "var(--foreground)" }}>{fmt(result.montantRetenu)} euros</span>
                         </div>
                         <div className="flex justify-between">
-                          <span>Quotite ({typeBien === "neuf-collectif" ? "neuf collectif" : typeBien === "neuf-individuel" ? "neuf individuel" : "ancien avec travaux"})</span>
+                          <span>Quotité ({typeBien === "neuf-collectif" ? "neuf collectif" : typeBien === "neuf-individuel" ? "neuf individuel" : "ancien avec travaux"})</span>
                           <span className="font-semibold" style={{ color: "var(--foreground)" }}>{(result.quotite * 100).toFixed(0)}%</span>
                         </div>
                         <hr style={{ borderColor: "var(--border)" }} />
@@ -246,14 +259,22 @@ export default function SimulateurPTZ2026() {
                 ) : (
                   <div className="rounded-2xl border p-8 text-center" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
                     <div className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-semibold" style={{ background: "#dc262620", color: "#dc2626" }}>
-                      Non eligible au PTZ
+                      Non éligible au PTZ
                     </div>
-                    <p className="mt-4 text-sm" style={{ color: "var(--muted)" }}>
-                      Vos revenus ({fmt(result.revenus)} euros) depassent le plafond pour la zone {zone} avec {nbPersonnes} personne(s) : <strong className="text-[var(--foreground)]">{fmt(result.plafondRevenu)} euros</strong>.
-                    </p>
-                    <p className="mt-2 text-sm" style={{ color: "var(--muted)" }}>
-                      Essayez avec une zone differente ou verifiez vos revenus fiscaux de reference.
-                    </p>
+                    {!result.zoneEligible ? (
+                      <p className="mt-4 text-sm" style={{ color: "var(--muted)" }}>
+                        Le PTZ dans l&apos;ancien avec travaux n&apos;est accordé qu&apos;en <strong className="text-[var(--foreground)]">zones B2 et C</strong>. En zone {zone}, seuls le neuf et certaines opérations spécifiques (logement social, BRS, transformation de locaux) sont éligibles.
+                      </p>
+                    ) : (
+                      <>
+                        <p className="mt-4 text-sm" style={{ color: "var(--muted)" }}>
+                          Vos ressources retenues ({fmt(result.ressources)} euros) dépassent le plafond pour la zone {zone} avec {nbPersonnes} personne(s) : <strong className="text-[var(--foreground)]">{fmt(result.plafondRevenu)} euros</strong>.
+                        </p>
+                        <p className="mt-2 text-sm" style={{ color: "var(--muted)" }}>
+                          Les ressources retenues sont le plus élevé entre votre revenu fiscal de référence (N-2) et le coût total de l&apos;opération divisé par 9.
+                        </p>
+                      </>
+                    )}
                   </div>
                 )}
               </>
@@ -263,41 +284,41 @@ export default function SimulateurPTZ2026() {
             <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
               <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Qu&apos;est-ce que le PTZ en 2026 ?</h2>
               <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                <p>Le Pret a Taux Zero (PTZ) est un dispositif d&apos;aide a l&apos;accession a la propriete reserve aux primo-accedants. Il permet de financer une partie de l&apos;achat de sa residence principale <strong className="text-[var(--foreground)]">sans payer d&apos;interets</strong>. Le cout des interets est pris en charge par l&apos;Etat.</p>
+                <p>Le Prêt à Taux Zéro (PTZ) est un dispositif d&apos;aide à l&apos;accession à la propriété réservé aux primo-accédants. Il permet de financer une partie de l&apos;achat de sa résidence principale <strong className="text-[var(--foreground)]">sans payer d&apos;intérêts</strong>. Le coût des intérêts est pris en charge par l&apos;État.</p>
                 <p><strong className="text-[var(--foreground)]">Conditions principales :</strong></p>
                 <ul className="ml-4 list-disc space-y-1">
-                  <li>Etre primo-accedant (ne pas avoir ete proprietaire de sa residence principale au cours des 2 dernieres annees)</li>
-                  <li>Respecter les plafonds de revenus selon la zone geographique et la composition du foyer</li>
-                  <li>Acheter un logement neuf ou ancien avec travaux representant au moins 25% du cout total</li>
-                  <li>Le logement doit devenir la residence principale dans l&apos;annee suivant l&apos;achat</li>
+                  <li>Être primo-accédant (ne pas avoir été propriétaire de sa résidence principale au cours des 2 dernières années)</li>
+                  <li>Respecter les plafonds de revenus selon la zone géographique et la composition du foyer</li>
+                  <li>Acheter un logement neuf ou ancien avec travaux représentant au moins 25% du coût total</li>
+                  <li>Le logement doit devenir la résidence principale dans l&apos;année suivant l&apos;achat</li>
                 </ul>
-                <p>Depuis la <strong className="text-[var(--foreground)]">LFI 2025 et le decret du 4 mars 2025</strong> (modifiant le decret 2024-484), le PTZ neuf collectif a ete <strong className="text-[var(--foreground)]">elargi a l&apos;ensemble du territoire</strong> (avant : zones tendues uniquement). Les quotites varient selon le type de bien : neuf collectif 50% en zone Abis/A/B1 et 30% en B2/C ; neuf individuel 30% en zone Abis/A/B1 et 20% en B2/C. Cadre legal : articles <strong className="text-[var(--foreground)]">L31-10-2 et L31-10-3 du Code de la construction et de l&apos;habitation (CCH)</strong>.</p>
+                <p>Depuis la <strong className="text-[var(--foreground)]">LFI 2025 et le décret n° 2025-299 du 29 mars 2025</strong> (offres émises à compter du 1er avril 2025), le PTZ neuf (collectif et individuel) est <strong className="text-[var(--foreground)]">ouvert sur l&apos;ensemble du territoire</strong> ; l&apos;ancien avec travaux reste limité aux zones B2 et C. Le dispositif est prorogé jusqu&apos;au 31 décembre 2027 et la LF 2026 l&apos;a ouvert aux acquéreurs successifs en bail réel solidaire (BRS). La quotité dépend du type de bien et de la tranche de revenus (1 à 4) : neuf collectif et ancien 50% / 40% / 40% / 20% ; neuf individuel 30% / 20% / 20% / 10%. Cadre légal : articles <strong className="text-[var(--foreground)]">L31-10-2 et L31-10-3 du Code de la construction et de l&apos;habitation (CCH)</strong>.</p>
               </div>
             </div>
 
             {/* FAQ */}
             <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Questions frequentes</h2>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Questions fréquentes</h2>
               <div className="mt-6 space-y-5">
                 <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
-                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Comment connaitre ma zone PTZ ?</h3>
-                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>La zone depend de la commune ou se situe le logement. La zone A bis concerne Paris et 76 communes limitrophes. La zone A couvre les grandes agglomerations (Lyon, Marseille, Lille...). La zone B1 concerne les agglomerations de plus de 250 000 habitants. Les zones B2 et C couvrent le reste du territoire. Vous pouvez verifier la zone de votre commune sur le site du service public.</p>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Comment connaître ma zone PTZ ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>La zone dépend de la commune où se situe le logement. La zone A bis concerne Paris et 76 communes limitrophes. La zone A couvre les grandes agglomérations (Lyon, Marseille, Lille...). La zone B1 concerne les agglomérations de plus de 250 000 habitants. Les zones B2 et C couvrent le reste du territoire. Vous pouvez vérifier la zone de votre commune sur le site du service public.</p>
                 </div>
                 <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
                   <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Quels sont les revenus pris en compte pour le PTZ ?</h3>
-                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Le revenu pris en compte est le revenu fiscal de reference (RFR) de l&apos;annee N-2. Il figure sur votre avis d&apos;imposition. Pour un couple, les deux revenus sont additionnes. Le nombre de personnes du foyer inclut le demandeur, le co-emprunteur et les personnes a charge.</p>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Le revenu pris en compte est le revenu fiscal de référence (RFR) de l&apos;année N-2. Il figure sur votre avis d&apos;imposition. Pour un couple, les deux revenus sont additionnés. Le nombre de personnes du foyer inclut le demandeur, le co-emprunteur et les personnes à charge.</p>
                 </div>
                 <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
-                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Peut-on cumuler le PTZ avec un autre pret ?</h3>
-                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Oui, le PTZ est un pret complementaire. Il doit etre associe a un ou plusieurs prets principaux (pret bancaire classique, pret d&apos;accession sociale, pret Action Logement...). Le PTZ ne peut pas financer la totalite de l&apos;achat. Il couvre entre 20% et 50% du montant retenu selon la zone.</p>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Peut-on cumuler le PTZ avec un autre prêt ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Oui, le PTZ est un prêt complémentaire. Il doit être associé à un ou plusieurs prêts principaux (prêt bancaire classique, prêt d&apos;accession sociale, prêt Action Logement...). Le PTZ ne peut pas financer la totalité de l&apos;achat. Il couvre entre 10% et 50% du montant retenu selon le type de bien et la tranche de revenus.</p>
                 </div>
                 <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
-                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Que signifie le differe de remboursement ?</h3>
-                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Le differe est une periode pendant laquelle vous ne remboursez pas le PTZ. Vous ne payez que les mensualites de vos autres prets. Le differe peut aller de 5 a 15 ans selon vos revenus. Plus vos revenus sont faibles, plus le differe est long. Apres le differe, les mensualites du PTZ commencent sans interets.</p>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Que signifie le différé de remboursement ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Le différé est une période pendant laquelle vous ne remboursez pas le PTZ. Vous ne payez que les mensualités de vos autres prêts. Selon la tranche de revenus, le différé est de 10 ans (tranche 1), 8 ans (tranche 2), 2 ans (tranche 3) ou nul (tranche 4), pour une durée totale de 25, 20, 15 ou 10 ans. Plus vos revenus sont faibles, plus le différé est long. Après le différé, les mensualités du PTZ commencent sans intérêts.</p>
                 </div>
                 <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
-                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Quelle difference entre neuf collectif et neuf individuel pour le PTZ ?</h3>
-                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Depuis la LFI 2025 et le decret du 4 mars 2025, les quotites different : <strong className="text-[var(--foreground)]">neuf collectif</strong> (appartement en logement collectif) = 50% en zone Abis/A/B1, 30% en B2/C, eligible sur tout le territoire. <strong className="text-[var(--foreground)]">Neuf individuel</strong> (maison) = 30% en zone Abis/A/B1, 20% en B2/C. Reference : articles L31-10-2 et L31-10-3 du Code de la construction et de l&apos;habitation (CCH).</p>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Quelle différence entre neuf collectif et neuf individuel pour le PTZ ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Depuis le 1er avril 2025 (décret n° 2025-299), les deux sont éligibles sur tout le territoire mais les quotités différent selon la tranche de revenus : <strong className="text-[var(--foreground)]">neuf collectif</strong> (appartement en logement collectif) = 50% en tranche 1, 40% en tranches 2 et 3, 20% en tranche 4. <strong className="text-[var(--foreground)]">Neuf individuel</strong> (maison) = 30% en tranche 1, 20% en tranches 2 et 3, 10% en tranche 4. Référence : articles L31-10-2 et L31-10-3 du Code de la construction et de l&apos;habitation (CCH).</p>
                 </div>
               </div>
             </div>

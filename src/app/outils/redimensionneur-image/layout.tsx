@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Redimensionner Image en Ligne Gratuit - Sans Inscription",
   description:
-    "Redimensionnez vos images en pixels ou pourcentage. Ratio verrouillable, previsualisation en direct, telechargement instantane. 100% gratuit.",
+    "Redimensionnez vos images en pixels ou pourcentage. Ratio verrouillable, prévisualisation en direct, téléchargement instantané. 100% gratuit.",
   keywords: [
     "redimensionner image en ligne",
     "redimensionner une image",

@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Calculateur de Peinture - Litres et Pots Necessaires - Gratuit",
+  title: "Calculateur de Peinture - Litres et Pots Nécessaires - Gratuit",
   description:
-    "Calculez la quantite de peinture necessaire pour votre piece. Surface murs et plafond, deduction portes et fenetres, nombre de pots. Outil gratuit et instantane.",
+    "Calculez la quantité de peinture nécessaire pour votre pièce. Surface murs et plafond, déduction portes et fenêtres, nombre de pots. Outil gratuit et instantané.",
   keywords: [
     "calculateur peinture",
     "quantite peinture",

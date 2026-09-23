@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Simulateur Auto-Entrepreneur 2026 - Charges et Revenu Net",
   description:
-    "Calculez vos charges auto-entrepreneur 2026 : cotisations, impot, CFP, CFE. Taux a jour, ACRE, versement liberatoire. Gratuit et sans inscription.",
+    "Calculez vos charges auto-entrepreneur 2026 : cotisations, impôt, CFP, CFE. Taux à jour, ACRE, versement libératoire. Gratuit et sans inscription.",
   keywords: [
     "simulateur auto entrepreneur",
     "simulation auto entrepreneur",

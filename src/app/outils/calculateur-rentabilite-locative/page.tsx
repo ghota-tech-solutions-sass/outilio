@@ -29,7 +29,8 @@ export default function CalculateurRentabilite() {
 
   const result = useMemo(() => {
     const prix = parseFloat(prixAchat) || 0;
-    const frais = prix * ((parseFloat(fraisNotaire) || 8) / 100);
+    const fraisPct = parseFloat(fraisNotaire);
+    const frais = prix * ((Number.isFinite(fraisPct) ? fraisPct : 8) / 100);
     const travauxVal = parseFloat(travaux) || 0;
     const coutTotal = prix + frais + travauxVal;
     const loyer = parseFloat(loyerMensuel) || 0;
@@ -46,9 +47,13 @@ export default function CalculateurRentabilite() {
 
     // Credit
     const emprunt = coutTotal - (parseFloat(apport) || 0);
-    const r = (parseFloat(tauxCredit) || 3.5) / 100 / 12;
+    const tauxVal = parseFloat(tauxCredit);
+    const r = (Number.isFinite(tauxVal) ? Math.max(0, tauxVal) : 3.5) / 100 / 12;
     const n = (parseFloat(dureeCredit) || 20) * 12;
-    const mensualiteCredit = emprunt > 0 && r > 0 ? (emprunt * r) / (1 - Math.pow(1 + r, -n)) : 0;
+    // Taux a 0 % : remboursement lineaire du capital
+    const mensualiteCredit = emprunt > 0 && n > 0
+      ? (r === 0 ? emprunt / n : (emprunt * r) / (1 - Math.pow(1 + r, -n)))
+      : 0;
     const cashflowMensuel = loyer * (1 - vacance) - depensesAn / 12 - mensualiteCredit;
     const effortEpargne = cashflowMensuel < 0 ? Math.abs(cashflowMensuel) : 0;
 
@@ -73,7 +78,7 @@ export default function CalculateurRentabilite() {
         <div className="mx-auto max-w-7xl px-6 2xl:max-w-[1400px]">
           <p className="animate-fade-up text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: "var(--accent)" }}>Immobilier</p>
           <h1 className="animate-fade-up stagger-1 mt-3 text-4xl tracking-tight md:text-5xl" style={{ fontFamily: "var(--font-display)" }}>
-            Rentabilite <span style={{ color: "var(--primary)" }}>locative</span>
+            Rentabilité <span style={{ color: "var(--primary)" }}>locative</span>
           </h1>
           <p className="animate-fade-up stagger-2 mt-3 max-w-xl text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
             Calculez le rendement brut, net et le cashflow de votre investissement immobilier.
@@ -151,7 +156,7 @@ export default function CalculateurRentabilite() {
                 <Field label="Loyer mensuel (€)" value={loyerMensuel} onChange={setLoyerMensuel} />
                 <Field label="Vacance locative (%)" value={vacanceLocative} onChange={setVacanceLocative} />
                 <Field label="Charges annuelles (€)" value={chargesAn} onChange={setChargesAn} />
-                <Field label="Taxe fonciere (€)" value={taxeFonciere} onChange={setTaxeFonciere} />
+                <Field label="Taxe foncière (€)" value={taxeFonciere} onChange={setTaxeFonciere} />
                 <Field label="Assurance PNO (€/an)" value={assurancePNO} onChange={setAssurancePNO} />
               </div>
             </div>
@@ -161,9 +166,9 @@ export default function CalculateurRentabilite() {
               <h2 className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--accent)" }}>Financement</h2>
               <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
                 <Field label="Apport (€)" value={apport} onChange={setApport} />
-                <Field label="Taux credit (%)" value={tauxCredit} onChange={setTauxCredit} />
-                <Field label="Duree (annees)" value={dureeCredit} onChange={setDureeCredit} />
-                <Field label="Appreciation/an (%)" value={appreciationAn} onChange={setAppreciationAn} />
+                <Field label="Taux crédit (%)" value={tauxCredit} onChange={setTauxCredit} />
+                <Field label="Durée (années)" value={dureeCredit} onChange={setDureeCredit} />
+                <Field label="Appréciation/an (%)" value={appreciationAn} onChange={setAppreciationAn} />
               </div>
             </div>
 
@@ -175,7 +180,7 @@ export default function CalculateurRentabilite() {
                 color={result.rentaNette >= 5 ? "var(--primary)" : result.rentaNette >= 3 ? "var(--accent)" : "#dc2626"} />
               <StatCard label="Cashflow/mois" value={`${fmt(result.cashflowMensuel)} €`}
                 color={result.cashflowMensuel >= 0 ? "var(--primary)" : "#dc2626"} />
-              <StatCard label="Mensualite credit" value={`${fmt(result.mensualiteCredit)} €`} color="var(--foreground)" />
+              <StatCard label="Mensualité crédit" value={`${fmt(result.mensualiteCredit)} €`} color="var(--foreground)" />
               <StatCard label="Cash-on-cash" value={`${fmtPct(result.cashOnCash)}%`}
                 color={result.cashOnCash >= 10 ? "var(--primary)" : result.cashOnCash >= 5 ? "var(--accent)" : "#dc2626"} />
               <StatCard label="Plus-value/an" value={`${fmt(result.plusValueAn1)} €`} color="var(--accent)" />
@@ -196,7 +201,7 @@ export default function CalculateurRentabilite() {
                 <div className="grid grid-cols-1 gap-3">
                   <div className="rounded-xl border p-4" style={{ borderColor: "var(--border)", background: "var(--surface-alt)" }}>
                     <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>
-                      Rentabilite brute
+                      Rentabilité brute
                     </p>
                     <p
                       className="mt-1 text-3xl font-bold"
@@ -208,9 +213,9 @@ export default function CalculateurRentabilite() {
                       {fmtPct(result.rentaBrute)}%
                     </p>
                     <p className="mt-1 text-[11px]" style={{ color: "var(--muted)" }}>
-                      {result.rentaBrute < 4 && "Faible : zone tendue ou prix surevalue."}
+                      {result.rentaBrute < 4 && "Faible : zone tendue ou prix surévalué."}
                       {result.rentaBrute >= 4 && result.rentaBrute < 6 && "Correct : marges classiques en grande ville."}
-                      {result.rentaBrute >= 6 && "Excellent : bien au-dessus de la moyenne francaise."}
+                      {result.rentaBrute >= 6 && "Excellent : bien au-dessus de la moyenne française."}
                     </p>
                   </div>
                   <div className="rounded-xl border p-4" style={{ borderColor: "var(--border)", background: "var(--surface-alt)" }}>
@@ -228,8 +233,8 @@ export default function CalculateurRentabilite() {
                     </p>
                     <p className="mt-1 text-[11px]" style={{ color: "var(--muted)" }}>
                       {result.cashflowMensuel >= 0
-                        ? "Positif : auto-finance !"
-                        : `Negatif : effort d'epargne ${fmt(Math.abs(result.cashflowMensuel))} €/mois.`}
+                        ? "Positif : auto-financé !"
+                        : `Négatif : effort d'épargne ${fmt(Math.abs(result.cashflowMensuel))} €/mois.`}
                     </p>
                   </div>
                 </div>
@@ -240,16 +245,16 @@ export default function CalculateurRentabilite() {
             <div className="rounded-2xl border p-6" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
               <h2 className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--accent)" }}>Bilan annuel</h2>
               <div className="mt-4 space-y-2 text-sm">
-                <Row label="Cout total acquisition" value={`${fmt(result.coutTotal)} €`} />
+                <Row label="Coût total acquisition" value={`${fmt(result.coutTotal)} €`} />
                 <Row label="Loyers annuels bruts" value={`${fmt(result.loyerAn)} €`} />
-                <Row label="Loyers effectifs (apres vacance)" value={`${fmt(result.loyerEffectif)} €`} />
+                <Row label="Loyers effectifs (après vacance)" value={`${fmt(result.loyerEffectif)} €`} />
                 <Row label="Charges & taxes annuelles" value={`- ${fmt(result.depensesAn)} €`} />
-                <Row label="Credit annuel" value={`- ${fmt(result.mensualiteCredit * 12)} €`} />
+                <Row label="Crédit annuel" value={`- ${fmt(result.mensualiteCredit * 12)} €`} />
                 <Row label="Cashflow annuel" value={`${fmt(result.cashflowMensuel * 12)} €`} highlight primary={result.cashflowMensuel >= 0} />
-                <Row label="Plus-value estimee (an 1)" value={`+ ${fmt(result.plusValueAn1)} €`} />
+                <Row label="Plus-value estimée (an 1)" value={`+ ${fmt(result.plusValueAn1)} €`} />
                 <Row label="Cash-on-cash return" value={`${fmtPct(result.cashOnCash)}%`} highlight primary={result.cashOnCash >= 0} />
                 {result.effortEpargne > 0 && (
-                  <Row label="Effort d'epargne mensuel" value={`${fmt(result.effortEpargne)} €`} warning />
+                  <Row label="Effort d'épargne mensuel" value={`${fmt(result.effortEpargne)} €`} warning />
                 )}
               </div>
             </div>
@@ -263,14 +268,14 @@ export default function CalculateurRentabilite() {
                 <CrossLinkCard
                   href="/outils/calculateur-pret-immobilier"
                   emoji="🏠"
-                  title="Simuler le pret"
-                  desc="Mensualite, taux, capacite emprunt"
+                  title="Simuler le prêt"
+                  desc="Mensualité, taux, capacité emprunt"
                 />
                 <CrossLinkCard
                   href="/outils/simulateur-plus-value-immobiliere"
                   emoji="📈"
                   title="Plus-value future"
-                  desc="Imposition selon duree de detention"
+                  desc="Imposition selon durée de détention"
                 />
                 <CrossLinkCard
                   href="/outils/calculateur-frais-notaire"
@@ -282,23 +287,23 @@ export default function CalculateurRentabilite() {
             </div>
 
             <ToolHowToSection
-              title="Comment evaluer un investissement locatif"
-              description="Trois etapes pour decider en quelques minutes si un bien merite une visite et une offre, ou s&apos;il faut passer."
+              title="Comment évaluer un investissement locatif"
+              description="Trois étapes pour décider en quelques minutes si un bien mérite une visite et une offre, ou s&apos;il faut passer."
               steps={[
                 {
-                  name: "Cout total d&apos;acquisition reel",
+                  name: "Coût total d'acquisition réel",
                   text:
-                    "Prix d&apos;achat + frais de notaire (7-8 pourcent dans l&apos;ancien, 2-3 pourcent dans le neuf VEFA) + travaux estimes (faites passer un artisan avant l&apos;offre, pas apres). N&apos;oubliez pas les frais d&apos;agence (a la charge du vendeur ou de l&apos;acquereur selon mandat) et les eventuels frais de garantie/courtage credit.",
+                    "Prix d'achat + frais de notaire (7-8 pourcent dans l'ancien, 2-3 pourcent dans le neuf VEFA) + travaux estimés (faites passer un artisan avant l'offre, pas après). N'oubliez pas les frais d'agence (à la charge du vendeur ou de l'acquéreur selon mandat) et les éventuels frais de garantie/courtage crédit.",
                 },
                 {
-                  name: "Revenus et charges realistes",
+                  name: "Revenus et charges réalistes",
                   text:
-                    "Loyer net : verifiez la moyenne quartier sur SeLoger, LeBonCoin, ou les statistiques INSEE par commune. Vacance locative : 5 a 8 pourcent en zone tendue, 10 a 15 pourcent en zone detendue. Charges : taxe fonciere (1 a 2 mois de loyer), copropriete non recuperables (10-15 pourcent du loyer), assurance PNO obligatoire si en copropriete (loi ELAN 2018).",
+                    "Loyer net : vérifiez la moyenne quartier sur SeLoger, LeBonCoin, ou les statistiques INSEE par commune. Vacance locative : 5 à 8 pourcent en zone tendue, 10 à 15 pourcent en zone détendue. Charges : taxe foncière (1 à 2 mois de loyer), copropriété non récupérables (10-15 pourcent du loyer), assurance PNO obligatoire si en copropriété (loi ALUR 2014).",
                 },
                 {
-                  name: "Comparer rentabilite nette et cash-flow",
+                  name: "Comparer rentabilité nette et cash-flow",
                   text:
-                    "Une rentabilite brute &gt; 7 pourcent est excellente, 5-7 pourcent correcte, &lt; 5 pourcent faible (et frequente en zone tendue). Mais c&apos;est le cash-flow qui paie vos factures : un bien peut afficher 4 pourcent de renta nette mais un cash-flow positif (ou neutre) grace au credit qui rembourse une partie du capital. C&apos;est le couple renta + cash-flow + plus-value qui compte.",
+                    "Une rentabilité brute > 7 pourcent est excellente, 5-7 pourcent correcte, < 5 pourcent faible (et fréquente en zone tendue). Mais c'est le cash-flow qui paie vos factures : un bien peut afficher 4 pourcent de renta nette mais un cash-flow positif (ou neutre) grâce au crédit qui rembourse une partie du capital. C'est le couple renta + cash-flow + plus-value qui compte.",
                 },
               ]}
             />
@@ -311,7 +316,7 @@ export default function CalculateurRentabilite() {
                 className="text-2xl md:text-3xl font-extrabold"
                 style={{ fontFamily: "var(--font-display)", color: "var(--foreground)" }}
               >
-                Cas d&apos;usage du simulateur de rentabilite
+                Cas d&apos;usage du simulateur de rentabilité
               </h2>
 
               <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -320,33 +325,33 @@ export default function CalculateurRentabilite() {
                     Studio Paris vs T3 province
                   </h3>
                   <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                    Studio 22 m2 Paris 11e a 280 000 EUR loue 1 050 EUR : renta brute 4,5 pourcent.
-                    T3 70 m2 Saint-Etienne a 95 000 EUR loue 700 EUR : renta brute 8,8 pourcent.
-                    L&apos;ecart se reduit en net (vacance Saint-Etienne, taxe fonciere plus
-                    elevee), mais la province reste plus rentable hors plus-value.
+                    Studio 22 m2 Paris 11e à 280 000 € loué 1 050 € : renta brute 4,5 pourcent.
+                    T3 70 m2 Saint-Étienne à 95 000 € loué 700 € : renta brute 8,8 pourcent.
+                    L&apos;écart se réduit en net (vacance Saint-Étienne, taxe foncière plus
+                    élevée), mais la province reste plus rentable hors plus-value.
                   </p>
                 </div>
                 <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
                   <h3 className="font-semibold" style={{ color: "var(--foreground)" }}>
-                    LMNP meuble vs location nue
+                    LMNP meublé vs location nue
                   </h3>
                   <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                    Meme bien loue 700 EUR nu ou 850 EUR meuble (LMNP). En LMNP regime reel,
+                    Même bien loué 700 € nu ou 850 € meublé (LMNP). En LMNP régime réel,
                     l&apos;amortissement immobilier (sur 25-30 ans) gomme presque tous les loyers
-                    fiscalement pendant 15-20 ans. La rentabilite nette d&apos;impot peut etre
-                    50 a 80 pourcent superieure a la location nue au regime micro-foncier.
+                    fiscalement pendant 15-20 ans. La rentabilité nette d&apos;impôt peut être
+                    50 à 80 pourcent supérieure à la location nue au régime micro-foncier.
                   </p>
                 </div>
                 <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
                   <h3 className="font-semibold" style={{ color: "var(--foreground)" }}>
-                    Investisseur Pinel
+                    Investissement dans le neuf
                   </h3>
                   <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                    Pinel Plus 2026 (dispositif art. 199 novovicies CGI dans sa derniere version)
-                    : reduction d&apos;impot de 9 a 14 pourcent du prix d&apos;achat sur 6, 9 ou 12
-                    ans, plafonnee a 300 000 EUR et 5 500 EUR/m2. Souvent la rentabilite brute
-                    affichee (3,5-4 pourcent) ne devient interessante qu&apos;une fois la reduction
-                    d&apos;impot integree au calcul global.
+                    Le Pinel (art. 199 novovicies CGI) a pris fin le 31 décembre 2024 : plus aucune
+                    réduction d&apos;impôt pour les acquisitions depuis 2025. La loi de finances 2026
+                    a créé un nouveau statut du bailleur privé (amortissement fiscal sous conditions
+                    de loyer). La rentabilité brute du neuf (souvent 3,5-4 pourcent) doit donc être
+                    jugée en intégrant ce nouveau cadre fiscal, à vérifier avec un conseiller.
                   </p>
                 </div>
                 <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
@@ -354,10 +359,10 @@ export default function CalculateurRentabilite() {
                     Cash-flow positif et autofinancement
                   </h3>
                   <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                    Bien acquis 130 000 EUR (frais inclus), loyer 850 EUR, mensualite credit 600
-                    EUR, charges + taxe + PNO 150 EUR : cash-flow 100 EUR/mois positif. Le bien se
-                    finance seul. Avec 20 KEUR d&apos;apport, cash-on-cash 6 pourcent + plus-value
-                    eventuelle + amortissement capital de l&apos;emprunt = effet de levier puissant.
+                    Bien acquis 130 000 € (frais inclus), loyer 850 €, mensualité crédit 600
+                    €, charges + taxe + PNO 150 € : cash-flow 100 €/mois positif. Le bien se
+                    finance seul. Avec 20 k€ d&apos;apport, cash-on-cash 6 pourcent + plus-value
+                    éventuelle + amortissement capital de l&apos;emprunt = effet de levier puissant.
                   </p>
                 </div>
               </div>
@@ -371,91 +376,93 @@ export default function CalculateurRentabilite() {
                 className="text-2xl md:text-3xl font-extrabold"
                 style={{ fontFamily: "var(--font-display)", color: "var(--foreground)" }}
               >
-                A savoir : fiscalite, dispositifs et pieges
+                À savoir : fiscalité, dispositifs et pièges
               </h2>
 
               <div className="mt-4 space-y-4 leading-relaxed" style={{ color: "var(--foreground)" }}>
                 <p>
-                  <strong>Rendement brut vs net vs net-net.</strong> Brut = loyers annuels / cout
-                  total d&apos;acquisition. Net = (loyers - charges - taxe fonciere - assurance
-                  PNO) / cout total. Net-net (le seul qui compte vraiment) = net apres
-                  imposition (TMI + prelevements sociaux 17,2 pourcent en location nue, ou regime
-                  LMNP plus avantageux). En tranche IR a 30 pourcent + PS, un rendement net de
-                  5 pourcent peut tomber a 2,5 pourcent net-net en location nue.
+                  <strong>Rendement brut vs net vs net-net.</strong> Brut = loyers annuels / coût
+                  total d&apos;acquisition. Net = (loyers - charges - taxe foncière - assurance
+                  PNO) / coût total. Net-net (le seul qui compte vraiment) = net après
+                  imposition (TMI + prélèvements sociaux 17,2 pourcent en location nue, taux non
+                  concerné par la hausse de CSG 2026, ou régime
+                  LMNP plus avantageux). En tranche IR à 30 pourcent + PS, un rendement net de
+                  5 pourcent peut tomber à 2,5 pourcent net-net en location nue.
                 </p>
                 <p>
-                  <strong>Location meublee LMNP / LMP.</strong> Statut Loueur Meuble Non
-                  Professionnel (art. 155 IV-2 CGI) accessible si recettes &lt; 23 000 EUR/an OU
-                  &lt; revenus du foyer. Regime micro-BIC : abattement forfaitaire de 50 pourcent
-                  sur les loyers. Regime reel BIC : amortissement immobilier (hors terrain) sur
-                  20-30 ans, deduction des interets, frais et travaux. Le reel est presque
-                  toujours plus avantageux des que les charges dépassent 30 pourcent du loyer.
+                  <strong>Location meublée LMNP / LMP.</strong> Statut Loueur Meublé Non
+                  Professionnel (art. 155 IV-2 CGI) accessible si recettes &lt; 23 000 €/an OU
+                  &lt; revenus du foyer. Régime micro-BIC : abattement forfaitaire de 50 pourcent
+                  sur les loyers. Régime réel BIC : amortissement immobilier (hors terrain) sur
+                  20-30 ans, déduction des intérêts, frais et travaux. Le réel est presque
+                  toujours plus avantageux dès que les charges dépassent 30 pourcent du loyer.
                 </p>
                 <p>
-                  <strong>Deficit foncier en location nue.</strong> Si vos charges (interets,
-                  travaux deductibles, taxe fonciere, assurance) depassent vos loyers, le
-                  deficit foncier impute sur le revenu global jusqu&apos;a 10 700 EUR par an
-                  (art. 156 CGI), 21 400 EUR pour les travaux de renovation energetique
-                  jusqu&apos;a fin 2025. Le surplus s&apos;impute sur les revenus fonciers des
-                  10 annees suivantes. Levier puissant pour les TMI elevees.
+                  <strong>Déficit foncier en location nue.</strong> Si vos charges (intérêts,
+                  travaux déductibles, taxe foncière, assurance) dépassent vos loyers, le
+                  déficit foncier imputé sur le revenu global jusqu&apos;à 10 700 € par an
+                  (art. 156 CGI), 21 400 € pour les travaux de rénovation énergétique
+                  payés jusqu&apos;à fin 2027 (prorogation LF 2026). Le surplus s&apos;impute sur les revenus fonciers des
+                  10 années suivantes. Levier puissant pour les TMI élevées.
                 </p>
                 <p>
-                  <strong>Pinel et Pinel Plus.</strong> Le dispositif Pinel classique disparait
-                  en 2025. Le Pinel Plus 2026 (art. 199 novovicies CGI dans sa derniere
-                  version) impose des criteres environnementaux (RE2020 ou label E+C-) et de
-                  surface minimale. Reduction de 9 a 14 pourcent du prix sur 6, 9 ou 12 ans.
-                  Plafond 300 000 EUR / 5 500 EUR le m2. La rentabilite brute Pinel est souvent
-                  faible (3,5-4 pourcent) : c&apos;est la reduction d&apos;impot qui fait le
-                  rendement total.
+                  <strong>Fin du Pinel, statut du bailleur privé.</strong> Le dispositif Pinel
+                  (art. 199 novovicies CGI), y compris le Pinel Plus, s&apos;est arrêté le 31
+                  décembre 2024 : les acquisitions réalisées depuis 2025 n&apos;ouvrent plus droit à
+                  la réduction d&apos;impôt. La loi de finances 2026 a introduit un statut du
+                  bailleur privé reposant sur un amortissement fiscal du logement loué, sous
+                  conditions (plafonds de loyer, durée de location). Vérifiez les conditions
+                  exactes avant d&apos;intégrer cet avantage dans votre calcul.
                 </p>
                 <p>
-                  <strong>Plus-value immobiliere.</strong> Sur la residence principale :
-                  exoneration totale (art. 150 U-II-1 CGI). Sur l&apos;investissement locatif :
-                  imposition au PFU 19 pourcent + 17,2 pourcent PS (soit 36,2 pourcent), avec
-                  abattement progressif pour duree de detention : exoneration IR a 22 ans,
-                  exoneration PS a 30 ans. La duree de detention reduit fortement le poids
-                  fiscal a la revente.
+                  <strong>Plus-value immobilière.</strong> Sur la résidence principale :
+                  exonération totale (art. 150 U-II-1 CGI). Sur l&apos;investissement locatif :
+                  imposition au taux forfaitaire de 19 pourcent + 17,2 pourcent PS (soit 36,2
+                  pourcent, plus une surtaxe au-delà de 50 000 € de plus-value), avec
+                  abattement progressif pour durée de détention : exonération IR à 22 ans,
+                  exonération PS à 30 ans. La durée de détention réduit fortement le poids
+                  fiscal à la revente.
                 </p>
               </div>
             </section>
 
             <ToolFaqSection
-              intro="Les questions cles avant un investissement immobilier locatif en France."
+              intro="Les questions clés avant un investissement immobilier locatif en France."
               items={[
                 {
-                  question: "Quelle difference entre rentabilite brute et rentabilite nette ?",
+                  question: "Quelle différence entre rentabilité brute et rentabilité nette ?",
                   answer:
-                    "Brute = loyers annuels / cout total d&apos;acquisition x 100. Nette = (loyers - vacance - charges copro non recuperables - taxe fonciere - PNO) / cout total x 100. Sur un bien a 200 000 EUR loue 900 EUR/mois (10 800 EUR/an), avec 1 200 EUR de charges + 1 000 EUR de taxe + 200 EUR PNO + 5 pourcent de vacance : rentabilite brute 5,4 pourcent, rentabilite nette 3,9 pourcent. Visez toujours la nette, pas la brute des annonces.",
+                    "Brute = loyers annuels / coût total d'acquisition x 100. Nette = (loyers - vacance - charges copro non récupérables - taxe foncière - PNO) / coût total x 100. Sur un bien à 200 000 € loué 900 €/mois (10 800 €/an), avec 1 200 € de charges + 1 000 € de taxe + 200 € PNO + 5 pourcent de vacance : rentabilité brute 5,4 pourcent, rentabilité nette 3,9 pourcent. Visez toujours la nette, pas la brute des annonces.",
                 },
                 {
-                  question: "Qu&apos;est-ce qu&apos;un bon rendement locatif en France ?",
+                  question: "Qu'est-ce qu'un bon rendement locatif en France ?",
                   answer:
-                    "Brut superieur a 7 pourcent : excellent (souvent province, petites villes). Brut entre 5 et 7 pourcent : correct (villes moyennes, grandes agglomerations hors Paris). Brut inferieur a 5 pourcent : faible (Paris, Lyon, Bordeaux, cote d&apos;Azur). Mais une renta brute basse compensee par une plus-value attendue forte (zones tendues) reste un investissement valable a long terme.",
+                    "Brut supérieur à 7 pourcent : excellent (souvent province, petites villes). Brut entre 5 et 7 pourcent : correct (villes moyennes, grandes agglomérations hors Paris). Brut inférieur à 5 pourcent : faible (Paris, Lyon, Bordeaux, côte d'Azur). Mais une renta brute basse compensée par une plus-value attendue forte (zones tendues) reste un investissement valable à long terme.",
                 },
                 {
-                  question: "Qu&apos;est-ce que le cash-on-cash return ?",
+                  question: "Qu'est-ce que le cash-on-cash return ?",
                   answer:
-                    "Rendement sur fonds propres = cash-flow annuel apres credit / apport personnel x 100. Mesure ce que rapporte chaque euro d&apos;apport, en integrant l&apos;effet de levier du credit. Cash-on-cash &gt; 10 pourcent : tres attractif. 5-10 pourcent : correct. Negatif : effort d&apos;epargne mensuel necessaire mais peut rester rentable a la revente.",
+                    "Rendement sur fonds propres = cash-flow annuel après crédit / apport personnel x 100. Mesure ce que rapporte chaque euro d'apport, en intégrant l'effet de levier du crédit. Cash-on-cash > 10 pourcent : très attractif. 5-10 pourcent : correct. Négatif : effort d'épargne mensuel nécessaire mais peut rester rentable à la revente.",
                 },
                 {
-                  question: "Faut-il privilegier la location nue ou la location meublee LMNP ?",
+                  question: "Faut-il privilégier la location nue ou la location meublée LMNP ?",
                   answer:
-                    "LMNP au regime reel BIC est presque toujours plus avantageux que la location nue : l&apos;amortissement immobilier (hors terrain, sur 20-30 ans) plus l&apos;amortissement du mobilier (5-10 ans) gomment l&apos;essentiel des loyers fiscalement pendant 15-20 ans. Loyers superieurs en moyenne (+15 a 25 pourcent vs nu) mais turnover plus eleve. Idéal pour studios et T2 en zone universitaire ou affaires.",
+                    "LMNP au régime réel BIC est presque toujours plus avantageux que la location nue : l'amortissement immobilier (hors terrain, sur 20-30 ans) plus l'amortissement du mobilier (5-10 ans) gomment l'essentiel des loyers fiscalement pendant 15-20 ans. Loyers supérieurs en moyenne (+15 à 25 pourcent vs nu) mais turnover plus élevé. Idéal pour studios et T2 en zone universitaire ou affaires.",
                 },
                 {
-                  question: "Comment fonctionne le deficit foncier ?",
+                  question: "Comment fonctionne le déficit foncier ?",
                   answer:
-                    "En location nue, si vos charges (interets d&apos;emprunt, travaux deductibles, taxe fonciere, assurance, frais de gestion) depassent les loyers, vous creez un deficit foncier imputable sur le revenu global jusqu&apos;a 10 700 EUR/an (art. 156 CGI). Doublement du plafond a 21 400 EUR/an pour les travaux de renovation energetique jusqu&apos;a fin 2025. Levier majeur pour les TMI a 30, 41 ou 45 pourcent.",
+                    "En location nue, si vos charges (intérêts d'emprunt, travaux déductibles, taxe foncière, assurance, frais de gestion) dépassent les loyers, vous créez un déficit foncier imputable sur le revenu global jusqu'à 10 700 €/an (art. 156 CGI). Doublement du plafond à 21 400 €/an pour les travaux de rénovation énergétique payés jusqu'à fin 2027 (prorogation LF 2026). Levier majeur pour les TMI à 30, 41 ou 45 pourcent.",
                 },
                 {
-                  question: "Quels sont les frais de notaire dans l&apos;ancien et le neuf ?",
+                  question: "Quels sont les frais de notaire dans l'ancien et le neuf ?",
                   answer:
-                    "Ancien : environ 7,5 a 8 pourcent du prix d&apos;achat (droits de mutation 5,80 pourcent + emoluments du notaire + debours). Neuf VEFA : 2 a 3 pourcent (TVA 20 pourcent deja incluse dans le prix, droits reduits a 0,71 pourcent). Sur un bien a 200 000 EUR : ~15 000 EUR ancien vs ~5 000 EUR neuf. A integrer imperativement dans le cout total avant calcul de rentabilite.",
+                    "Ancien : environ 7,5 à 8 pourcent du prix d'achat (droits de mutation de 5,81 pourcent à 6,32 pourcent selon le département depuis la hausse autorisée en 2025 + émoluments du notaire + débours). Neuf VEFA : 2 à 3 pourcent (TVA 20 pourcent déjà incluse dans le prix, droits réduits à 0,71 pourcent). Sur un bien à 200 000 € : ~15 000 € ancien vs ~5 000 € neuf. À intégrer impérativement dans le coût total avant calcul de rentabilité.",
                 },
                 {
-                  question: "Que prevoir comme vacance locative dans son calcul ?",
+                  question: "Que prévoir comme vacance locative dans son calcul ?",
                   answer:
-                    "Zone tres tendue (Paris, Lyon, Bordeaux, Annecy) : 3-5 pourcent. Zone tendue (grandes villes francaises) : 5-8 pourcent. Zone detendue (villes moyennes, periurbain) : 8-15 pourcent. Le mobilier LMNP reduit generalement la vacance grace a une cible plus large (etudiants, professionnels en mobilite, expat). Sous-estimer la vacance est l&apos;erreur classique des projections de rentabilite.",
+                    "Zone très tendue (Paris, Lyon, Bordeaux, Annecy) : 3-5 pourcent. Zone tendue (grandes villes françaises) : 5-8 pourcent. Zone détendue (villes moyennes, périurbain) : 8-15 pourcent. Le mobilier LMNP réduit généralement la vacance grâce à une cible plus large (étudiants, professionnels en mobilité, expat). Sous-estimer la vacance est l'erreur classique des projections de rentabilité.",
                 },
               ]}
             />
@@ -464,7 +471,7 @@ export default function CalculateurRentabilite() {
           <aside className="space-y-6">
             <AdPlaceholder className="h-[250px]" />
             <div className="rounded-2xl border p-6" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-              <h3 className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--accent)" }}>Reperes</h3>
+              <h3 className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--accent)" }}>Repères</h3>
               <ul className="mt-3 space-y-2 text-sm" style={{ color: "var(--muted)" }}>
                 <li>Renta. brute &gt; <strong className="text-[var(--primary)]">7%</strong> = excellent</li>
                 <li>Renta. brute <strong>5-7%</strong> = correct</li>
@@ -544,7 +551,7 @@ function DonutChart({
   const dominantColor = rentaBrute > 6 ? "var(--primary)" : rentaBrute < 4 ? "#dc2626" : "var(--accent)";
 
   return (
-    <svg width="160" height="160" viewBox="-80 -80 160 160" role="img" aria-label="Repartition cash-flow mensuel">
+    <svg width="160" height="160" viewBox="-80 -80 160 160" role="img" aria-label="Répartition cash-flow mensuel">
       <circle cx="0" cy="0" r={r} fill="none" stroke="var(--border)" strokeWidth={stroke} />
       <g transform="rotate(-90)">
         <circle

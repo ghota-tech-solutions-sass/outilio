@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Minuteur et chronometre en ligne - Timer gratuit",
+  title: "Minuteur et chronomètre en ligne - Timer gratuit",
   description:
-    "Minuteur avec compte a rebours et chronometre en ligne. Alarme sonore, demarrer, arreter, reinitialiser. Gratuit et sans inscription.",
+    "Minuteur avec compte à rebours et chronomètre en ligne. Alarme sonore, démarrer, arrêter, réinitialiser. Gratuit et sans inscription.",
   keywords: [
     "minuteur en ligne",
     "chronometre",

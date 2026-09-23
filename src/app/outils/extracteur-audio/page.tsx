@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useRef, useEffect } from "react";
 import AdPlaceholder from "@/components/AdPlaceholder";
+import { FFmpegSession, baseName, safeExtension, type ProbeInfo } from "@/lib/ffmpeg";
 
 interface VideoFileInfo {
   name: string;
@@ -9,6 +10,53 @@ interface VideoFileInfo {
   type: string;
   duration: number;
   url: string;
+  file: File;
+}
+
+type OutputMode = "copy" | "mp3" | "wav";
+type Mp3Bitrate = "128k" | "192k" | "320k";
+
+interface ExtractResult {
+  url: string;
+  size: number;
+  name: string;
+  label: string;
+}
+
+const MAX_FILE_SIZE = 500 * 1024 * 1024;
+/** Above this estimate the WAV (PCM 16 bits) output is refused: it would not fit in the browser memory */
+const MAX_WAV_SIZE = 400 * 1024 * 1024;
+/** The waveform is decoded at 8 kHz: 30 min ≈ 115 Mo of samples in memory for a stereo track */
+const WAVEFORM_MAX_DURATION = 30 * 60;
+
+const VIDEO_EXT = /\.(mp4|m4v|webm|mov|mkv|avi|ogv|3gp|ts|mts|m2ts|flv|wmv|mpg|mpeg)$/i;
+
+/** Containers used when the audio stream is copied as is (no re-encoding) */
+function copyTarget(codec: string): { ext: string; mime: string; label: string } | null {
+  switch (codec) {
+    case "aac":
+      return { ext: "m4a", mime: "audio/mp4", label: "AAC" };
+    case "alac":
+      return { ext: "m4a", mime: "audio/mp4", label: "ALAC" };
+    case "mp3":
+      return { ext: "mp3", mime: "audio/mpeg", label: "MP3" };
+    case "opus":
+      return { ext: "ogg", mime: "audio/ogg", label: "Opus" };
+    case "vorbis":
+      return { ext: "ogg", mime: "audio/ogg", label: "Vorbis" };
+    case "flac":
+      return { ext: "flac", mime: "audio/flac", label: "FLAC" };
+    case "pcm_s16le":
+    case "pcm_s24le":
+    case "pcm_s32le":
+    case "pcm_f32le":
+    case "pcm_f64le":
+    case "pcm_u8":
+      return { ext: "wav", mime: "audio/wav", label: "PCM" };
+    default:
+      // Big-endian PCM (common in MOV), AC-3, E-AC-3, DTS, WMA...: converted instead
+      return null;
+  }
 }
 
 function formatSize(bytes: number): string {
@@ -18,127 +66,142 @@ function formatSize(bytes: number): string {
 }
 
 function formatDuration(seconds: number): string {
-  const m = Math.floor(seconds / 60);
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
   const s = Math.floor(seconds % 60);
-  return `${m}:${s.toString().padStart(2, "0")}`;
+  return h > 0
+    ? `${h}:${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`
+    : `${m}:${s.toString().padStart(2, "0")}`;
+}
+
+function describeAudio(a: NonNullable<ProbeInfo["audio"]>): string {
+  const parts = [a.codec.toUpperCase()];
+  if (a.sampleRate) parts.push(`${(a.sampleRate / 1000).toLocaleString("fr-FR")} kHz`);
+  parts.push(a.channels === 1 ? "mono" : a.channels === 2 ? "stéréo" : `${a.channels} canaux`);
+  if (a.bitrateKbps) parts.push(`${a.bitrateKbps} kb/s`);
+  return parts.join(", ");
 }
 
 export default function ExtracteurAudio() {
   const [videoFile, setVideoFile] = useState<VideoFileInfo | null>(null);
+  const [previewError, setPreviewError] = useState(false);
   const [error, setError] = useState("");
   const [dragOver, setDragOver] = useState(false);
+  const [probing, setProbing] = useState(false);
+  const [probe, setProbe] = useState<ProbeInfo | null>(null);
+  const [mode, setMode] = useState<OutputMode>("copy");
+  const [mp3Bitrate, setMp3Bitrate] = useState<Mp3Bitrate>("192k");
   const [extracting, setExtracting] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [result, setResult] = useState<{ url: string; size: number; name: string } | null>(null);
+  const [status, setStatus] = useState("");
+  const [result, setResult] = useState<ExtractResult | null>(null);
+  const [waveformStatus, setWaveformStatus] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
-  const videoRef = useRef<HTMLVideoElement>(null);
   const waveformRef = useRef<HTMLCanvasElement>(null);
-  const abortRef = useRef(false);
+  const sessionRef = useRef<FFmpegSession | null>(null);
+  const cancelledRef = useRef(false);
+  // Incremented for each new file: results of an outdated probe are ignored
+  const fileTokenRef = useRef(0);
 
+  // Revoke each object URL when it is replaced or on unmount (one effect per URL)
+  const videoUrl = videoFile?.url;
+  const resultUrl = result?.url;
   useEffect(() => {
     return () => {
-      if (videoFile?.url) URL.revokeObjectURL(videoFile.url);
-      if (result?.url) URL.revokeObjectURL(result.url);
+      if (videoUrl) URL.revokeObjectURL(videoUrl);
     };
-  }, [videoFile, result]);
+  }, [videoUrl]);
+  useEffect(() => {
+    return () => {
+      if (resultUrl) URL.revokeObjectURL(resultUrl);
+    };
+  }, [resultUrl]);
 
-  const drawWaveform = useCallback(async (file: File) => {
-    const canvas = waveformRef.current;
-    if (!canvas) return;
-
-    try {
-      const audioCtx = new AudioContext();
-      const buffer = await file.arrayBuffer();
-      const audioBuffer = await audioCtx.decodeAudioData(buffer);
-      const data = audioBuffer.getChannelData(0);
-      const ctx = canvas.getContext("2d")!;
-      const width = canvas.width;
-      const height = canvas.height;
-
-      ctx.clearRect(0, 0, width, height);
-
-      // Background
-      const computedStyle = getComputedStyle(document.documentElement);
-      const surfaceColor = computedStyle.getPropertyValue("--surface").trim() || "#ffffff";
-      ctx.fillStyle = surfaceColor;
-      ctx.fillRect(0, 0, width, height);
-
-      // Draw waveform
-      const primaryColor = computedStyle.getPropertyValue("--primary").trim() || "#0d4f3c";
-      ctx.strokeStyle = primaryColor;
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-
-      const step = Math.ceil(data.length / width);
-      const amp = height / 2;
-      for (let i = 0; i < width; i++) {
-        let min = 1.0;
-        let max = -1.0;
-        for (let j = 0; j < step; j++) {
-          const datum = data[i * step + j];
-          if (datum !== undefined) {
-            if (datum < min) min = datum;
-            if (datum > max) max = datum;
-          }
-        }
-        ctx.moveTo(i, (1 + min) * amp);
-        ctx.lineTo(i, (1 + max) * amp);
-      }
-      ctx.stroke();
-
-      // Center line
-      const mutedColor = computedStyle.getPropertyValue("--muted").trim() || "#8a8578";
-      ctx.strokeStyle = mutedColor;
-      ctx.lineWidth = 0.5;
-      ctx.setLineDash([4, 4]);
-      ctx.beginPath();
-      ctx.moveTo(0, amp);
-      ctx.lineTo(width, amp);
-      ctx.stroke();
-      ctx.setLineDash([]);
-
-      audioCtx.close();
-    } catch {
-      // Waveform drawing is optional; silently fail
-    }
+  // Kill the FFmpeg worker when leaving the page
+  useEffect(() => {
+    return () => {
+      sessionRef.current?.terminate();
+      sessionRef.current = null;
+    };
   }, []);
 
-  const loadVideo = useCallback(async (file: File) => {
-    setError("");
-    setResult(null);
-    setProgress(0);
+  const getSession = useCallback(async (): Promise<FFmpegSession> => {
+    if (sessionRef.current && !sessionRef.current.terminated) return sessionRef.current;
+    const session = await FFmpegSession.create(setStatus);
+    sessionRef.current = session;
+    return session;
+  }, []);
 
-    if (!file.type.startsWith("video/")) {
-      setError("Seuls les fichiers video sont acceptes.");
-      return;
-    }
+  const dropSession = () => {
+    sessionRef.current?.terminate();
+    sessionRef.current = null;
+  };
 
-    const url = URL.createObjectURL(file);
-    const video = document.createElement("video");
-    video.preload = "metadata";
-    video.src = url;
+  const analyse = useCallback(
+    async (file: File, token: number) => {
+      setProbing(true);
+      setStatus("Chargement de FFmpeg...");
+      let cleanup: (() => Promise<void>) | null = null;
+      try {
+        const session = await getSession();
+        if (token !== fileTokenRef.current) return;
+        setStatus("Analyse des pistes de la vidéo...");
+        const input = await session.mountInput(file, safeExtension(file.name, "mp4"));
+        cleanup = input.cleanup;
+        const info = await session.probe(input.path);
+        if (token !== fileTokenRef.current) return;
+        if (!info.hasAudio || !info.audio) {
+          setError("Cette vidéo ne contient aucune piste audio : il n'y a rien à extraire.");
+          return;
+        }
+        setProbe(info);
+        setMode(copyTarget(info.audio.codec) ? "copy" : "mp3");
+        if (info.duration > 0) {
+          setVideoFile((prev) => (prev && prev.file === file && !prev.duration ? { ...prev, duration: info.duration } : prev));
+        }
+      } catch (e) {
+        console.error("FFmpeg probe error:", e);
+        if (token !== fileTokenRef.current) return;
+        dropSession();
+        setError(
+          "Impossible de charger ou d'exécuter FFmpeg. Vérifiez votre connexion internet ou désactivez un éventuel bloqueur de scripts, puis réessayez."
+        );
+      } finally {
+        if (cleanup && sessionRef.current) await cleanup();
+        if (token === fileTokenRef.current) {
+          setProbing(false);
+          setStatus("");
+        }
+      }
+    },
+    [getSession]
+  );
 
-    try {
-      await new Promise<void>((resolve, reject) => {
-        video.onloadedmetadata = () => resolve();
-        video.onerror = () => reject(new Error("Impossible de lire la video."));
-      });
-    } catch {
-      setError("Impossible de lire cette video.");
-      return;
-    }
+  const loadVideo = useCallback(
+    (file: File) => {
+      setError("");
+      setResult(null);
+      setProgress(0);
+      setProbe(null);
+      setPreviewError(false);
+      setWaveformStatus("");
 
-    setVideoFile({
-      name: file.name,
-      size: file.size,
-      type: file.type,
-      duration: video.duration,
-      url,
-    });
+      if (!file.type.startsWith("video/") && !VIDEO_EXT.test(file.name)) {
+        setError("Seuls les fichiers vidéo sont acceptés (MP4, MOV, WebM, MKV, AVI...).");
+        return;
+      }
+      if (file.size > MAX_FILE_SIZE) {
+        setError("Fichier trop volumineux : 500 Mo maximum pour un traitement dans le navigateur.");
+        return;
+      }
 
-    // Draw waveform in background
-    drawWaveform(file);
-  }, [drawWaveform]);
+      fileTokenRef.current += 1;
+      // Duration is read from the <video> preview (onLoadedMetadata) or from the FFmpeg analysis
+      setVideoFile({ name: file.name, size: file.size, type: file.type, duration: 0, url: URL.createObjectURL(file), file });
+      analyse(file, fileTokenRef.current);
+    },
+    [analyse]
+  );
 
   const handleDrop = useCallback(
     (e: React.DragEvent) => {
@@ -150,140 +213,194 @@ export default function ExtracteurAudio() {
     [loadVideo]
   );
 
+  const audio = probe?.audio ?? null;
+  const copy = audio ? copyTarget(audio.codec) : null;
+  const duration = videoFile?.duration || probe?.duration || 0;
+  const wavEstimate = audio && duration ? duration * (audio.sampleRate || 48000) * audio.channels * 2 : 0;
+
   const extractAudio = async () => {
-    if (!videoFile || !videoRef.current) return;
+    if (!videoFile || !audio) return;
+    if (mode === "copy" && !copy) return;
+    if (mode === "wav" && wavEstimate > MAX_WAV_SIZE) {
+      setError(
+        `Le WAV ferait environ ${formatSize(wavEstimate)}, trop lourd pour la mémoire du navigateur. Choisissez le MP3 ou la piste d'origine.`
+      );
+      return;
+    }
 
     setExtracting(true);
     setProgress(0);
     setResult(null);
     setError("");
-    abortRef.current = false;
+    setWaveformStatus("");
+    cancelledRef.current = false;
 
-    const video = videoRef.current;
-    video.currentTime = 0;
-    video.muted = false;
-
-    await new Promise<void>((resolve) => {
-      video.onseeked = () => resolve();
-      video.currentTime = 0;
-    });
-
-    let audioCtx: AudioContext;
-    let source: MediaElementAudioSourceNode;
-    let dest: MediaStreamAudioDestinationNode;
+    let session: FFmpegSession | null = null;
+    let cleanup: (() => Promise<void>) | null = null;
+    let target: { ext: string; mime: string; label: string };
+    const codecArgs: string[] = [];
+    if (mode === "copy") {
+      target = copy!;
+      codecArgs.push("-c:a", "copy");
+      if (target.ext === "m4a") codecArgs.push("-movflags", "+faststart");
+    } else if (mode === "mp3") {
+      target = { ext: "mp3", mime: "audio/mpeg", label: `MP3 ${mp3Bitrate.replace("k", " kbps")}` };
+      codecArgs.push("-c:a", "libmp3lame", "-b:a", mp3Bitrate);
+      // The MP3 format is limited to 2 channels
+      if (audio.channels > 2) codecArgs.push("-ac", "2");
+    } else {
+      target = { ext: "wav", mime: "audio/wav", label: "WAV PCM 16 bits" };
+      codecArgs.push("-c:a", "pcm_s16le");
+    }
+    const outPath = `/extract_${Date.now()}.${target.ext}`;
 
     try {
-      audioCtx = new AudioContext();
-      source = audioCtx.createMediaElementSource(video);
-      dest = audioCtx.createMediaStreamDestination();
-      source.connect(dest);
-      // Don't connect to speakers to avoid playback noise
-    } catch {
-      setError("Impossible d'acceder a la piste audio. La video ne contient peut-etre pas d'audio.");
-      setExtracting(false);
-      return;
-    }
-
-    const mimeTypes = [
-      "audio/webm;codecs=opus",
-      "audio/webm",
-      "audio/ogg;codecs=opus",
-    ];
-    let selectedMime = "";
-    for (const mime of mimeTypes) {
-      if (typeof MediaRecorder !== "undefined" && MediaRecorder.isTypeSupported(mime)) {
-        selectedMime = mime;
-        break;
-      }
-    }
-
-    if (!selectedMime) {
-      setError("Votre navigateur ne supporte pas l'extraction audio. Essayez Chrome ou Firefox.");
-      setExtracting(false);
-      audioCtx.close();
-      return;
-    }
-
-    const chunks: BlobPart[] = [];
-    const recorder = new MediaRecorder(dest.stream, { mimeType: selectedMime });
-
-    recorder.ondataavailable = (e) => {
-      if (e.data.size > 0) chunks.push(e.data);
-    };
-
-    const done = new Promise<void>((resolve) => {
-      recorder.onstop = () => resolve();
-    });
-
-    recorder.start(100);
-    video.play();
-
-    // Track progress
-    const progressInterval = setInterval(() => {
-      if (abortRef.current) {
-        clearInterval(progressInterval);
+      session = await getSession();
+      setStatus("Préparation du fichier...");
+      const input = await session.mountInput(videoFile.file, safeExtension(videoFile.name, "mp4"));
+      cleanup = input.cleanup;
+      setStatus(mode === "copy" ? "Copie de la piste audio..." : "Conversion de la piste audio...");
+      const code = await session.exec(["-i", input.path, "-map", "0:a:0", "-vn", "-sn", "-dn", ...codecArgs, "-y", outPath], {
+        duration,
+        onProgress: (r) => setProgress(Math.round(r * 100)),
+      });
+      if (code !== 0) {
+        console.error(session.getLogs().slice(-15).join("\n"));
+        setError(
+          mode === "copy"
+            ? "La copie directe de la piste a échoué. Essayez la conversion en MP3."
+            : "L'extraction a échoué : la piste audio est peut-être protégée (DRM) ou dans un format non pris en charge."
+        );
         return;
       }
-      const pct = Math.min((video.currentTime / videoFile.duration) * 100, 100);
-      setProgress(pct);
-    }, 200);
-
-    video.onended = () => {
-      clearInterval(progressInterval);
-      if (recorder.state === "recording") recorder.stop();
-    };
-
-    // Handle abort
-    const checkAbort = setInterval(() => {
-      if (abortRef.current) {
-        clearInterval(checkAbort);
-        clearInterval(progressInterval);
-        video.pause();
-        if (recorder.state === "recording") recorder.stop();
+      setStatus("Lecture du résultat...");
+      const data = await session.readFile(outPath);
+      const blob = new Blob([data as BlobPart], { type: target.mime });
+      if (blob.size === 0) {
+        setError("Le fichier produit est vide : la piste audio de cette vidéo semble vide.");
+        return;
       }
-    }, 200);
-
-    await done;
-    clearInterval(checkAbort);
-    clearInterval(progressInterval);
-
-    // Disconnect audio
-    try {
-      source.disconnect();
-      audioCtx.close();
-    } catch {
-      // ignore
-    }
-
-    if (abortRef.current) {
+      setResult({
+        url: URL.createObjectURL(blob),
+        size: blob.size,
+        name: `${baseName(videoFile.name)}_audio.${target.ext}`,
+        label: mode === "copy" ? `${target.label} d'origine (.${target.ext})` : target.label,
+      });
+      setProgress(100);
+    } catch (e) {
+      if (!cancelledRef.current) {
+        console.error("Extraction error:", e);
+        setError(
+          "Erreur pendant l'extraction : la vidéo est peut-être trop lourde pour la mémoire du navigateur. Essayez la conversion en MP3 ou un fichier plus court."
+        );
+      }
+      // The worker may be dead (cancelled or out of memory): a fresh one is created next time
+      dropSession();
+    } finally {
+      if (session && !session.terminated) {
+        if (cleanup) await cleanup();
+        await session.deleteFile(outPath);
+      }
       setExtracting(false);
-      return;
+      setStatus("");
     }
-
-    const ext = selectedMime.includes("ogg") ? "ogg" : "webm";
-    const blob = new Blob(chunks, { type: selectedMime });
-    const resultUrl = URL.createObjectURL(blob);
-    setResult({
-      url: resultUrl,
-      size: blob.size,
-      name: videoFile.name.replace(/\.[^.]+$/, `_audio.${ext}`),
-    });
-    setProgress(100);
-    setExtracting(false);
   };
 
   const cancelExtraction = () => {
-    abortRef.current = true;
+    cancelledRef.current = true;
+    dropSession();
   };
 
+  const waveformTooLong = result ? duration > WAVEFORM_MAX_DURATION || (!duration && result.size > 100 * 1024 * 1024) : false;
+
+  // Waveform of the extracted audio, decoded by the browser at a low sample rate (cheap in memory)
+  useEffect(() => {
+    if (!result) return;
+    const canvas = waveformRef.current;
+    if (!canvas) return;
+    if (waveformTooLong) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        setWaveformStatus("Calcul de la forme d'onde...");
+        const buf = await (await fetch(result.url)).arrayBuffer();
+        const ctxAudio = new OfflineAudioContext(1, 1, 8000);
+        const audioBuffer = await ctxAudio.decodeAudioData(buf);
+        if (cancelled) return;
+        const data = audioBuffer.getChannelData(0);
+        const ctx = canvas.getContext("2d")!;
+        const { width, height } = canvas;
+        const css = getComputedStyle(document.documentElement);
+        ctx.clearRect(0, 0, width, height);
+        ctx.fillStyle = css.getPropertyValue("--surface").trim() || "#ffffff";
+        ctx.fillRect(0, 0, width, height);
+        ctx.strokeStyle = css.getPropertyValue("--primary").trim() || "#0d4f3c";
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        const step = Math.max(1, Math.ceil(data.length / width));
+        const amp = height / 2;
+        for (let i = 0; i < width; i++) {
+          let min = 1;
+          let max = -1;
+          for (let j = 0; j < step; j++) {
+            const v = data[i * step + j];
+            if (v === undefined) break;
+            if (v < min) min = v;
+            if (v > max) max = v;
+          }
+          if (min > max) break;
+          ctx.moveTo(i, (1 + min) * amp);
+          ctx.lineTo(i, (1 + max) * amp);
+        }
+        ctx.stroke();
+        ctx.strokeStyle = css.getPropertyValue("--muted").trim() || "#8a8578";
+        ctx.lineWidth = 0.5;
+        ctx.setLineDash([4, 4]);
+        ctx.beginPath();
+        ctx.moveTo(0, amp);
+        ctx.lineTo(width, amp);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        setWaveformStatus("");
+      } catch {
+        if (!cancelled) setWaveformStatus("Forme d'onde indisponible : ce format n'est pas décodable par votre navigateur (le fichier reste valide).");
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [result, waveformTooLong]);
+
   const reset = () => {
-    if (videoFile?.url) URL.revokeObjectURL(videoFile.url);
-    if (result?.url) URL.revokeObjectURL(result.url);
+    fileTokenRef.current += 1;
     setVideoFile(null);
+    setProbe(null);
+    setProbing(false);
+    setStatus("");
     setResult(null);
     setProgress(0);
     setError("");
+    setWaveformStatus("");
+    setPreviewError(false);
   };
+
+  const modeOptions: { key: OutputMode; label: string; desc: string; disabled: boolean }[] = [
+    {
+      key: "copy",
+      label: copy ? `Piste d'origine (.${copy.ext})` : "Piste d'origine",
+      desc: copy
+        ? "Copie sans réencodage : instantané et sans perte"
+        : "Indisponible pour ce codec : choisissez MP3 ou WAV",
+      disabled: !copy,
+    },
+    { key: "mp3", label: "MP3", desc: "Compatible partout, fichier léger", disabled: false },
+    {
+      key: "wav",
+      label: "WAV",
+      desc: wavEstimate > MAX_WAV_SIZE ? `Trop lourd ici (≈ ${formatSize(wavEstimate)})` : "Non compressé (PCM 16 bits), pour le montage",
+      disabled: wavEstimate > MAX_WAV_SIZE,
+    },
+  ];
 
   return (
     <>
@@ -299,7 +416,7 @@ export default function ExtracteurAudio() {
             Extracteur <span style={{ color: "var(--primary)" }}>Audio</span>
           </h1>
           <p className="animate-fade-up stagger-2 mt-3 max-w-xl text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-            Extrayez la piste audio de vos videos. Visualisation de la forme d&apos;onde et telechargement du fichier audio.
+            Extrayez la piste audio de vos vidéos sans réencodage (qualité d&apos;origine) ou convertissez-la en MP3 ou WAV. Traitement local avec FFmpeg : vos fichiers restent sur votre appareil.
           </p>
         </div>
       </section>
@@ -317,6 +434,15 @@ export default function ExtracteurAudio() {
                 onDragLeave={() => setDragOver(false)}
                 onDrop={handleDrop}
                 onClick={() => inputRef.current?.click()}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    inputRef.current?.click();
+                  }
+                }}
+                role="button"
+                tabIndex={0}
+                aria-label="Choisir une vidéo dont extraire l'audio"
                 className="rounded-2xl border-2 border-dashed p-10 text-center cursor-pointer transition-all"
                 style={{
                   borderColor: dragOver ? "var(--primary)" : "var(--border)",
@@ -326,22 +452,26 @@ export default function ExtracteurAudio() {
                 <input
                   ref={inputRef}
                   type="file"
-                  accept="video/*"
+                  accept="video/*,.mkv,.avi,.mts,.m2ts,.ts,.flv,.wmv"
                   className="hidden"
-                  onChange={(e) => e.target.files?.[0] && loadVideo(e.target.files[0])}
+                  onChange={(e) => {
+                    const f = e.target.files?.[0];
+                    e.target.value = "";
+                    if (f) loadVideo(f);
+                  }}
                 />
-                <p className="text-4xl">&#127925;</p>
+                <p className="text-4xl">🎵</p>
                 <p className="mt-3 text-sm font-semibold" style={{ fontFamily: "var(--font-display)" }}>
-                  Glissez une video ici
+                  Glissez une vidéo ici
                 </p>
                 <p className="mt-1 text-xs" style={{ color: "var(--muted)" }}>
-                  MP4, WebM, MOV ou cliquez pour parcourir
+                  MP4, MOV, WebM, MKV, AVI... jusqu&apos;à 500 Mo, ou cliquez pour parcourir
                 </p>
               </div>
             )}
 
             {error && (
-              <div className="rounded-xl border p-4 text-sm" style={{ background: "rgba(220,38,38,0.06)", borderColor: "rgba(220,38,38,0.2)", color: "#dc2626" }}>
+              <div className="rounded-xl border p-4 text-sm" role="alert" style={{ background: "rgba(220,38,38,0.06)", borderColor: "rgba(220,38,38,0.2)", color: "#dc2626" }}>
                 {error}
               </div>
             )}
@@ -352,29 +482,43 @@ export default function ExtracteurAudio() {
                 <div className="rounded-2xl border overflow-hidden" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
                   <div className="px-5 py-3 border-b flex items-center justify-between" style={{ borderColor: "var(--border)", background: "var(--surface-alt)" }}>
                     <h2 className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--accent)" }}>
-                      Video source
+                      Vidéo source
                     </h2>
                     <button
                       onClick={reset}
-                      className="text-xs font-semibold transition-colors hover:opacity-70"
+                      disabled={extracting}
+                      className="text-xs font-semibold transition-colors hover:opacity-70 disabled:opacity-40"
                       style={{ color: "#dc2626" }}
                     >
-                      Changer de video
+                      Changer de vidéo
                     </button>
                   </div>
                   <div className="p-5">
-                    <video
-                      ref={videoRef}
-                      src={videoFile.url}
-                      controls
-                      className="w-full rounded-xl"
-                      style={{ maxHeight: "250px", background: "#000" }}
-                    />
+                    {!previewError ? (
+                      <video
+                        src={videoFile.url}
+                        controls
+                        preload="metadata"
+                        className="w-full rounded-xl"
+                        style={{ maxHeight: "250px", background: "#000" }}
+                        onLoadedMetadata={(e) => {
+                          const d = e.currentTarget.duration;
+                          if (Number.isFinite(d) && d > 0) {
+                            setVideoFile((prev) => (prev && prev.url === videoFile.url ? { ...prev, duration: d } : prev));
+                          }
+                        }}
+                        onError={() => setPreviewError(true)}
+                      />
+                    ) : (
+                      <p className="rounded-xl p-4 text-xs" style={{ background: "var(--surface-alt)", color: "var(--muted)" }}>
+                        Aperçu indisponible : votre navigateur ne sait pas lire ce format (MKV, AVI...). L&apos;extraction avec FFmpeg reste possible.
+                      </p>
+                    )}
                     <div className="mt-4 grid grid-cols-3 gap-3">
                       {[
                         { label: "Taille", value: formatSize(videoFile.size) },
-                        { label: "Duree", value: formatDuration(videoFile.duration) },
-                        { label: "Format", value: videoFile.type.split("/")[1]?.toUpperCase() || "N/A" },
+                        { label: "Durée", value: duration ? formatDuration(duration) : probing ? "..." : "Inconnue" },
+                        { label: "Format", value: safeExtension(videoFile.name, "?").toUpperCase() },
                       ].map((item) => (
                         <div key={item.label} className="rounded-xl border p-3 text-center" style={{ borderColor: "var(--border)" }}>
                           <p className="text-xs" style={{ color: "var(--muted)" }}>{item.label}</p>
@@ -382,39 +526,78 @@ export default function ExtracteurAudio() {
                         </div>
                       ))}
                     </div>
+                    {audio && (
+                      <p className="mt-3 text-xs" style={{ color: "var(--muted)" }}>
+                        Piste audio détectée : <strong className="text-[var(--foreground)]">{describeAudio(audio)}</strong>
+                      </p>
+                    )}
                   </div>
                 </div>
 
-                {/* Waveform */}
-                <div className="rounded-2xl border overflow-hidden" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-                  <div className="px-5 py-3 border-b" style={{ borderColor: "var(--border)", background: "var(--surface-alt)" }}>
-                    <h2 className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--accent)" }}>
-                      Forme d&apos;onde
-                    </h2>
+                {/* Analysis in progress */}
+                {probing && (
+                  <div className="rounded-2xl border p-5 text-sm" style={{ background: "var(--surface)", borderColor: "var(--border)", color: "var(--muted)" }}>
+                    {status || "Analyse de la vidéo..."}
                   </div>
-                  <div className="p-5">
-                    <canvas
-                      ref={waveformRef}
-                      width={700}
-                      height={120}
-                      className="w-full rounded-xl border"
-                      style={{ borderColor: "var(--border)", height: "120px" }}
-                    />
-                    <p className="mt-2 text-xs" style={{ color: "var(--muted)" }}>
-                      Apercu de la forme d&apos;onde audio du fichier video.
-                    </p>
-                  </div>
-                </div>
+                )}
 
-                {/* Extract button */}
-                {!extracting && !result && (
-                  <button
-                    onClick={extractAudio}
-                    className="w-full rounded-xl py-3.5 text-sm font-semibold text-white transition-all hover:opacity-90"
-                    style={{ background: "var(--primary)" }}
-                  >
-                    Extraire la piste audio
-                  </button>
+                {/* Output options */}
+                {audio && !extracting && !result && (
+                  <div className="rounded-2xl border p-5" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+                    <h3 className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--accent)" }}>
+                      Format de sortie
+                    </h3>
+                    <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-3">
+                      {modeOptions.map((opt) => (
+                        <button
+                          key={opt.key}
+                          onClick={() => setMode(opt.key)}
+                          disabled={opt.disabled}
+                          aria-pressed={mode === opt.key}
+                          className="rounded-xl border p-3 text-left transition-all disabled:opacity-50"
+                          style={{
+                            borderColor: mode === opt.key ? "var(--primary)" : "var(--border)",
+                            background: mode === opt.key ? "rgba(13,79,60,0.04)" : "transparent",
+                          }}
+                        >
+                          <p className="text-sm font-semibold">{opt.label}</p>
+                          <p className="text-xs mt-0.5" style={{ color: "var(--muted)" }}>{opt.desc}</p>
+                        </button>
+                      ))}
+                    </div>
+
+                    {mode === "mp3" && (
+                      <>
+                        <h3 className="mt-5 text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--accent)" }}>
+                          Bitrate MP3
+                        </h3>
+                        <div className="mt-3 grid grid-cols-3 gap-3">
+                          {(["128k", "192k", "320k"] as const).map((br) => (
+                            <button
+                              key={br}
+                              onClick={() => setMp3Bitrate(br)}
+                              aria-pressed={mp3Bitrate === br}
+                              className="rounded-xl border p-2.5 text-center text-sm font-semibold transition-all"
+                              style={{
+                                borderColor: mp3Bitrate === br ? "var(--primary)" : "var(--border)",
+                                background: mp3Bitrate === br ? "rgba(13,79,60,0.04)" : "transparent",
+                              }}
+                            >
+                              {br.replace("k", " kbps")}
+                            </button>
+                          ))}
+                        </div>
+                      </>
+                    )}
+
+                    <button
+                      onClick={extractAudio}
+                      className="mt-5 w-full rounded-xl py-3.5 text-sm font-semibold text-white transition-all hover:opacity-90"
+                      style={{ background: "var(--primary)" }}
+                    >
+                      Extraire la piste audio
+                    </button>
+                  </div>
                 )}
 
                 {/* Progress */}
@@ -422,7 +605,7 @@ export default function ExtracteurAudio() {
                   <div className="rounded-2xl border p-5" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
                     <div className="flex items-center justify-between mb-3">
                       <h3 className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--accent)" }}>
-                        Extraction en cours...
+                        {status || "Extraction en cours..."}
                       </h3>
                       <span className="text-sm font-bold" style={{ fontFamily: "var(--font-display)" }}>
                         {Math.round(progress)}%
@@ -435,7 +618,9 @@ export default function ExtracteurAudio() {
                       />
                     </div>
                     <p className="mt-3 text-xs" style={{ color: "var(--muted)" }}>
-                      La piste audio est en cours d&apos;extraction. La video est lue en accelere pour capturer l&apos;audio.
+                      {mode === "copy"
+                        ? "La piste est copiée telle quelle : quelques secondes suffisent, même pour une longue vidéo."
+                        : "La piste est réencodée par FFmpeg dans votre navigateur. Gardez cet onglet ouvert."}
                     </p>
                     <button
                       onClick={cancelExtraction}
@@ -451,11 +636,11 @@ export default function ExtracteurAudio() {
                 {result && (
                   <div className="rounded-2xl border p-5" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
                     <h3 className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--accent)" }}>
-                      Audio extrait
+                      Audio extrait : {result.label}
                     </h3>
                     <div className="mt-4 grid grid-cols-2 gap-3">
                       <div className="rounded-xl border p-3 text-center" style={{ borderColor: "var(--border)" }}>
-                        <p className="text-xs" style={{ color: "var(--muted)" }}>Video originale</p>
+                        <p className="text-xs" style={{ color: "var(--muted)" }}>Vidéo originale</p>
                         <p className="text-sm font-bold mt-1">{formatSize(videoFile.size)}</p>
                       </div>
                       <div className="rounded-xl border p-3 text-center" style={{ borderColor: "rgba(22,163,74,0.3)", background: "rgba(22,163,74,0.06)" }}>
@@ -463,8 +648,22 @@ export default function ExtracteurAudio() {
                         <p className="text-sm font-bold mt-1" style={{ color: "#16a34a" }}>{formatSize(result.size)}</p>
                       </div>
                     </div>
+                    <canvas
+                      ref={waveformRef}
+                      width={700}
+                      height={100}
+                      role="img"
+                      aria-label="Forme d'onde de l'audio extrait"
+                      className="mt-4 w-full rounded-xl border"
+                      style={{ borderColor: "var(--border)", height: "100px" }}
+                    />
+                    {(waveformTooLong || waveformStatus) && (
+                      <p className="mt-2 text-xs" style={{ color: "var(--muted)" }}>
+                        {waveformTooLong ? "Piste trop longue pour afficher la forme d'onde (le fichier audio est bien disponible)." : waveformStatus}
+                      </p>
+                    )}
                     <div className="mt-4">
-                      <audio controls className="w-full" src={result.url} />
+                      <audio key={result.url} controls preload="metadata" className="w-full" src={result.url} aria-label="Écouter l'audio extrait" />
                     </div>
                     <a
                       href={result.url}
@@ -472,14 +671,14 @@ export default function ExtracteurAudio() {
                       className="mt-4 block w-full rounded-xl py-3.5 text-sm font-semibold text-white text-center transition-all hover:opacity-90"
                       style={{ background: "var(--primary)" }}
                     >
-                      Telecharger l&apos;audio
+                      Télécharger l&apos;audio
                     </a>
                     <button
-                      onClick={() => { setResult(null); setProgress(0); }}
+                      onClick={() => { setResult(null); setProgress(0); setWaveformStatus(""); }}
                       className="mt-2 w-full rounded-xl border py-3 text-sm font-semibold transition-all hover:bg-[var(--surface-alt)]"
                       style={{ borderColor: "var(--border)" }}
                     >
-                      Recommencer
+                      Extraire dans un autre format
                     </button>
                   </div>
                 )}
@@ -488,61 +687,65 @@ export default function ExtracteurAudio() {
 
             {!videoFile && !error && (
               <div className="rounded-2xl border p-8 text-center" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-                <p className="text-4xl">&#127911;</p>
+                <p className="text-4xl">🎧</p>
                 <p className="mt-3 text-sm font-semibold" style={{ fontFamily: "var(--font-display)" }}>
-                  Deposez une video pour extraire l&apos;audio
+                  Déposez une vidéo pour extraire l&apos;audio
                 </p>
                 <p className="mt-1 text-xs" style={{ color: "var(--muted)" }}>
-                  La piste audio sera extraite et proposee en telechargement.
+                  La piste audio est analysée puis extraite avec FFmpeg, directement dans votre navigateur.
                 </p>
               </div>
             )}
 
             {/* About */}
             <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>A propos de l&apos;extracteur</h2>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>À propos de l&apos;extracteur</h2>
               <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                <p><strong className="text-[var(--foreground)]">Web Audio API</strong> : Utilise l&apos;API Web Audio pour capturer la piste audio de la video.</p>
-                <p><strong className="text-[var(--foreground)]">Forme d&apos;onde</strong> : Visualisation de l&apos;amplitude sonore du fichier.</p>
-                <p><strong className="text-[var(--foreground)]">Format de sortie</strong> : WebM audio (Opus) pour une qualite optimale.</p>
-                <p><strong className="text-[var(--foreground)]">100% local</strong> : Aucun fichier n&apos;est envoye sur un serveur. Tout se passe dans votre navigateur.</p>
+                <p><strong className="text-[var(--foreground)]">FFmpeg WebAssembly</strong> : la vidéo est lue par FFmpeg compilé en WebAssembly, directement dans votre navigateur. Le moteur (environ 30 Mo) est téléchargé une seule fois au premier usage.</p>
+                <p><strong className="text-[var(--foreground)]">Sans réencodage</strong> : quand le codec le permet, la piste audio est copiée telle quelle dans le bon conteneur (AAC en .m4a, MP3 en .mp3, Opus ou Vorbis en .ogg, FLAC en .flac, PCM en .wav). Aucune perte de qualité, et c&apos;est quasi instantané.</p>
+                <p><strong className="text-[var(--foreground)]">Conversion</strong> : MP3 (128, 192 ou 320 kbps) ou WAV PCM 16 bits si vous préférez un format universel.</p>
+                <p><strong className="text-[var(--foreground)]">Limites</strong> : 500 Mo maximum par vidéo ; seule la première piste audio est extraite ; le WAV est refusé au-delà d&apos;environ 400 Mo estimés.</p>
+                <p><strong className="text-[var(--foreground)]">100% local</strong> : aucun fichier n&apos;est envoyé sur un serveur.</p>
               </div>
             </div>
 
             {/* SEO Content */}
             <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
               <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
-                Comment extraire l&apos;audio d&apos;une video en ligne
+                Comment extraire l&apos;audio d&apos;une vidéo en ligne
               </h2>
               <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
                 <p>
-                  Cet outil vous permet d&apos;extraire la piste audio de n&apos;importe quelle video directement dans votre navigateur.
-                  Ideal pour recuperer la musique d&apos;une video, transcrire une interview ou isoler une bande sonore.
+                  Cet outil récupère la bande son d&apos;une vidéo directement dans votre navigateur : musique d&apos;un clip, interview à transcrire, podcast filmé...
                 </p>
                 <ul className="ml-4 list-disc space-y-1">
-                  <li><strong className="text-[var(--foreground)]">Importez votre video</strong> : glissez-deposez un fichier MP4, WebM ou MOV</li>
-                  <li><strong className="text-[var(--foreground)]">Visualisez la forme d&apos;onde</strong> : verifiez que la video contient bien une piste audio</li>
-                  <li><strong className="text-[var(--foreground)]">Lancez l&apos;extraction</strong> : le processus s&apos;effectue en temps reel avec une barre de progression</li>
-                  <li><strong className="text-[var(--foreground)]">Telechargez le resultat</strong> : ecoutez l&apos;apercu puis telechargez le fichier audio</li>
+                  <li><strong className="text-[var(--foreground)]">Importez votre vidéo</strong> : glissez-déposez un fichier MP4, MOV, WebM, MKV ou AVI (500 Mo maximum).</li>
+                  <li><strong className="text-[var(--foreground)]">Vérifiez la piste détectée</strong> : l&apos;outil affiche le codec audio trouvé (AAC, Opus, MP3...) et prévient si la vidéo n&apos;a pas de son.</li>
+                  <li><strong className="text-[var(--foreground)]">Choisissez le format</strong> : piste d&apos;origine (sans perte, instantané), MP3 ou WAV.</li>
+                  <li><strong className="text-[var(--foreground)]">Téléchargez le résultat</strong> : écoutez l&apos;aperçu, visualisez la forme d&apos;onde puis téléchargez le fichier audio.</li>
                 </ul>
               </div>
             </div>
 
             {/* FAQ */}
             <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Questions frequentes</h2>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Questions fréquentes</h2>
               <div className="mt-6 space-y-5">
                 <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
-                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Pourquoi l&apos;extraction prend-elle du temps ?</h3>
-                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>L&apos;extraction se fait en temps reel via la Web Audio API : la video est lue en accelere pendant que l&apos;audio est capture. La duree d&apos;extraction depend de la longueur de la video et des performances de votre navigateur.</p>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Quel format audio vais-je obtenir ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Avec l&apos;option « Piste d&apos;origine », vous récupérez exactement le son contenu dans la vidéo, dans le conteneur adapté : la plupart des vidéos MP4 et MOV de smartphone donnent un fichier .m4a (AAC), les vidéos WebM un fichier .ogg (Opus ou Vorbis). Si le codec ne peut pas être copié (AC-3, DTS, PCM big-endian...), choisissez MP3 ou WAV.</p>
                 </div>
                 <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
-                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Quel format audio est produit ?</h3>
-                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>L&apos;audio est exporte au format WebM avec le codec Opus, qui offre une excellente qualite sonore avec une taille de fichier reduite. Ce format est compatible avec Chrome, Firefox et la plupart des lecteurs multimedia modernes.</p>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Combien de temps dure l&apos;extraction ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>La copie de la piste d&apos;origine prend généralement quelques secondes, car rien n&apos;est réencodé. La conversion en MP3 ou WAV demande plus de calcul et dépend de la durée de la vidéo et de la puissance de votre appareil. Au premier usage, il faut aussi télécharger le moteur FFmpeg (environ 30 Mo).</p>
                 </div>
                 <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
-                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Ma video est-elle envoyee sur un serveur ?</h3>
-                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Non, l&apos;extraction est entierement realisee dans votre navigateur. Vos fichiers video ne quittent jamais votre ordinateur, garantissant la confidentialite de vos contenus.</p>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Pourquoi un message « aucune piste audio » ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Certaines vidéos (captures d&apos;écran, GIF convertis, exports sans son) ne contiennent tout simplement pas de piste audio. L&apos;outil l&apos;indique dès l&apos;analyse plutôt que de produire un fichier vide.</p>
+                </div>
+                <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Ma vidéo est-elle envoyée sur un serveur ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Non, l&apos;extraction est entièrement réalisée dans votre navigateur. Seul le moteur FFmpeg est téléchargé ; vos fichiers vidéo ne quittent jamais votre appareil.</p>
                 </div>
               </div>
             </div>
@@ -551,27 +754,27 @@ export default function ExtracteurAudio() {
           <aside className="space-y-6">
             <AdPlaceholder className="h-[250px]" />
             <div className="rounded-2xl border p-6" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-              <h3 className="text-sm font-semibold" style={{ fontFamily: "var(--font-display)" }}>Formats supportes</h3>
-              <ul className="mt-3 space-y-2 text-xs" style={{ color: "var(--muted)" }}>
-                <li className="flex gap-2">
-                  <span style={{ color: "var(--primary)" }}>&#10003;</span>
-                  <span>MP4 (H.264, H.265)</span>
-                </li>
-                <li className="flex gap-2">
-                  <span style={{ color: "var(--primary)" }}>&#10003;</span>
-                  <span>WebM (VP8, VP9)</span>
-                </li>
-                <li className="flex gap-2">
-                  <span style={{ color: "var(--primary)" }}>&#10003;</span>
-                  <span>MOV (QuickTime)</span>
-                </li>
-                <li className="flex gap-2">
-                  <span style={{ color: "var(--primary)" }}>&#10003;</span>
-                  <span>AVI</span>
-                </li>
+              <h3 className="text-sm font-semibold" style={{ fontFamily: "var(--font-display)" }}>Formats</h3>
+              <p className="mt-3 text-xs font-semibold" style={{ color: "var(--primary)" }}>Vidéos acceptées</p>
+              <ul className="mt-1 space-y-1 text-xs" style={{ color: "var(--muted)" }}>
+                {["MP4, M4V, MOV", "WebM", "MKV, AVI", "Autres formats lus par FFmpeg"].map((f) => (
+                  <li key={f} className="flex gap-2">
+                    <span style={{ color: "var(--primary)" }}>✓</span>
+                    <span>{f}</span>
+                  </li>
+                ))}
+              </ul>
+              <p className="mt-3 text-xs font-semibold" style={{ color: "var(--accent)" }}>Audio produit</p>
+              <ul className="mt-1 space-y-1 text-xs" style={{ color: "var(--muted)" }}>
+                {["Piste d'origine : M4A, MP3, OGG, FLAC ou WAV", "MP3 (128 à 320 kbps)", "WAV PCM 16 bits"].map((f) => (
+                  <li key={f} className="flex gap-2">
+                    <span style={{ color: "var(--accent)" }}>✓</span>
+                    <span>{f}</span>
+                  </li>
+                ))}
               </ul>
               <p className="mt-3 text-xs" style={{ color: "var(--muted)" }}>
-                La compatibilite depend de votre navigateur.
+                500 Mo maximum par vidéo. L&apos;aperçu vidéo dépend de votre navigateur, pas l&apos;extraction.
               </p>
             </div>
             <AdPlaceholder className="h-[600px]" />

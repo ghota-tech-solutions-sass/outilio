@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Editeur Photo IA - Courbes, Calques, Filtres VSCO, Background Removal",
+  title: "Éditeur Photo IA - Courbes, Calques, Filtres VSCO, Background Removal",
   description:
-    "Retouche photo avancee avec IA dans votre navigateur : suppression arriere-plan, effet bokeh, super resolution, courbes de luminosite, calques, 15 filtres VSCO. 100% gratuit et local.",
+    "Retouche photo avancée avec IA dans votre navigateur : suppression arrière-plan, effet bokeh, super-résolution, courbes de luminosité, calques, 15 filtres VSCO. 100% gratuit et local.",
   keywords: [
     "editeur photo ia",
     "retouche photo",

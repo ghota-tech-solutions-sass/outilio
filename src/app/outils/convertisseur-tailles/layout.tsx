@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Convertisseur de Tailles de Vetements - Gratuit",
+  title: "Convertisseur de Tailles de Vêtements - Gratuit",
   description:
-    "Convertissez les tailles de vetements et chaussures entre EU, US et UK. Tableaux de correspondance homme et femme avec pointures.",
+    "Convertissez les tailles de vêtements et chaussures entre EU, US et UK. Tableaux de correspondance homme et femme avec pointures.",
   keywords: [
     "convertisseur taille",
     "correspondance taille vetement",

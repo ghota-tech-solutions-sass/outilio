@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Testeur de Regex - Expressions regulieres en ligne",
+  title: "Testeur de Regex - Expressions régulières en ligne",
   description:
-    "Testez vos expressions regulieres en temps reel. Surlignage des correspondances, groupes de capture, drapeaux. Bibliotheque de patterns courants.",
+    "Testez vos expressions régulières en temps réel. Surlignage des correspondances, groupes de capture, drapeaux. Bibliothèque de patterns courants.",
   keywords: [
     "regex tester",
     "testeur regex",

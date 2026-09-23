@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Scanner QR Code en Ligne Gratuit - Camera + Image",
+  title: "Scanner QR Code en Ligne Gratuit - Caméra + Image",
   description:
-    "Scannez n'importe quel QR Code en ligne, depuis la camera ou en chargeant une image. Decodage instantane, historique des scans, ouverture securisee des liens. 100 % local, sans inscription.",
+    "Scannez n'importe quel QR Code en ligne, depuis la caméra ou en chargeant une image. Décodage instantané, historique des scans, ouverture des liens en un clic. Traitement local, sans inscription.",
   keywords: [
     "scanner QR code",
     "lire QR code en ligne",
@@ -18,9 +18,9 @@ export const metadata: Metadata = {
     canonical: "https://outilis.fr/outils/scanner-qr-code",
   },
   openGraph: {
-    title: "Scanner QR Code en Ligne Gratuit - Camera + Image",
+    title: "Scanner QR Code en Ligne Gratuit - Caméra + Image",
     description:
-      "Scan QR Code instantane via camera ou image, sans installation. 100 % local et gratuit.",
+      "Scan QR Code instantané via caméra ou image, sans installation. 100 % local et gratuit.",
     url: "https://outilis.fr/outils/scanner-qr-code",
     type: "website",
   },

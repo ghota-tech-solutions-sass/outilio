@@ -28,9 +28,10 @@ export default function CalculateurPret() {
     const c = (parseFloat(capital) || 0) - (parseFloat(apport) || 0);
     const r = (parseFloat(taux) || 0) / 100 / 12;
     const n = (parseFloat(duree) || 1) * 12;
-    if (c <= 0 || r <= 0 || n <= 0) return null;
+    if (c <= 0 || r < 0 || n <= 0) return null;
 
-    const mensualiteHorsAssurance = (c * r) / (1 - Math.pow(1 + r, -n));
+    // Taux a 0 % : remboursement lineaire du capital
+    const mensualiteHorsAssurance = r === 0 ? c / n : (c * r) / (1 - Math.pow(1 + r, -n));
     const assuranceMensuelle = (c * (parseFloat(tauxAssurance) || 0) / 100) / 12;
     const mensualite = mensualiteHorsAssurance + assuranceMensuelle;
     const coutTotal = mensualiteHorsAssurance * n;
@@ -44,7 +45,8 @@ export default function CalculateurPret() {
       let interetsAn = 0;
       for (let m = 0; m < 12; m++) {
         const interet = restant * r;
-        const capitalM = mensualite - interet;
+        // L'assurance ne rembourse pas de capital : on amortit avec la mensualite hors assurance
+        const capitalM = mensualiteHorsAssurance - interet;
         capitalAn += capitalM;
         interetsAn += interet;
         restant -= capitalM;
@@ -71,14 +73,14 @@ export default function CalculateurPret() {
             className="animate-fade-up text-3xl font-extrabold md:text-4xl"
             style={{ fontFamily: "var(--font-display)", color: "var(--foreground)" }}
           >
-            Simulateur de pret immobilier 2026
+            Simulateur de prêt immobilier 2026
           </h1>
           <p
             className="animate-fade-up stagger-1 mt-2 max-w-3xl"
             style={{ color: "var(--muted)" }}
           >
-            Calculez vos mensualites, le cout total des interets, l&apos;assurance emprunteur et visualisez le
-            tableau d&apos;amortissement annuel. Donnees a jour avec les taux moyens 2026 et le seuil
+            Calculez vos mensualités, le coût total des intérêts, l&apos;assurance emprunteur et visualisez le
+            tableau d&apos;amortissement annuel. Données à jour avec les taux moyens 2026 et le seuil
             d&apos;endettement HCSF de 35 %.
           </p>
         </div>
@@ -145,8 +147,8 @@ export default function CalculateurPret() {
               {/* Autres champs */}
               <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <Field label="Apport personnel (&euro;)" value={apport} onChange={setApport} />
-                <Field label="Taux d'interet (%)" value={taux} onChange={setTaux} step="0.1" />
-                <Field label="Duree (annees)" value={duree} onChange={setDuree} />
+                <Field label="Taux d'intérêt (%)" value={taux} onChange={setTaux} step="0.1" />
+                <Field label="Durée (années)" value={duree} onChange={setDuree} />
                 <Field label="Assurance emprunteur (%)" value={tauxAssurance} onChange={setTauxAssurance} step="0.01" />
               </div>
             </div>
@@ -154,16 +156,16 @@ export default function CalculateurPret() {
             {result && (
               <>
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                  <StatCard label="Mensualite totale" value={`${fmt(result.mensualite)} €`} primary />
+                  <StatCard label="Mensualité totale" value={`${fmt(result.mensualite)} €`} primary />
                   <StatCard label="Dont assurance" value={`${fmt(result.assuranceMensuelle)} €/mois`} />
-                  <StatCard label="Cout total interets" value={`${fmt(result.interetsTotal)} €`} />
-                  <StatCard label="Cout total assurance" value={`${fmt(result.coutAssuranceTotal)} €`} />
+                  <StatCard label="Coût total intérêts" value={`${fmt(result.interetsTotal)} €`} />
+                  <StatCard label="Coût total assurance" value={`${fmt(result.coutAssuranceTotal)} €`} />
                 </div>
 
                 {/* Donut + repartition + cartes contextuelles */}
                 <div className="rounded-2xl border p-6 shadow-sm" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
                   <h2 className="text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: "var(--accent)" }}>
-                    Repartition du cout total
+                    Répartition du coût total
                   </h2>
                   <div className="mt-5 grid gap-6 sm:grid-cols-[180px_1fr] sm:items-center">
                     <div className="flex justify-center">
@@ -174,11 +176,11 @@ export default function CalculateurPret() {
                       />
                     </div>
                     <div className="space-y-1">
-                      <Row label="Capital emprunte" value={`${fmt(result.emprunt)} €`} dotColor="#0d4f3c" />
-                      <Row label="Interets totaux" value={`${fmt(result.interetsTotal)} €`} sub dotColor="#dc2626" />
+                      <Row label="Capital emprunté" value={`${fmt(result.emprunt)} €`} dotColor="#0d4f3c" />
+                      <Row label="Intérêts totaux" value={`${fmt(result.interetsTotal)} €`} sub dotColor="#dc2626" />
                       <Row label="Assurance totale" value={`${fmt(result.coutAssuranceTotal)} €`} sub dotColor="#e8963e" />
                       <Row
-                        label="Cout total du credit"
+                        label="Coût total du crédit"
                         value={`${fmt(result.emprunt + result.interetsTotal + result.coutAssuranceTotal)} €`}
                         highlight
                         primary
@@ -196,26 +198,26 @@ export default function CalculateurPret() {
                       <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
                         <div className="rounded-xl border p-4" style={{ borderColor: "var(--border)", background: "var(--surface-alt)" }}>
                           <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>
-                            Capacite HCSF 35%
+                            Capacité HCSF 35%
                           </p>
                           <p className="mt-1 text-2xl font-bold" style={{ fontFamily: "var(--font-display)", color: "var(--primary)" }}>
                             {fmt(revenuMinHCSF)} &euro;/mois
                           </p>
                           <p className="mt-1 text-[11px]" style={{ color: "var(--muted)" }}>
-                            Revenu net mensuel minimum recommande pour respecter le seuil de 35% d&apos;endettement (mensualite assurance comprise).
+                            Revenu net mensuel minimum recommandé pour respecter le seuil de 35% d&apos;endettement (mensualité assurance comprise).
                           </p>
                         </div>
                         <div className="rounded-xl border p-4" style={{ borderColor: "var(--border)", background: "var(--surface-alt)" }}>
                           <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>
-                            Surcout du credit
+                            Surcoût du crédit
                           </p>
                           <p className="mt-1 text-2xl font-bold" style={{ fontFamily: "var(--font-display)", color: ratioSurcout >= 30 ? "#dc2626" : "var(--primary)" }}>
                             {ratioSurcout.toFixed(1)}% du prix
                           </p>
                           <p className="mt-1 text-[11px]" style={{ color: "var(--muted)" }}>
-                            {ratioSurcout < 15 && "Cout maitrise — duree courte ou taux bas."}
+                            {ratioSurcout < 15 && "Coût maîtrisé — durée courte ou taux bas."}
                             {ratioSurcout >= 15 && ratioSurcout < 30 && `Vous payez ${fmt(surcoutCredit)} € en plus du prix d'achat.`}
-                            {ratioSurcout >= 30 && `Cout eleve : ${fmt(surcoutCredit)} € d'interets+assurance. Reduisez la duree si possible.`}
+                            {ratioSurcout >= 30 && `Coût élevé : ${fmt(surcoutCredit)} € d'intérêts+assurance. Réduisez la durée si possible.`}
                           </p>
                         </div>
                       </div>
@@ -238,14 +240,14 @@ export default function CalculateurPret() {
                     <CrossLinkCard
                       href="/outils/calculateur-rachat-credit"
                       emoji="🔄"
-                      title="Rachat de credit"
-                      desc="Renegocier votre taux et economiser"
+                      title="Rachat de crédit"
+                      desc="Renégocier votre taux et économiser"
                     />
                     <CrossLinkCard
                       href="/outils/simulateur-ptz-2026"
                       emoji="🆓"
                       title="PTZ 2026"
-                      desc="Pret a taux zero pour primo-accedant"
+                      desc="Prêt à taux zéro pour primo-accédant"
                     />
                   </div>
                 </div>
@@ -264,9 +266,9 @@ export default function CalculateurPret() {
                     <table className="w-full text-sm">
                       <thead>
                         <tr className="border-b text-left" style={{ borderColor: "var(--border)", color: "var(--muted)" }}>
-                          <th className="pb-2 pr-4">Annee</th>
-                          <th className="pb-2 pr-4 text-right">Capital rembourse</th>
-                          <th className="pb-2 pr-4 text-right">Interets payes</th>
+                          <th className="pb-2 pr-4">Année</th>
+                          <th className="pb-2 pr-4 text-right">Capital remboursé</th>
+                          <th className="pb-2 pr-4 text-right">Intérêts payés</th>
                           <th className="pb-2 text-right">Capital restant</th>
                         </tr>
                       </thead>
@@ -287,33 +289,33 @@ export default function CalculateurPret() {
             )}
 
             <ToolHowToSection
-              title="Comment simuler un pret immobilier en 5 etapes"
-              description="Le simulateur applique la formule mathematique standard utilisee par toutes les banques. Aucune donnee saisie n'est envoyee : tout est calcule dans votre navigateur."
+              title="Comment simuler un prêt immobilier en 5 étapes"
+              description="Le simulateur applique la formule mathématique standard utilisée par toutes les banques. Aucune donnée saisie n'est envoyée : tout est calculé dans votre navigateur."
               steps={[
                 {
                   name: "Renseigner le prix du bien",
                   text:
-                    "Saisissez le prix d'achat hors frais de notaire. Pour un achat dans l'ancien, prevoyez environ 7,5 % de frais en plus (notaire, garantie, droits de mutation). Pour le neuf, comptez environ 2,5 a 3 %.",
+                    "Saisissez le prix d'achat hors frais de notaire. Pour un achat dans l'ancien, prévoyez environ 7,5 % de frais en plus (notaire, garantie, droits de mutation). Pour le neuf, comptez environ 2,5 à 3 %.",
                 },
                 {
                   name: "Indiquer votre apport personnel",
                   text:
-                    "L'apport sert a couvrir les frais et a rassurer la banque. Depuis le durcissement HCSF de 2022, un apport de 10 a 20 % du prix est devenu la norme pour obtenir un dossier accepte.",
+                    "L'apport sert à couvrir les frais et à rassurer la banque. Depuis le durcissement HCSF de 2022, un apport de 10 à 20 % du prix est devenu la norme pour obtenir un dossier accepté.",
                 },
                 {
-                  name: "Saisir le taux d'interet et la duree",
+                  name: "Saisir le taux d'intérêt et la durée",
                   text:
-                    "Renseignez le taux nominal annuel (hors assurance). En 2026, les taux moyens varient de 3,1 % sur 15 ans a 3,6 % sur 25 ans selon Observatoire Credit Logement / CSA. La duree maximale autorisee par le HCSF est de 25 ans (27 ans dans le neuf avec differe de 2 ans).",
+                    "Renseignez le taux nominal annuel (hors assurance). En 2026, les taux moyens varient de 3,1 % sur 15 ans à 3,6 % sur 25 ans selon Observatoire Crédit Logement / CSA. La durée maximale autorisée par le HCSF est de 25 ans (27 ans dans le neuf avec différé de 2 ans).",
                 },
                 {
                   name: "Ajouter l'assurance emprunteur",
                   text:
-                    "L'assurance represente 0,15 a 0,55 % par an du capital emprunte selon votre age et votre etat de sante. Depuis la loi Lemoine (2022), vous pouvez en changer a tout moment, sans frais ni penalite.",
+                    "L'assurance représente 0,15 à 0,55 % par an du capital emprunté selon votre âge et votre état de santé. Depuis la loi Lemoine (2022), vous pouvez en changer à tout moment, sans frais ni pénalité.",
                 },
                 {
                   name: "Analyser le tableau d'amortissement",
                   text:
-                    "Le tableau detaille annee par annee la part capital remboursee et la part interets. Sur les premieres annees, plus de la moitie de chaque mensualite va aux interets. C'est pourquoi un remboursement anticipe avant la moitie du pret reduit fortement le cout total.",
+                    "Le tableau détaille année par année la part capital remboursée et la part intérêts. Sur les premières années, plus de la moitié de chaque mensualité va aux intérêts. C'est pourquoi un remboursement anticipé avant la moitié du prêt réduit fortement le coût total.",
                 },
               ]}
             />
@@ -329,19 +331,19 @@ export default function CalculateurPret() {
                 Profils types et cas d&apos;usage
               </h2>
               <p className="mt-2" style={{ color: "var(--muted)" }}>
-                Les ordres de grandeur ci-dessous reposent sur les taux moyens 2026 et la regle HCSF de 35 %
+                Les ordres de grandeur ci-dessous reposent sur les taux moyens 2026 et la règle HCSF de 35 %
                 d&apos;endettement maximum.
               </p>
 
               <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
                   <h3 className="font-semibold" style={{ color: "var(--foreground)" }}>
-                    Primo-accedant - couple, 35 ans
+                    Primo-accédant - couple, 35 ans
                   </h3>
                   <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                    Revenu net mensuel cumule 4 500 EUR. Capacite d&apos;emprunt theorique : ~310 000 EUR sur
-                    25 ans a 3,55 % avec assurance 0,30 %. Avec un apport de 30 000 EUR, viser un bien autour
-                    de 320 000 EUR frais inclus. Pensez au PTZ 2026.
+                    Revenu net mensuel cumulé 4 500 €. Capacité d&apos;emprunt théorique : ~300 000 € sur
+                    25 ans à 3,55 % avec assurance 0,30 %. Avec un apport de 30 000 €, viser un bien autour
+                    de 330 000 € frais inclus. Pensez au PTZ 2026.
                   </p>
                 </div>
                 <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
@@ -349,19 +351,19 @@ export default function CalculateurPret() {
                     Investissement locatif
                   </h3>
                   <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                    Pour un locatif, les loyers comptent a 70 % dans le calcul d&apos;endettement (regle
-                    bancaire courante). Privilegiez une duree longue (25 ans) pour maximiser le cashflow,
-                    meme si le cout total est plus eleve.
+                    Pour un locatif, les loyers comptent à 70 % dans le calcul d&apos;endettement (règle
+                    bancaire courante). Privilégiez une durée longue (25 ans) pour maximiser le cashflow,
+                    même si le coût total est plus élevé.
                   </p>
                 </div>
                 <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
                   <h3 className="font-semibold" style={{ color: "var(--foreground)" }}>
-                    Renegociation ou rachat
+                    Renégociation ou rachat
                   </h3>
                   <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                    Une renegociation devient interessante si le nouveau taux est inferieur d&apos;au moins
-                    0,7 a 1 point ET si vous etes dans le premier tiers de la duree restante. Comparez le
-                    cout total simule avec et sans renegociation.
+                    Une renégociation devient intéressante si le nouveau taux est inférieur d&apos;au moins
+                    0,7 à 1 point ET si vous êtes dans le premier tiers de la durée restante. Comparez le
+                    coût total simulé avec et sans renégociation.
                   </p>
                 </div>
                 <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
@@ -369,9 +371,9 @@ export default function CalculateurPret() {
                     Investisseur senior
                   </h3>
                   <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                    Au-dela de 55 ans, l&apos;assurance emprunteur peut atteindre 0,80 % a 1,20 %, doublant
-                    presque la mensualite assurance. Une delegation d&apos;assurance externe (loi Lemoine)
-                    peut economiser plusieurs milliers d&apos;euros sur la duree totale.
+                    Au-delà de 55 ans, l&apos;assurance emprunteur peut atteindre 0,80 % à 1,20 %, doublant
+                    presque la mensualité assurance. Une délégation d&apos;assurance externe (loi Lemoine)
+                    peut économiser plusieurs milliers d&apos;euros sur la durée totale.
                   </p>
                 </div>
               </div>
@@ -385,85 +387,85 @@ export default function CalculateurPret() {
                 className="text-2xl md:text-3xl font-extrabold"
                 style={{ fontFamily: "var(--font-display)", color: "var(--foreground)" }}
               >
-                A savoir avant de signer un pret immobilier en 2026
+                À savoir avant de signer un prêt immobilier en 2026
               </h2>
 
               <div className="mt-4 space-y-4 leading-relaxed" style={{ color: "var(--foreground)" }}>
                 <p>
-                  <strong>La regle HCSF.</strong> Depuis janvier 2022, le Haut Conseil de Stabilite
-                  Financiere impose deux regles aux banques : un taux d&apos;endettement maximum de 35 %
-                  (assurance comprise) et une duree maximale de 25 ans (27 ans dans le neuf si differe).
-                  Les banques peuvent y deroger pour 20 % de leur production, en priorite primo-accedants
-                  et residence principale.
+                  <strong>La règle HCSF.</strong> Depuis janvier 2022, le Haut Conseil de Stabilité
+                  Financière impose deux règles aux banques : un taux d&apos;endettement maximum de 35 %
+                  (assurance comprise) et une durée maximale de 25 ans (27 ans dans le neuf si différé).
+                  Les banques peuvent y déroger pour 20 % de leur production, en priorité primo-accédants
+                  et résidence principale.
                 </p>
                 <p>
                   <strong>TAEG vs taux nominal.</strong> Le taux que vous saisissez ici est le taux nominal.
-                  Le TAEG (Taux Annuel Effectif Global) integre en plus les frais de dossier, la garantie
-                  (caution ou hypotheque) et l&apos;assurance. C&apos;est lui qui doit servir a comparer
-                  deux offres bancaires - la loi impose son affichage dans toute proposition de pret.
+                  Le TAEG (Taux Annuel Effectif Global) intègre en plus les frais de dossier, la garantie
+                  (caution ou hypothèque) et l&apos;assurance. C&apos;est lui qui doit servir à comparer
+                  deux offres bancaires - la loi impose son affichage dans toute proposition de prêt.
                 </p>
                 <p>
                   <strong>Assurance emprunteur (loi Lemoine).</strong> Depuis le 1er septembre 2022, vous
-                  pouvez resilier et changer d&apos;assurance emprunteur a tout moment, sans frais. Les
-                  delegations externes sont generalement 30 a 50 % moins cheres que celles proposees par la
-                  banque preteuse, surtout pour les profils jeunes et non-fumeurs.
+                  pouvez résilier et changer d&apos;assurance emprunteur à tout moment, sans frais. Les
+                  délégations externes sont généralement 30 à 50 % moins chères que celles proposées par la
+                  banque prêteuse, surtout pour les profils jeunes et non-fumeurs.
                 </p>
                 <p>
-                  <strong>Frais annexes a budgetiser.</strong> Au-dela de la mensualite, prevoir : frais de
-                  notaire (2,5 % neuf, 7,5 % ancien), frais de dossier (0 a 1 500 EUR), garantie (1 % du
-                  capital pour une caution Credit Logement, 1,5 a 2 % pour une hypotheque), frais de courtage
-                  eventuels (0,8 a 1 %).
+                  <strong>Frais annexes à budgétiser.</strong> Au-delà de la mensualité, prévoir : frais de
+                  notaire (2,5 % neuf, 7,5 % ancien), frais de dossier (0 à 1 500 €), garantie (1 % du
+                  capital pour une caution Crédit Logement, 1,5 à 2 % pour une hypothèque), frais de courtage
+                  éventuels (0,8 à 1 %).
                 </p>
                 <p>
-                  <strong>Source des taux.</strong> Les taux moyens cites proviennent de l&apos;Observatoire
-                  Credit Logement / CSA, reference du marche francais. Verifiez toujours le taux negocie
-                  avec votre conseiller bancaire avant decision finale.
+                  <strong>Source des taux.</strong> Les taux moyens cités proviennent de l&apos;Observatoire
+                  Crédit Logement / CSA, référence du marché français. Vérifiez toujours le taux négocié
+                  avec votre conseiller bancaire avant décision finale.
                 </p>
               </div>
             </section>
 
             <ToolFaqSection
-              intro="Les questions les plus posees sur la simulation et le credit immobilier."
+              intro="Les questions les plus posées sur la simulation et le crédit immobilier."
               items={[
                 {
-                  question: "Comment se calcule la mensualite d'un pret immobilier ?",
+                  question: "Comment se calcule la mensualité d'un prêt immobilier ?",
                   answer:
-                    "La formule mathematique est M = C x r / (1 - (1+r)^-n) ou C est le capital emprunte, r le taux periodique mensuel (taux annuel / 12 / 100) et n le nombre de mensualites. Cette formule produit une mensualite constante : c'est le pret a echeances constantes, qui est la norme en France.",
+                    "La formule mathématique est M = C x r / (1 - (1+r)^-n) où C est le capital emprunté, r le taux périodique mensuel (taux annuel / 12 / 100) et n le nombre de mensualités. Cette formule produit une mensualité constante : c'est le prêt à échéances constantes, qui est la norme en France.",
                 },
                 {
-                  question: "Quel salaire pour emprunter 200 000 EUR sur 20 ans en 2026 ?",
+                  question: "Quel salaire pour emprunter 200 000 € sur 20 ans en 2026 ?",
                   answer:
-                    "A 3,4 % sur 20 ans avec une assurance 0,30 %, la mensualite est d'environ 1 200 EUR. Avec la regle HCSF de 35 % d'endettement, le revenu net mensuel necessaire est d'environ 3 430 EUR (1 200 / 0,35). En couple, comptez ~3 000 EUR net cumule grace a la mutualisation des charges.",
+                    "À 3,4 % sur 20 ans avec une assurance 0,30 %, la mensualité est d'environ 1 200 €. Avec la règle HCSF de 35 % d'endettement, le revenu net mensuel nécessaire est d'environ 3 430 € (1 200 / 0,35).",
                 },
                 {
                   question: "Le simulateur prend-il en compte les frais de notaire ?",
                   answer:
-                    "Non. Le simulateur calcule uniquement la mensualite du pret bancaire. Pour estimer les frais de notaire (2,5 % dans le neuf, 7,5 % dans l'ancien), augmentez le 'Prix du bien' de ce pourcentage si vous comptez les financer par le pret, ou deduisez-les de votre apport.",
+                    "Non. Le simulateur calcule uniquement la mensualité du prêt bancaire. Pour estimer les frais de notaire (2,5 % dans le neuf, 7,5 % dans l'ancien), augmentez le 'Prix du bien' de ce pourcentage si vous comptez les financer par le prêt, ou déduisez-les de votre apport.",
                 },
                 {
-                  question: "Faut-il rallonger ou raccourcir la duree pour reduire le cout total ?",
+                  question: "Faut-il rallonger ou raccourcir la durée pour réduire le coût total ?",
                   answer:
-                    "Mathematiquement, plus la duree est courte, moins le cout total des interets est eleve. Passer de 25 ans a 20 ans peut economiser plusieurs dizaines de milliers d'euros sur le cout total. Mais une duree plus courte augmente la mensualite et peut faire dépasser le seuil HCSF de 35 %.",
+                    "Mathématiquement, plus la durée est courte, moins le coût total des intérêts est élevé. Passer de 25 ans à 20 ans peut économiser plusieurs dizaines de milliers d'euros sur le coût total. Mais une durée plus courte augmente la mensualité et peut faire dépasser le seuil HCSF de 35 %.",
                 },
                 {
                   question: "Puis-je rembourser par anticipation sans frais ?",
                   answer:
-                    "Le Code de la consommation autorise des Indemnites de Remboursement Anticipe (IRA) plafonnees a 6 mois d'interets ou 3 % du capital restant. Beaucoup de banques negocient une exoneration en cas de mobilite professionnelle ou de chomage. Verifiez la clause IRA dans votre offre.",
+                    "Le Code de la consommation autorise des Indemnités de Remboursement Anticipé (IRA) plafonnées à 6 mois d'intérêts ou 3 % du capital restant. Beaucoup de banques négocient une exonération en cas de mobilité professionnelle ou de chômage. Vérifiez la clause IRA dans votre offre.",
                 },
                 {
                   question: "L'assurance emprunteur est-elle obligatoire ?",
                   answer:
-                    "Aucun texte ne l'impose, mais aucune banque ne prete sans. Vous etes libre du choix de l'assureur depuis la loi Lagarde (2010), et vous pouvez en changer a tout moment depuis la loi Lemoine (2022). Une delegation externe permet souvent d'economiser 30 a 50 % par rapport au contrat groupe de la banque.",
+                    "Aucun texte ne l'impose, mais aucune banque ne prête sans. Vous êtes libre du choix de l'assureur depuis la loi Lagarde (2010), et vous pouvez en changer à tout moment depuis la loi Lemoine (2022). Une délégation externe permet souvent d'économiser 30 à 50 % par rapport au contrat groupe de la banque.",
                 },
                 {
                   question: "Qu'est-ce que le PTZ et puis-je le simuler ici ?",
                   answer:
-                    "Le Pret a Taux Zero finance jusqu'a 50 % de l'achat d'une residence principale par un primo-accedant, sous conditions de ressources et de zone. Il s'ajoute a votre pret bancaire principal. Pour le simuler, utilisez l'outil dedie 'Simulateur PTZ 2026' du site.",
+                    "Le Prêt à Taux Zéro finance jusqu'à 50 % de l'achat d'une résidence principale par un primo-accédant, sous conditions de ressources et de zone. Il s'ajoute à votre prêt bancaire principal. Pour le simuler, utilisez l'outil dédié 'Simulateur PTZ 2026' du site.",
                 },
                 {
                   question: "Le simulateur fonctionne-t-il sans inscription ?",
                   answer:
-                    "Oui. Aucun compte, aucun email, aucune donnee personnelle stockee. Tous les calculs se font localement dans votre navigateur. Vous pouvez utiliser le simulateur autant de fois que necessaire, sans limite.",
+                    "Oui. Aucun compte, aucun email, aucune donnée personnelle stockée. Tous les calculs se font localement dans votre navigateur. Vous pouvez utiliser le simulateur autant de fois que nécessaire, sans limite.",
                 },
               ]}
             />
@@ -475,13 +477,13 @@ export default function CalculateurPret() {
               className="rounded-2xl border p-6 shadow-sm"
               style={{ background: "var(--surface)", borderColor: "var(--border)" }}
             >
-              <h3 className="font-semibold" style={{ color: "var(--foreground)" }}>Reperes 2026</h3>
+              <h3 className="font-semibold" style={{ color: "var(--foreground)" }}>Repères 2026</h3>
               <ul className="mt-2 space-y-2 text-sm" style={{ color: "var(--muted)" }}>
                 <li>Endettement max HCSF : 35 % (assurance comprise)</li>
-                <li>Duree max : 25 ans (27 ans neuf avec differe)</li>
-                <li>Apport recommande : 10 a 20 % du prix</li>
-                <li>Taux moyen 20 ans : 3,4 a 3,6 %</li>
-                <li>Assurance moyenne : 0,15 a 0,55 % / an</li>
+                <li>Durée max : 25 ans (27 ans neuf avec différé)</li>
+                <li>Apport recommandé : 10 à 20 % du prix</li>
+                <li>Taux moyen 20 ans : 3,4 à 3,6 %</li>
+                <li>Assurance moyenne : 0,15 à 0,55 % / an</li>
               </ul>
             </div>
             <AdPlaceholder className="h-[600px]" />
@@ -600,7 +602,7 @@ function DonutChart({
   const assLen = assPct * c;
   const interetsPctTotal = total > 0 ? (interets / total) * 100 : 0;
   return (
-    <svg width="160" height="160" viewBox="-80 -80 160 160" role="img" aria-label="Repartition du cout total du credit">
+    <svg width="160" height="160" viewBox="-80 -80 160 160" role="img" aria-label="Répartition du coût total du crédit">
       <circle cx="0" cy="0" r={r} fill="none" stroke="var(--border)" strokeWidth={stroke} />
       <g transform="rotate(-90)">
         <circle
@@ -644,7 +646,7 @@ function DonutChart({
         fill="var(--muted)"
         style={{ fontFamily: "var(--font-body)" }}
       >
-        Interets
+        Intérêts
       </text>
       <text
         x="0"

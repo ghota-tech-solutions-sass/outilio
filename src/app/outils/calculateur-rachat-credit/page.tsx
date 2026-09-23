@@ -7,10 +7,10 @@ import ToolFaqSection from "@/components/ToolFaqSection";
 import ToolHowToSection from "@/components/ToolHowToSection";
 
 const PRESETS_TAUX = [
-  { label: "Tres bon", value: 2.5 },
+  { label: "Très bon", value: 2.5 },
   { label: "Bon", value: 3.2 },
   { label: "Moyen", value: 4.0 },
-  { label: "Eleve", value: 5.0 },
+  { label: "Élevé", value: 5.0 },
 ];
 
 interface Credit {
@@ -37,8 +37,8 @@ function createCredit(): Credit {
 
 export default function CalculateurRachatCredit() {
   const [credits, setCredits] = useState<Credit[]>([
-    { id: nextId++, label: "Credit immobilier", montantRestant: "120000", taux: "3.2", dureeRestante: "180", mensualite: "845" },
-    { id: nextId++, label: "Credit auto", montantRestant: "8000", taux: "5.5", dureeRestante: "36", mensualite: "241" },
+    { id: nextId++, label: "Crédit immobilier", montantRestant: "120000", taux: "3.2", dureeRestante: "180", mensualite: "845" },
+    { id: nextId++, label: "Crédit auto", montantRestant: "8000", taux: "5.5", dureeRestante: "36", mensualite: "241" },
   ]);
   const [nouveauTaux, setNouveauTaux] = useState("2.8");
   const [nouvelleDuree, setNouvelleDuree] = useState("240");
@@ -98,9 +98,10 @@ export default function CalculateurRachatCredit() {
     const r = (parseFloat(nouveauTaux) || 0) / 100 / 12;
     const n = parseFloat(nouvelleDuree) || 0;
 
-    if (r <= 0 || n <= 0) return null;
+    if (r < 0 || n <= 0) return null;
 
-    const nouvelleMensualite = (capitalNouveau * r) / (1 - Math.pow(1 + r, -n));
+    // Taux a 0 % : remboursement lineaire du capital
+    const nouvelleMensualite = r === 0 ? capitalNouveau / n : (capitalNouveau * r) / (1 - Math.pow(1 + r, -n));
     const coutTotalNouveau = nouvelleMensualite * n;
     const interetsTotauxNouveau = coutTotalNouveau - capitalNouveau;
 
@@ -151,14 +152,14 @@ export default function CalculateurRachatCredit() {
             style={{ fontFamily: "var(--font-display)" }}
           >
             Rachat de{" "}
-            <span style={{ color: "var(--primary)" }}>credit</span>
+            <span style={{ color: "var(--primary)" }}>crédit</span>
           </h1>
           <p
             className="animate-fade-up stagger-2 mt-3 max-w-xl text-sm leading-relaxed"
             style={{ color: "var(--muted)" }}
           >
-            Regroupez vos credits en un seul et comparez : mensualites, cout
-            total, economie reelle. Incluez les frais de rachat (IRA, dossier).
+            Regroupez vos crédits en un seul et comparez : mensualités, coût
+            total, économie réelle. Incluez les frais de rachat (IRA, dossier).
           </p>
         </div>
       </section>
@@ -179,14 +180,14 @@ export default function CalculateurRachatCredit() {
                   className="text-xs font-semibold uppercase tracking-[0.15em]"
                   style={{ color: "var(--accent)" }}
                 >
-                  Credits existants
+                  Crédits existants
                 </h2>
                 <button
                   onClick={addCredit}
                   className="rounded-xl px-4 py-2 text-xs font-semibold text-white transition-opacity hover:opacity-90"
                   style={{ background: "var(--primary)" }}
                 >
-                  + Ajouter un credit
+                  + Ajouter un crédit
                 </button>
               </div>
 
@@ -203,7 +204,7 @@ export default function CalculateurRachatCredit() {
                     <div className="flex items-center justify-between mb-3">
                       <input
                         type="text"
-                        placeholder={`Credit ${index + 1}`}
+                        placeholder={`Crédit ${index + 1}`}
                         value={credit.label}
                         onChange={(e) =>
                           updateCredit(credit.id, "label", e.target.value)
@@ -236,14 +237,14 @@ export default function CalculateurRachatCredit() {
                         step="0.1"
                       />
                       <CreditField
-                        label="Duree restante (mois)"
+                        label="Durée restante (mois)"
                         value={credit.dureeRestante}
                         onChange={(v) =>
                           updateCredit(credit.id, "dureeRestante", v)
                         }
                       />
                       <CreditField
-                        label="Mensualite (€)"
+                        label="Mensualité (€)"
                         value={credit.mensualite}
                         onChange={(v) =>
                           updateCredit(credit.id, "mensualite", v)
@@ -267,14 +268,14 @@ export default function CalculateurRachatCredit() {
                 className="text-xs font-semibold uppercase tracking-[0.15em]"
                 style={{ color: "var(--accent)" }}
               >
-                Nouveau credit unique
+                Nouveau crédit unique
               </h2>
               <div className="mt-4">
                 <label
                   className="text-[10px] font-semibold uppercase tracking-wider"
                   style={{ color: "var(--muted)" }}
                 >
-                  Nouveau taux d&apos;interet (%)
+                  Nouveau taux d&apos;intérêt (%)
                 </label>
                 <div className="relative mt-1">
                   <input
@@ -327,7 +328,7 @@ export default function CalculateurRachatCredit() {
                   className="text-[10px] font-semibold uppercase tracking-wider"
                   style={{ color: "var(--muted)" }}
                 >
-                  Duree souhaitee (mois)
+                  Durée souhaitée (mois)
                 </label>
                 <input
                   type="number"
@@ -359,7 +360,7 @@ export default function CalculateurRachatCredit() {
                     className="text-[10px] font-semibold uppercase tracking-wider"
                     style={{ color: "var(--muted)" }}
                   >
-                    IRA - Indemnites remb. anticipe (%)
+                    IRA - Indemnités remb. anticipé (%)
                   </label>
                   <input
                     type="number"
@@ -421,8 +422,8 @@ export default function CalculateurRachatCredit() {
                     style={{ color: "var(--muted)" }}
                   >
                     {result.avantageux
-                      ? `Vous economisez ${fmt(result.economieTotale)} € sur la duree totale du credit.`
-                      : `Le rachat vous couterait ${fmt(Math.abs(result.economieTotale))} € de plus au total.`}
+                      ? `Vous économisez ${fmt(result.economieTotale)} € sur la durée totale du crédit.`
+                      : `Le rachat vous coûterait ${fmt(Math.abs(result.economieTotale))} € de plus au total.`}
                   </p>
                 </div>
 
@@ -461,13 +462,13 @@ export default function CalculateurRachatCredit() {
                         </p>
                         <p className="mt-1 text-[11px]" style={{ color: "var(--muted)" }}>
                           {result.economieMensuelle > 0
-                            ? "Rachat rentable — votre mensualite baisse."
-                            : "Rachat peu pertinent — la mensualite augmente."}
+                            ? "Rachat rentable — votre mensualité baisse."
+                            : "Rachat peu pertinent — la mensualité augmente."}
                         </p>
                       </div>
                       <div className="rounded-xl border p-4" style={{ borderColor: "var(--border)", background: "var(--surface-alt)" }}>
                         <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>
-                          Delai amortissement frais
+                          Délai amortissement frais
                         </p>
                         {result.economieMensuelle > 0 ? (
                           <>
@@ -478,7 +479,7 @@ export default function CalculateurRachatCredit() {
                               {Math.ceil(result.totalFrais / result.economieMensuelle)} mois
                             </p>
                             <p className="mt-1 text-[11px]" style={{ color: "var(--muted)" }}>
-                              Temps necessaire pour rembourser les {fmt(result.totalFrais)} &euro; de frais via votre gain mensuel.
+                              Temps nécessaire pour rembourser les {fmt(result.totalFrais)} &euro; de frais via votre gain mensuel.
                             </p>
                           </>
                         ) : (
@@ -502,17 +503,17 @@ export default function CalculateurRachatCredit() {
                 {/* Cards comparatif */}
                 <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
                   <StatCard
-                    label="Mensualite actuelle"
+                    label="Mensualité actuelle"
                     value={`${fmt(result.totalMensualiteActuelle)} €`}
                     color="var(--foreground)"
                   />
                   <StatCard
-                    label="Nouvelle mensualite"
+                    label="Nouvelle mensualité"
                     value={`${fmt(result.nouvelleMensualite)} €`}
                     color="var(--primary)"
                   />
                   <StatCard
-                    label="Economie / mois"
+                    label="Économie / mois"
                     value={`${result.economieMensuelle >= 0 ? "+" : ""}${fmt(result.economieMensuelle)} €`}
                     color={
                       result.economieMensuelle >= 0
@@ -521,7 +522,7 @@ export default function CalculateurRachatCredit() {
                     }
                   />
                   <StatCard
-                    label="Economie totale"
+                    label="Économie totale"
                     value={`${result.economieTotale >= 0 ? "+" : ""}${fmt0(result.economieTotale)} €`}
                     color={
                       result.economieTotale >= 0
@@ -543,23 +544,23 @@ export default function CalculateurRachatCredit() {
                     className="text-xs font-semibold uppercase tracking-[0.15em]"
                     style={{ color: "var(--accent)" }}
                   >
-                    Comparaison detaillee
+                    Comparaison détaillée
                   </h2>
                   <div className="mt-4 space-y-2 text-sm">
                     <CompareRow
-                      label="Mensualites totales"
+                      label="Mensualités totales"
                       avant={`${fmt(result.totalMensualiteActuelle)} € / mois`}
                       apres={`${fmt(result.nouvelleMensualite)} € / mois`}
                       better={result.economieMensuelle > 0}
                     />
                     <CompareRow
-                      label="Cout total"
+                      label="Coût total"
                       avant={`${fmt0(result.coutTotalActuel)} €`}
                       apres={`${fmt0(result.coutTotalNouveau)} €`}
                       better={result.economieTotale > 0}
                     />
                     <CompareRow
-                      label="Duree"
+                      label="Durée"
                       avant={`${fmt0(result.dureeMaxActuelle)} mois (${(result.dureeMaxActuelle / 12).toFixed(1)} ans)`}
                       apres={`${fmt0(result.nouvelleDureeMois)} mois (${(result.nouvelleDureeMois / 12).toFixed(1)} ans)`}
                       better={result.nouvelleDureeMois <= result.dureeMaxActuelle}
@@ -583,7 +584,7 @@ export default function CalculateurRachatCredit() {
                     >
                       <div className="flex justify-between">
                         <span style={{ color: "var(--muted)" }}>
-                          Indemnites de remb. anticipe (IRA)
+                          Indemnités de remb. anticipé (IRA)
                         </span>
                         <span className="font-medium">
                           {fmt(result.montantIRA)} €
@@ -609,7 +610,7 @@ export default function CalculateurRachatCredit() {
                     >
                       <div className="flex justify-between">
                         <span style={{ color: "var(--muted)" }}>
-                          Nouveau capital emprunte (capital + frais)
+                          Nouveau capital emprunté (capital + frais)
                         </span>
                         <span className="font-medium">
                           {fmt0(result.capitalNouveau)} €
@@ -622,7 +623,7 @@ export default function CalculateurRachatCredit() {
                     >
                       <div className="flex justify-between">
                         <span style={{ color: "var(--muted)" }}>
-                          Interets du nouveau credit
+                          Intérêts du nouveau crédit
                         </span>
                         <span
                           className="font-medium"
@@ -647,7 +648,7 @@ export default function CalculateurRachatCredit() {
                     className="text-xs font-semibold uppercase tracking-[0.15em]"
                     style={{ color: "var(--accent)" }}
                   >
-                    Comparaison visuelle du cout total
+                    Comparaison visuelle du coût total
                   </h2>
                   <div className="mt-4 space-y-3">
                     {(() => {
@@ -680,7 +681,7 @@ export default function CalculateurRachatCredit() {
                           <div>
                             <div className="flex items-center justify-between text-xs font-semibold mb-1">
                               <span style={{ color: "var(--muted)" }}>
-                                Apres rachat
+                                Après rachat
                               </span>
                               <span
                                 style={{
@@ -724,20 +725,20 @@ export default function CalculateurRachatCredit() {
                 <CrossLinkCard
                   href="/outils/calculateur-pret-immobilier"
                   emoji="🏠"
-                  title="Simuler nouveau pret"
-                  desc="Mensualite, TAEG, tableau d'amortissement"
+                  title="Simuler nouveau prêt"
+                  desc="Mensualité, TAEG, tableau d'amortissement"
                 />
                 <CrossLinkCard
                   href="/outils/calculateur-frais-notaire"
                   emoji="🏛️"
                   title="Frais notaire"
-                  desc="Estimation par departement et type de bien"
+                  desc="Estimation par département et type de bien"
                 />
                 <CrossLinkCard
                   href="/outils/calculateur-salaire"
                   emoji="💼"
-                  title="Capacite d'emprunt"
-                  desc="Mensualite max selon votre net"
+                  title="Capacité d'emprunt"
+                  desc="Mensualité max selon votre net"
                 />
               </div>
             </div>
@@ -754,7 +755,7 @@ export default function CalculateurRachatCredit() {
                 className="text-2xl tracking-tight"
                 style={{ fontFamily: "var(--font-display)" }}
               >
-                Qu&apos;est-ce que le rachat de credit ?
+                Qu&apos;est-ce que le rachat de crédit ?
               </h2>
               <div
                 className="mt-4 space-y-3 text-sm leading-relaxed"
@@ -764,55 +765,56 @@ export default function CalculateurRachatCredit() {
                   <strong className="text-[var(--foreground)]">
                     Principe
                   </strong>{" "}
-                  : Le rachat de credit (ou regroupement de credits) consiste a
-                  remplacer un ou plusieurs prets existants par un credit unique,
-                  generalement a un taux plus avantageux ou sur une duree
-                  differente.
+                  : Le rachat de crédit (ou regroupement de crédits) consiste à
+                  remplacer un ou plusieurs prêts existants par un crédit unique,
+                  généralement à un taux plus avantageux ou sur une durée
+                  différente.
                 </p>
                 <p>
                   <strong className="text-[var(--foreground)]">
-                    Indemnites de remboursement anticipe (IRA)
+                    Indemnités de remboursement anticipé (IRA)
                   </strong>{" "}
-                  : Lors du remboursement anticipe d&apos;un pret, la banque peut
-                  appliquer des penalites plafonnees a 3% du capital restant du
-                  (ou 6 mois d&apos;interets). Integrez-les dans votre simulation
-                  pour un resultat realiste.
+                  : Lors du remboursement anticipé d&apos;un prêt, la banque peut
+                  appliquer des pénalités plafonnées, pour un crédit immobilier, au plus faible
+                  de 3% du capital restant dû ou 6 mois d&apos;intérêts (crédit à la consommation :
+                  1% ou 0,5% du capital remboursé). Intégrez-les dans votre simulation
+                  pour un résultat réaliste.
                 </p>
                 <p>
                   <strong className="text-[var(--foreground)]">
-                    Quand est-ce interessant ?
+                    Quand est-ce intéressant ?
                   </strong>{" "}
-                  : Un rachat est generalement avantageux si la difference de
-                  taux est superieure a 0.7 point, si la duree restante est
-                  suffisamment longue, et si l&apos;economie totale couvre
+                  : Un rachat est généralement avantageux si la différence de
+                  taux est supérieure à 0.7 point, si la durée restante est
+                  suffisamment longue, et si l&apos;économie totale couvre
                   largement les frais de rachat.
                 </p>
               </div>
             </div>
 
             <ToolHowToSection
-              title="Comment simuler un rachat de credit en 4 etapes"
-              description="Le simulateur compare la somme de vos mensualites actuelles a la mensualite unique du nouveau credit, integre les frais (IRA + dossier), et indique le gain reel sur la duree."
+              title="Comment simuler un rachat de crédit en 4 étapes"
+              description="Le simulateur compare la somme de vos mensualités actuelles à la mensualité unique du nouveau crédit, intègre les frais (IRA + dossier), et indique le gain réel sur la durée."
               steps={[
                 {
-                  name: "Lister vos credits actuels",
+                  name: "Lister vos crédits actuels",
                   text:
-                    "Pour chaque credit en cours, ouvrez votre derniere echeance bancaire et notez : capital restant du, taux nominal, mensualite et nombre de mensualites restantes. Vous pouvez ajouter autant de credits que necessaire (immobilier, auto, conso, revolving).",
+                    "Pour chaque crédit en cours, ouvrez votre dernière échéance bancaire et notez : capital restant dû, taux nominal, mensualité et nombre de mensualités restantes. Vous pouvez ajouter autant de crédits que nécessaire (immobilier, auto, conso, revolving).",
                 },
                 {
-                  name: "Definir le nouveau credit",
+                  name: "Définir le nouveau crédit",
                   text:
-                    "Renseignez le taux propose par la banque ou le courtier pour le regroupement et la duree souhaitee. La duree du nouveau credit est generalement plus longue que celle de vos credits actuels : c'est ce qui reduit la mensualite, mais augmente le cout total.",
+                    "Renseignez le taux proposé par la banque ou le courtier pour le regroupement et la durée souhaitée. La durée du nouveau crédit est généralement plus longue que celle de vos crédits actuels : c'est ce qui réduit la mensualité, mais augmente le coût total.",
                 },
                 {
-                  name: "Integrer tous les frais",
+                  name: "Intégrer tous les frais",
                   text:
-                    "Saisissez le pourcentage d'IRA (Indemnites de Remboursement Anticipe, plafonnees a 3 % du capital restant ou 6 mois d'interets) et les frais de dossier de la nouvelle banque (300 a 1 500 EUR en moyenne). Sans ces frais, le simulateur sous-estimerait largement le cout reel.",
+                    "Saisissez le pourcentage d'IRA (Indemnités de Remboursement Anticipé, plafonnées en crédit immobilier au plus faible de 3 % du capital restant ou 6 mois d'intérêts) et les frais de dossier de la nouvelle banque (300 à 1 500 € en moyenne). Sans ces frais, le simulateur sous-estimerait largement le coût réel.",
                 },
                 {
                   name: "Lire le verdict",
                   text:
-                    "L'outil affiche en parallele : votre situation actuelle (cout total, mensualite cumulee) et la situation apres rachat (mensualite, cout total, frais inclus). Le rachat est interessant si l'economie totale couvre largement les frais ET si la baisse de mensualite est significative.",
+                    "L'outil affiche en parallèle : votre situation actuelle (coût total, mensualité cumulée) et la situation après rachat (mensualité, coût total, frais inclus). Le rachat est intéressant si l'économie totale couvre largement les frais ET si la baisse de mensualité est significative.",
                 },
               ]}
             />
@@ -825,84 +827,84 @@ export default function CalculateurRachatCredit() {
                 className="text-2xl md:text-3xl font-extrabold"
                 style={{ fontFamily: "var(--font-display)", color: "var(--foreground)" }}
               >
-                A savoir avant de regrouper ses credits en 2026
+                À savoir avant de regrouper ses crédits en 2026
               </h2>
 
               <div className="mt-4 space-y-4 leading-relaxed" style={{ color: "var(--foreground)" }}>
                 <p>
-                  <strong>Rachat immobilier vs rachat conso.</strong> La reglementation differe :
-                  un rachat ou la part immobiliere depasse 60 % suit le regime du credit immobilier
-                  (TAEG, IRA plafonnees, garantie hypothecaire ou caution). En dessous, c&apos;est
-                  un credit a la consommation, plus rapide a obtenir mais avec un taux plus eleve.
+                  <strong>Rachat immobilier vs rachat conso.</strong> La réglementation diffère :
+                  un rachat où la part immobilière dépasse 60 % suit le régime du crédit immobilier
+                  (TAEG, IRA plafonnées, garantie hypothécaire ou caution). En dessous, c&apos;est
+                  un crédit à la consommation, plus rapide à obtenir mais avec un taux plus élevé.
                 </p>
                 <p>
-                  <strong>Allonger la duree, c&apos;est payer plus au total.</strong> Reduire la
-                  mensualite passe par allonger la duree. Resultat : la mensualite baisse, mais le
-                  cout total des interets explose. Le simulateur le rend visible : verifiez toujours
-                  l&apos;ecart entre cout total avant / cout total apres.
+                  <strong>Allonger la durée, c&apos;est payer plus au total.</strong> Réduire la
+                  mensualité passe par allonger la durée. Résultat : la mensualité baisse, mais le
+                  coût total des intérêts explose. Le simulateur le rend visible : vérifiez toujours
+                  l&apos;écart entre coût total avant / coût total après.
                 </p>
                 <p>
                   <strong>L&apos;assurance emprunteur.</strong> Pour un rachat avec part
-                  immobiliere, une nouvelle assurance est exigee. Depuis la loi Lemoine (2022), vous
-                  pouvez choisir librement (delegation), souvent 30 a 50 % moins chere que le contrat
-                  groupe de la banque. Pensez a chiffrer ce poste, non integre dans ce simulateur.
+                  immobilière, une nouvelle assurance est exigée. Depuis la loi Lemoine (2022), vous
+                  pouvez choisir librement (délégation), souvent 30 à 50 % moins chère que le contrat
+                  groupe de la banque. Pensez à chiffrer ce poste, non intégré dans ce simulateur.
                 </p>
                 <p>
-                  <strong>Garantie de la nouvelle banque.</strong> Pour un rachat avec hypotheque,
-                  des frais de mainlevee et de nouvelle hypotheque s&apos;appliquent (1 a 2 % du
-                  capital). Avec une caution Credit Logement, les frais sont plus faibles (~1 %).
-                  Ces couts ne sont pas integres dans le simulateur, prevoyez-les separement.
+                  <strong>Garantie de la nouvelle banque.</strong> Pour un rachat avec hypothèque,
+                  des frais de mainlevée et de nouvelle hypothèque s&apos;appliquent (1 à 2 % du
+                  capital). Avec une caution Crédit Logement, les frais sont plus faibles (~1 %).
+                  Ces coûts ne sont pas intégrés dans le simulateur, prévoyez-les séparément.
                 </p>
                 <p>
-                  <strong>Source.</strong> Articles L313-39 a L313-46 du Code de la consommation
-                  pour les IRA, articles L313-25 et suivants pour le credit immobilier. Verifiez
-                  systematiquement les conditions exactes dans vos contrats actuels avant simulation.
+                  <strong>Source.</strong> Articles L313-39 à L313-46 du Code de la consommation
+                  pour les IRA, articles L313-25 et suivants pour le crédit immobilier. Vérifiez
+                  systématiquement les conditions exactes dans vos contrats actuels avant simulation.
                 </p>
               </div>
             </section>
 
             <ToolFaqSection
-              intro="Les questions les plus posees sur le rachat et le regroupement de credits."
+              intro="Les questions les plus posées sur le rachat et le regroupement de crédits."
               items={[
                 {
-                  question: "Quels types de credits peut-on regrouper ?",
+                  question: "Quels types de crédits peut-on regrouper ?",
                   answer:
-                    "Vous pouvez regrouper la plupart des credits : credit immobilier, credit auto, credit consommation, pret personnel, credit travaux et meme les credits revolving. La seule condition est que les credits soient en cours de remboursement.",
+                    "Vous pouvez regrouper la plupart des crédits : crédit immobilier, crédit auto, crédit consommation, prêt personnel, crédit travaux et même les crédits revolving. La seule condition est que les crédits soient en cours de remboursement.",
                 },
                 {
-                  question: "Quels sont les frais lies au rachat de credit en France ?",
+                  question: "Quels sont les frais liés au rachat de crédit en France ?",
                   answer:
-                    "Les principaux frais sont les indemnites de remboursement anticipe (IRA), plafonnees a 3 % du capital restant du ou 6 mois d'interets. S'ajoutent les frais de dossier de la nouvelle banque (300 EUR a 1 000 EUR en moyenne), les frais de garantie et eventuellement les frais de courtage.",
+                    "Les principaux frais sont les indemnités de remboursement anticipé (IRA), plafonnées en crédit immobilier au plus faible de 3 % du capital restant dû ou 6 mois d'intérêts (1 % ou 0,5 % pour un crédit à la consommation). S'ajoutent les frais de dossier de la nouvelle banque (300 € à 1 000 € en moyenne), les frais de garantie et éventuellement les frais de courtage.",
                 },
                 {
-                  question: "A partir de quel ecart de taux le rachat est-il rentable ?",
+                  question: "À partir de quel écart de taux le rachat est-il rentable ?",
                   answer:
-                    "En regle generale, un ecart d'au moins 0,7 a 1 point de pourcentage entre votre taux actuel et le nouveau taux rend le rachat interessant. Cependant, cela depend aussi de la duree restante du credit et du montant du capital : plus ils sont eleves, plus l'economie potentielle est importante.",
+                    "En règle générale, un écart d'au moins 0,7 à 1 point de pourcentage entre votre taux actuel et le nouveau taux rend le rachat intéressant. Cependant, cela dépend aussi de la durée restante du crédit et du montant du capital : plus ils sont elevés, plus l'économie potentielle est importante.",
                 },
                 {
-                  question: "A quel moment du pret le rachat est-il le plus interessant ?",
+                  question: "À quel moment du prêt le rachat est-il le plus intéressant ?",
                   answer:
-                    "Le rachat est plus rentable dans le premier tiers du credit, lorsque la part d'interets dans la mensualite est encore eleve. Apres la moitie du pret, l'essentiel des interets a deja ete paye et le gain potentiel diminue fortement.",
+                    "Le rachat est plus rentable dans le premier tiers du crédit, lorsque la part d'intérêts dans la mensualité est encore élevée. Après la moitié du prêt, l'essentiel des intérêts a déjà été payé et le gain potentiel diminue fortement.",
                 },
                 {
                   question: "Le rachat impacte-t-il mon assurance emprunteur ?",
                   answer:
-                    "Oui. Le rachat genere un nouveau pret, donc une nouvelle assurance emprunteur est exigee. Depuis la loi Lemoine (1er septembre 2022), vous pouvez la resilier a tout moment et choisir librement votre assureur (delegation), souvent 30 a 50 % moins chere que le contrat groupe de la banque.",
+                    "Oui. Le rachat génère un nouveau prêt, donc une nouvelle assurance emprunteur est exigée. Depuis la loi Lemoine (1er septembre 2022), vous pouvez la résilier à tout moment et choisir librement votre assureur (délégation), souvent 30 à 50 % moins chère que le contrat groupe de la banque.",
                 },
                 {
-                  question: "Combien de temps pour obtenir un rachat de credit ?",
+                  question: "Combien de temps pour obtenir un rachat de crédit ?",
                   answer:
-                    "Pour un rachat 100 % credit consommation, comptez 2 a 4 semaines entre la demande et la mise en place. Pour un rachat avec part immobiliere, comptez 1,5 a 3 mois (etude, accord de principe, conditions suspensives, deblocage). Le delai legal de retractation de 14 jours s'applique apres signature de l'offre.",
+                    "Pour un rachat 100 % crédit consommation, comptez 2 à 4 semaines entre la demande et la mise en place. Pour un rachat avec part immobilière, comptez 1,5 à 3 mois (étude, accord de principe, conditions suspensives, déblocage). Le délai légal de rétractation de 14 jours s'applique après signature de l'offre.",
                 },
                 {
                   question: "Y a-t-il un montant minimum ou maximum pour un rachat ?",
                   answer:
-                    "Pas de plancher legal mais en pratique, en dessous de 5 000-10 000 EUR de capital regroupé, les frais absorberaient l'economie. Pas de plafond legal mais les organismes appliquent leurs propres limites (souvent 200 000 a 500 000 EUR pour un rachat conso, plus pour un rachat avec immobilier).",
+                    "Pas de plancher légal mais en pratique, en dessous de 5 000-10 000 € de capital regroupé, les frais absorberaient l'économie. Pas de plafond légal mais les organismes appliquent leurs propres limites (souvent 200 000 à 500 000 € pour un rachat conso, plus pour un rachat avec immobilier).",
                 },
                 {
-                  question: "Le simulateur garde-t-il mes donnees ?",
+                  question: "Le simulateur garde-t-il mes données ?",
                   answer:
-                    "Non. Tous les calculs sont effectues localement dans votre navigateur. Aucune information sur vos credits (capital, taux, mensualite) n'est envoyee a un serveur ni stockee. L'outil fonctionne sans inscription.",
+                    "Non. Tous les calculs sont effectués localement dans votre navigateur. Aucune information sur vos crédits (capital, taux, mensualité) n'est envoyée à un serveur ni stockée. L'outil fonctionne sans inscription.",
                 },
               ]}
             />
@@ -928,12 +930,12 @@ export default function CalculateurRachatCredit() {
                 style={{ color: "var(--muted)" }}
               >
                 <li>
-                  Ecart de taux &gt;{" "}
+                  Écart de taux &gt;{" "}
                   <strong className="text-[var(--primary)]">0.7%</strong> =
                   souvent rentable
                 </li>
                 <li>
-                  Verifiez les IRA dans vos contrats actuels
+                  Vérifiez les IRA dans vos contrats actuels
                 </li>
                 <li>
                   Comparez les offres de plusieurs banques
@@ -942,7 +944,7 @@ export default function CalculateurRachatCredit() {
                   Incluez tous les frais (dossier, garantie, assurance)
                 </li>
                 <li>
-                  Un courtier peut negocier de meilleurs taux
+                  Un courtier peut négocier de meilleurs taux
                 </li>
               </ul>
             </div>
@@ -957,16 +959,16 @@ export default function CalculateurRachatCredit() {
                 className="text-xs font-semibold uppercase tracking-[0.15em]"
                 style={{ color: "var(--accent)" }}
               >
-                Types de credits rachetables
+                Types de crédits rachetables
               </h3>
               <div className="mt-3 space-y-2">
                 {[
-                  "Credit immobilier",
-                  "Credit auto",
-                  "Credit consommation",
-                  "Credit travaux",
-                  "Pret personnel",
-                  "Credit revolving",
+                  "Crédit immobilier",
+                  "Crédit auto",
+                  "Crédit consommation",
+                  "Crédit travaux",
+                  "Prêt personnel",
+                  "Crédit revolving",
                 ].map((type) => (
                   <div
                     key={type}
@@ -1107,7 +1109,7 @@ function DonutChart({
   const econColor = positive ? "#0d4f3c" : "#dc2626";
   const fraisColor = positive ? "#dc2626" : "#0d4f3c";
   return (
-    <svg width="160" height="160" viewBox="-80 -80 160 160" role="img" aria-label="Economie totale vs frais de rachat">
+    <svg width="160" height="160" viewBox="-80 -80 160 160" role="img" aria-label="Économie totale vs frais de rachat">
       <circle cx="0" cy="0" r={r} fill="none" stroke="var(--border)" strokeWidth={stroke} />
       <g transform="rotate(-90)">
         <circle
@@ -1140,7 +1142,7 @@ function DonutChart({
         fill="var(--muted)"
         style={{ fontFamily: "var(--font-body)" }}
       >
-        {positive ? "Economie" : "Surcout"}
+        {positive ? "Économie" : "Surcoût"}
       </text>
       <text
         x="0"

@@ -15,29 +15,32 @@ interface UnitDef {
 const CATEGORIES: { key: Category; label: string; icon: string }[] = [
   { key: "length", label: "Longueur", icon: "📏" },
   { key: "weight", label: "Poids", icon: "⚖️" },
-  { key: "temperature", label: "Temperature", icon: "🌡️" },
+  { key: "temperature", label: "Température", icon: "🌡️" },
   { key: "surface", label: "Surface", icon: "📐" },
   { key: "volume", label: "Volume", icon: "🧪" },
 ];
 
 const UNITS: Record<Category, UnitDef[]> = {
   length: [
-    { label: "Millimetre", symbol: "mm", toBase: (v) => v / 1000, fromBase: (v) => v * 1000 },
-    { label: "Centimetre", symbol: "cm", toBase: (v) => v / 100, fromBase: (v) => v * 100 },
-    { label: "Metre", symbol: "m", toBase: (v) => v, fromBase: (v) => v },
-    { label: "Kilometre", symbol: "km", toBase: (v) => v * 1000, fromBase: (v) => v / 1000 },
+    { label: "Millimètre", symbol: "mm", toBase: (v) => v / 1000, fromBase: (v) => v * 1000 },
+    { label: "Centimètre", symbol: "cm", toBase: (v) => v / 100, fromBase: (v) => v * 100 },
+    { label: "Mètre", symbol: "m", toBase: (v) => v, fromBase: (v) => v },
+    { label: "Kilomètre", symbol: "km", toBase: (v) => v * 1000, fromBase: (v) => v / 1000 },
     { label: "Pouce", symbol: "in", toBase: (v) => v * 0.0254, fromBase: (v) => v / 0.0254 },
     { label: "Pied", symbol: "ft", toBase: (v) => v * 0.3048, fromBase: (v) => v / 0.3048 },
     { label: "Yard", symbol: "yd", toBase: (v) => v * 0.9144, fromBase: (v) => v / 0.9144 },
     { label: "Mile", symbol: "mi", toBase: (v) => v * 1609.344, fromBase: (v) => v / 1609.344 },
+    { label: "Mille marin", symbol: "NM", toBase: (v) => v * 1852, fromBase: (v) => v / 1852 },
   ],
   weight: [
     { label: "Milligramme", symbol: "mg", toBase: (v) => v / 1_000_000, fromBase: (v) => v * 1_000_000 },
     { label: "Gramme", symbol: "g", toBase: (v) => v / 1000, fromBase: (v) => v * 1000 },
     { label: "Kilogramme", symbol: "kg", toBase: (v) => v, fromBase: (v) => v },
     { label: "Tonne", symbol: "t", toBase: (v) => v * 1000, fromBase: (v) => v / 1000 },
-    { label: "Once", symbol: "oz", toBase: (v) => v * 0.0283495, fromBase: (v) => v / 0.0283495 },
-    { label: "Livre", symbol: "lb", toBase: (v) => v * 0.453592, fromBase: (v) => v / 0.453592 },
+    // Facteurs exacts (accord international de 1959) : 1 lb = 0,45359237 kg, 1 oz = 1/16 lb
+    { label: "Once", symbol: "oz", toBase: (v) => v * 0.028349523125, fromBase: (v) => v / 0.028349523125 },
+    { label: "Livre", symbol: "lb", toBase: (v) => v * 0.45359237, fromBase: (v) => v / 0.45359237 },
+    { label: "Stone", symbol: "st", toBase: (v) => v * 6.35029318, fromBase: (v) => v / 6.35029318 },
   ],
   temperature: [
     { label: "Celsius", symbol: "°C", toBase: (v) => v, fromBase: (v) => v },
@@ -45,22 +48,26 @@ const UNITS: Record<Category, UnitDef[]> = {
     { label: "Kelvin", symbol: "K", toBase: (v) => v - 273.15, fromBase: (v) => v + 273.15 },
   ],
   surface: [
-    { label: "Centimetre carre", symbol: "cm²", toBase: (v) => v / 10000, fromBase: (v) => v * 10000 },
-    { label: "Metre carre", symbol: "m²", toBase: (v) => v, fromBase: (v) => v },
+    { label: "Centimètre carré", symbol: "cm²", toBase: (v) => v / 10000, fromBase: (v) => v * 10000 },
+    { label: "Mètre carré", symbol: "m²", toBase: (v) => v, fromBase: (v) => v },
     { label: "Are", symbol: "a", toBase: (v) => v * 100, fromBase: (v) => v / 100 },
     { label: "Hectare", symbol: "ha", toBase: (v) => v * 10000, fromBase: (v) => v / 10000 },
-    { label: "Kilometre carre", symbol: "km²", toBase: (v) => v * 1_000_000, fromBase: (v) => v / 1_000_000 },
-    { label: "Pied carre", symbol: "ft²", toBase: (v) => v * 0.092903, fromBase: (v) => v / 0.092903 },
-    { label: "Acre", symbol: "ac", toBase: (v) => v * 4046.86, fromBase: (v) => v / 4046.86 },
+    { label: "Kilomètre carré", symbol: "km²", toBase: (v) => v * 1_000_000, fromBase: (v) => v / 1_000_000 },
+    { label: "Pied carré", symbol: "ft²", toBase: (v) => v * 0.09290304, fromBase: (v) => v / 0.09290304 },
+    { label: "Acre", symbol: "ac", toBase: (v) => v * 4046.8564224, fromBase: (v) => v / 4046.8564224 },
   ],
   volume: [
     { label: "Millilitre", symbol: "mL", toBase: (v) => v / 1000, fromBase: (v) => v * 1000 },
     { label: "Centilitre", symbol: "cL", toBase: (v) => v / 100, fromBase: (v) => v * 100 },
     { label: "Litre", symbol: "L", toBase: (v) => v, fromBase: (v) => v },
-    { label: "Metre cube", symbol: "m³", toBase: (v) => v * 1000, fromBase: (v) => v / 1000 },
-    { label: "Gallon US", symbol: "gal", toBase: (v) => v * 3.78541, fromBase: (v) => v / 3.78541 },
-    { label: "Pinte US", symbol: "pt", toBase: (v) => v * 0.473176, fromBase: (v) => v / 0.473176 },
-    { label: "Tasse", symbol: "cup", toBase: (v) => v * 0.236588, fromBase: (v) => v / 0.236588 },
+    { label: "Mètre cube", symbol: "m³", toBase: (v) => v * 1000, fromBase: (v) => v / 1000 },
+    // Gallon US = 231 pouces cubes = 3,785411784 L ; gallon impérial (UK) = 4,54609 L exactement
+    { label: "Gallon US", symbol: "gal US", toBase: (v) => v * 3.785411784, fromBase: (v) => v / 3.785411784 },
+    { label: "Gallon impérial (UK)", symbol: "gal UK", toBase: (v) => v * 4.54609, fromBase: (v) => v / 4.54609 },
+    { label: "Pinte US", symbol: "pt US", toBase: (v) => v * 0.473176473, fromBase: (v) => v / 0.473176473 },
+    { label: "Pinte impériale (UK)", symbol: "pt UK", toBase: (v) => v * 0.56826125, fromBase: (v) => v / 0.56826125 },
+    { label: "Tasse US", symbol: "cup", toBase: (v) => v * 0.2365882365, fromBase: (v) => v / 0.2365882365 },
+    { label: "Once liquide US", symbol: "fl oz US", toBase: (v) => v * 0.0295735295625, fromBase: (v) => v / 0.0295735295625 },
   ],
 };
 
@@ -103,8 +110,12 @@ export default function ConvertisseurUnites() {
   const swap = () => {
     setFromUnit(toUnit);
     setToUnit(fromUnit);
-    setValue(formatNumber(result));
+    // Valeur brute (point décimal) : un nombre formaté « 1 000,5 » serait refusé par le champ numérique
+    setValue(Number.isFinite(result) ? String(parseFloat(result.toPrecision(12))) : "0");
   };
+
+  const kelvinBelowZero =
+    category === "temperature" && Number.isFinite(parseFloat(value)) && units[fromUnit].toBase(parseFloat(value)) < -273.15 - 1e-9;
 
   return (
     <>
@@ -112,10 +123,10 @@ export default function ConvertisseurUnites() {
         <div className="mx-auto max-w-7xl px-6 2xl:max-w-[1400px]">
           <p className="animate-fade-up text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: "var(--accent)" }}>Conversion</p>
           <h1 className="animate-fade-up stagger-1 mt-3 text-4xl tracking-tight md:text-5xl" style={{ fontFamily: "var(--font-display)" }}>
-            Convertisseur d{"'"}<span style={{ color: "var(--primary)" }}>unites</span>
+            Convertisseur d{"'"}<span style={{ color: "var(--primary)" }}>unités</span>
           </h1>
           <p className="animate-fade-up stagger-2 mt-3 max-w-xl text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-            Longueur, poids, temperature, surface et volume — conversion instantanee entre toutes les unites courantes.
+            Longueur, poids, température, surface et volume : conversion instantanée entre les unités courantes, métriques, impériales et américaines.
           </p>
         </div>
       </section>
@@ -182,6 +193,11 @@ export default function ConvertisseurUnites() {
                     {formatNumber(result)} {units[toUnit]?.symbol}
                   </div>
                 </div>
+                {kelvinBelowZero && (
+                  <p className="text-sm font-semibold" style={{ color: "#dc2626" }}>
+                    Valeur impossible : aucune température ne peut être inférieure au zéro absolu (0 K = −273,15 °C).
+                  </p>
+                )}
               </div>
             </div>
 
@@ -190,7 +206,7 @@ export default function ConvertisseurUnites() {
               <h2 className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--accent)" }}>Toutes les conversions</h2>
               <div className="mt-4 space-y-2">
                 {allConversions.map((conv) => (
-                  <div key={conv.symbol}
+                  <div key={conv.label}
                     className="flex items-center justify-between rounded-xl px-4 py-3"
                     style={{ background: conv.isSource ? "var(--primary)" : "var(--surface-alt)", color: conv.isSource ? "white" : undefined }}>
                     <span className="text-sm font-semibold">{conv.label}</span>
@@ -203,55 +219,55 @@ export default function ConvertisseurUnites() {
             </div>
 
             <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Systeme metrique et systeme imperial</h2>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Système métrique et systèmes impérial et américain</h2>
               <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                <p><strong className="text-[var(--foreground)]">Systeme metrique</strong> : Utilise dans la majorite des pays, base sur les multiples de 10. Unites de base : metre (longueur), kilogramme (masse), litre (volume).</p>
-                <p><strong className="text-[var(--foreground)]">Systeme imperial</strong> : Utilise principalement aux Etats-Unis et au Royaume-Uni. Unites : pouce, pied, mile (longueur), once, livre (masse), gallon (volume).</p>
-                <p><strong className="text-[var(--foreground)]">Temperature</strong> : Celsius (point de congelation 0°, ebullition 100°), Fahrenheit (32° et 212°), Kelvin (echelle absolue, 0 K = -273,15°C).</p>
+                <p><strong className="text-[var(--foreground)]">Système métrique</strong> : utilisé dans la quasi-totalité des pays, fondé sur les multiples de 10. Unités usuelles : mètre (longueur), kilogramme (masse), litre (volume).</p>
+                <p><strong className="text-[var(--foreground)]">Systèmes impérial et américain</strong> : pouce, pied, mile (longueur), once, livre (masse), gallon, pinte (volume). Longueurs et masses sont identiques des deux côtés de l&apos;Atlantique depuis 1959 (1 pouce = 2,54 cm, 1 livre = 0,45359237 kg), mais pas les volumes : le gallon américain vaut 3,785 L, le gallon impérial britannique 4,546 L.</p>
+                <p><strong className="text-[var(--foreground)]">Température</strong> : Celsius (congélation de l&apos;eau à 0 °C, ébullition à 100 °C), Fahrenheit (32 °F et 212 °F), Kelvin (échelle absolue, 0 K = −273,15 °C).</p>
               </div>
             </div>
 
             {/* SEO Content */}
             <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
               <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
-                Comment utiliser le convertisseur d&apos;unites
+                Comment utiliser le convertisseur d&apos;unités
               </h2>
               <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
                 <p>
-                  Ce convertisseur d&apos;unites universel gratuit couvre 5 categories de mesure : longueur, poids, temperature, surface et volume. Il permet de convertir instantanement entre le systeme metrique et le systeme imperial.
+                  Ce convertisseur d&apos;unités gratuit couvre 5 catégories de mesure : longueur, poids, température, surface et volume. Il convertit instantanément entre le système métrique et les unités impériales ou américaines, avec les facteurs de conversion exacts.
                 </p>
                 <ul className="ml-4 list-disc space-y-1">
-                  <li><strong className="text-[var(--foreground)]">Selectionnez la categorie</strong> : choisissez parmi longueur, poids, temperature, surface ou volume.</li>
-                  <li><strong className="text-[var(--foreground)]">Definissez les unites</strong> : selectionnez l&apos;unite source et l&apos;unite cible dans les menus deroulants. Le bouton d&apos;inversion permet de changer le sens en un clic.</li>
-                  <li><strong className="text-[var(--foreground)]">Saisissez la valeur</strong> : entrez le nombre a convertir. Le resultat s&apos;affiche en temps reel.</li>
-                  <li><strong className="text-[var(--foreground)]">Consultez toutes les conversions</strong> : la section &laquo; Toutes les conversions &raquo; affiche simultanement l&apos;equivalent dans chaque unite de la categorie selectionnee.</li>
+                  <li><strong className="text-[var(--foreground)]">Sélectionnez la catégorie</strong> : choisissez parmi longueur, poids, température, surface ou volume.</li>
+                  <li><strong className="text-[var(--foreground)]">Définissez les unités</strong> : sélectionnez l&apos;unité source et l&apos;unité cible dans les menus déroulants. Le bouton d&apos;inversion permet de changer le sens en un clic.</li>
+                  <li><strong className="text-[var(--foreground)]">Saisissez la valeur</strong> : entrez le nombre à convertir. Le résultat s&apos;affiche en temps réel.</li>
+                  <li><strong className="text-[var(--foreground)]">Consultez toutes les conversions</strong> : la section &laquo; Toutes les conversions &raquo; affiche simultanément l&apos;équivalent dans chaque unité de la catégorie sélectionnée.</li>
                 </ul>
                 <p>
-                  L&apos;outil est particulierement utile pour les achats internationaux, les recettes de cuisine anglo-saxonnes, les projets de bricolage ou les calculs scientifiques necessitant des conversions entre systeme metrique et imperial.
+                  L&apos;outil est particulièrement utile pour les achats internationaux, les recettes de cuisine anglo-saxonnes, les projets de bricolage ou les calculs scientifiques nécessitant des conversions entre système métrique et unités anglo-saxonnes. Attention aux volumes : vérifiez si une recette ou une fiche technique parle de gallons ou de pintes américains ou britanniques.
                 </p>
               </div>
             </div>
 
             {/* FAQ */}
             <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Questions frequentes</h2>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Questions fréquentes</h2>
               <div className="mt-6 space-y-5">
                 <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
-                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Quels pays utilisent encore le systeme imperial ?</h3>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Quels pays utilisent encore le système impérial ?</h3>
                   <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                    Seuls trois pays n&apos;ont pas officiellement adopte le systeme metrique : les Etats-Unis, le Liberia et la Birmanie (Myanmar). Le Royaume-Uni utilise un melange des deux systemes : les distances routieres sont en miles, les poids corporels en stones, mais la plupart des mesures scientifiques et commerciales sont en metrique. En France, le systeme metrique est le seul systeme legal depuis 1840.
+                    Trois pays sont traditionnellement cités comme n&apos;ayant pas pleinement adopté le système métrique : les États-Unis, le Liberia et la Birmanie (Myanmar), cette dernière ayant engagé une transition. Le Royaume-Uni utilise un mélange des deux systèmes : les distances routières sont en miles, les poids corporels souvent en stones, mais la plupart des mesures scientifiques et commerciales sont en métrique. En France, le système métrique est obligatoire depuis le 1er janvier 1840.
                   </p>
                 </div>
                 <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
                   <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Comment convertir facilement des livres en kilogrammes ?</h3>
                   <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                    Pour une conversion rapide de tete, divisez le poids en livres (lb) par 2,2. Par exemple, 150 lb / 2,2 = environ 68 kg. Pour une valeur plus precise, utilisez le facteur exact : 1 livre = 0,453592 kg. Inversement, pour passer de kg en lb, multipliez par 2,2. Cet outil effectue le calcul exact pour vous.
+                    Pour une conversion rapide de tête, divisez le poids en livres (lb) par 2,2. Par exemple, 150 lb / 2,2 = environ 68 kg. Pour une valeur exacte, utilisez le facteur légal : 1 livre = 0,45359237 kg. Inversement, pour passer des kg aux lb, multipliez par 2,2 (plus précisément 2,20462). Cet outil effectue le calcul exact pour vous.
                   </p>
                 </div>
                 <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
-                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Quelle est la difference entre un hectare et un acre ?</h3>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Quelle est la différence entre un hectare et un acre ?</h3>
                   <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                    Un hectare (ha) vaut 10 000 m&sup2;, soit un carre de 100 m de cote. Un acre vaut environ 4 047 m&sup2;, soit environ 0,4 hectare. L&apos;hectare est l&apos;unite standard en France pour les surfaces agricoles et foncieres. L&apos;acre est encore utilise dans les pays anglo-saxons, notamment pour l&apos;immobilier aux Etats-Unis et au Royaume-Uni.
+                    Un hectare (ha) vaut 10 000 m&sup2;, soit un carré de 100 m de côté. Un acre vaut environ 4 047 m&sup2;, soit environ 0,4 hectare. L&apos;hectare est l&apos;unité standard en France pour les surfaces agricoles et foncières. L&apos;acre est encore utilisé dans les pays anglo-saxons, notamment pour l&apos;immobilier aux États-Unis et au Royaume-Uni.
                   </p>
                 </div>
               </div>

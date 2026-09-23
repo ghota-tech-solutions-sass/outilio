@@ -4,7 +4,7 @@ import { useState, useMemo } from "react";
 import AdPlaceholder from "@/components/AdPlaceholder";
 
 /* ------------------------------------------------------------------ */
-/*  DATA — Size conversion tables (standard industry charts)          */
+/*  DATA — Size conversion tables                                     */
 /* ------------------------------------------------------------------ */
 
 type Category = "clothing" | "shoes";
@@ -17,7 +17,7 @@ interface SizeRow {
   INT: string;
 }
 
-// --- MEN'S CLOTHING ---
+// --- MEN'S CLOTHING (costumes, vestes : US/UK = tour de poitrine en pouces, EU = US + 10) ---
 const MEN_CLOTHING: SizeRow[] = [
   { EU: "44", US: "34", UK: "34", INT: "XS" },
   { EU: "46", US: "36", UK: "36", INT: "S" },
@@ -29,18 +29,18 @@ const MEN_CLOTHING: SizeRow[] = [
   { EU: "58", US: "48", UK: "48", INT: "4XL" },
 ];
 
-// --- WOMEN'S CLOTHING ---
+// --- WOMEN'S CLOTHING (tailles françaises : FR = US + 32, UK = US + 4) ---
 const WOMEN_CLOTHING: SizeRow[] = [
   { EU: "32", US: "0",  UK: "4",  INT: "XXS" },
   { EU: "34", US: "2",  UK: "6",  INT: "XS" },
   { EU: "36", US: "4",  UK: "8",  INT: "S" },
   { EU: "38", US: "6",  UK: "10", INT: "M" },
-  { EU: "40", US: "8",  UK: "12", INT: "M/L" },
-  { EU: "42", US: "10", UK: "14", INT: "L" },
-  { EU: "44", US: "12", UK: "16", INT: "XL" },
-  { EU: "46", US: "14", UK: "18", INT: "XXL" },
-  { EU: "48", US: "16", UK: "20", INT: "3XL" },
-  { EU: "50", US: "18", UK: "22", INT: "4XL" },
+  { EU: "40", US: "8",  UK: "12", INT: "L" },
+  { EU: "42", US: "10", UK: "14", INT: "XL" },
+  { EU: "44", US: "12", UK: "16", INT: "XXL" },
+  { EU: "46", US: "14", UK: "18", INT: "3XL" },
+  { EU: "48", US: "16", UK: "20", INT: "4XL" },
+  { EU: "50", US: "18", UK: "22", INT: "5XL" },
 ];
 
 interface ShoeRow {
@@ -50,33 +50,42 @@ interface ShoeRow {
   CM: string;
 }
 
-// --- MEN'S SHOES ---
+// --- MEN'S SHOES (grille Nike, CM = longueur du pied) ---
 const MEN_SHOES: ShoeRow[] = [
-  { EU: "39",   US: "6.5",  UK: "5.5",  CM: "24.5" },
+  { EU: "39",   US: "6.5",  UK: "6",    CM: "24.5" },
   { EU: "40",   US: "7",    UK: "6",    CM: "25" },
-  { EU: "41",   US: "8",    UK: "7",    CM: "25.5" },
+  { EU: "40.5", US: "7.5",  UK: "6.5",  CM: "25.5" },
+  { EU: "41",   US: "8",    UK: "7",    CM: "26" },
   { EU: "42",   US: "8.5",  UK: "7.5",  CM: "26.5" },
-  { EU: "43",   US: "9.5",  UK: "8.5",  CM: "27" },
-  { EU: "44",   US: "10",   UK: "9",    CM: "27.5" },
-  { EU: "44.5", US: "10.5", UK: "9.5",  CM: "28" },
-  { EU: "45",   US: "11",   UK: "10",   CM: "28.5" },
-  { EU: "46",   US: "12",   UK: "11",   CM: "29.5" },
-  { EU: "47",   US: "13",   UK: "12",   CM: "30" },
-  { EU: "48",   US: "14",   UK: "13",   CM: "31" },
+  { EU: "42.5", US: "9",    UK: "8",    CM: "27" },
+  { EU: "43",   US: "9.5",  UK: "8.5",  CM: "27.5" },
+  { EU: "44",   US: "10",   UK: "9",    CM: "28" },
+  { EU: "44.5", US: "10.5", UK: "9.5",  CM: "28.5" },
+  { EU: "45",   US: "11",   UK: "10",   CM: "29" },
+  { EU: "45.5", US: "11.5", UK: "10.5", CM: "29.5" },
+  { EU: "46",   US: "12",   UK: "11",   CM: "30" },
+  { EU: "47",   US: "12.5", UK: "11.5", CM: "30.5" },
+  { EU: "47.5", US: "13",   UK: "12",   CM: "31" },
+  { EU: "48.5", US: "14",   UK: "13",   CM: "32" },
 ];
 
-// --- WOMEN'S SHOES ---
+// --- WOMEN'S SHOES (grille Nike, CM = longueur du pied) ---
 const WOMEN_SHOES: ShoeRow[] = [
-  { EU: "35",   US: "5",    UK: "2.5",  CM: "22" },
-  { EU: "35.5", US: "5.5",  UK: "3",    CM: "22.5" },
-  { EU: "36",   US: "6",    UK: "3.5",  CM: "23" },
-  { EU: "37",   US: "6.5",  UK: "4",    CM: "23.5" },
-  { EU: "38",   US: "7.5",  UK: "5",    CM: "24" },
-  { EU: "39",   US: "8",    UK: "5.5",  CM: "24.5" },
-  { EU: "40",   US: "9",    UK: "6.5",  CM: "25.5" },
-  { EU: "41",   US: "9.5",  UK: "7",    CM: "26" },
-  { EU: "42",   US: "10.5", UK: "8",    CM: "27" },
-  { EU: "43",   US: "11.5", UK: "9",    CM: "27.5" },
+  { EU: "35",   US: "4.5",  UK: "2",    CM: "21.5" },
+  { EU: "35.5", US: "5",    UK: "2.5",  CM: "22" },
+  { EU: "36",   US: "5.5",  UK: "3",    CM: "22.5" },
+  { EU: "36.5", US: "6",    UK: "3.5",  CM: "23" },
+  { EU: "37.5", US: "6.5",  UK: "4",    CM: "23.5" },
+  { EU: "38",   US: "7",    UK: "4.5",  CM: "24" },
+  { EU: "38.5", US: "7.5",  UK: "5",    CM: "24.5" },
+  { EU: "39",   US: "8",    UK: "5.5",  CM: "25" },
+  { EU: "40",   US: "8.5",  UK: "6",    CM: "25.5" },
+  { EU: "40.5", US: "9",    UK: "6.5",  CM: "26" },
+  { EU: "41",   US: "9.5",  UK: "7",    CM: "26.5" },
+  { EU: "42",   US: "10",   UK: "7.5",  CM: "27" },
+  { EU: "42.5", US: "10.5", UK: "8",    CM: "27.5" },
+  { EU: "43",   US: "11",   UK: "8.5",  CM: "28" },
+  { EU: "44",   US: "11.5", UK: "9",    CM: "28.5" },
 ];
 
 /* ------------------------------------------------------------------ */
@@ -85,17 +94,23 @@ const WOMEN_SHOES: ShoeRow[] = [
 
 type AnyRow = SizeRow | ShoeRow;
 
-function getColumns(category: Category): { key: string; label: string }[] {
+function cell(row: AnyRow, key: string): string {
+  const val = (row as unknown as Record<string, string>)[key] ?? "";
+  // Affichage à la française : virgule décimale
+  return val.replace(".", ",");
+}
+
+function getColumns(category: Category, gender: Gender): { key: string; label: string }[] {
   if (category === "shoes") {
     return [
-      { key: "EU", label: "EU" },
+      { key: "EU", label: "EU / FR" },
       { key: "US", label: "US" },
       { key: "UK", label: "UK" },
-      { key: "CM", label: "cm" },
+      { key: "CM", label: "Pied (cm)" },
     ];
   }
   return [
-    { key: "EU", label: "EU" },
+    { key: "EU", label: gender === "women" ? "FR" : "FR / EU" },
     { key: "US", label: "US" },
     { key: "UK", label: "UK" },
     { key: "INT", label: "INT (S/M/L)" },
@@ -107,18 +122,18 @@ function getData(category: Category, gender: Gender): AnyRow[] {
   return gender === "men" ? MEN_SHOES : WOMEN_SHOES;
 }
 
-function getRegions(category: Category): { key: string; label: string }[] {
+function getRegions(category: Category, gender: Gender): { key: string; label: string }[] {
   if (category === "shoes") {
     return [
-      { key: "EU", label: "Europe (EU)" },
-      { key: "US", label: "Etats-Unis (US)" },
+      { key: "EU", label: "Europe / France (EU)" },
+      { key: "US", label: "États-Unis (US)" },
       { key: "UK", label: "Royaume-Uni (UK)" },
-      { key: "CM", label: "Centimetres (cm)" },
+      { key: "CM", label: "Longueur du pied (cm)" },
     ];
   }
   return [
-    { key: "EU", label: "Europe (EU)" },
-    { key: "US", label: "Etats-Unis (US)" },
+    { key: "EU", label: gender === "women" ? "France (FR)" : "France / Europe (FR / EU)" },
+    { key: "US", label: "États-Unis (US)" },
     { key: "UK", label: "Royaume-Uni (UK)" },
     { key: "INT", label: "International (S/M/L)" },
   ];
@@ -132,41 +147,35 @@ export default function ConvertisseurTailles() {
   const [category, setCategory] = useState<Category>("clothing");
   const [gender, setGender] = useState<Gender>("women");
   const [sourceRegion, setSourceRegion] = useState<string>("EU");
-  const [sourceValue, setSourceValue] = useState<string>("");
+  // Sélection par index de ligne : certaines valeurs apparaissent deux fois (ex. UK 6 homme)
+  const [selectedIndex, setSelectedIndex] = useState<number>(-1);
 
   const data = useMemo(() => getData(category, gender), [category, gender]);
-  const columns = useMemo(() => getColumns(category), [category]);
-  const regions = useMemo(() => getRegions(category), [category]);
+  const columns = useMemo(() => getColumns(category, gender), [category, gender]);
+  const regions = useMemo(() => getRegions(category, gender), [category, gender]);
 
-  // Reset source value when category/gender changes
   const handleCategoryChange = (cat: Category) => {
     setCategory(cat);
     setSourceRegion("EU");
-    setSourceValue("");
+    setSelectedIndex(-1);
   };
 
   const handleGenderChange = (g: Gender) => {
     setGender(g);
-    setSourceValue("");
+    setSelectedIndex(-1);
   };
 
-  // Find matching row index
-  const matchedIndex = useMemo(() => {
-    if (!sourceValue.trim()) return -1;
-    const search = sourceValue.trim().toUpperCase();
-    return data.findIndex((row) => {
-      const val = (row as unknown as Record<string, string>)[sourceRegion];
-      return val !== undefined && val.toUpperCase() === search;
+  // Options du menu : valeur du système source, précisée par l'équivalent EU si elle est ambiguë
+  const options = useMemo(() => {
+    const values = data.map((row) => cell(row, sourceRegion));
+    return values.map((v, i) => {
+      const duplicated = values.indexOf(v) !== values.lastIndexOf(v);
+      return { index: i, label: duplicated && sourceRegion !== "EU" ? `${v} (EU ${cell(data[i], "EU")})` : v };
     });
-  }, [data, sourceRegion, sourceValue]);
-
-  // Available values for dropdown
-  const availableValues = useMemo(() => {
-    return data.map((row) => (row as unknown as Record<string, string>)[sourceRegion]);
   }, [data, sourceRegion]);
 
-  // Matched row data
-  const matchedRow = matchedIndex >= 0 ? data[matchedIndex] : null;
+  const matchedRow = selectedIndex >= 0 && selectedIndex < data.length ? data[selectedIndex] : null;
+  const genderLabel = gender === "men" ? "Homme" : "Femme";
 
   return (
     <>
@@ -177,10 +186,10 @@ export default function ConvertisseurTailles() {
             Conversion
           </p>
           <h1 className="animate-fade-up stagger-1 mt-3 text-4xl tracking-tight md:text-5xl" style={{ fontFamily: "var(--font-display)" }}>
-            Convertisseur de <span style={{ color: "var(--primary)" }}>Tailles</span>
+            Convertisseur de <span style={{ color: "var(--primary)" }}>tailles</span>
           </h1>
           <p className="animate-fade-up stagger-2 mt-3 max-w-xl text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-            Trouvez votre taille de vetements et chaussures dans tous les systemes : EU, US, UK et tailles internationales.
+            Trouvez votre taille de vêtements et de chaussures dans les principaux systèmes : France/Europe, US, UK et tailles internationales.
           </p>
         </div>
       </section>
@@ -193,11 +202,11 @@ export default function ConvertisseurTailles() {
             {/* Category selector */}
             <div className="animate-fade-up stagger-2 rounded-2xl border p-6" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
               <h2 className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--accent)" }}>
-                Categorie
+                Catégorie
               </h2>
               <div className="mt-4 flex flex-wrap gap-3">
                 {([
-                  { key: "clothing" as Category, label: "Vetements", icon: "👕" },
+                  { key: "clothing" as Category, label: "Vêtements", icon: "👕" },
                   { key: "shoes" as Category, label: "Chaussures", icon: "👟" },
                 ]).map((cat) => (
                   <button
@@ -247,11 +256,11 @@ export default function ConvertisseurTailles() {
               <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
                   <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>
-                    Systeme source
+                    Système source
                   </label>
                   <select
                     value={sourceRegion}
-                    onChange={(e) => { setSourceRegion(e.target.value); setSourceValue(""); }}
+                    onChange={(e) => { setSourceRegion(e.target.value); setSelectedIndex(-1); }}
                     className="mt-2 w-full rounded-xl border px-4 py-3 text-sm font-medium"
                     style={{ borderColor: "var(--border)" }}
                   >
@@ -266,14 +275,14 @@ export default function ConvertisseurTailles() {
                     Votre taille
                   </label>
                   <select
-                    value={sourceValue}
-                    onChange={(e) => setSourceValue(e.target.value)}
+                    value={selectedIndex}
+                    onChange={(e) => setSelectedIndex(parseInt(e.target.value))}
                     className="mt-2 w-full rounded-xl border px-4 py-3 text-sm font-medium"
                     style={{ borderColor: "var(--border)" }}
                   >
-                    <option value="">-- Choisir --</option>
-                    {availableValues.map((v, i) => (
-                      <option key={i} value={v}>{v}</option>
+                    <option value={-1}>-- Choisir --</option>
+                    {options.map((o) => (
+                      <option key={o.index} value={o.index}>{o.label}</option>
                     ))}
                   </select>
                 </div>
@@ -283,7 +292,6 @@ export default function ConvertisseurTailles() {
               {matchedRow && (
                 <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
                   {columns.map((col) => {
-                    const val = (matchedRow as unknown as Record<string, string>)[col.key];
                     const isSource = col.key === sourceRegion;
                     return (
                       <div
@@ -299,7 +307,7 @@ export default function ConvertisseurTailles() {
                           {col.label}
                         </p>
                         <p className="mt-1 text-2xl font-bold" style={{ fontFamily: "var(--font-display)" }}>
-                          {val}
+                          {cell(matchedRow, col.key)}
                         </p>
                       </div>
                     );
@@ -311,8 +319,15 @@ export default function ConvertisseurTailles() {
             {/* Full conversion table */}
             <div className="animate-fade-up stagger-4 rounded-2xl border p-6" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
               <h2 className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--accent)" }}>
-                Tableau complet — {category === "clothing" ? "Vetements" : "Chaussures"} {gender === "men" ? "Homme" : "Femme"}
+                Tableau complet — {category === "clothing" ? (gender === "men" ? "Costumes et vestes" : "Vêtements") : "Chaussures"} {genderLabel}
               </h2>
+              <p className="mt-2 text-xs" style={{ color: "var(--muted)" }}>
+                {category === "shoes"
+                  ? "Grille de référence Nike. La colonne cm indique la longueur du pied, et non celle de la chaussure. Les équivalences varient d'une marque à l'autre d'une demi-pointure environ."
+                  : gender === "men"
+                    ? "Pour les costumes et vestes, la taille US/UK correspond au tour de poitrine en pouces. Les correspondances S/M/L sont indicatives et varient selon les marques."
+                    : "Tailles françaises (utilisées aussi en Espagne et en Belgique). Attention : en Allemagne, aux Pays-Bas et en Scandinavie, la taille affichée est inférieure de 2 (FR 38 = DE 36), et en Italie supérieure de 4 (FR 38 = IT 42). Les correspondances S/M/L sont indicatives."}
+              </p>
 
               <div className="mt-4 overflow-x-auto">
                 <table className="w-full text-sm">
@@ -331,7 +346,7 @@ export default function ConvertisseurTailles() {
                   </thead>
                   <tbody>
                     {data.map((row, idx) => {
-                      const isHighlighted = idx === matchedIndex;
+                      const isHighlighted = idx === selectedIndex;
                       return (
                         <tr
                           key={idx}
@@ -340,10 +355,7 @@ export default function ConvertisseurTailles() {
                             background: isHighlighted ? "var(--primary)" : idx % 2 === 0 ? "transparent" : "var(--surface-alt)",
                             color: isHighlighted ? "white" : undefined,
                           }}
-                          onClick={() => {
-                            const val = (row as unknown as Record<string, string>)[sourceRegion];
-                            setSourceValue(val);
-                          }}
+                          onClick={() => setSelectedIndex(idx)}
                         >
                           {columns.map((col) => (
                             <td
@@ -354,7 +366,7 @@ export default function ConvertisseurTailles() {
                                 fontFamily: col.key === "INT" ? undefined : "var(--font-display)",
                               }}
                             >
-                              {(row as unknown as Record<string, string>)[col.key]}
+                              {cell(row, col.key)}
                             </td>
                           ))}
                         </tr>
@@ -372,19 +384,19 @@ export default function ConvertisseurTailles() {
               </h2>
               <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
                 <p>
-                  <strong className="text-[var(--foreground)]">Prenez vos mesures</strong> : Utilisez un metre ruban souple. Pour les vetements, mesurez tour de poitrine, tour de taille et tour de hanches. Pour les chaussures, mesurez la longueur du pied en cm.
+                  <strong className="text-[var(--foreground)]">Prenez vos mesures</strong> : utilisez un mètre ruban souple. Pour les vêtements, mesurez tour de poitrine, tour de taille et tour de hanches. Pour les chaussures, mesurez la longueur du pied en cm.
                 </p>
                 <p>
-                  <strong className="text-[var(--foreground)]">Variations entre marques</strong> : Ces tableaux sont des standards generaux. Chaque marque peut avoir ses propres grilles de tailles. Consultez toujours le guide des tailles du fabricant.
+                  <strong className="text-[var(--foreground)]">Variations entre marques</strong> : ces tableaux sont des repères généraux. Chaque marque peut avoir ses propres grilles de tailles. Consultez toujours le guide des tailles du fabricant.
                 </p>
                 <p>
-                  <strong className="text-[var(--foreground)]">Tailles EU vs FR</strong> : Pour les vetements, les tailles EU (europeennes) correspondent generalement aux tailles francaises. Par exemple, un EU 38 femme = taille 38 en France.
+                  <strong className="text-[var(--foreground)]">Tailles « EU » selon les pays</strong> : pour les vêtements femme, la mention EU recouvre des grilles différentes. Les tailles françaises (FR 38) valent aussi en Espagne, mais une taille allemande ou néerlandaise est inférieure de 2 (DE 36 = FR 38) et une taille italienne supérieure de 4 (IT 42 = FR 38). Vérifiez quel système utilise la marque.
                 </p>
                 <p>
-                  <strong className="text-[var(--foreground)]">Astuce chaussures</strong> : Mesurez vos pieds en fin de journee (ils gonflent legerement). Prevoyez une marge de 0,5 a 1 cm par rapport a la longueur de votre pied pour le confort.
+                  <strong className="text-[var(--foreground)]">Astuce chaussures</strong> : mesurez vos pieds en fin de journée (ils gonflent légèrement) et retenez le plus long des deux. Comparez directement cette mesure à la colonne cm, qui correspond déjà à la longueur du pied : inutile d&apos;ajouter une marge.
                 </p>
                 <p>
-                  <strong className="text-[var(--foreground)]">Conversions rapides</strong> : Pour les vetements femme, taille US + 30 = taille EU (ex: US 8 = EU 38). Pour les chaussures homme, taille US - 1 = taille UK.
+                  <strong className="text-[var(--foreground)]">Conversions rapides</strong> : pour les vêtements femme, taille US + 32 = taille FR (ex. US 6 = FR 38). Pour les chaussures homme, taille US − 1 = taille UK.
                 </p>
               </div>
             </div>
@@ -396,12 +408,13 @@ export default function ConvertisseurTailles() {
               </h2>
               <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
                 {[
-                  { title: "Vetements femme US → EU", formula: "Taille EU = Taille US + 30" },
-                  { title: "Vetements femme US → UK", formula: "Taille UK = Taille US + 4" },
-                  { title: "Chaussures homme US → UK", formula: "Taille UK = Taille US - 1" },
-                  { title: "Chaussures homme US → EU", formula: "Taille EU ≈ Taille US + 33" },
-                  { title: "Chaussures femme US → UK", formula: "Taille UK = Taille US - 2" },
-                  { title: "Chaussures femme US → EU", formula: "Taille EU ≈ Taille US + 31" },
+                  { title: "Vêtements femme US → FR", formula: "Taille FR = Taille US + 32" },
+                  { title: "Vêtements femme US → UK", formula: "Taille UK = Taille US + 4" },
+                  { title: "Costumes homme FR → US / UK", formula: "Taille US = Taille UK = Taille FR − 10" },
+                  { title: "Chaussures homme US → UK", formula: "Taille UK ≈ Taille US − 1" },
+                  { title: "Chaussures homme US → EU", formula: "Taille EU ≈ Taille US + 33 à 34" },
+                  { title: "Chaussures femme US → UK", formula: "Taille UK ≈ Taille US − 2 à 2,5" },
+                  { title: "Chaussures femme US → EU", formula: "Taille EU ≈ Taille US + 31 à 32" },
                 ].map((item) => (
                   <div key={item.title} className="rounded-xl px-4 py-3" style={{ background: "var(--surface-alt)" }}>
                     <p className="text-xs font-semibold" style={{ color: "var(--muted)" }}>{item.title}</p>
@@ -420,40 +433,40 @@ export default function ConvertisseurTailles() {
               </h2>
               <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
                 <p>
-                  Ce convertisseur de tailles gratuit vous aide a trouver votre taille de vetements et de chaussures dans les differents systemes internationaux : Europe (EU/FR), Etats-Unis (US), Royaume-Uni (UK) et tailles internationales (S, M, L, XL).
+                  Ce convertisseur de tailles gratuit vous aide à trouver votre taille de vêtements et de chaussures dans les différents systèmes : France/Europe (FR/EU), États-Unis (US), Royaume-Uni (UK) et tailles internationales (S, M, L, XL).
                 </p>
                 <ul className="ml-4 list-disc space-y-1">
-                  <li><strong className="text-[var(--foreground)]">Choisissez la categorie</strong> : vetements ou chaussures, selon ce que vous recherchez.</li>
-                  <li><strong className="text-[var(--foreground)]">Selectionnez le genre</strong> : homme ou femme, car les grilles de tailles different.</li>
-                  <li><strong className="text-[var(--foreground)]">Indiquez votre systeme source</strong> : choisissez le systeme de taille que vous connaissez (EU, US, UK ou international).</li>
-                  <li><strong className="text-[var(--foreground)]">Selectionnez votre taille</strong> : l&apos;outil affiche instantanement les equivalences dans tous les autres systemes.</li>
+                  <li><strong className="text-[var(--foreground)]">Choisissez la catégorie</strong> : vêtements ou chaussures, selon ce que vous recherchez.</li>
+                  <li><strong className="text-[var(--foreground)]">Sélectionnez le genre</strong> : homme ou femme, car les grilles de tailles diffèrent.</li>
+                  <li><strong className="text-[var(--foreground)]">Indiquez votre système source</strong> : choisissez le système de taille que vous connaissez (FR/EU, US, UK, international ou longueur du pied).</li>
+                  <li><strong className="text-[var(--foreground)]">Sélectionnez votre taille</strong> : l&apos;outil affiche instantanément les équivalences dans tous les autres systèmes.</li>
                 </ul>
                 <p>
-                  Le tableau complet en bas de page presente toutes les correspondances. Cliquez sur une ligne pour la selectionner et voir les equivalences en detail. Cet outil est particulierement pratique pour les achats en ligne sur des sites etrangers.
+                  Le tableau complet présente toutes les correspondances. Cliquez sur une ligne pour la sélectionner et voir les équivalences en détail. Cet outil est particulièrement pratique pour les achats en ligne sur des sites étrangers.
                 </p>
               </div>
             </div>
 
             {/* FAQ */}
             <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Questions frequentes</h2>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Questions fréquentes</h2>
               <div className="mt-6 space-y-5">
                 <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
                   <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Les tailles EU et FR sont-elles identiques ?</h3>
                   <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                    Oui, pour les vetements, les tailles europeennes (EU) correspondent aux tailles francaises (FR). Un EU 38 femme correspond bien a un 38 francais. Pour les chaussures, c&apos;est egalement le cas : un EU 42 correspond a un 42 francais. En revanche, les tailles italiennes peuvent varier legerement selon les marques.
+                    Pas toujours. Pour les chaussures, oui : la pointure européenne (EU 42) est la pointure française. Pour les vêtements femme, il n&apos;existe pas de grille européenne unique : la France, l&apos;Espagne et la Belgique utilisent la même numérotation, l&apos;Allemagne et les Pays-Bas affichent 2 tailles de moins (DE 36 = FR 38) et l&apos;Italie 4 tailles de plus (IT 42 = FR 38). Pour les costumes homme, les numérotations française, italienne et allemande coïncident.
                   </p>
                 </div>
                 <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
                   <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Comment mesurer ma pointure exacte ?</h3>
                   <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                    Posez votre pied a plat sur une feuille de papier, tracez le contour avec un stylo vertical, puis mesurez la distance entre le talon et le bout de l&apos;orteil le plus long. Mesurez vos deux pieds (ils peuvent differer) et prenez la plus grande mesure. Ajoutez 0,5 a 1 cm pour le confort. Faites cette mesure en fin de journee, car les pieds gonflent legerement au cours de la journee.
+                    Posez votre pied à plat sur une feuille de papier, contre un mur, tracez le contour avec un stylo tenu verticalement, puis mesurez la distance entre le talon et le bout de l&apos;orteil le plus long. Mesurez vos deux pieds (ils peuvent différer) et retenez la plus grande mesure. Faites-le en fin de journée, car les pieds gonflent légèrement. Reportez ensuite cette longueur dans la colonne cm du tableau chaussures.
                   </p>
                 </div>
                 <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
                   <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Les tailles varient-elles selon les marques ?</h3>
                   <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                    Oui, les tableaux de correspondance sont des standards generaux, mais chaque marque peut avoir sa propre grille de tailles. Par exemple, les marques italiennes tendent a tailler plus petit, tandis que certaines marques americaines taillent plus grand. Consultez toujours le guide des tailles specifique du fabricant, surtout pour les achats en ligne.
+                    Oui, les tableaux de correspondance sont des repères généraux, et chaque marque peut avoir sa propre grille. Pour les chaussures, l&apos;écart entre marques atteint souvent une demi-pointure (par exemple, UK = US − 1 chez Nike mais US − 0,5 chez d&apos;autres fabricants). Consultez toujours le guide des tailles du fabricant, surtout pour les achats en ligne.
                   </p>
                 </div>
               </div>

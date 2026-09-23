@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Calculateur frais de notaire - Estimation gratuite",
   description:
-    "Estimez vos frais de notaire pour un achat immobilier ancien ou neuf. Droits de mutation (DMTO), emoluments, debours. Baremes officiels 2025-2026 mis a jour.",
+    "Estimez vos frais de notaire pour un achat immobilier ancien ou neuf. Droits de mutation (DMTO), émoluments, débours. Barèmes officiels 2025-2026 mis à jour.",
   keywords: [
     "frais de notaire",
     "calculateur frais notaire",

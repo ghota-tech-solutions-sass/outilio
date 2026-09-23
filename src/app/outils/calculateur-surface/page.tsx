@@ -53,7 +53,7 @@ export default function CalculateurSurface() {
     { key: "rectangle", label: "Rectangle", icon: "\u25AD" },
     { key: "circle", label: "Cercle", icon: "\u25CB" },
     { key: "triangle", label: "Triangle", icon: "\u25B3" },
-    { key: "trapezoid", label: "Trapeze", icon: "\u2B22" },
+    { key: "trapezoid", label: "Trapèze", icon: "\u2B22" },
   ];
 
   return (
@@ -65,7 +65,7 @@ export default function CalculateurSurface() {
             Calculateur de <span style={{ color: "var(--primary)" }}>surface</span>
           </h1>
           <p className="animate-fade-up stagger-2 mt-3 max-w-xl text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-            Calculez la surface de rectangles, cercles, triangles et trapezes. Resultat en m&sup2; et conversion en autres unites.
+            Calculez la surface de rectangles, cercles, triangles et trapèzes. Résultat en m&sup2; et conversion en autres unités.
           </p>
         </div>
       </section>
@@ -94,7 +94,7 @@ export default function CalculateurSurface() {
 
             {/* Dimensions */}
             <div className="rounded-2xl border p-6" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-              <h2 className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--accent)" }}>Dimensions (en metres)</h2>
+              <h2 className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--accent)" }}>Dimensions (en mètres)</h2>
               <div className="mt-4 grid grid-cols-2 gap-4">
                 {shape === "rectangle" && (
                   <>
@@ -187,7 +187,7 @@ export default function CalculateurSurface() {
                 <p><strong className="text-[var(--foreground)]">Rectangle</strong> : Aire = Longueur x Largeur</p>
                 <p><strong className="text-[var(--foreground)]">Cercle</strong> : Aire = &pi; x Rayon&sup2;</p>
                 <p><strong className="text-[var(--foreground)]">Triangle</strong> : Aire = (Base x Hauteur) / 2</p>
-                <p><strong className="text-[var(--foreground)]">Trapeze</strong> : Aire = ((Grande base + Petite base) x Hauteur) / 2</p>
+                <p><strong className="text-[var(--foreground)]">Trapèze</strong> : Aire = ((Grande base + Petite base) x Hauteur) / 2</p>
               </div>
             </div>
 
@@ -197,31 +197,31 @@ export default function CalculateurSurface() {
                 Comment utiliser le calculateur de surface
               </h2>
               <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                <p>Ce calculateur de surface vous permet de determiner l&apos;aire de quatre formes geometriques courantes. Que ce soit pour mesurer une piece, un terrain ou resoudre un exercice de mathematiques, obtenez le resultat en m&sup2; avec conversions automatiques.</p>
+                <p>Ce calculateur de surface vous permet de déterminer l&apos;aire de quatre formes géométriques courantes. Que ce soit pour mesurer une pièce, un terrain ou résoudre un exercice de mathématiques, obtenez le résultat en m&sup2; avec conversions automatiques.</p>
                 <ul className="ml-4 list-disc space-y-1">
-                  <li><strong className="text-[var(--foreground)]">Selectionnez la forme</strong> : choisissez parmi rectangle, cercle, triangle ou trapeze selon la surface a calculer.</li>
-                  <li><strong className="text-[var(--foreground)]">Entrez les dimensions en metres</strong> : remplissez les champs correspondants (longueur et largeur pour un rectangle, rayon pour un cercle, etc.).</li>
-                  <li><strong className="text-[var(--foreground)]">Obtenez le resultat instantanement</strong> : la surface s&apos;affiche en metres carres (m&sup2;) avec conversion automatique en cm&sup2;, km&sup2;, hectares, ares et pieds carres.</li>
-                  <li><strong className="text-[var(--foreground)]">Utilisations courantes</strong> : calcul de la surface habitable (loi Carrez), estimation de la superficie d&apos;un terrain, quantite de peinture ou de carrelage necessaire.</li>
+                  <li><strong className="text-[var(--foreground)]">Sélectionnez la forme</strong> : choisissez parmi rectangle, cercle, triangle ou trapèze selon la surface à calculer.</li>
+                  <li><strong className="text-[var(--foreground)]">Entrez les dimensions en mètres</strong> : remplissez les champs correspondants (longueur et largeur pour un rectangle, rayon pour un cercle, etc.).</li>
+                  <li><strong className="text-[var(--foreground)]">Obtenez le résultat instantanément</strong> : la surface s&apos;affiche en mètres carrés (m&sup2;) avec conversion automatique en cm&sup2;, km&sup2;, hectares, ares et pieds carrés.</li>
+                  <li><strong className="text-[var(--foreground)]">Utilisations courantes</strong> : calcul de la surface habitable (loi Carrez), estimation de la superficie d&apos;un terrain, quantité de peinture ou de carrelage nécessaire.</li>
                 </ul>
               </div>
             </div>
 
             {/* FAQ */}
             <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Questions frequentes</h2>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Questions fréquentes</h2>
               <div className="mt-6 space-y-5">
                 <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
-                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Comment calculer la surface d&apos;une piece non rectangulaire ?</h3>
-                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Pour une piece de forme irreguliere, decomposez-la en formes simples (rectangles, triangles, trapezes). Calculez la surface de chaque partie separement, puis additionnez les resultats. Pour les parties arrondies (baie vitree, alcove), utilisez la formule du demi-cercle.</p>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Comment calculer la surface d&apos;une pièce non rectangulaire ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Pour une pièce de forme irrégulière, décomposez-la en formes simples (rectangles, triangles, trapèzes). Calculez la surface de chaque partie séparément, puis additionnez les résultats. Pour les parties arrondies (baie vitrée, alcove), utilisez la formule du demi-cercle.</p>
                 </div>
                 <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
-                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Quelle est la difference entre surface habitable et surface loi Carrez ?</h3>
-                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>La surface habitable (loi Boutin) inclut les pieces d&apos;une hauteur sous plafond superieure a 1,80 m, en excluant les murs, cloisons, caves et garages. La surface loi Carrez, obligatoire pour la vente de lots de copropriete, exclut egalement les surfaces dont la hauteur est inferieure a 1,80 m mais inclut certains espaces supplementaires comme les combles amenages.</p>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Quelle est la différence entre surface habitable et surface loi Carrez ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>La surface habitable (loi Boutin) inclut les pièces d&apos;une hauteur sous plafond supérieure à 1,80 m, en excluant les murs, cloisons, caves et garages. La surface loi Carrez, obligatoire pour la vente de lots de copropriété, exclut également les surfaces dont la hauteur est inférieure à 1,80 m mais inclut certains espaces supplémentaires comme les combles aménagés.</p>
                 </div>
                 <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
-                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Combien de metres carres dans un hectare ?</h3>
-                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Un hectare equivaut a 10 000 m&sup2;, soit un carre de 100 m de cote. Un are correspond a 100 m&sup2;. Ces unites sont principalement utilisees pour mesurer des terrains agricoles ou des parcelles de grande taille en France.</p>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Combien de mètres carrés dans un hectare ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Un hectare équivaut à 10 000 m&sup2;, soit un carré de 100 m de côté. Un are correspond à 100 m&sup2;. Ces unités sont principalement utilisées pour mesurer des terrains agricoles ou des parcelles de grande taille en France.</p>
                 </div>
               </div>
             </div>
@@ -230,7 +230,7 @@ export default function CalculateurSurface() {
           <aside className="space-y-6">
             <AdPlaceholder className="h-[250px]" />
             <div className="rounded-2xl border p-6" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-              <h3 className="text-sm font-semibold" style={{ fontFamily: "var(--font-display)" }}>Surfaces de reference</h3>
+              <h3 className="text-sm font-semibold" style={{ fontFamily: "var(--font-display)" }}>Surfaces de référence</h3>
               <div className="mt-3 space-y-2">
                 {[
                   { nom: "Studio", surface: "~20 m\u00B2" },

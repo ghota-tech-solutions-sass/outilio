@@ -4,32 +4,29 @@ import { useState, useMemo, useCallback } from "react";
 import Link from "next/link";
 import AdPlaceholder from "@/components/AdPlaceholder";
 import ToolFaqSection from "@/components/ToolFaqSection";
+import { impotRevenu } from "@/lib/impot";
 
 /* ─── TJM Presets ─── */
 const TJM_PRESETS = [
   { label: "Junior", value: 350 },
-  { label: "Confirme", value: 600 },
+  { label: "Confirmé", value: 600 },
   { label: "Senior", value: 900 },
   { label: "Expert", value: 1300 },
 ];
 
-/* ─── IR Barème 2025 ─── */
-function calcImpot(revenu: number, parts: number) {
-  const q = revenu / parts;
-  let impot = 0;
-  // Bareme IR 2026 sur revenus 2025 (LF 2026, +0.9%)
-  const tranches = [
-    { min: 0, max: 11600, rate: 0 },
-    { min: 11600, max: 29579, rate: 0.11 },
-    { min: 29579, max: 84577, rate: 0.30 },
-    { min: 84577, max: 181917, rate: 0.41 },
-    { min: 181917, max: Infinity, rate: 0.45 },
-  ];
-  for (const t of tranches) {
-    if (q <= t.min) break;
-    impot += (Math.min(q, t.max) - t.min) * t.rate;
-  }
-  return Math.max(0, impot * parts);
+/* ─── Parametres 2026 ─── */
+const PASS_2026 = 48060; // Plafond annuel de la Securite sociale 2026 (arrete du 22/12/2025)
+const PFU_2026 = 0.314; // PFU 2026 : 12,8% IR + 18,6% prelevements sociaux
+
+/* ─── IR Barème 2026 (revenus 2025) : quotient familial, plafonnement et décote (src/lib/impot.ts) ─── */
+function calcImpot(revenu: number, parts: number, couple: boolean, parentIsole = false) {
+  return impotRevenu({ revenuImposable: revenu, parts, couple, parentIsole }).impotNet;
+}
+
+/* ─── Abattement forfaitaire 10 % frais professionnels (salaires, remunerations art. 62) ─── */
+// Plafond annuel de l'abattement non modelise (sans effet sous ~140 000 EUR de remuneration nette)
+function imposableSalaire(net: number) {
+  return Math.max(0, net * 0.9);
 }
 
 /* ─── IS Barème ─── */
@@ -45,10 +42,12 @@ interface CDIParams {
   tauxChargesSalariales: number;
   tauxChargesPatronales: number;
   parts: number;
+  couple: boolean;
+  parentIsole?: boolean;
 }
 function calcCDI(p: CDIParams) {
   const netAvantImpot = p.brutAnnuel * (1 - p.tauxChargesSalariales);
-  const impot = calcImpot(netAvantImpot, p.parts);
+  const impot = calcImpot(imposableSalaire(netAvantImpot), p.parts, p.couple, p.parentIsole);
   return {
     brutAnnuel: p.brutAnnuel,
     coutEmployeur: p.brutAnnuel * (1 + p.tauxChargesPatronales),
@@ -57,12 +56,12 @@ function calcCDI(p: CDIParams) {
     netApresImpot: netAvantImpot - impot,
     netMensuel: (netAvantImpot - impot) / 12,
     avantages: [
-      "Conges payes (25 jours)",
+      "Congés payés (25 jours)",
       "Mutuelle entreprise",
-      "Assurance chomage",
-      "Retraite complete",
+      "Assurance chômage",
+      "Retraite complète",
       "Formation professionnelle",
-      "Stabilite de l'emploi",
+      "Stabilité de l'emploi",
     ],
   };
 }
@@ -73,6 +72,8 @@ interface MicroParams {
   joursAn: number;
   tauxCotisations: number;
   parts: number;
+  couple: boolean;
+  parentIsole?: boolean;
 }
 function calcMicro(p: MicroParams) {
   const ca = p.tjm * p.joursAn;
@@ -80,7 +81,7 @@ function calcMicro(p: MicroParams) {
   const netAvantImpot = ca - cotisations;
   // BNC: abattement 34%, imposable = CA * 0.66
   const revenuImposable = ca * 0.66;
-  const impot = calcImpot(revenuImposable, p.parts);
+  const impot = calcImpot(revenuImposable, p.parts, p.couple, p.parentIsole);
   // Net reel = CA - cotisations - impot
   const netApresImpot = ca - cotisations - impot;
   return {
@@ -92,11 +93,11 @@ function calcMicro(p: MicroParams) {
     netApresImpot,
     netMensuel: netApresImpot / 12,
     avantages: [
-      "Simplicite administrative",
-      "Pas de TVA (< 36 800 €)",
+      "Simplicité administrative",
+      "Franchise TVA (< 37 500 €)",
       "Abattement forfaitaire 34%",
-      "Comptabilite minimale",
-      "Liberte totale",
+      "Comptabilité minimale",
+      "Liberté totale",
     ],
   };
 }
@@ -110,6 +111,8 @@ interface SASUParams {
   tauxChargesSalariales: number;
   pctFraisPro: number;
   parts: number;
+  couple: boolean;
+  parentIsole?: boolean;
 }
 function calcSASU(p: SASUParams) {
   const ca = p.tjm * p.joursAn;
@@ -129,20 +132,21 @@ function calcSASU(p: SASUParams) {
   const is = calcIS(beneficeAvantIS);
   const beneficeApresIS = beneficeAvantIS - is;
 
-  // Dividendes : flat tax 30% (PFU 2026 : 12,8% IR + 17,2% PS)
+  // Dividendes : flat tax 31,4% (PFU 2026 : 12,8% IR + 18,6% PS, LFSS 2026)
   const dividendesBruts = Math.max(0, beneficeApresIS);
-  const pfuDividendes = dividendesBruts * 0.30;
+  const pfuDividendes = dividendesBruts * PFU_2026;
   const dividendesNets = dividendesBruts - pfuDividendes;
 
-  // Taxe PUMa : si remuneration < 20% du PASS (~9 273€), taxe 6.5% sur revenus du capital
-  const PASS_2026 = 47100;
-  const seuilPuma = PASS_2026 * 0.20; // ~9 420€
-  const taxePuma = remunerationBrute < seuilPuma && dividendesBruts > 0
-    ? dividendesBruts * 0.065
+  // Taxe PUMa (cotisation subsidiaire maladie) : revenus d'activite < 20% du PASS
+  // et revenus du capital > 50% du PASS.
+  // CSM = 6,5% x (dividendes - 50% PASS) x (1 - remuneration / (20% PASS))
+  const seuilPuma = PASS_2026 * 0.20; // 9 612 EUR en 2026
+  const taxePuma = remunerationBrute < seuilPuma
+    ? 0.065 * Math.max(0, dividendesBruts - PASS_2026 * 0.5) * (1 - remunerationBrute / seuilPuma)
     : 0;
 
-  // IR sur la remuneration nette
-  const impotRemuneration = calcImpot(remunerationNette, p.parts);
+  // IR sur la remuneration nette (apres abattement de 10%)
+  const impotRemuneration = calcImpot(imposableSalaire(remunerationNette), p.parts, p.couple, p.parentIsole);
 
   // Total net
   const totalNet = remunerationNette - impotRemuneration + dividendesNets - taxePuma;
@@ -166,12 +170,12 @@ function calcSASU(p: SASUParams) {
     totalNet,
     netMensuel: totalNet / 12,
     avantages: [
-      "Optimisation remuneration/dividendes",
-      "Dividendes a flat tax 30%",
-      "Protection sociale president",
-      "Credibilite aupres des clients",
-      "Deduction des frais reels",
-      "Liberte totale",
+      "Optimisation rémunération/dividendes",
+      "Dividendes à flat tax 31,4%",
+      "Protection sociale président",
+      "Crédibilité auprès des clients",
+      "Déduction des frais réels",
+      "Liberté totale",
     ],
   };
 }
@@ -185,6 +189,8 @@ interface EURLParams {
   pctFraisPro: number;
   capitalSocial: number; // capital social + compte courant d'associe
   parts: number;
+  couple: boolean;
+  parentIsole?: boolean;
 }
 function calcEURL(p: EURLParams) {
   const ca = p.tjm * p.joursAn;
@@ -203,7 +209,7 @@ function calcEURL(p: EURLParams) {
   const beneficeApresIS = beneficeAvantIS - is;
 
   // Dividendes EURL IS :
-  // - Part <= 10% du (capital social + CCA) : flat tax 30% (PFU 2026)
+  // - Part <= 10% du (capital social + CCA) : flat tax 31,4% (PFU 2026)
   // - Part > 10% : soumise aux cotisations TNS (~45%) au lieu de la part CSG/CRDS
   //   En pratique : ~45% de cotisations TNS + 12.8% d'IR = ~57.8% de prelevements
   // Avec un capital faible (ex: 1000€), quasi tout est soumis aux cotisations TNS
@@ -212,8 +218,8 @@ function calcEURL(p: EURLParams) {
   const partSousFranchise = Math.min(dividendesBruts, seuil10pct);
   const partAuDessus = Math.max(0, dividendesBruts - seuil10pct);
 
-  // Part sous franchise : flat tax 30% (PFU 2026)
-  const prelFranchise = partSousFranchise * 0.30;
+  // Part sous franchise : flat tax 31,4% (PFU 2026)
+  const prelFranchise = partSousFranchise * PFU_2026;
   // Part au-dessus : cotisations TNS (~45%) + IR residuel (12.8%)
   const cotisationsTNSDividendes = partAuDessus * p.tauxCotisationsTNS;
   const irDividendesAuDessus = partAuDessus * 0.128;
@@ -222,8 +228,8 @@ function calcEURL(p: EURLParams) {
   const prelDividendes = prelFranchise + prelAuDessus;
   const dividendesNets = dividendesBruts - prelDividendes;
 
-  // IR sur la remuneration
-  const impotRemuneration = calcImpot(remunerationNette, p.parts);
+  // IR sur la remuneration (apres abattement de 10%)
+  const impotRemuneration = calcImpot(imposableSalaire(remunerationNette), p.parts, p.couple, p.parentIsole);
 
   const totalNet = remunerationNette - impotRemuneration + dividendesNets;
 
@@ -249,10 +255,10 @@ function calcEURL(p: EURLParams) {
     netMensuel: totalNet / 12,
     avantages: [
       "Cotisations TNS plus faibles qu'en SASU",
-      "Impot sur les societes (IS)",
-      "Deduction des frais reels",
-      "Patrimoine professionnel separe",
-      "Liberte totale",
+      "Impôt sur les sociétés (IS)",
+      "Déduction des frais réels",
+      "Patrimoine professionnel séparé",
+      "Liberté totale",
     ],
   };
 }
@@ -269,6 +275,8 @@ export default function FreelanceVsCDI() {
   const [tjm, setTjm] = useState("500");
   const [joursAn, setJoursAn] = useState("200");
   const [parts, setParts] = useState("1");
+  const [couple, setCouple] = useState(false);
+  const [parentIsoleChoisi, setParentIsole] = useState(false);
   const [salaireBrut, setSalaireBrut] = useState("45000");
 
   /* ── Statut selection ── */
@@ -294,6 +302,7 @@ export default function FreelanceVsCDI() {
 
   /* ── Parsed values ── */
   const partsNum = parseFloat(parts) || 1;
+  const parentIsole = parentIsoleChoisi && !couple && partsNum >= 1.5;
   const tjmNum = parseFloat(tjm) || 0;
   const joursNum = parseInt(joursAn) || 200;
 
@@ -305,8 +314,10 @@ export default function FreelanceVsCDI() {
         tauxChargesSalariales: (parseFloat(cdiTauxSalariales) || 22) / 100,
         tauxChargesPatronales: (parseFloat(cdiTauxPatronales) || 45) / 100,
         parts: partsNum,
+        couple,
+        parentIsole,
       }),
-    [salaireBrut, cdiTauxSalariales, cdiTauxPatronales, partsNum]
+    [salaireBrut, cdiTauxSalariales, cdiTauxPatronales, partsNum, couple, parentIsole]
   );
 
   /* ── Freelance by statut ── */
@@ -317,8 +328,10 @@ export default function FreelanceVsCDI() {
         joursAn: joursNum,
         tauxCotisations: (parseFloat(microTauxCotisations) || 25.6) / 100,
         parts: partsNum,
+        couple,
+        parentIsole,
       }),
-    [tjmNum, joursNum, microTauxCotisations, partsNum]
+    [tjmNum, joursNum, microTauxCotisations, partsNum, couple, parentIsole]
   );
 
   const sasu = useMemo(
@@ -331,6 +344,8 @@ export default function FreelanceVsCDI() {
         tauxChargesSalariales: (parseFloat(sasuTauxSalariales) || 22) / 100,
         pctFraisPro: (parseFloat(sasuPctFrais) || 5) / 100,
         parts: partsNum,
+        couple,
+        parentIsole,
       }),
     [
       tjmNum,
@@ -340,6 +355,8 @@ export default function FreelanceVsCDI() {
       sasuTauxSalariales,
       sasuPctFrais,
       partsNum,
+      couple,
+      parentIsole,
     ]
   );
 
@@ -353,8 +370,10 @@ export default function FreelanceVsCDI() {
         pctFraisPro: (parseFloat(eurlPctFrais) || 5) / 100,
         capitalSocial: parseFloat(eurlCapitalCCA) || 1000,
         parts: partsNum,
+        couple,
+        parentIsole,
       }),
-    [tjmNum, joursNum, eurlPctRemuneration, eurlTauxTNS, eurlPctFrais, eurlCapitalCCA, partsNum]
+    [tjmNum, joursNum, eurlPctRemuneration, eurlTauxTNS, eurlPctFrais, eurlCapitalCCA, partsNum, couple, parentIsole]
   );
 
   const freelance = statut === "micro" ? micro : statut === "sasu" ? sasu : eurl;
@@ -370,6 +389,8 @@ export default function FreelanceVsCDI() {
           joursAn: joursNum,
           tauxCotisations: (parseFloat(microTauxCotisations) || 25.6) / 100,
           parts: partsNum,
+          couple,
+          parentIsole,
         }).netMensuel;
       } else if (statut === "sasu") {
         return calcSASU({
@@ -380,6 +401,8 @@ export default function FreelanceVsCDI() {
           tauxChargesSalariales: (parseFloat(sasuTauxSalariales) || 22) / 100,
           pctFraisPro: (parseFloat(sasuPctFrais) || 5) / 100,
           parts: partsNum,
+          couple,
+          parentIsole,
         }).netMensuel;
       } else {
         return calcEURL({
@@ -390,6 +413,8 @@ export default function FreelanceVsCDI() {
           pctFraisPro: (parseFloat(eurlPctFrais) || 5) / 100,
           capitalSocial: parseFloat(eurlCapitalCCA) || 1000,
           parts: partsNum,
+          couple,
+          parentIsole,
         }).netMensuel;
       }
     },
@@ -397,6 +422,8 @@ export default function FreelanceVsCDI() {
       statut,
       joursNum,
       partsNum,
+      couple,
+      parentIsole,
       microTauxCotisations,
       sasuPctRemuneration,
       sasuTauxPatronales,
@@ -433,29 +460,29 @@ export default function FreelanceVsCDI() {
       return [
         ["Chiffre d'affaires", `${fmt(micro.ca)} €`],
         [`Cotisations (${microTauxCotisations}%)`, `- ${fmt(micro.cotisations)} €`],
-        ["Net avant impot", `${fmt(micro.netAvantImpot)} €`],
+        ["Net avant impôt", `${fmt(micro.netAvantImpot)} €`],
         ["Revenu imposable (CA x 0.66)", `${fmt(micro.revenuImposable)} €`],
-        ["Impot sur le revenu", `- ${fmt(micro.impotAnnuel)} €`],
-        ["Net annuel apres impot", `${fmt(micro.netApresImpot)} €`, true],
+        ["Impôt sur le revenu", `- ${fmt(micro.impotAnnuel)} €`],
+        ["Net annuel après impôt", `${fmt(micro.netApresImpot)} €`, true],
       ];
     }
     if (statut === "sasu") {
       return [
         ["Chiffre d'affaires", `${fmt(sasu.ca)} €`],
         ["Frais professionnels", `- ${fmt(sasu.fraisPro)} €`],
-        ["── Remuneration president ──", ""],
-        ["Remuneration brute", `${fmt(sasu.remunerationBrute)} €`],
+        ["── Rémunération président ──", ""],
+        ["Rémunération brute", `${fmt(sasu.remunerationBrute)} €`],
         ["Charges patronales", `- ${fmt(sasu.chargesPatronales)} €`],
         ["Charges salariales", `- ${fmt(sasu.chargesSalariales)} €`],
-        ["Remuneration nette", `${fmt(sasu.remunerationNette)} €`],
-        ["IR sur remuneration", `- ${fmt(sasu.impotRemuneration)} €`],
+        ["Rémunération nette", `${fmt(sasu.remunerationNette)} €`],
+        ["IR sur rémunération", `- ${fmt(sasu.impotRemuneration)} €`],
         ["── Dividendes ──", ""],
-        ["Benefice avant IS", `${fmt(sasu.beneficeAvantIS)} €`],
-        ["Impot sur les societes", `- ${fmt(sasu.is)} €`],
+        ["Bénéfice avant IS", `${fmt(sasu.beneficeAvantIS)} €`],
+        ["Impôt sur les sociétés", `- ${fmt(sasu.is)} €`],
         ["Dividendes bruts", `${fmt(sasu.dividendesBruts)} €`],
-        ["Flat tax (30%)", `- ${fmt(sasu.pfuDividendes)} €`],
+        ["Flat tax (31,4%)", `- ${fmt(sasu.pfuDividendes)} €`],
         ["Dividendes nets", `${fmt(sasu.dividendesNets)} €`],
-        ...(sasu.taxePuma > 0 ? [["Taxe PUMa (6,5%)", `- ${fmt(sasu.taxePuma)} €`] as [string, string]] : []),
+        ...(sasu.taxePuma > 0 ? [["Taxe PUMa (CSM)", `- ${fmt(sasu.taxePuma)} €`] as [string, string]] : []),
         ["── Total ──", ""],
         ["Net annuel total", `${fmt(sasu.totalNet)} €`, true],
       ];
@@ -464,18 +491,18 @@ export default function FreelanceVsCDI() {
     return [
       ["Chiffre d'affaires", `${fmt(eurl.ca)} €`],
       ["Frais professionnels", `- ${fmt(eurl.fraisPro)} €`],
-      ["── Remuneration gerant TNS ──", ""],
-      ["Remuneration de base", `${fmt(eurl.remunerationBase)} €`],
+      ["── Rémunération gérant TNS ──", ""],
+      ["Rémunération de base", `${fmt(eurl.remunerationBase)} €`],
       ["Cotisations TNS", `- ${fmt(eurl.cotisationsTNS)} €`],
-      ["Remuneration nette", `${fmt(eurl.remunerationNette)} €`],
-      ["IR sur remuneration", `- ${fmt(eurl.impotRemuneration)} €`],
+      ["Rémunération nette", `${fmt(eurl.remunerationNette)} €`],
+      ["IR sur rémunération", `- ${fmt(eurl.impotRemuneration)} €`],
       ["── Dividendes ──", ""],
-      ["Benefice avant IS", `${fmt(eurl.beneficeAvantIS)} €`],
-      ["Impot sur les societes", `- ${fmt(eurl.is)} €`],
+      ["Bénéfice avant IS", `${fmt(eurl.beneficeAvantIS)} €`],
+      ["Impôt sur les sociétés", `- ${fmt(eurl.is)} €`],
       ["Dividendes bruts", `${fmt(eurl.dividendesBruts)} €`],
       [`Franchise PFU (≤10% capital)`, `${fmt(eurl.partSousFranchise)} €`],
       ...(eurl.partAuDessus > 0 ? [[`Soumis TNS (>${fmt(eurl.seuil10pct)}€)`, `${fmt(eurl.partAuDessus)} €`] as [string, string]] : []),
-      ["Prelevements totaux", `- ${fmt(eurl.prelDividendes)} €`],
+      ["Prélèvements totaux", `- ${fmt(eurl.prelDividendes)} €`],
       ["Dividendes nets", `${fmt(eurl.dividendesNets)} €`],
       ["── Total ──", ""],
       ["Net annuel total", `${fmt(eurl.totalNet)} €`, true],
@@ -570,7 +597,7 @@ export default function FreelanceVsCDI() {
             className="animate-fade-up text-xs font-semibold uppercase tracking-[0.2em]"
             style={{ color: "var(--accent)" }}
           >
-            Carriere
+            Carrière
           </p>
           <h1
             className="animate-fade-up stagger-1 mt-3 text-4xl tracking-tight md:text-5xl"
@@ -591,9 +618,9 @@ export default function FreelanceVsCDI() {
             className="animate-fade-up stagger-2 mt-3 max-w-xl text-sm leading-relaxed"
             style={{ color: "var(--muted)" }}
           >
-            Comparez vos revenus nets reels entre CDI, Micro-entreprise, SASU et
-            EURL. Optimisation dividendes, charges configurables, bareme IR
-            2025.
+            Comparez vos revenus nets réels entre CDI, Micro-entreprise, SASU et
+            EURL. Optimisation dividendes, charges configurables, barème IR
+            2026.
           </p>
         </div>
       </section>
@@ -604,15 +631,42 @@ export default function FreelanceVsCDI() {
           <div className="space-y-6">
             {/* ═══ Shared inputs ═══ */}
             <div
-              className="grid grid-cols-1 gap-4 sm:grid-cols-3"
+              className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4"
             >
               <InputCard label="TJM" value={tjm} onChange={setTjm} suffix="€/jour" />
               <InputCard
-                label="Jours travailles / an"
+                label="Jours travaillés / an"
                 value={joursAn}
                 onChange={setJoursAn}
                 suffix="jours"
               />
+              <div
+                className="rounded-2xl border p-4"
+                style={{ background: "var(--surface)", borderColor: "var(--border)" }}
+              >
+                <label
+                  htmlFor="fvc-situation"
+                  className="text-[10px] font-semibold uppercase tracking-wider"
+                  style={{ color: "var(--muted)" }}
+                >
+                  Situation du foyer
+                </label>
+                <select
+                  id="fvc-situation"
+                  value={couple ? "couple" : "seul"}
+                  onChange={(e) => {
+                    const estCouple = e.target.value === "couple";
+                    setCouple(estCouple);
+                    if (estCouple && (parseFloat(parts) || 1) < 2) setParts("2");
+                    if (!estCouple && parts === "2") setParts("1");
+                  }}
+                  className="mt-2 w-full rounded-xl border px-4 py-3 text-sm font-semibold"
+                  style={{ borderColor: "var(--border)", background: "var(--surface)" }}
+                >
+                  <option value="seul">Personne seule</option>
+                  <option value="couple">Couple marié ou pacsé</option>
+                </select>
+              </div>
               <InputCard
                 label="Parts fiscales"
                 value={parts}
@@ -622,6 +676,29 @@ export default function FreelanceVsCDI() {
                 min="1"
               />
             </div>
+            {!couple && partsNum >= 1.5 && (
+              <label className="-mt-2 flex items-start gap-2 text-sm" style={{ color: "var(--foreground)" }}>
+                <input
+                  type="checkbox"
+                  checked={parentIsoleChoisi}
+                  onChange={(e) => setParentIsole(e.target.checked)}
+                  className="mt-0.5 h-4 w-4"
+                  style={{ accentColor: "var(--primary)" }}
+                />
+                <span>
+                  Parent isolé (case T)
+                  <span className="block text-xs" style={{ color: "var(--muted)" }}>
+                    Vous vivez seul avec vos enfants à charge (2 parts avec 1 enfant en garde exclusive).
+                  </span>
+                </span>
+              </label>
+            )}
+            {!couple && partsNum >= 2 && !parentIsoleChoisi && (
+              <p className="mt-3 rounded-lg border-l-4 px-3 py-2 text-xs" style={{ borderColor: "var(--accent)", background: "var(--surface-alt)", color: "var(--foreground)" }}>
+                Marié ou pacsé ? Choisissez « Couple » : une personne seule avec 2 parts ou plus est soumise au
+                plafonnement du quotient familial. Si vous élevez seul vos enfants, cochez « Parent isolé ».
+              </p>
+            )}
 
             {/* ═══ TJM slider + presets ═══ */}
             <div
@@ -752,7 +829,7 @@ export default function FreelanceVsCDI() {
                 className="mb-2 text-[10px] font-semibold uppercase tracking-wider"
                 style={{ color: "var(--muted)" }}
               >
-                Detail a afficher pour le statut
+                Détail à afficher pour le statut
               </p>
               <div
                 className="flex items-center gap-1 rounded-xl border p-1"
@@ -793,7 +870,7 @@ export default function FreelanceVsCDI() {
                     className="text-xs font-semibold uppercase tracking-[0.15em]"
                     style={{ color: "var(--accent)" }}
                   >
-                    Repartition remuneration / dividendes
+                    Répartition rémunération / dividendes
                   </span>
                   <span
                     className="text-sm font-bold"
@@ -818,12 +895,12 @@ export default function FreelanceVsCDI() {
                 />
                 <div className="mt-1 flex justify-between text-[10px]" style={{ color: "var(--muted)" }}>
                   <span>100% dividendes</span>
-                  <span>100% remuneration</span>
+                  <span>100% rémunération</span>
                 </div>
                 <div className="mt-3 grid grid-cols-2 gap-3">
                   <div className="rounded-lg p-3" style={{ background: "var(--surface-alt)" }}>
                     <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>
-                      Remuneration nette
+                      Rémunération nette
                     </p>
                     <p className="mt-1 text-lg font-bold" style={{ fontFamily: "var(--font-display)", color: "var(--primary)" }}>
                       {fmt(sasu.remunerationNette)} &euro;
@@ -844,8 +921,8 @@ export default function FreelanceVsCDI() {
                     <div>
                       <p className="text-xs font-semibold" style={{ color: "#dc2626" }}>Taxe PUMa applicable</p>
                       <p className="mt-0.5 text-[11px] leading-relaxed" style={{ color: "var(--muted)" }}>
-                        Remuneration inf. a 20% du PASS ({fmt(47100 * 0.20)} &euro;). Taxe de 6,5% sur les dividendes : <strong>{fmt(sasu.taxePuma)} &euro;</strong>.
-                        Augmentez la part remuneration pour l&apos;eviter.
+                        Rémunération inf. à 20% du PASS ({fmt(PASS_2026 * 0.20)} &euro;). Cotisation subsidiaire maladie (6,5% dégressif sur les dividendes au-delà de 50% du PASS) : <strong>{fmt(sasu.taxePuma)} &euro;</strong>.
+                        Augmentez la part rémunération pour l&apos;éviter.
                       </p>
                     </div>
                   </div>
@@ -867,7 +944,7 @@ export default function FreelanceVsCDI() {
                     className="text-xs font-semibold uppercase tracking-[0.15em]"
                     style={{ color: "var(--accent)" }}
                   >
-                    Repartition remuneration / dividendes
+                    Répartition rémunération / dividendes
                   </span>
                   <span
                     className="text-sm font-bold"
@@ -892,12 +969,12 @@ export default function FreelanceVsCDI() {
                 />
                 <div className="mt-1 flex justify-between text-[10px]" style={{ color: "var(--muted)" }}>
                   <span>100% dividendes</span>
-                  <span>100% remuneration</span>
+                  <span>100% rémunération</span>
                 </div>
                 <div className="mt-3 grid grid-cols-2 gap-3">
                   <div className="rounded-lg p-3" style={{ background: "var(--surface-alt)" }}>
                     <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>
-                      Remuneration nette
+                      Rémunération nette
                     </p>
                     <p className="mt-1 text-lg font-bold" style={{ fontFamily: "var(--font-display)", color: "var(--primary)" }}>
                       {fmt(eurl.remunerationNette)} &euro;
@@ -934,7 +1011,7 @@ export default function FreelanceVsCDI() {
               >
                 {"▶"}
               </span>
-              Parametres avances
+              Paramètres avancés
             </button>
 
             {showAdvanced && (
@@ -1083,7 +1160,7 @@ export default function FreelanceVsCDI() {
                       className="text-[10px] uppercase tracking-wider"
                       style={{ color: "var(--muted)" }}
                     >
-                      Net annuel apres impot
+                      Net annuel après impôt
                     </p>
                     <p
                       className="mt-1 text-sm font-semibold"
@@ -1120,13 +1197,13 @@ export default function FreelanceVsCDI() {
                 className="text-xs font-semibold uppercase tracking-[0.15em]"
                 style={{ color: "var(--accent)" }}
               >
-                Repartition charges / impot / net
+                Répartition charges / impôt / net
               </h3>
               <p
                 className="mt-1 text-[11px]"
                 style={{ color: "var(--muted)" }}
               >
-                Largeur proportionnelle au CA freelance (ou cout employeur pour le CDI).
+                Largeur proportionnelle au CA freelance (ou coût employeur pour le CDI).
               </p>
               <div className="mt-4 space-y-3">
                 {bars.map((b) => {
@@ -1161,7 +1238,7 @@ export default function FreelanceVsCDI() {
                               width: `${cPct}%`,
                               background: "#dc2626",
                             }}
-                            title={`Charges : ${fmt(b.charges)} EUR`}
+                            title={`Charges : ${fmt(b.charges)} €`}
                           >
                             {cPct >= 10 ? `${Math.round(cPct)}%` : ""}
                           </div>
@@ -1171,7 +1248,7 @@ export default function FreelanceVsCDI() {
                               width: `${iPct}%`,
                               background: "#e8963e",
                             }}
-                            title={`Impot : ${fmt(b.impot)} EUR`}
+                            title={`Impôt : ${fmt(b.impot)} €`}
                           >
                             {iPct >= 8 ? `${Math.round(iPct)}%` : ""}
                           </div>
@@ -1181,7 +1258,7 @@ export default function FreelanceVsCDI() {
                               width: `${nPct}%`,
                               background: "#0d4f3c",
                             }}
-                            title={`Net : ${fmt(b.net)} EUR`}
+                            title={`Net : ${fmt(b.net)} €`}
                           >
                             {nPct >= 10 ? `${Math.round(nPct)}%` : ""}
                           </div>
@@ -1206,7 +1283,7 @@ export default function FreelanceVsCDI() {
                       className="inline-block h-2.5 w-2.5 rounded-sm"
                       style={{ background: "#e8963e" }}
                     />
-                    Impot
+                    Impôt
                   </span>
                   <span className="flex items-center gap-1.5">
                     <span
@@ -1231,7 +1308,7 @@ export default function FreelanceVsCDI() {
                 className="text-xs font-semibold uppercase tracking-[0.2em]"
                 style={{ color: "var(--muted)" }}
               >
-                Difference mensuelle
+                Différence mensuelle
               </p>
               <p
                 className="mt-2 text-3xl font-bold"
@@ -1251,7 +1328,7 @@ export default function FreelanceVsCDI() {
                 style={{ background: "var(--surface-alt)" }}
               >
                 <p className="text-sm" style={{ color: "var(--muted)" }}>
-                  TJM minimum pour egaliser le CDI en{" "}
+                  TJM minimum pour égaliser le CDI en{" "}
                   <strong>{statutLabels[statut]}</strong> :{" "}
                   <strong
                     className="text-[var(--foreground)]"
@@ -1274,15 +1351,15 @@ export default function FreelanceVsCDI() {
                     `Charges salariales (${cdiTauxSalariales}%)`,
                     `- ${fmt(cdi.brutAnnuel - cdi.netAvantImpot)} €`,
                   ],
-                  ["Net avant impot", `${fmt(cdi.netAvantImpot)} €`],
-                  ["Impot sur le revenu", `- ${fmt(cdi.impotAnnuel)} €`],
+                  ["Net avant impôt", `${fmt(cdi.netAvantImpot)} €`],
+                  ["Impôt sur le revenu", `- ${fmt(cdi.impotAnnuel)} €`],
                   [
-                    "Net annuel apres impot",
+                    "Net annuel après impôt",
                     `${fmt(cdi.netApresImpot)} €`,
                     true,
                   ],
                   [
-                    `Cout employeur (+${cdiTauxPatronales}%)`,
+                    `Coût employeur (+${cdiTauxPatronales}%)`,
                     `${fmt(cdi.coutEmployeur)} €`,
                   ],
                 ]}
@@ -1313,19 +1390,19 @@ export default function FreelanceVsCDI() {
                   href="/outils/calculateur-salaire"
                   emoji={"\u{1F4BC}"}
                   title="Net en poche CDI"
-                  desc="Calculez votre brut/net mensuel avec impot."
+                  desc="Calculez votre brut/net mensuel avec impôt."
                 />
                 <CrossLinkCard
                   href="/outils/simulateur-auto-entrepreneur"
                   emoji={"\u{1F4CA}"}
-                  title="Charges micro detail"
+                  title="Charges micro détail"
                   desc="Simulez vos cotisations URSSAF mensuelles."
                 />
                 <CrossLinkCard
                   href="/outils/generateur-facture"
                   emoji={"\u{1F4C4}"}
-                  title="Premiere facture freelance"
-                  desc="Generateur de facture conforme PDF."
+                  title="Première facture freelance"
+                  desc="Générateur de facture conforme PDF."
                 />
               </div>
             </div>
@@ -1393,61 +1470,61 @@ export default function FreelanceVsCDI() {
               </h2>
               <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
                 <p>
-                  Le choix entre le statut de freelance et le CDI depend de nombreux facteurs : remuneration nette,
-                  protection sociale, flexibilite et securite de l&apos;emploi. Notre simulateur vous permet de comparer
-                  objectivement les revenus nets apres impots et charges pour chaque situation.
+                  Le choix entre le statut de freelance et le CDI dépend de nombreux facteurs : rémunération nette,
+                  protection sociale, flexibilité et sécurité de l&apos;emploi. Notre simulateur vous permet de comparer
+                  objectivement les revenus nets après impôts et charges pour chaque situation.
                 </p>
                 <p>Les trois statuts freelance les plus courants en France :</p>
                 <ul className="ml-4 list-disc space-y-1">
-                  <li><strong className="text-[var(--foreground)]">Micro-entreprise</strong> : simplicite maximale, cotisations de 25,6% du CA (BNC 2026), plafond 77 700 &euro;/an</li>
-                  <li><strong className="text-[var(--foreground)]">SASU</strong> : president assimile salarie, optimisation possible via dividendes (flat tax 30%), charges patronales ~45%</li>
-                  <li><strong className="text-[var(--foreground)]">EURL (IS)</strong> : gerant TNS, cotisations ~45% mais base plus avantageuse, dividendes soumis a cotisations au-dela de 10% du capital</li>
+                  <li><strong className="text-[var(--foreground)]">Micro-entreprise</strong> : simplicité maximale, cotisations de 25,6% du CA (BNC 2026), plafond 83 600 &euro;/an</li>
+                  <li><strong className="text-[var(--foreground)]">SASU</strong> : président assimilé salarié, optimisation possible via dividendes (flat tax 31,4%), charges patronales ~45%</li>
+                  <li><strong className="text-[var(--foreground)]">EURL (IS)</strong> : gérant TNS, cotisations ~45% mais base plus avantageuse, dividendes soumis à cotisations au-delà de 10% du capital</li>
                 </ul>
                 <p>
-                  En regle generale, un freelance doit facturer un TJM (taux journalier moyen) 1,5 a 2 fois superieur
-                  a l&apos;equivalent salarie brut journalier pour obtenir un revenu net comparable, en raison des charges
-                  sociales, de l&apos;absence de conges payes et de la mutuelle a sa charge.
+                  En règle générale, un freelance doit facturer un TJM (taux journalier moyen) 1,5 à 2 fois supérieur
+                  à l&apos;équivalent salarié brut journalier pour obtenir un revenu net comparable, en raison des charges
+                  sociales, de l&apos;absence de congés payés et de la mutuelle à sa charge.
                 </p>
               </div>
             </div>
 
             <ToolFaqSection
-              intro="Les questions les plus posees sur le passage du CDI au freelance."
+              intro="Les questions les plus posées sur le passage du CDI au freelance."
               items={[
                 {
                   question: "Quel TJM pour gagner autant qu'en CDI ?",
                   answer:
-                    "Cela depend de votre statut juridique et de votre salaire CDI de reference. En moyenne, pour un salaire brut annuel de 45 000 EUR en CDI, il faut facturer entre 350 et 500 EUR/jour en freelance pour obtenir un revenu net equivalent. Utilisez le simulateur pour un calcul precis adapte a votre situation et au nombre de jours factures par an.",
+                    "Cela dépend de votre statut juridique et de votre salaire CDI de référence. En moyenne, pour un salaire brut annuel de 45 000 € en CDI, il faut facturer entre 350 et 500 €/jour en freelance pour obtenir un revenu net équivalent. Utilisez le simulateur pour un calcul précis adapté à votre situation et au nombre de jours facturés par an.",
                 },
                 {
                   question: "Micro-entreprise ou SASU : quel statut choisir ?",
                   answer:
-                    "La micro-entreprise convient pour debuter : pas de comptabilite complexe, cotisations simples (25,6 % du CA pour BNC en 2026). La SASU est plus avantageuse au-dela de 50 000 EUR de CA grace a l'optimisation remuneration/dividendes. Elle offre aussi une meilleure protection sociale (regime general) et aucun plafond de chiffre d'affaires.",
+                    "La micro-entreprise convient pour débuter : pas de comptabilité complexe, cotisations simples (25,6 % du CA pour BNC en 2026). La SASU est plus avantageuse au-delà de 50 000 € de CA grâce à l'optimisation rémunération/dividendes. Elle offre aussi une meilleure protection sociale (régime général) et aucun plafond de chiffre d'affaires.",
                 },
                 {
-                  question: "Comment sont calcules les impots en freelance ?",
+                  question: "Comment sont calculés les impôts en freelance ?",
                   answer:
-                    "En micro-entreprise, le revenu imposable est le CA apres abattement forfaitaire (34 % pour BNC). En SASU et EURL a l'IS, la remuneration du dirigeant est imposee au bareme progressif de l'IR, et les dividendes sont soumis au prelevement forfaitaire unique (PFU) de 30 % depuis 2018 (12,8 % d'IR + 17,2 % de prelevements sociaux).",
+                    "En micro-entreprise, le revenu imposable est le CA après abattement forfaitaire (34 % pour BNC). En SASU et EURL à l'IS, la rémunération du dirigeant est imposée au barème progressif de l'IR (le comparateur applique le quotient familial, son plafonnement et la décote du barème 2026, en supposant qu'il n'y a pas d'autre revenu dans le foyer), et les dividendes sont soumis au prélèvement forfaitaire unique (PFU) de 31,4 % en 2026 (12,8 % d'IR + 18,6 % de prélèvements sociaux depuis la LFSS 2026 ; 30 % auparavant).",
                 },
                 {
-                  question: "Combien de jours travailles par an en freelance ?",
+                  question: "Combien de jours travaillés par an en freelance ?",
                   answer:
-                    "En moyenne, un freelance facture entre 180 et 220 jours par an. Le calcul : 365 jours - 104 weekends - 10 jours feries - 25 jours de conges - 10-20 jours de prospection/admin/formation = 196-216 jours nets factures. C'est cette base qu'il faut multiplier par votre TJM pour estimer votre CA annuel.",
+                    "En moyenne, un freelance facture entre 180 et 220 jours par an. Le calcul : 365 jours - 104 weekends - 10 jours fériés - 25 jours de congés - 10-20 jours de prospection/admin/formation = 196-216 jours nets facturés. C'est cette base qu'il faut multiplier par votre TJM pour estimer votre CA annuel.",
                 },
                 {
                   question: "Faut-il une assurance professionnelle obligatoire ?",
                   answer:
-                    "Oui pour de nombreuses professions reglementees (sante, droit, expertise comptable, BTP). Pour les freelances IT, marketing, design, l'assurance RC Pro n'est pas obligatoire mais fortement recommandee : un client peut exiger une attestation. Comptez 250 a 600 EUR par an. La protection juridique professionnelle est aussi utile (litiges contractuels, recouvrement).",
+                    "Oui pour de nombreuses professions réglementées (santé, droit, expertise comptable, BTP). Pour les freelances IT, marketing, design, l'assurance RC Pro n'est pas obligatoire mais fortement recommandée : un client peut exiger une attestation. Comptez 250 à 600 € par an. La protection juridique professionnelle est aussi utile (litiges contractuels, recouvrement).",
                 },
                 {
-                  question: "Quels sont les droits au chomage en freelance ?",
+                  question: "Quels sont les droits au chômage en freelance ?",
                   answer:
-                    "Les freelances en micro-entreprise et EURL/IR n'ont pas droit au chomage classique (TNS). En SASU, le president est assimile salarie mais ne cotise pas a l'assurance chomage Pole Emploi (sauf cas specifiques). L'ATI (Allocation Travailleurs Independants) existe depuis 2019 mais avec des conditions strictes : ~800 EUR/mois pendant 6 mois max, sous reserve de revenus minimum et de cessation involontaire d'activite.",
+                    "Les freelances en micro-entreprise et EURL/IR n'ont pas droit au chômage classique (TNS). En SASU, le président est assimilé salarié mais ne cotise pas à l'assurance chômage (France Travail), sauf cas spécifiques. L'ATI (Allocation Travailleurs Indépendants) existe depuis 2019 mais avec des conditions strictes : ~800 €/mois pendant 6 mois max, sous réserve de revenus minimum et de cessation involontaire d'activité.",
                 },
                 {
-                  question: "Le simulateur garde-t-il mes donnees ?",
+                  question: "Le simulateur garde-t-il mes données ?",
                   answer:
-                    "Non. Tous les calculs sont effectues localement dans votre navigateur. Aucune donnee saisie (TJM, salaire, charges, statut) n'est envoyee a un serveur ni stockee. L'outil fonctionne sans inscription.",
+                    "Non. Tous les calculs sont effectués localement dans votre navigateur. Aucune donnée saisie (TJM, salaire, charges, statut) n'est envoyée à un serveur ni stockée. L'outil fonctionne sans inscription.",
                 },
               ]}
             />

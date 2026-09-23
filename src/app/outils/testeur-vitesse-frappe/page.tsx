@@ -1,40 +1,76 @@
 "use client";
 
-import { useState, useRef, useCallback, useEffect, useMemo } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import AdPlaceholder from "@/components/AdPlaceholder";
 
+// Textes accentués (le test est en français). « œ » est écrit « oe » pour rester tapable sur tous les claviers.
 const TEXTS = [
-  "Le petit chat gris dormait paisiblement sur le rebord de la fenetre. Dehors, la pluie tombait doucement sur les toits de la ville endormie. Les passants pressaient le pas, proteges par leurs parapluies colores. Dans la boulangerie du coin, le boulanger preparait deja les croissants du lendemain matin.",
-  "La science nous apprend que le cerveau humain est capable de traiter des milliers de informations chaque seconde. Cette capacite extraordinaire nous permet de resoudre des problemes complexes, de creer des oeuvres artistiques et de communiquer avec les autres. Chaque jour, nous utilisons cette faculte sans meme y penser.",
-  "Les montagnes se dressaient fierement sous le ciel bleu. Le vent soufflait dans les arbres, faisant danser les feuilles dorees de automne. Un ruisseau serpentait entre les rochers, emportant avec lui les souvenirs de ete. Les randonneurs profitaient des derniers rayons de soleil avant le retour du froid.",
-  "La technologie a transforme notre facon de vivre et de travailler. Nos telephones sont devenus des outils indispensables qui nous connectent au monde entier. Les applications nous aident a organiser notre quotidien, a apprendre de nouvelles competences et a rester en contact avec nos proches, ou que nous soyons dans le monde.",
-  "Dans la cuisine, les aromes se melaient pour creer une symphonie de saveurs. La grand-mere preparait son fameux gateau au chocolat, suivant la recette transmise de generation en generation. Les enfants attendaient impatiemment, les yeux brillants de gourmandise, que le dessert soit enfin pret a etre decoupe et partage.",
-  "Le voyage est une source inepuisable de decouverte et de enrichissement personnel. Chaque nouvelle destination nous offre une perspective differente sur le monde et ses cultures. Les rencontres que nous faisons en chemin deviennent souvent des souvenirs inoubliables qui marquent notre vie pour toujours et changent notre vision des choses.",
-  "La musique accompagne les etres humains depuis la nuit des temps. Elle exprime nos joies, nos peines, nos espoirs et nos reves les plus profonds. Que ce soit le son du piano, la melodie du violon ou le rythme de la guitare, chaque instrument raconte une histoire unique et touche notre coeur de maniere singuliere.",
-  "Le jardin etait un veritable havre de paix au milieu de la ville. Les roses rouges et blanches bordaient les allees de gravier. Un vieux banc en bois invitait les visiteurs a prendre un moment de repos. Les oiseaux chantaient dans les branches du grand chene, creant une atmosphere sereine et apaisante.",
+  "Le petit chat gris dormait paisiblement sur le rebord de la fenêtre. Dehors, la pluie tombait doucement sur les toits de la ville endormie. Les passants pressaient le pas, protégés par leurs parapluies colorés. Dans la boulangerie du coin, le boulanger préparait déjà les croissants du lendemain matin.",
+  "La science nous apprend que le cerveau humain est capable de traiter des milliers d'informations chaque seconde. Cette capacité extraordinaire nous permet de résoudre des problèmes complexes, de créer des oeuvres artistiques et de communiquer avec les autres. Chaque jour, nous utilisons cette faculté sans même y penser.",
+  "Les montagnes se dressaient fièrement sous le ciel bleu. Le vent soufflait dans les arbres, faisant danser les feuilles dorées de l'automne. Un ruisseau serpentait entre les rochers, emportant avec lui les souvenirs de l'été. Les randonneurs profitaient des derniers rayons de soleil avant le retour du froid.",
+  "La technologie a transformé notre façon de vivre et de travailler. Nos téléphones sont devenus des outils indispensables qui nous connectent au monde entier. Les applications nous aident à organiser notre quotidien, à apprendre de nouvelles compétences et à rester en contact avec nos proches, où que nous soyons dans le monde.",
+  "Dans la cuisine, les arômes se mêlaient pour créer une symphonie de saveurs. La grand-mère préparait son fameux gâteau au chocolat, suivant la recette transmise de génération en génération. Les enfants attendaient impatiemment, les yeux brillants de gourmandise, que le dessert soit enfin prêt à être découpé et partagé.",
+  "Le voyage est une source inépuisable de découverte et d'enrichissement personnel. Chaque nouvelle destination nous offre une perspective différente sur le monde et ses cultures. Les rencontres que nous faisons en chemin deviennent souvent des souvenirs inoubliables qui marquent notre vie pour toujours et changent notre vision des choses.",
+  "La musique accompagne les êtres humains depuis la nuit des temps. Elle exprime nos joies, nos peines, nos espoirs et nos rêves les plus profonds. Que ce soit le son du piano, la mélodie du violon ou le rythme de la guitare, chaque instrument raconte une histoire unique et touche notre coeur de manière singulière.",
+  "Le jardin était un véritable havre de paix au milieu de la ville. Les roses rouges et blanches bordaient les allées de gravier. Un vieux banc en bois invitait les visiteurs à prendre un moment de repos. Les oiseaux chantaient dans les branches du grand chêne, créant une atmosphère sereine et apaisante.",
 ];
 
 type GameState = "idle" | "running" | "finished";
 type Duration = 30 | 60 | 120;
+
+// Apostrophe typographique et espaces insécables comptent comme leurs équivalents clavier
+function normalizeChar(c: string | undefined): string | undefined {
+  if (c === "’" || c === "ʼ") return "'";
+  if (c === " " || c === " ") return " ";
+  return c;
+}
+
+function sameChar(a: string | undefined, b: string | undefined): boolean {
+  return normalizeChar(a) === normalizeChar(b);
+}
+
+function countCorrect(typed: string, reference: string): number {
+  let n = 0;
+  for (let i = 0; i < typed.length && i < reference.length; i++) if (sameChar(typed[i], reference[i])) n++;
+  return n;
+}
+
+// Mots par minute : 1 mot = 5 caractères corrects (convention internationale)
+function computeWpm(correctChars: number, elapsedMs: number): number {
+  if (elapsedMs <= 0) return 0;
+  return Math.round(correctChars / 5 / (elapsedMs / 60_000));
+}
 
 export default function TesteurVitesseFrappe() {
   const [duration, setDuration] = useState<Duration>(60);
   const [gameState, setGameState] = useState<GameState>("idle");
   const [currentTextIndex, setCurrentTextIndex] = useState(0);
   const [typedChars, setTypedChars] = useState("");
-  const [timeLeft, setTimeLeft] = useState(60);
+  const [elapsedMs, setElapsedMs] = useState(0);
   const [errors, setErrors] = useState(0);
   const [totalTyped, setTotalTyped] = useState(0);
   const [finalWpm, setFinalWpm] = useState(0);
   const [finalAccuracy, setFinalAccuracy] = useState(0);
   const [finalErrors, setFinalErrors] = useState(0);
   const [finalChars, setFinalChars] = useState(0);
+  const [finalSeconds, setFinalSeconds] = useState(0);
 
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const startTimeRef = useRef<number>(0);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  // Nombre de caractères déjà comptabilisés (évite de compter deux fois les touches mortes / compositions)
+  const countedRef = useRef(0);
+  const composingRef = useRef(false);
+  const typedRef = useRef("");
+  const totalRef = useRef(0);
+  const errorsRef = useRef(0);
+  const finishedRef = useRef(false);
 
   const currentText = TEXTS[currentTextIndex];
+  const textRef = useRef(currentText);
+  useEffect(() => {
+    textRef.current = currentText;
+  }, [currentText]);
 
   // Pick a random text that is different from the current one
   const pickNewText = useCallback(() => {
@@ -45,113 +81,134 @@ export default function TesteurVitesseFrappe() {
     setCurrentTextIndex(newIndex);
   }, [currentTextIndex]);
 
-  // Real-time WPM calculation
-  const currentWpm = useMemo(() => {
-    if (gameState !== "running") return 0;
-    const elapsed = (duration - timeLeft);
-    if (elapsed <= 0) return 0;
-    const correctChars = typedChars.split("").filter((ch, i) => ch === currentText[i]).length;
-    const words = correctChars / 5;
-    return Math.round((words / elapsed) * 60);
-  }, [gameState, duration, timeLeft, typedChars, currentText]);
+  const timeLeft = Math.max(0, Math.ceil((duration * 1000 - elapsedMs) / 1000));
 
-  // Real-time accuracy
-  const currentAccuracy = useMemo(() => {
-    if (totalTyped === 0) return 100;
-    return Math.round(((totalTyped - errors) / totalTyped) * 100);
-  }, [totalTyped, errors]);
+  // WPM et précision en temps réel
+  // Plancher d'une seconde pour éviter un pic absurde dans les premiers instants
+  const currentWpm = gameState === "running" ? computeWpm(countCorrect(typedChars, currentText), Math.max(1000, elapsedMs)) : 0;
+  const currentAccuracy = totalTyped === 0 ? 100 : Math.round(((totalTyped - errors) / totalTyped) * 100);
 
-  // End the game
-  const endGame = useCallback(() => {
+  // Fin du test (temps écoulé ou texte terminé) : lit uniquement des refs, donc stable
+  const finishGame = useCallback((elapsed: number) => {
+    if (finishedRef.current) return;
+    finishedRef.current = true;
     if (timerRef.current) clearInterval(timerRef.current);
+    timerRef.current = null;
+    // Au moins une seconde pour éviter un WPM absurde sur une frappe éclair
+    const effectiveMs = Math.max(1000, elapsed);
+    const total = totalRef.current;
     setGameState("finished");
+    setElapsedMs(elapsed);
+    setFinalWpm(computeWpm(countCorrect(typedRef.current, textRef.current), effectiveMs));
+    setFinalAccuracy(total > 0 ? Math.round(((total - errorsRef.current) / total) * 100) : 100);
+    setFinalErrors(errorsRef.current);
+    setFinalChars(total);
+    setFinalSeconds(Math.round(effectiveMs / 1000));
+  }, []);
 
-    const elapsed = duration;
-    const correctChars = typedChars.split("").filter((ch, i) => ch === currentText[i]).length;
-    const words = correctChars / 5;
-    const wpm = Math.round((words / elapsed) * 60);
-
-    setFinalWpm(wpm);
-    setFinalAccuracy(totalTyped > 0 ? Math.round(((totalTyped - errors) / totalTyped) * 100) : 100);
-    setFinalErrors(errors);
-    setFinalChars(totalTyped);
-  }, [duration, typedChars, currentText, totalTyped, errors]);
-
-  // Start the timer on first keypress
+  // Démarre le chrono à la première frappe
   const startGame = useCallback(() => {
+    finishedRef.current = false;
     setGameState("running");
     startTimeRef.current = Date.now();
-    setTimeLeft(duration);
-
-    const endTime = Date.now() + duration * 1000;
+    setElapsedMs(0);
+    const limitMs = duration * 1000;
     timerRef.current = setInterval(() => {
-      const remaining = Math.max(0, Math.ceil((endTime - Date.now()) / 1000));
-      setTimeLeft(remaining);
-      if (remaining <= 0) {
-        clearInterval(timerRef.current!);
-        // We'll call endGame via effect
-      }
+      const elapsed = Date.now() - startTimeRef.current;
+      if (elapsed >= limitMs) finishGame(limitMs);
+      else setElapsedMs(elapsed);
     }, 100);
-  }, [duration]);
+  }, [duration, finishGame]);
 
-  // End game when time runs out
-  useEffect(() => {
-    if (gameState === "running" && timeLeft <= 0) {
-      const timer = setTimeout(() => {
-        endGame();
-      }, 0);
-      return () => clearTimeout(timer);
+  // Comptabilise les caractères nouvellement saisis (frappes et erreurs)
+  const countNewChars = useCallback((value: string) => {
+    if (value.length <= countedRef.current) {
+      countedRef.current = value.length;
+      return;
     }
-  }, [timeLeft, gameState, endGame]);
+    let added = 0;
+    let newErrors = 0;
+    for (let i = countedRef.current; i < value.length; i++) {
+      added++;
+      if (i < textRef.current.length && !sameChar(value[i], textRef.current[i])) newErrors++;
+    }
+    countedRef.current = value.length;
+    totalRef.current += added;
+    errorsRef.current += newErrors;
+    setTotalTyped(totalRef.current);
+    setErrors(errorsRef.current);
+  }, []);
+
+  const afterInput = useCallback(
+    (value: string) => {
+      countNewChars(value);
+      if (value.length >= textRef.current.length && startTimeRef.current > 0) {
+        finishGame(Date.now() - startTimeRef.current);
+      }
+    },
+    [countNewChars, finishGame]
+  );
 
   // Handle typing input
   const handleInput = useCallback(
     (e: React.ChangeEvent<HTMLTextAreaElement>) => {
       if (gameState === "finished") return;
-
       const value = e.target.value;
 
-      // Start game on first character
       if (gameState === "idle" && value.length > 0) {
         startGame();
       }
 
-      // Count new errors
-      if (value.length > typedChars.length) {
-        const newCharIndex = value.length - 1;
-        setTotalTyped((prev) => prev + 1);
-        if (newCharIndex < currentText.length && value[newCharIndex] !== currentText[newCharIndex]) {
-          setErrors((prev) => prev + 1);
-        }
-      }
-
+      typedRef.current = value;
       setTypedChars(value);
+
+      // Pendant une composition (touche morte ^ ou ¨, IME), on attend le caractère final
+      const composing = composingRef.current || (e.nativeEvent as InputEvent).isComposing;
+      if (!composing) afterInput(value);
     },
-    [gameState, typedChars, currentText, startGame]
+    [gameState, startGame, afterInput]
+  );
+
+  const handleCompositionEnd = useCallback(
+    (e: React.CompositionEvent<HTMLTextAreaElement>) => {
+      composingRef.current = false;
+      if (gameState === "finished") return;
+      const value = e.currentTarget.value;
+      typedRef.current = value;
+      afterInput(value);
+    },
+    [gameState, afterInput]
   );
 
   // Reset everything
   const resetGame = useCallback(() => {
     if (timerRef.current) clearInterval(timerRef.current);
+    timerRef.current = null;
+    finishedRef.current = false;
+    startTimeRef.current = 0;
+    countedRef.current = 0;
+    totalRef.current = 0;
+    errorsRef.current = 0;
+    typedRef.current = "";
     setGameState("idle");
     setTypedChars("");
-    setTimeLeft(duration);
+    setElapsedMs(0);
     setErrors(0);
     setTotalTyped(0);
     setFinalWpm(0);
     setFinalAccuracy(0);
     setFinalErrors(0);
     setFinalChars(0);
+    setFinalSeconds(0);
     pickNewText();
     setTimeout(() => inputRef.current?.focus(), 50);
-  }, [duration, pickNewText]);
+  }, [pickNewText]);
 
   // Change duration
   const changeDuration = useCallback(
     (newDuration: Duration) => {
       if (gameState === "running") return;
       setDuration(newDuration);
-      setTimeLeft(newDuration);
     },
     [gameState]
   );
@@ -182,7 +239,7 @@ export default function TesteurVitesseFrappe() {
       let bgColor = "transparent";
 
       if (i < typedChars.length) {
-        if (typedChars[i] === char) {
+        if (sameChar(typedChars[i], char)) {
           color = "#16a34a"; // green - correct
         } else {
           color = "#ffffff"; // white text on red bg
@@ -229,8 +286,8 @@ export default function TesteurVitesseFrappe() {
             className="animate-fade-up stagger-2 mt-3 max-w-xl text-sm leading-relaxed"
             style={{ color: "var(--muted)" }}
           >
-            Mesurez votre vitesse de frappe en mots par minute (WPM) et votre precision. Recopiez le
-            texte affiche le plus vite possible.
+            Mesurez votre vitesse de frappe en mots par minute (WPM) et votre précision. Recopiez le
+            texte affiché, accents compris, le plus vite possible.
           </p>
         </div>
       </section>
@@ -247,7 +304,7 @@ export default function TesteurVitesseFrappe() {
                 className="text-xs font-semibold uppercase tracking-[0.15em]"
                 style={{ color: "var(--accent)" }}
               >
-                Duree du test
+                Durée du test
               </h2>
               <div className="mt-4 flex gap-2">
                 {([30, 60, 120] as Duration[]).map((d) => (
@@ -314,7 +371,7 @@ export default function TesteurVitesseFrappe() {
                   className="text-xs font-semibold uppercase tracking-[0.15em]"
                   style={{ color: "var(--muted)" }}
                 >
-                  Precision
+                  Précision
                 </p>
                 <p
                   className="mt-1 text-3xl font-bold tabular-nums"
@@ -334,7 +391,7 @@ export default function TesteurVitesseFrappe() {
                 className="text-xs font-semibold uppercase tracking-[0.15em]"
                 style={{ color: "var(--accent)" }}
               >
-                Texte a recopier
+                Texte à recopier
               </h2>
               <div
                 className="mt-4 select-none rounded-xl p-5 text-lg leading-relaxed"
@@ -360,12 +417,20 @@ export default function TesteurVitesseFrappe() {
                   className="text-xs font-semibold uppercase tracking-[0.15em]"
                   style={{ color: "var(--accent)" }}
                 >
-                  {gameState === "idle" ? "Commencez a taper pour lancer le chrono" : "Continuez a taper..."}
+                  {gameState === "idle" ? "Commencez à taper pour lancer le chrono" : "Continuez à taper…"}
                 </h2>
                 <textarea
                   ref={inputRef}
                   value={typedChars}
                   onChange={handleInput}
+                  onCompositionStart={() => {
+                    composingRef.current = true;
+                  }}
+                  onCompositionEnd={handleCompositionEnd}
+                  onPaste={(e) => e.preventDefault()}
+                  onDrop={(e) => e.preventDefault()}
+                  maxLength={currentText.length}
+                  aria-label="Zone de saisie du texte à recopier"
                   spellCheck={false}
                   autoComplete="off"
                   autoCorrect="off"
@@ -382,7 +447,7 @@ export default function TesteurVitesseFrappe() {
                     // @ts-expect-error CSS custom property for focus ring
                     "--tw-ring-color": "var(--primary)",
                   }}
-                  placeholder="Tapez le texte ci-dessus ici..."
+                  placeholder="Tapez le texte ci-dessus ici…"
                 />
               </div>
             ) : (
@@ -395,7 +460,7 @@ export default function TesteurVitesseFrappe() {
                   className="text-center text-2xl font-bold text-white"
                   style={{ fontFamily: "var(--font-display)" }}
                 >
-                  Resultats du test
+                  Résultats du test
                 </h2>
                 <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
                   <div className="rounded-xl p-4 text-center" style={{ background: "rgba(255,255,255,0.15)" }}>
@@ -405,13 +470,13 @@ export default function TesteurVitesseFrappe() {
                     </p>
                   </div>
                   <div className="rounded-xl p-4 text-center" style={{ background: "rgba(255,255,255,0.15)" }}>
-                    <p className="text-xs font-semibold uppercase tracking-wider text-white/70">Precision</p>
+                    <p className="text-xs font-semibold uppercase tracking-wider text-white/70">Précision</p>
                     <p className="mt-1 text-4xl font-bold text-white" style={{ fontFamily: "var(--font-display)" }}>
                       {finalAccuracy}%
                     </p>
                   </div>
                   <div className="rounded-xl p-4 text-center" style={{ background: "rgba(255,255,255,0.15)" }}>
-                    <p className="text-xs font-semibold uppercase tracking-wider text-white/70">Caracteres</p>
+                    <p className="text-xs font-semibold uppercase tracking-wider text-white/70">Caractères</p>
                     <p className="mt-1 text-4xl font-bold text-white" style={{ fontFamily: "var(--font-display)" }}>
                       {finalChars}
                     </p>
@@ -424,10 +489,13 @@ export default function TesteurVitesseFrappe() {
                   </div>
                 </div>
                 <div className="mt-4 text-center text-sm text-white/70">
-                  {finalWpm >= 80 && "Excellent ! Vous etes un dactylographe tres rapide."}
-                  {finalWpm >= 50 && finalWpm < 80 && "Tres bien ! Votre vitesse est au-dessus de la moyenne."}
-                  {finalWpm >= 30 && finalWpm < 50 && "Pas mal ! Continuez a pratiquer pour ameliorer votre vitesse."}
-                  {finalWpm < 30 && "Continuez a vous entrainer, la pratique rend parfait !"}
+                  <p>Mesuré sur {finalSeconds} s{finalSeconds < duration ? " (texte terminé avant la fin du temps)" : ""}.</p>
+                  <p className="mt-1">
+                    {finalWpm >= 80 && "Excellent ! Vous êtes un dactylographe très rapide."}
+                    {finalWpm >= 50 && finalWpm < 80 && "Très bien ! Votre vitesse est au-dessus de la moyenne."}
+                    {finalWpm >= 30 && finalWpm < 50 && "Pas mal ! Continuez à pratiquer pour améliorer votre vitesse."}
+                    {finalWpm < 30 && "Continuez à vous entraîner, c'est en forgeant qu'on devient forgeron !"}
+                  </p>
                 </div>
               </div>
             )}
@@ -449,23 +517,27 @@ export default function TesteurVitesseFrappe() {
               style={{ background: "var(--surface)", borderColor: "var(--border)" }}
             >
               <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
-                Test de vitesse de frappe en francais
+                Test de vitesse de frappe en français
               </h2>
               <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
                 <p>
-                  <strong className="text-[var(--foreground)]">Comment ca marche</strong> : Choisissez
-                  une duree (30s, 60s ou 120s), puis recopiez le texte affiche le plus rapidement
-                  possible. Le chrono demarre automatiquement des la premiere lettre tapee.
+                  <strong className="text-[var(--foreground)]">Comment ça marche</strong> : choisissez
+                  une durée (30 s, 60 s ou 120 s), puis recopiez le texte affiché le plus rapidement
+                  possible. Le chrono démarre automatiquement dès la première lettre tapée. Si vous
+                  terminez le texte avant la fin, le test s&apos;arrête et le score est calculé sur le temps réel.
                 </p>
                 <p>
-                  <strong className="text-[var(--foreground)]">WPM (mots par minute)</strong> : Un
-                  &quot;mot&quot; est defini comme 5 caracteres. Seuls les caracteres corrects sont
-                  comptes dans le calcul du WPM. La moyenne pour un adulte se situe entre 35 et 45 WPM.
+                  <strong className="text-[var(--foreground)]">WPM (mots par minute)</strong> : un
+                  &quot;mot&quot; est défini comme 5 caractères, espaces et ponctuation compris. Seuls les
+                  caractères corrects sont comptés dans le calcul du WPM. Une lettre accentuée compte pour un
+                  caractère, y compris si vous la tapez avec une touche morte (^ puis e pour ê). La moyenne
+                  pour un adulte se situe autour de 35 à 45 WPM.
                 </p>
                 <p>
-                  <strong className="text-[var(--foreground)]">Conseils</strong> : Gardez les yeux sur
-                  le texte source plutot que sur votre clavier. Privilegiez la precision a la vitesse :
-                  les erreurs penalisent votre score. Pratiquez regulierement pour progresser.
+                  <strong className="text-[var(--foreground)]">Conseils</strong> : gardez les yeux sur
+                  le texte source plutôt que sur votre clavier. Privilégiez la précision à la vitesse :
+                  les erreurs pénalisent votre score. Pratiquez régulièrement pour progresser. Le texte
+                  saisi reste dans votre navigateur.
                 </p>
               </div>
             </div>
@@ -478,11 +550,11 @@ export default function TesteurVitesseFrappe() {
               style={{ background: "var(--surface)", borderColor: "var(--border)" }}
             >
               <h3 className="text-sm font-semibold" style={{ fontFamily: "var(--font-display)" }}>
-                Baremes de vitesse
+                Barèmes de vitesse
               </h3>
               <ul className="mt-3 space-y-2 text-xs leading-relaxed" style={{ color: "var(--muted)" }}>
                 <li style={{ display: "flex", justifyContent: "space-between" }}>
-                  <span>Debutant</span>
+                  <span>Débutant</span>
                   <span style={{ fontWeight: 600 }}>&lt; 30 WPM</span>
                 </li>
                 <li style={{ display: "flex", justifyContent: "space-between" }}>
@@ -510,8 +582,8 @@ export default function TesteurVitesseFrappe() {
                 <li>Utilisez les 10 doigts</li>
                 <li>Position de base : QSDF - JKLM</li>
                 <li>Ne regardez pas le clavier</li>
-                <li>Precision avant la vitesse</li>
-                <li>Entrainez-vous chaque jour</li>
+                <li>La précision avant la vitesse</li>
+                <li>Entraînez-vous chaque jour</li>
               </ul>
             </div>
             <AdPlaceholder className="h-[600px]" />

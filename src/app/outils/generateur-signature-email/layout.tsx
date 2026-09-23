@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Generateur Signature Email HTML 2026 - 3 Templates",
+  title: "Générateur Signature Email HTML 2026 - 3 Templates",
   description:
-    "Creez une signature email HTML professionnelle en 30 secondes : 3 templates (classique, moderne, minimal), 7 couleurs, LinkedIn et Twitter inclus. Compatible Gmail, Outlook, Apple Mail. Code HTML pret a coller.",
+    "Créez une signature email HTML professionnelle en 30 secondes : 3 modèles (classique, moderne, minimal), 7 couleurs, liens LinkedIn et X inclus. Compatible Gmail, Outlook, Apple Mail. Code HTML prêt à coller.",
   keywords: [
     "generateur de signature mail gratuit",
     "signature mail html gratuit",
@@ -18,7 +18,7 @@ export const metadata: Metadata = {
     canonical: "https://outilis.fr/outils/generateur-signature-email",
   },
   openGraph: {
-    title: "Generateur Signature Email HTML 2026 - 3 Templates",
+    title: "Générateur Signature Email HTML 2026 - 3 Templates",
     description:
       "Signature email HTML pro en 30 secondes. 3 templates, couleurs personnalisables, compatible Gmail, Outlook, Apple Mail.",
     url: "https://outilis.fr/outils/generateur-signature-email",

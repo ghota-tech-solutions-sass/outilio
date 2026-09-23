@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Calculateur Consommation Essence 2026 - L/100km, Cout Trajet",
+  title: "Calculateur Consommation Essence 2026 - L/100km, Coût Trajet",
   description:
-    "Calculez votre consommation reelle en L/100 km et estimez le cout de vos trajets : Lyon-Paris, Marseille-Lille... Conseils eco-conduite (-25 % de consommation), bareme indicatif. Gratuit, sans inscription.",
+    "Calculez votre consommation réelle en L/100 km et estimez le coût de vos trajets : Lyon-Paris, Marseille-Lille... Conseils éco-conduite (-25 % de consommation), barème indicatif. Gratuit, sans inscription.",
   keywords: [
     "calculateur consommation essence",
     "L/100km",
@@ -19,9 +19,9 @@ export const metadata: Metadata = {
     canonical: "https://outilis.fr/outils/calculateur-consommation-essence",
   },
   openGraph: {
-    title: "Calculateur Consommation Essence 2026 - L/100km, Cout Trajet",
+    title: "Calculateur Consommation Essence 2026 - L/100km, Coût Trajet",
     description:
-      "Conso reelle, cout au km, estimation de trajet. Conseils eco-conduite et reperes par type de vehicule.",
+      "Conso réelle, coût au km, estimation de trajet. Conseils éco-conduite et repères par type de véhicule.",
     url: "https://outilis.fr/outils/calculateur-consommation-essence",
     type: "website",
   },

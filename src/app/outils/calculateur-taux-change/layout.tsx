@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Convertisseur de devises - Taux de change EUR USD GBP CHF",
   description:
-    "Convertissez entre les principales devises : EUR, USD, GBP, CHF, CAD, JPY, MAD, XOF. Taux de change indicatifs, conversion instantanee et gratuite.",
+    "Convertissez entre les principales devises : EUR, USD, GBP, CHF, CAD, JPY, MAD, XOF. Taux de change indicatifs, conversion instantanée et gratuite.",
   keywords: [
     "convertisseur devises",
     "taux de change",

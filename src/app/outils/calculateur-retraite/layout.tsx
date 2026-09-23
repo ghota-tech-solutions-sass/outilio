@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Calculateur age de depart a la retraite - Gratuit",
+  title: "Calculateur âge de départ à la retraite - Gratuit",
   description:
-    "Estimez votre age de depart a la retraite selon la reforme 2023. Calcul base sur votre annee de naissance et vos trimestres cotises.",
-  keywords: ["age retraite", "depart retraite", "reforme retraite 2023", "calculateur retraite", "trimestres retraite"],
+    "Estimez votre âge de départ à la retraite selon la réforme 2023 et sa suspension (LFSS 2026). Calcul basé sur votre année de naissance et vos trimestres cotisés.",
+  keywords: ["age retraite", "depart retraite", "reforme retraite 2023", "suspension reforme retraite 2026", "calculateur retraite", "trimestres retraite"],
   alternates: { canonical: "https://outilis.fr/outils/calculateur-retraite" },
 };
 

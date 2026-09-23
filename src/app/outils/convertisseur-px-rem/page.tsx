@@ -72,7 +72,11 @@ export default function ConvertisseurPxRem() {
                   <input
                     type="number"
                     value={baseFontSize}
-                    onChange={(e) => setBaseFontSize(Number(e.target.value) || 16)}
+                    onChange={(e) => {
+                      const v = Number(e.target.value);
+                      if (v > 0 && v <= 100) setBaseFontSize(v);
+                    }}
+                    min="1"
                     className="w-16 rounded-lg border px-3 py-2 text-center text-sm font-semibold"
                     style={{ borderColor: "var(--border)" }}
                   />
@@ -131,7 +135,7 @@ export default function ConvertisseurPxRem() {
               <div className="grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] gap-4 items-center">
                 <div>
                   <label className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: mode === "px-to-rem" ? "var(--accent)" : "var(--muted)" }}>
-                    {mode === "px-to-rem" ? "Pixels (entree)" : "REM (entree)"}
+                    {mode === "px-to-rem" ? "Pixels (entrée)" : "REM (entrée)"}
                   </label>
                   <div className="mt-2 flex items-center gap-2">
                     <input
@@ -159,7 +163,7 @@ export default function ConvertisseurPxRem() {
 
                 <div>
                   <label className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: mode === "rem-to-px" ? "var(--accent)" : "var(--muted)" }}>
-                    {mode === "px-to-rem" ? "REM (resultat)" : "Pixels (resultat)"}
+                    {mode === "px-to-rem" ? "REM (résultat)" : "Pixels (résultat)"}
                   </label>
                   <div className="mt-2 flex items-center gap-2">
                     <div
@@ -182,14 +186,14 @@ export default function ConvertisseurPxRem() {
                     className="rounded-lg px-4 py-2 text-xs font-semibold text-white transition-all hover:opacity-90"
                     style={{ background: copied === "value" ? "var(--accent)" : "var(--primary)" }}
                   >
-                    {copied === "value" ? "Copie !" : `Copier ${convertedValue}${mode === "px-to-rem" ? "rem" : "px"}`}
+                    {copied === "value" ? "Copié !" : `Copier ${convertedValue}${mode === "px-to-rem" ? "rem" : "px"}`}
                   </button>
                   <button
                     onClick={() => copyValue(`font-size: ${convertedValue}${mode === "px-to-rem" ? "rem" : "px"};`, "css")}
                     className="rounded-lg border px-4 py-2 text-xs font-semibold transition-all hover:bg-[var(--surface-alt)]"
                     style={{ borderColor: "var(--border)", color: copied === "css" ? "var(--accent)" : "inherit" }}
                   >
-                    {copied === "css" ? "Copie !" : "Copier en CSS"}
+                    {copied === "css" ? "Copié !" : "Copier en CSS"}
                   </button>
                 </div>
               )}
@@ -226,7 +230,7 @@ export default function ConvertisseurPxRem() {
                       <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>Pixels</th>
                       <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>REM</th>
                       <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>CSS</th>
-                      <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>Apercu</th>
+                      <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>Aperçu</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -240,7 +244,7 @@ export default function ConvertisseurPxRem() {
                             className="text-xs font-mono px-2 py-1 rounded hover:bg-[var(--surface-alt)] transition-all"
                             style={{ color: "var(--muted)" }}
                           >
-                            {copied === `css-${row.px}` ? "Copie !" : `font-size: ${row.rem}rem;`}
+                            {copied === `css-${row.px}` ? "Copié !" : `font-size: ${row.rem}rem;`}
                           </button>
                         </td>
                         <td className="px-5 py-2.5">
@@ -257,9 +261,9 @@ export default function ConvertisseurPxRem() {
             <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
               <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>PX vs REM : guide rapide</h2>
               <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                <p><strong className="text-[var(--foreground)]">PX (pixels)</strong> : Unite fixe, ne change pas selon les preferences utilisateur. Ideal pour les bordures et les ombres.</p>
-                <p><strong className="text-[var(--foreground)]">REM (root em)</strong> : Relative a la taille de police racine (html). S&apos;adapte aux preferences d&apos;accessibilite de l&apos;utilisateur.</p>
-                <p><strong className="text-[var(--foreground)]">Formule</strong> : <code style={{ fontFamily: "monospace", background: "var(--surface-alt)", padding: "2px 6px", borderRadius: "4px" }}>rem = px / base</code> ou base est generalement 16px.</p>
+                <p><strong className="text-[var(--foreground)]">PX (pixels)</strong> : Unité fixe, qui ne suit pas la taille de texte choisie par l&apos;utilisateur dans son navigateur. Idéal pour les bordures et les ombres.</p>
+                <p><strong className="text-[var(--foreground)]">REM (root em)</strong> : Relative à la taille de police racine (html). S&apos;adapte aux préférences d&apos;accessibilité de l&apos;utilisateur.</p>
+                <p><strong className="text-[var(--foreground)]">Formule</strong> : <code style={{ fontFamily: "monospace", background: "var(--surface-alt)", padding: "2px 6px", borderRadius: "4px" }}>rem = px / base</code>, où base est généralement 16px. Les résultats sont arrondis à 4 décimales en rem et 2 décimales en px.</p>
                 <p><strong className="text-[var(--foreground)]">Bonne pratique</strong> : Utilisez rem pour les tailles de police, marges et paddings. Gardez px pour les bordures et les dimensions fixes.</p>
               </div>
             </div>
@@ -271,40 +275,40 @@ export default function ConvertisseurPxRem() {
               </h2>
               <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
                 <p>
-                  Ce convertisseur PX/REM gratuit est concu pour les developpeurs web et integrateurs qui souhaitent passer rapidement entre pixels et unites rem. Il inclut un tableau de correspondance complet et des boutons de copie CSS.
+                  Ce convertisseur PX/REM gratuit est conçu pour les développeurs web et intégrateurs qui souhaitent passer rapidement entre pixels et unités rem. Il inclut un tableau de correspondance complet et des boutons de copie CSS.
                 </p>
                 <ul className="ml-4 list-disc space-y-1">
-                  <li><strong className="text-[var(--foreground)]">Definissez la taille de base</strong> : ajustez la valeur de font-size racine (par defaut 16px). Cela affecte tous les calculs de conversion.</li>
+                  <li><strong className="text-[var(--foreground)]">Définissez la taille de base</strong> : ajustez la valeur de font-size racine (par défaut 16px). Cela affecte tous les calculs de conversion.</li>
                   <li><strong className="text-[var(--foreground)]">Choisissez le sens de conversion</strong> : PX vers REM ou REM vers PX selon votre besoin.</li>
-                  <li><strong className="text-[var(--foreground)]">Saisissez la valeur</strong> : entrez la taille en pixels ou en rem. Le resultat s&apos;affiche instantanement.</li>
-                  <li><strong className="text-[var(--foreground)]">Copiez le CSS</strong> : cliquez sur &laquo; Copier en CSS &raquo; pour obtenir directement la propriete <code style={{ fontFamily: "monospace", background: "var(--surface-alt)", padding: "2px 6px", borderRadius: "4px" }}>font-size: 1rem;</code> prete a coller.</li>
+                  <li><strong className="text-[var(--foreground)]">Saisissez la valeur</strong> : entrez la taille en pixels ou en rem. Le résultat s&apos;affiche instantanément.</li>
+                  <li><strong className="text-[var(--foreground)]">Copiez le CSS</strong> : cliquez sur &laquo; Copier en CSS &raquo; pour obtenir directement la propriété <code style={{ fontFamily: "monospace", background: "var(--surface-alt)", padding: "2px 6px", borderRadius: "4px" }}>font-size: 1rem;</code> prête à coller.</li>
                 </ul>
                 <p>
-                  Le tableau de correspondance en bas de page liste les 18 valeurs de pixels les plus courantes en CSS avec leur equivalent rem. Il s&apos;adapte automatiquement si vous modifiez la taille de base.
+                  Le tableau de correspondance en bas de page liste les 18 valeurs de pixels les plus courantes en CSS avec leur équivalent rem. Il s&apos;adapte automatiquement si vous modifiez la taille de base.
                 </p>
               </div>
             </div>
 
             {/* FAQ */}
             <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Questions frequentes</h2>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Questions fréquentes</h2>
               <div className="mt-6 space-y-5">
                 <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
-                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Pourquoi utiliser rem plutot que px en CSS ?</h3>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Pourquoi utiliser rem plutôt que px en CSS ?</h3>
                   <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                    L&apos;unite rem est relative a la taille de police definie sur l&apos;element racine (&lt;html&gt;). Quand un utilisateur modifie la taille de texte dans les parametres de son navigateur (souvent pour des raisons d&apos;accessibilite), les elements dimensionnes en rem s&apos;adaptent automatiquement, contrairement aux pixels qui restent fixes. C&apos;est une bonne pratique recommandee par le W3C.
+                    L&apos;unité rem est relative à la taille de police définie sur l&apos;élément racine (&lt;html&gt;). Quand un utilisateur modifie la taille de texte dans les paramètres de son navigateur (souvent pour des raisons d&apos;accessibilité), les éléments dimensionnés en rem s&apos;adaptent automatiquement, contrairement aux pixels qui restent fixes. C&apos;est une bonne pratique recommandée par le W3C.
                   </p>
                 </div>
                 <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
-                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Quelle est la difference entre rem et em ?</h3>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Quelle est la différence entre rem et em ?</h3>
                   <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                    Le rem (root em) est toujours relatif a la taille de police de l&apos;element &lt;html&gt;. L&apos;em est relatif a la taille de police de l&apos;element parent. Avec des imbrications multiples, les em se multiplient (effet &laquo; cascade &raquo;), ce qui peut creer des tailles imprevues. Le rem est plus previsible car il reference toujours la meme valeur de base.
+                    Le rem (root em) est toujours relatif à la taille de police de l&apos;élément &lt;html&gt;. L&apos;em est relatif à la taille de police de l&apos;élément parent. Avec des imbrications multiples, les em se multiplient (effet &laquo; cascade &raquo;), ce qui peut créer des tailles imprévues. Le rem est plus prévisible car il référence toujours la même valeur de base.
                   </p>
                 </div>
                 <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
                   <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Dois-je toujours utiliser 16px comme taille de base ?</h3>
                   <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                    16px est la valeur par defaut de tous les navigateurs, et la plupart des frameworks CSS (Tailwind, Bootstrap) s&apos;appuient dessus. Certains developpeurs definissent 10px (font-size: 62.5 %) pour simplifier les calculs (1rem = 10px), mais cela peut poser des problemes d&apos;accessibilite. La pratique la plus recommandee est de garder 16px et d&apos;utiliser cet outil pour calculer les conversions.
+                    16px est la valeur par défaut de tous les navigateurs, et la plupart des frameworks CSS (Tailwind, Bootstrap) s&apos;appuient dessus. Certains développeurs définissent font-size: 62.5 % sur &lt;html&gt; pour simplifier les calculs (1rem = 10px) : c&apos;est acceptable car la valeur reste relative, mais il faut alors redéfinir la taille du texte courant et cela complique l&apos;usage de bibliothèques qui supposent 1rem = 16px. Fixer 10px en pixels, en revanche, ignore les préférences de l&apos;utilisateur. La pratique la plus recommandée est de garder 16px et d&apos;utiliser cet outil pour calculer les conversions.
                   </p>
                 </div>
               </div>

@@ -9,6 +9,22 @@ function formatSize(bytes: number): string {
   return (bytes / (1024 * 1024)).toFixed(2) + " Mo";
 }
 
+const MAX_SIDE = 10000;
+const MAX_PIXELS = 50_000_000; // beyond this, canvases fail on many browsers (Safari ~16 MP)
+
+/** Keep JPEG/WebP inputs in their format (a resized photo saved as PNG is often much heavier) */
+function outputFormatFor(type: string): { mime: string; ext: string; label: string } {
+  if (type === "image/jpeg" || type === "image/jpg") return { mime: "image/jpeg", ext: "jpg", label: "JPEG" };
+  if (type === "image/webp") return { mime: "image/webp", ext: "webp", label: "WebP" };
+  return { mime: "image/png", ext: "png", label: "PNG" };
+}
+
+function dataURLByteSize(dataURL: string): number {
+  const b64 = dataURL.slice(dataURL.indexOf(",") + 1);
+  const padding = b64.endsWith("==") ? 2 : b64.endsWith("=") ? 1 : 0;
+  return Math.max(0, Math.floor((b64.length * 3) / 4) - padding);
+}
+
 export default function RedimensionneurImage() {
   const [originalFile, setOriginalFile] = useState<File | null>(null);
   const [origW, setOrigW] = useState(0);
@@ -21,54 +37,83 @@ export default function RedimensionneurImage() {
   const [previewURL, setPreviewURL] = useState("");
   const [resultSize, setResultSize] = useState(0);
   const [dragging, setDragging] = useState(false);
+  const [error, setError] = useState("");
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const imgRef = useRef<HTMLImageElement | null>(null);
 
-  const doResize = useCallback((img: HTMLImageElement, w: number, h: number) => {
+  const doResize = useCallback((img: HTMLImageElement, w: number, h: number, mime: string) => {
     const canvas = canvasRef.current;
-    if (!canvas || w <= 0 || h <= 0) return;
+    if (!canvas || !Number.isFinite(w) || !Number.isFinite(h) || w <= 0 || h <= 0) return;
+    if (w > MAX_SIDE || h > MAX_SIDE || w * h > MAX_PIXELS) {
+      setError(`Dimensions trop grandes : ${MAX_SIDE.toLocaleString("fr-FR")} px maximum par côté et 50 mégapixels au total.`);
+      return;
+    }
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
     canvas.width = w;
     canvas.height = h;
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = "high";
+    if (mime === "image/jpeg") {
+      // JPEG has no alpha channel
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, w, h);
+    }
     ctx.drawImage(img, 0, 0, w, h);
-    const dataURL = canvas.toDataURL("image/png");
+    const dataURL = canvas.toDataURL(mime, mime === "image/png" ? undefined : 0.92);
+    if (dataURL.length < 30) {
+      setError("Votre navigateur n'a pas pu générer une image de cette taille.");
+      return;
+    }
+    setError("");
     setPreviewURL(dataURL);
-    const parts = dataURL.split(",");
-    const raw = atob(parts[1]);
-    setResultSize(raw.length);
+    setResultSize(dataURLByteSize(dataURL));
   }, []);
 
   const handleFile = useCallback((file: File) => {
-    if (!file.type.startsWith("image/")) return;
-    setOriginalFile(file);
+    setError("");
+    if (!file.type.startsWith("image/")) {
+      setError("Ce fichier n'est pas une image.");
+      return;
+    }
     const reader = new FileReader();
     reader.onload = (e) => {
       const url = e.target?.result as string;
       const img = new Image();
+      img.onerror = () => {
+        setError("Impossible de lire cette image. Le format (HEIC, TIFF...) n'est peut-être pas pris en charge par votre navigateur.");
+      };
       img.onload = () => {
+        if (!img.naturalWidth || !img.naturalHeight) {
+          setError("Impossible de déterminer les dimensions de cette image.");
+          return;
+        }
+        setOriginalFile(file);
         imgRef.current = img;
         setOrigW(img.naturalWidth);
         setOrigH(img.naturalHeight);
         setTargetW(img.naturalWidth);
         setTargetH(img.naturalHeight);
         setPctValue(100);
-        doResize(img, img.naturalWidth, img.naturalHeight);
+        doResize(img, img.naturalWidth, img.naturalHeight, outputFormatFor(file.type).mime);
       };
       img.src = url;
     };
+    reader.onerror = () => setError("Impossible de lire ce fichier.");
     reader.readAsDataURL(file);
   }, [doResize]);
+
+  const outFmt = outputFormatFor(originalFile?.type ?? "");
 
   const updateWidth = (w: number) => {
     setTargetW(w);
     if (lockRatio && origW > 0) {
       const h = Math.round((w / origW) * origH);
       setTargetH(h);
-      if (imgRef.current) doResize(imgRef.current, w, h);
+      if (imgRef.current) doResize(imgRef.current, w, h, outFmt.mime);
     } else {
-      if (imgRef.current) doResize(imgRef.current, w, targetH);
+      if (imgRef.current) doResize(imgRef.current, w, targetH, outFmt.mime);
     }
   };
 
@@ -77,9 +122,9 @@ export default function RedimensionneurImage() {
     if (lockRatio && origH > 0) {
       const w = Math.round((h / origH) * origW);
       setTargetW(w);
-      if (imgRef.current) doResize(imgRef.current, w, h);
+      if (imgRef.current) doResize(imgRef.current, w, h, outFmt.mime);
     } else {
-      if (imgRef.current) doResize(imgRef.current, targetW, h);
+      if (imgRef.current) doResize(imgRef.current, targetW, h, outFmt.mime);
     }
   };
 
@@ -89,7 +134,7 @@ export default function RedimensionneurImage() {
     const h = Math.round(origH * pct / 100);
     setTargetW(w);
     setTargetH(h);
-    if (imgRef.current) doResize(imgRef.current, w, h);
+    if (imgRef.current) doResize(imgRef.current, w, h, outFmt.mime);
   };
 
   const handleDrop = useCallback((e: React.DragEvent) => {
@@ -102,7 +147,7 @@ export default function RedimensionneurImage() {
   const download = () => {
     if (!previewURL || !originalFile) return;
     const link = document.createElement("a");
-    link.download = originalFile.name.replace(/\.[^.]+$/, "") + `-${targetW}x${targetH}.png`;
+    link.download = originalFile.name.replace(/\.[^.]+$/, "") + `-${targetW}x${targetH}.${outFmt.ext}`;
     link.href = previewURL;
     link.click();
   };
@@ -116,7 +161,7 @@ export default function RedimensionneurImage() {
             Redimensionneur <span style={{ color: "var(--primary)" }}>Image</span>
           </h1>
           <p className="animate-fade-up stagger-2 mt-3 max-w-xl text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-            Changez les dimensions de vos images en pixels ou en pourcentage. Ratio verrouillable, apercu en direct.
+            Changez les dimensions de vos images en pixels ou en pourcentage. Ratio verrouillable, aperçu en direct.
           </p>
         </div>
       </section>
@@ -131,6 +176,15 @@ export default function RedimensionneurImage() {
                 onDragLeave={() => setDragging(false)}
                 onDrop={handleDrop}
                 onClick={() => inputRef.current?.click()}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    inputRef.current?.click();
+                  }
+                }}
+                role="button"
+                tabIndex={0}
+                aria-label="Choisir une image à redimensionner"
                 className="cursor-pointer rounded-2xl border-2 border-dashed p-16 text-center transition-all"
                 style={{
                   borderColor: dragging ? "var(--primary)" : "var(--border)",
@@ -146,8 +200,15 @@ export default function RedimensionneurImage() {
                 </p>
                 <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={(e) => {
                   const file = e.target.files?.[0];
+                  e.target.value = "";
                   if (file) handleFile(file);
                 }} />
+              </div>
+            )}
+
+            {error && (
+              <div role="alert" className="rounded-xl border p-4 text-sm" style={{ background: "rgba(220,38,38,0.06)", borderColor: "rgba(220,38,38,0.2)", color: "#dc2626" }}>
+                {error}
               </div>
             )}
 
@@ -157,7 +218,7 @@ export default function RedimensionneurImage() {
                 <div className="rounded-2xl border p-6" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
                   <div className="flex items-center justify-between mb-4">
                     <h2 className="text-lg font-semibold" style={{ fontFamily: "var(--font-display)" }}>Dimensions</h2>
-                    <button onClick={() => { setOriginalFile(null); setPreviewURL(""); }}
+                    <button onClick={() => { setOriginalFile(null); setPreviewURL(""); setError(""); imgRef.current = null; }}
                       className="text-sm font-medium px-4 py-2 rounded-lg border transition-colors hover:bg-[var(--surface-alt)]"
                       style={{ borderColor: "var(--border)", color: "var(--muted)" }}>
                       Nouvelle image
@@ -171,7 +232,7 @@ export default function RedimensionneurImage() {
                   {/* Mode toggle */}
                   <div className="flex gap-2 mb-4">
                     {([["px", "Pixels"], ["pct", "Pourcentage"]] as const).map(([val, label]) => (
-                      <button key={val} onClick={() => setMode(val)}
+                      <button key={val} onClick={() => setMode(val)} aria-pressed={mode === val}
                         className="rounded-lg border px-4 py-2 text-sm font-medium transition-all"
                         style={{
                           borderColor: mode === val ? "var(--primary)" : "var(--border)",
@@ -187,8 +248,8 @@ export default function RedimensionneurImage() {
                     <div className="space-y-4">
                       <div className="flex items-end gap-3">
                         <div className="flex-1">
-                          <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>Largeur (px)</label>
-                          <input type="number" min="1" max="10000" value={targetW}
+                          <label htmlFor="resize-width" className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>Largeur (px)</label>
+                          <input id="resize-width" type="number" min="1" max="10000" value={targetW}
                             onChange={(e) => updateWidth(Number(e.target.value))}
                             className="mt-1 w-full rounded-xl border px-4 py-3 text-lg font-bold"
                             style={{ borderColor: "var(--border)" }} />
@@ -200,12 +261,14 @@ export default function RedimensionneurImage() {
                             background: lockRatio ? "rgba(13,79,60,0.05)" : "transparent",
                             color: lockRatio ? "var(--primary)" : "var(--muted)",
                           }}
-                          title={lockRatio ? "Ratio verrouille" : "Ratio libre"}>
+                          title={lockRatio ? "Ratio verrouillé" : "Ratio libre"}
+                          aria-label={lockRatio ? "Ratio verrouillé : cliquer pour le libérer" : "Ratio libre : cliquer pour le verrouiller"}
+                          aria-pressed={lockRatio}>
                           {lockRatio ? "🔗" : "🔓"}
                         </button>
                         <div className="flex-1">
-                          <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>Hauteur (px)</label>
-                          <input type="number" min="1" max="10000" value={targetH}
+                          <label htmlFor="resize-height" className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>Hauteur (px)</label>
+                          <input id="resize-height" type="number" min="1" max="10000" value={targetH}
                             onChange={(e) => updateHeight(Number(e.target.value))}
                             className="mt-1 w-full rounded-xl border px-4 py-3 text-lg font-bold"
                             style={{ borderColor: "var(--border)" }} />
@@ -215,17 +278,17 @@ export default function RedimensionneurImage() {
                   ) : (
                     <div>
                       <div className="flex justify-between">
-                        <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>Pourcentage</label>
+                        <label htmlFor="resize-pct" className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>Pourcentage</label>
                         <span className="text-sm font-bold" style={{ color: "var(--primary)" }}>{pctValue}%</span>
                       </div>
-                      <input type="range" min="1" max="500" value={pctValue} onChange={(e) => updatePct(Number(e.target.value))}
+                      <input id="resize-pct" type="range" min="1" max="500" value={pctValue} onChange={(e) => updatePct(Number(e.target.value))}
                         className="mt-2 w-full" />
                       <div className="flex justify-between text-xs" style={{ color: "var(--muted)" }}>
                         <span>1%</span>
                         <span>500%</span>
                       </div>
                       <p className="mt-2 text-sm" style={{ color: "var(--muted)" }}>
-                        Resultat : {targetW} x {targetH} px
+                        Résultat : {targetW} x {targetH} px
                       </p>
                     </div>
                   )}
@@ -253,7 +316,7 @@ export default function RedimensionneurImage() {
                     <p className="text-xs" style={{ color: "var(--muted)" }}>{formatSize(originalFile.size)}</p>
                   </div>
                   <div className="rounded-2xl border p-4 text-center" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-                    <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>Redimensionne</p>
+                    <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>Redimensionné</p>
                     <p className="mt-1 text-lg font-bold" style={{ color: "var(--primary)", fontFamily: "var(--font-display)" }}>{targetW} x {targetH}</p>
                     <p className="text-xs" style={{ color: "var(--muted)" }}>{formatSize(resultSize)}</p>
                   </div>
@@ -261,16 +324,16 @@ export default function RedimensionneurImage() {
 
                 {/* Preview */}
                 <div className="rounded-2xl border p-6" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-                  <p className="text-xs font-semibold uppercase tracking-[0.2em] mb-4" style={{ color: "var(--muted)" }}>Apercu</p>
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] mb-4" style={{ color: "var(--muted)" }}>Aperçu</p>
                   <div className="flex justify-center rounded-xl overflow-hidden border p-4" style={{ borderColor: "var(--border)", background: "repeating-conic-gradient(#e8e8e8 0% 25%, transparent 0% 50%) 0 0 / 20px 20px" }}>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={previewURL} alt="Redimensionne" style={{ maxWidth: "100%", maxHeight: "500px" }} />
+                    <img src={previewURL} alt="Redimensionné" style={{ maxWidth: "100%", maxHeight: "500px" }} />
                   </div>
                   <div className="mt-6 text-center">
                     <button onClick={download}
                       className="inline-flex items-center gap-2 rounded-full px-8 py-3.5 text-sm font-semibold text-white transition-all hover:scale-[1.02]"
                       style={{ background: "linear-gradient(135deg, var(--primary) 0%, #1a6b4f 100%)" }}>
-                      Telecharger ({targetW} x {targetH})
+                      Télécharger en {outFmt.label} ({targetW} x {targetH})
                     </button>
                   </div>
                 </div>
@@ -282,9 +345,10 @@ export default function RedimensionneurImage() {
             <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
               <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Redimensionner une image</h2>
               <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                <p>Le redimensionnement modifie les dimensions en pixels de votre image. Verrouillez le ratio d&apos;aspect pour eviter les deformations.</p>
-                <p>Le mode pourcentage est pratique pour reduire uniformement. Les presets 50%, 75% couvrent les besoins courants pour le web.</p>
-                <p>Tout le traitement est effectue dans votre navigateur. Aucune image n&apos;est envoyee a un serveur.</p>
+                <p>Le redimensionnement modifie les dimensions en pixels de votre image. Verrouillez le ratio d&apos;aspect pour éviter les déformations.</p>
+                <p>Le mode pourcentage est pratique pour réduire uniformément. Les presets 50%, 75% couvrent les besoins courants pour le web.</p>
+                <p>Le format d&apos;origine est conservé pour les JPEG et WebP ; les autres formats (PNG, GIF, BMP...) sont enregistrés en PNG. Agrandir une image au-delà de 100 % ne crée pas de détails : elle devient plus floue.</p>
+                <p>Tout le traitement est effectué dans votre navigateur. Aucune image n&apos;est envoyée à un serveur.</p>
               </div>
             </div>
           </div>

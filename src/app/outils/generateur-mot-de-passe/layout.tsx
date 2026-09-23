@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Generateur de mot de passe securise - Gratuit",
+  title: "Générateur de mot de passe sécurisé - Gratuit",
   description:
-    "Generez des mots de passe securises et personnalisables. Choisissez la longueur, les caracteres et evaluez la force. 100% local et gratuit.",
+    "Générez des mots de passe sécurisés et personnalisables. Choisissez la longueur, les caractères et évaluez la force. 100% local et gratuit.",
   keywords: [
     "generateur mot de passe",
     "mot de passe securise",

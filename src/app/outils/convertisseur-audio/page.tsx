@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useRef, useEffect } from "react";
 import AdPlaceholder from "@/components/AdPlaceholder";
+import { parseProbe, readWavDuration } from "@/lib/ffmpeg";
 
 interface AudioFileInfo {
   name: string;
@@ -24,10 +25,20 @@ const FORMAT_OPTIONS: { key: OutputFormat; label: string; ext: string; mime: str
 
 const BITRATE_OPTIONS: { key: Bitrate; label: string; desc: string }[] = [
   { key: "128k", label: "128 kbps", desc: "Standard" },
-  { key: "192k", label: "192 kbps", desc: "Bonne qualite" },
-  { key: "256k", label: "256 kbps", desc: "Haute qualite" },
+  { key: "192k", label: "192 kbps", desc: "Bonne qualité" },
+  { key: "256k", label: "256 kbps", desc: "Haute qualité" },
   { key: "320k", label: "320 kbps", desc: "Maximale" },
 ];
+
+const MAX_FILE_SIZE = 500 * 1024 * 1024;
+const FFMPEG_CORE_BASE = "https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd";
+
+async function toBlobURL(url: string, type: string): Promise<string> {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const buf = await res.arrayBuffer();
+  return URL.createObjectURL(new Blob([buf], { type }));
+}
 
 function formatSize(bytes: number): string {
   if (bytes < 1024) return bytes + " o";
@@ -55,21 +66,31 @@ export default function ConvertisseurAudio() {
   const inputRef = useRef<HTMLInputElement>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const ffmpegRef = useRef<any>(null);
+  const logsRef = useRef<string[]>([]);
 
+  // Revoke each object URL when it is replaced or on unmount (one effect per URL)
+  const sourceUrl = audioFile?.url;
+  const resultUrl = result?.url;
   useEffect(() => {
     return () => {
-      if (audioFile?.url) URL.revokeObjectURL(audioFile.url);
-      if (result?.url) URL.revokeObjectURL(result.url);
+      if (sourceUrl) URL.revokeObjectURL(sourceUrl);
     };
-  }, [audioFile, result]);
-
-  // Register COI service worker for SharedArrayBuffer support
+  }, [sourceUrl]);
   useEffect(() => {
-    if (typeof window !== "undefined" && !window.crossOriginIsolated) {
-      const script = document.createElement("script");
-      script.src = "/coi-serviceworker.js";
-      document.head.appendChild(script);
-    }
+    return () => {
+      if (resultUrl) URL.revokeObjectURL(resultUrl);
+    };
+  }, [resultUrl]);
+
+  // Terminate the FFmpeg worker when leaving the page
+  useEffect(() => {
+    return () => {
+      try {
+        ffmpegRef.current?.terminate();
+      } catch {
+        // ignore
+      }
+    };
   }, []);
 
   const loadFFmpeg = useCallback(async () => {
@@ -81,20 +102,37 @@ export default function ConvertisseurAudio() {
     setProgressMessage("Chargement de FFmpeg...");
 
     try {
-      const { FFmpeg } = await import("@ffmpeg/ffmpeg");
-      const { toBlobURL } = await import("@ffmpeg/util");
-
+      // UMD build served from /public/ffmpeg (the npm ESM build breaks once bundled by Next.js)
+      await new Promise<void>((resolve, reject) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        if ((window as any).FFmpegWASM) {
+          resolve();
+          return;
+        }
+        const s = document.createElement("script");
+        s.src = "/ffmpeg/ffmpeg.js";
+        s.onload = () => resolve();
+        s.onerror = () => reject(new Error("Échec du chargement de /ffmpeg/ffmpeg.js"));
+        document.head.appendChild(s);
+      });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { FFmpeg } = (window as any).FFmpegWASM;
       const ffmpeg = new FFmpeg();
 
-      ffmpeg.on("progress", ({ progress: p }) => {
-        setProgress(Math.min(Math.round(p * 100), 100));
+      ffmpeg.on("log", ({ message }: { message: string }) => {
+        logsRef.current.push(message);
+        if (logsRef.current.length > 300) logsRef.current.shift();
+      });
+      ffmpeg.on("progress", ({ progress: p }: { progress: number }) => {
+        if (Number.isFinite(p)) setProgress(Math.max(0, Math.min(Math.round(p * 100), 100)));
       });
 
-      const baseURL = "https://unpkg.com/@ffmpeg/core@0.12.6/dist/esm";
-      await ffmpeg.load({
-        coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, "text/javascript"),
-        wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, "application/wasm"),
-      });
+      setProgressMessage("Téléchargement du moteur de conversion...");
+      const [coreURL, wasmURL] = await Promise.all([
+        toBlobURL(`${FFMPEG_CORE_BASE}/ffmpeg-core.js`, "text/javascript"),
+        toBlobURL(`${FFMPEG_CORE_BASE}/ffmpeg-core.wasm`, "application/wasm"),
+      ]);
+      await ffmpeg.load({ coreURL, wasmURL });
 
       ffmpegRef.current = ffmpeg;
       setFfmpegLoading(false);
@@ -103,7 +141,7 @@ export default function ConvertisseurAudio() {
     } catch (e) {
       console.error("FFmpeg load error:", e);
       setError(
-        "Impossible de charger FFmpeg. Verifiez que votre navigateur supporte SharedArrayBuffer (Chrome, Firefox, Edge recents)."
+        "Impossible de charger le moteur de conversion (FFmpeg). Vérifiez votre connexion internet ou désactivez un éventuel bloqueur de scripts, puis réessayez."
       );
       setFfmpegLoading(false);
       setProgressMessage("");
@@ -111,53 +149,36 @@ export default function ConvertisseurAudio() {
     }
   }, []);
 
-  const loadAudio = useCallback(async (file: File) => {
+  const loadAudio = useCallback((file: File) => {
     setError("");
     setResult(null);
     setProgress(0);
 
-    const audioTypes = [
-      "audio/mpeg", "audio/mp3", "audio/wav", "audio/wave", "audio/x-wav",
-      "audio/ogg", "audio/aac", "audio/flac", "audio/x-flac",
-      "audio/mp4", "audio/x-m4a", "audio/webm", "audio/x-aiff",
-    ];
-
-    const isAudio = audioTypes.some((t) => file.type.startsWith(t.split("/")[0])) ||
-      file.name.match(/\.(mp3|wav|ogg|aac|flac|m4a|webm|wma|aiff|opus)$/i);
+    const isAudio = file.type.startsWith("audio/") ||
+      /\.(mp3|wav|ogg|oga|aac|flac|m4a|webm|wma|aif|aiff|opus)$/i.test(file.name);
 
     if (!isAudio) {
-      setError("Seuls les fichiers audio sont acceptes (MP3, WAV, OGG, AAC, FLAC, etc.).");
+      setError("Seuls les fichiers audio sont acceptés (MP3, WAV, OGG, AAC, FLAC, M4A, etc.).");
       return;
     }
 
-    const url = URL.createObjectURL(file);
-
-    // Get audio duration
-    const audio = document.createElement("audio");
-    audio.preload = "metadata";
-    audio.src = url;
-
-    let duration = 0;
-    try {
-      await new Promise<void>((resolve, reject) => {
-        audio.onloadedmetadata = () => {
-          duration = audio.duration;
-          resolve();
-        };
-        audio.onerror = () => reject(new Error("Impossible de lire l'audio."));
-        setTimeout(() => resolve(), 3000); // Fallback timeout
-      });
-    } catch {
-      // Duration unknown is acceptable
+    if (file.size > MAX_FILE_SIZE) {
+      setError("Fichier trop volumineux : 500 Mo maximum pour une conversion dans le navigateur.");
+      return;
     }
 
+    // Duration: <audio> player metadata (deferred by Chrome in background tabs and absent for codecs the
+    // browser cannot play), WAV header, then the FFmpeg logs of the conversion as a last resort
     setAudioFile({
       name: file.name,
       size: file.size,
       type: file.type,
-      duration: duration || 0,
-      url,
+      duration: 0,
+      url: URL.createObjectURL(file),
       file,
+    });
+    readWavDuration(file).then((d) => {
+      if (d > 0) setAudioFile((prev) => (prev && prev.file === file && !prev.duration ? { ...prev, duration: d } : prev));
     });
   }, []);
 
@@ -189,32 +210,24 @@ export default function ConvertisseurAudio() {
 
     const ffmpeg = ffmpegRef.current;
     if (!ffmpeg) {
-      setError("FFmpeg n'est pas charge.");
+      setError("FFmpeg n'est pas chargé.");
       setConverting(false);
       return;
     }
 
-    setProgressMessage("Preparation du fichier...");
+    setProgressMessage("Préparation du fichier...");
     setProgress(0);
 
-    try {
-      const { fetchFile } = await import("@ffmpeg/util");
+    // Keep a safe ASCII extension for the virtual filesystem
+    const rawExt = audioFile.name.includes(".") ? audioFile.name.split(".").pop()!.toLowerCase() : "";
+    const inputExt = /^[a-z0-9]{1,5}$/.test(rawExt) ? rawExt : "bin";
+    const inputFileName = `input.${inputExt}`;
+    const formatInfo = FORMAT_OPTIONS.find((f) => f.key === outputFormat)!;
+    const outputFileName = `output.${formatInfo.ext}`;
 
-      // Determine input extension
-      const inputExt = audioFile.name.split(".").pop()?.toLowerCase() || "mp3";
-      const inputFileName = `input.${inputExt}`;
-      const formatInfo = FORMAT_OPTIONS.find((f) => f.key === outputFormat)!;
-      const outputFileName = `output.${formatInfo.ext}`;
-
-      // Write input file to FFmpeg virtual filesystem
-      const inputData = await fetchFile(audioFile.file);
-      await ffmpeg.writeFile(inputFileName, inputData);
-
-      setProgressMessage("Conversion en cours...");
-
-      // Build FFmpeg command based on output format
-      const args: string[] = ["-i", inputFileName];
-
+    // -vn drops embedded cover art (MP3/M4A) that would otherwise break OGG/AAC output
+    const buildArgs = (vorbisQualityFallback = false): string[] => {
+      const args: string[] = ["-i", inputFileName, "-vn"];
       switch (outputFormat) {
         case "mp3":
           args.push("-codec:a", "libmp3lame", "-b:a", bitrate);
@@ -223,58 +236,98 @@ export default function ConvertisseurAudio() {
           args.push("-codec:a", "pcm_s16le");
           break;
         case "ogg":
-          args.push("-codec:a", "libvorbis", "-b:a", bitrate);
+          // Vorbis refuses some bitrates at low sample rates: fall back to VBR quality
+          if (vorbisQualityFallback) args.push("-codec:a", "libvorbis", "-q:a", "6");
+          else args.push("-codec:a", "libvorbis", "-b:a", bitrate);
           break;
         case "aac":
           args.push("-codec:a", "aac", "-b:a", bitrate);
           break;
       }
+      args.push("-y", outputFileName);
+      return args;
+    };
 
-      args.push(outputFileName);
+    try {
+      // Write input file to FFmpeg virtual filesystem
+      await ffmpeg.writeFile(inputFileName, new Uint8Array(await audioFile.file.arrayBuffer()));
 
-      // Execute conversion
-      const exitCode = await ffmpeg.exec(args);
+      setProgressMessage("Conversion en cours...");
+
+      logsRef.current = [];
+      let exitCode = await ffmpeg.exec(buildArgs());
+      const probed = parseProbe(logsRef.current).duration;
+      if (probed > 0) {
+        const src = audioFile.file;
+        setAudioFile((prev) => (prev && prev.file === src && !prev.duration ? { ...prev, duration: probed } : prev));
+      }
+      if (exitCode !== 0 && outputFormat === "ogg") {
+        exitCode = await ffmpeg.exec(buildArgs(true));
+      }
 
       if (exitCode !== 0) {
-        setError("Erreur lors de la conversion. Essayez un format ou bitrate different.");
-        setConverting(false);
-        setProgressMessage("");
+        setError(
+          "La conversion a échoué. Le fichier est peut-être protégé (DRM), corrompu ou dans un format non pris en charge. Essayez un autre format de sortie."
+        );
         return;
       }
 
       // Read output file
       const outputData = await ffmpeg.readFile(outputFileName);
       const outputBlob = new Blob([outputData], { type: formatInfo.mime });
-      const resultUrl = URL.createObjectURL(outputBlob);
 
-      const outputName = audioFile.name.replace(/\.[^.]+$/, `.${formatInfo.ext}`);
+      if (outputBlob.size === 0) {
+        setError("La conversion n'a produit aucun son. Le fichier contient-il bien une piste audio ?");
+        return;
+      }
+
+      const baseName = audioFile.name.includes(".") ? audioFile.name.replace(/\.[^.]+$/, "") : audioFile.name;
 
       setResult({
-        url: resultUrl,
+        url: URL.createObjectURL(outputBlob),
         size: outputBlob.size,
-        name: outputName,
+        name: `${baseName}.${formatInfo.ext}`,
       });
       setProgress(100);
-
-      // Cleanup virtual filesystem
-      try {
-        await ffmpeg.deleteFile(inputFileName);
-        await ffmpeg.deleteFile(outputFileName);
-      } catch {
-        // Ignore cleanup errors
-      }
     } catch (e) {
       console.error("Conversion error:", e);
-      setError("Erreur lors de la conversion. Le format d'entree n'est peut-etre pas supporte.");
+      setError(
+        "Erreur lors de la conversion. Le fichier est peut-être trop volumineux pour la mémoire du navigateur ou dans un format non pris en charge."
+      );
+      // The worker may be dead (e.g. out of memory): force a fresh instance next time
+      try {
+        ffmpeg.terminate();
+      } catch {
+        // ignore
+      }
+      ffmpegRef.current = null;
+    } finally {
+      // Always clean the virtual filesystem, even after a failure
+      if (ffmpegRef.current) {
+        for (const f of [inputFileName, outputFileName]) {
+          try {
+            await ffmpeg.deleteFile(f);
+          } catch {
+            // file may not exist
+          }
+        }
+      }
+      setConverting(false);
+      setProgressMessage("");
     }
+  };
 
-    setConverting(false);
-    setProgressMessage("");
+  // loadedmetadata or durationchange (some files report an infinite duration first)
+  const updateDurationFromPlayer = (e: React.SyntheticEvent<HTMLAudioElement>) => {
+    const el = e.currentTarget;
+    const d = el.duration;
+    const url = el.currentSrc || el.src;
+    if (Number.isFinite(d) && d > 0) {
+      setAudioFile((prev) => (prev && prev.url === url ? { ...prev, duration: d } : prev));
+    }
   };
 
   const reset = () => {
-    if (audioFile?.url) URL.revokeObjectURL(audioFile.url);
-    if (result?.url) URL.revokeObjectURL(result.url);
     setAudioFile(null);
     setResult(null);
     setProgress(0);
@@ -316,7 +369,7 @@ export default function ConvertisseurAudio() {
             style={{ color: "var(--muted)" }}
           >
             Convertissez vos fichiers audio entre MP3, WAV, OGG et AAC. Choisissez le bitrate et
-            telechargez le resultat. 100% local, aucun envoi sur un serveur.
+            téléchargez le résultat. 100% local : vos fichiers ne sont envoyés sur aucun serveur.
           </p>
         </div>
       </section>
@@ -334,6 +387,15 @@ export default function ConvertisseurAudio() {
                 onDragLeave={() => setDragOver(false)}
                 onDrop={handleDrop}
                 onClick={() => inputRef.current?.click()}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    inputRef.current?.click();
+                  }
+                }}
+                role="button"
+                tabIndex={0}
+                aria-label="Choisir un fichier audio à convertir"
                 className="animate-fade-up stagger-3 rounded-2xl border-2 border-dashed p-10 text-center cursor-pointer transition-all"
                 style={{
                   borderColor: dragOver ? "var(--primary)" : "var(--border)",
@@ -345,7 +407,11 @@ export default function ConvertisseurAudio() {
                   type="file"
                   accept="audio/*,.mp3,.wav,.ogg,.aac,.flac,.m4a,.webm,.wma,.aiff,.opus"
                   className="hidden"
-                  onChange={(e) => e.target.files?.[0] && loadAudio(e.target.files[0])}
+                  onChange={(e) => {
+                    const f = e.target.files?.[0];
+                    e.target.value = "";
+                    if (f) loadAudio(f);
+                  }}
                 />
                 <p className="text-4xl">&#127925;</p>
                 <p
@@ -392,20 +458,29 @@ export default function ConvertisseurAudio() {
                     </h2>
                     <button
                       onClick={reset}
-                      className="text-xs font-semibold transition-colors hover:opacity-70"
+                      disabled={converting}
+                      className="text-xs font-semibold transition-colors hover:opacity-70 disabled:opacity-40"
                       style={{ color: "#dc2626" }}
                     >
                       Changer de fichier
                     </button>
                   </div>
                   <div className="p-5">
-                    <audio controls className="w-full" src={audioFile.url} />
+                    <audio
+                      controls
+                      className="w-full"
+                      src={audioFile.url}
+                      aria-label="Écouter le fichier source"
+                      preload="metadata"
+                      onLoadedMetadata={updateDurationFromPlayer}
+                      onDurationChange={updateDurationFromPlayer}
+                    />
                     <div className="mt-4 grid grid-cols-3 gap-3">
                       {[
                         { label: "Taille", value: formatSize(audioFile.size) },
                         {
-                          label: "Duree",
-                          value: audioFile.duration ? formatDuration(audioFile.duration) : "N/A",
+                          label: "Durée",
+                          value: audioFile.duration ? formatDuration(audioFile.duration) : "Inconnue",
                         },
                         { label: "Format", value: getInputFormat() },
                       ].map((item) => (
@@ -447,6 +522,7 @@ export default function ConvertisseurAudio() {
                         <button
                           key={fmt.key}
                           onClick={() => setOutputFormat(fmt.key)}
+                          aria-pressed={outputFormat === fmt.key}
                           className="rounded-xl border p-3 text-center transition-all"
                           style={{
                             borderColor:
@@ -477,6 +553,7 @@ export default function ConvertisseurAudio() {
                             <button
                               key={br.key}
                               onClick={() => setBitrate(br.key)}
+                              aria-pressed={bitrate === br.key}
                               className="rounded-xl border p-3 text-center transition-all"
                               style={{
                                 borderColor:
@@ -564,7 +641,7 @@ export default function ConvertisseurAudio() {
                       className="text-xs font-semibold uppercase tracking-[0.15em]"
                       style={{ color: "var(--accent)" }}
                     >
-                      Resultat
+                      Résultat
                     </h3>
                     <div className="mt-4 grid grid-cols-3 gap-3">
                       <div
@@ -595,7 +672,7 @@ export default function ConvertisseurAudio() {
                         style={{ borderColor: "var(--border)" }}
                       >
                         <p className="text-xs" style={{ color: "var(--muted)" }}>
-                          Difference
+                          Différence
                         </p>
                         <p
                           className="text-sm font-bold mt-1"
@@ -606,7 +683,7 @@ export default function ConvertisseurAudio() {
                       </div>
                     </div>
                     <div className="mt-4">
-                      <audio controls className="w-full" src={result.url} />
+                      <audio key={result.url} controls preload="metadata" className="w-full" src={result.url} aria-label="Écouter le fichier converti" />
                     </div>
                     <a
                       href={result.url}
@@ -614,18 +691,17 @@ export default function ConvertisseurAudio() {
                       className="mt-4 block w-full rounded-xl py-3.5 text-sm font-semibold text-white text-center transition-all hover:opacity-90"
                       style={{ background: "var(--primary)" }}
                     >
-                      Telecharger le fichier converti
+                      Télécharger le fichier converti
                     </a>
                     <button
                       onClick={() => {
-                        if (result?.url) URL.revokeObjectURL(result.url);
                         setResult(null);
                         setProgress(0);
                       }}
                       className="mt-2 w-full rounded-xl border py-3 text-sm font-semibold transition-all hover:bg-[var(--surface-alt)]"
                       style={{ borderColor: "var(--border)" }}
                     >
-                      Recommencer
+                      Convertir dans un autre format
                     </button>
                   </div>
                 )}
@@ -642,10 +718,10 @@ export default function ConvertisseurAudio() {
                   className="mt-3 text-sm font-semibold"
                   style={{ fontFamily: "var(--font-display)" }}
                 >
-                  Deposez un fichier audio pour commencer
+                  Déposez un fichier audio pour commencer
                 </p>
                 <p className="mt-1 text-xs" style={{ color: "var(--muted)" }}>
-                  La conversion se fait entierement dans votre navigateur grace a FFmpeg
+                  La conversion se fait entièrement dans votre navigateur grâce à FFmpeg
                   WebAssembly.
                 </p>
               </div>
@@ -660,7 +736,7 @@ export default function ConvertisseurAudio() {
                 className="text-2xl tracking-tight"
                 style={{ fontFamily: "var(--font-display)" }}
               >
-                A propos du convertisseur
+                À propos du convertisseur
               </h2>
               <div
                 className="mt-4 space-y-3 text-sm leading-relaxed"
@@ -668,21 +744,21 @@ export default function ConvertisseurAudio() {
               >
                 <p>
                   <strong className="text-[var(--foreground)]">FFmpeg WebAssembly</strong> :
-                  Utilise FFmpeg compile en WebAssembly pour une conversion audio de qualite
+                  Utilise FFmpeg compilé en WebAssembly pour une conversion audio de qualité
                   professionnelle directement dans votre navigateur.
                 </p>
                 <p>
                   <strong className="text-[var(--foreground)]">4 formats</strong> : MP3 (LAME),
-                  WAV (PCM 16 bits), OGG (Vorbis), AAC. Choisissez le bitrate adapte a votre
+                  WAV (PCM 16 bits), OGG (Vorbis), AAC. Choisissez le bitrate adapté à votre
                   besoin.
                 </p>
                 <p>
                   <strong className="text-[var(--foreground)]">Bitrate ajustable</strong> : De
-                  128 kbps (standard) a 320 kbps (maximale) pour les formats compresses.
+                  128 kbps (standard) à 320 kbps (maximale) pour les formats compressés.
                 </p>
                 <p>
                   <strong className="text-[var(--foreground)]">100% local</strong> : Aucun
-                  fichier n&apos;est envoye sur un serveur. Tout se passe dans votre navigateur.
+                  fichier n&apos;est envoyé sur un serveur. Tout se passe dans votre navigateur.
                 </p>
               </div>
             </div>
@@ -694,40 +770,40 @@ export default function ConvertisseurAudio() {
               </h2>
               <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
                 <p>
-                  Notre convertisseur audio gratuit vous permet de transformer vos fichiers sonores d&apos;un format a un autre directement depuis votre navigateur, sans installation ni inscription. L&apos;outil prend en charge les formats les plus courants : MP3, WAV, OGG, AAC, FLAC et bien d&apos;autres.
+                  Notre convertisseur audio gratuit vous permet de transformer vos fichiers sonores d&apos;un format à un autre directement depuis votre navigateur, sans installation ni inscription. L&apos;outil prend en charge les formats les plus courants : MP3, WAV, OGG, AAC, FLAC et bien d&apos;autres.
                 </p>
                 <ul className="ml-4 list-disc space-y-1">
-                  <li><strong className="text-[var(--foreground)]">Deposez votre fichier</strong> : glissez un fichier audio dans la zone de depot ou cliquez pour le selectionner depuis votre ordinateur.</li>
-                  <li><strong className="text-[var(--foreground)]">Choisissez le format de sortie</strong> : selectionnez parmi MP3, WAV, OGG ou AAC selon votre besoin.</li>
-                  <li><strong className="text-[var(--foreground)]">Ajustez le bitrate</strong> : pour les formats compresses, choisissez entre 128 kbps (taille reduite) et 320 kbps (qualite maximale).</li>
-                  <li><strong className="text-[var(--foreground)]">Lancez la conversion</strong> : cliquez sur le bouton de conversion et attendez quelques secondes. Telechargez ensuite le fichier converti.</li>
+                  <li><strong className="text-[var(--foreground)]">Déposez votre fichier</strong> : glissez un fichier audio dans la zone de dépôt ou cliquez pour le sélectionner depuis votre ordinateur.</li>
+                  <li><strong className="text-[var(--foreground)]">Choisissez le format de sortie</strong> : sélectionnez parmi MP3, WAV, OGG ou AAC selon votre besoin.</li>
+                  <li><strong className="text-[var(--foreground)]">Ajustez le bitrate</strong> : pour les formats compressés, choisissez entre 128 kbps (taille réduite) et 320 kbps (qualité maximale).</li>
+                  <li><strong className="text-[var(--foreground)]">Lancez la conversion</strong> : cliquez sur le bouton de conversion et attendez quelques secondes. Téléchargez ensuite le fichier converti.</li>
                 </ul>
                 <p>
-                  La conversion s&apos;effectue entierement dans votre navigateur grace a la technologie FFmpeg WebAssembly. Aucun fichier n&apos;est envoye sur un serveur distant, garantissant la confidentialite totale de vos donnees audio.
+                  La conversion s&apos;effectue entièrement dans votre navigateur grâce à la technologie FFmpeg WebAssembly. Vos fichiers audio ne sont envoyés sur aucun serveur distant : ils restent sur votre appareil.
                 </p>
               </div>
             </div>
 
             {/* FAQ */}
             <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Questions frequentes</h2>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Questions fréquentes</h2>
               <div className="mt-6 space-y-5">
                 <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
-                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Quelle est la difference entre MP3 et WAV ?</h3>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Quelle est la différence entre MP3 et WAV ?</h3>
                   <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                    Le MP3 est un format compresse avec perte : il reduit la taille du fichier en supprimant certaines frequences inaudibles. Le WAV est un format non compresse (PCM 16 bits) qui conserve toute la qualite audio d&apos;origine, mais produit des fichiers beaucoup plus volumineux. Pour la musique et les podcasts, le MP3 a 192 ou 320 kbps offre un excellent compromis qualite/taille.
+                    Le MP3 est un format compressé avec perte : il réduit la taille du fichier en supprimant certaines fréquences inaudibles. Le WAV est un format non compressé (PCM 16 bits) qui conserve toute la qualité audio d&apos;origine, mais produit des fichiers beaucoup plus volumineux. Pour la musique et les podcasts, le MP3 à 192 ou 320 kbps offre un excellent compromis qualité/taille.
                   </p>
                 </div>
                 <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
-                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Mes fichiers audio sont-ils envoyes sur un serveur ?</h3>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Mes fichiers audio sont-ils envoyés sur un serveur ?</h3>
                   <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                    Non. La conversion est realisee a 100 % dans votre navigateur grace a FFmpeg compile en WebAssembly. Vos fichiers ne quittent jamais votre appareil. C&apos;est ideal pour les enregistrements confidentiels ou les fichiers volumineux que vous ne souhaitez pas telecharger vers un service tiers.
+                    Non. La conversion est réalisée à 100 % dans votre navigateur grâce à FFmpeg compilé en WebAssembly. Vos fichiers ne quittent jamais votre appareil. C&apos;est idéal pour les enregistrements confidentiels ou les fichiers volumineux que vous ne souhaitez pas télécharger vers un service tiers.
                   </p>
                 </div>
                 <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
-                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Quel bitrate choisir pour une bonne qualite ?</h3>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Quel bitrate choisir pour une bonne qualité ?</h3>
                   <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                    Pour une ecoute standard (podcasts, musique de fond), 128 kbps est suffisant. Pour une bonne qualite musicale, 192 kbps est recommande. Pour une qualite audiophile ou un archivage, choisissez 320 kbps. Le format WAV n&apos;utilise pas de compression et offre la meilleure fidelite, mais les fichiers seront nettement plus lourds.
+                    Pour une écoute standard (podcasts, musique de fond), 128 kbps est suffisant. Pour une bonne qualité musicale, 192 kbps est recommandé. Pour une qualité audiophile ou un archivage, choisissez 320 kbps. Le format WAV n&apos;utilise pas de compression et offre la meilleure fidélité, mais les fichiers seront nettement plus lourds.
                   </p>
                 </div>
               </div>
@@ -744,12 +820,12 @@ export default function ConvertisseurAudio() {
                 className="text-sm font-semibold"
                 style={{ fontFamily: "var(--font-display)" }}
               >
-                Formats supportes
+                Formats supportés
               </h3>
               <div className="mt-3 space-y-3">
                 <div>
                   <p className="text-xs font-semibold" style={{ color: "var(--primary)" }}>
-                    Entree
+                    Entrée
                   </p>
                   <ul className="mt-1 space-y-1 text-xs" style={{ color: "var(--muted)" }}>
                     {["MP3", "WAV", "OGG", "AAC", "FLAC", "M4A", "WebM", "AIFF", "Opus"].map(
@@ -790,7 +866,7 @@ export default function ConvertisseurAudio() {
               <ul className="mt-3 space-y-2 text-xs" style={{ color: "var(--muted)" }}>
                 <li className="flex gap-2">
                   <span style={{ color: "var(--primary)" }}>&#8226;</span>
-                  <span>192 kbps est un bon equilibre qualite/taille</span>
+                  <span>192 kbps est un bon équilibre qualité/taille</span>
                 </li>
                 <li className="flex gap-2">
                   <span style={{ color: "var(--primary)" }}>&#8226;</span>
@@ -798,11 +874,11 @@ export default function ConvertisseurAudio() {
                 </li>
                 <li className="flex gap-2">
                   <span style={{ color: "var(--primary)" }}>&#8226;</span>
-                  <span>OGG Vorbis offre une bonne qualite a bitrate equivalent</span>
+                  <span>OGG Vorbis offre une bonne qualité à bitrate équivalent</span>
                 </li>
                 <li className="flex gap-2">
                   <span style={{ color: "var(--primary)" }}>&#8226;</span>
-                  <span>Chrome, Firefox et Edge sont recommandes</span>
+                  <span>Chrome, Firefox et Edge sont recommandés</span>
                 </li>
               </ul>
             </div>

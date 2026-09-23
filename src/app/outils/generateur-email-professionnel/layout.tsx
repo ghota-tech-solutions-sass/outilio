@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Generateur d'email professionnel - Modeles gratuits",
+  title: "Générateur d'email professionnel - Modèles gratuits",
   description:
-    "Generez des emails professionnels en francais : relance, remerciement, demande de reunion, candidature, demission. Copiez et envoyez. Gratuit.",
+    "Générez des emails professionnels en français : relance, remerciement, prise de contact, demande de réunion, démission. Copiez et envoyez. Gratuit.",
   keywords: [
     "generateur email professionnel",
     "modele email",

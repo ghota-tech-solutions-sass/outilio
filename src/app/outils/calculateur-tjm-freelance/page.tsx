@@ -6,7 +6,8 @@ import ToolFaqSection from "@/components/ToolFaqSection";
 import ToolHowToSection from "@/components/ToolHowToSection";
 
 // Bareme micro-entreprise 2026 (charges sociales + CFP par activite)
-// Source : URSSAF / decret 2024-484 (hausse progressive BNC libéral hors CIPAV : 24,6% en 2025, 26,1% en 2026)
+// Source : URSSAF / service-public.gouv.fr (BNC liberal hors CIPAV : 24,6% en 2025, 25,6% depuis le 01/01/2026)
+// CFP : 0,1% commercants, 0,2% liberaux, 0,3% artisans
 type ActiviteMicro =
   | "bic-vente"
   | "bic-services"
@@ -16,16 +17,16 @@ type ActiviteMicro =
 
 const BAREME_MICRO: Record<ActiviteMicro, { charges: number; cfp: number; label: string }> = {
   "bic-vente":     { charges: 12.3, cfp: 0.1, label: "Micro BIC - Vente de marchandises" },
-  "bic-services":  { charges: 21.2, cfp: 0.2, label: "Micro BIC - Prestations de services / artisanal" },
-  "bnc-liberal":   { charges: 26.1, cfp: 0.2, label: "Micro BNC - Liberal hors CIPAV (2026)" },
-  "bnc-cipav":     { charges: 23.2, cfp: 0.2, label: "Micro BNC - Liberal CIPAV" },
-  "autre":         { charges: 45.0, cfp: 0.0, label: "Autre (EURL/SASU - taux personnalise)" },
+  "bic-services":  { charges: 21.2, cfp: 0.3, label: "Micro BIC - Prestations de services / artisanal" },
+  "bnc-liberal":   { charges: 25.6, cfp: 0.2, label: "Micro BNC - Libéral hors CIPAV (2026)" },
+  "bnc-cipav":     { charges: 23.2, cfp: 0.2, label: "Micro BNC - Libéral CIPAV" },
+  "autre":         { charges: 45.0, cfp: 0.0, label: "Autre (EURL/SASU - taux personnalisé)" },
 };
 
 export default function CalculateurTJMFreelance() {
   const [activite, setActivite] = useState<ActiviteMicro>("bnc-liberal");
   const [salaireNet, setSalaireNet] = useState("3000");
-  const [tauxCharges, setTauxCharges] = useState("26.1");
+  const [tauxCharges, setTauxCharges] = useState("25.8");
   const [joursTravaillesMois, setJoursTravaillesMois] = useState("20");
   const [joursConge, setJoursConge] = useState("25");
   const [fraisMensuels, setFraisMensuels] = useState("300");
@@ -45,7 +46,8 @@ export default function CalculateurTJMFreelance() {
     const conges = parseFloat(joursConge) || 0;
     const frais = parseFloat(fraisMensuels) || 0;
 
-    const revenuBrutMensuel = (salaire + frais) / (1 - charges / 100);
+    // Garde-fou : un taux de charges >= 100 % rendrait le calcul infini ou negatif
+    const revenuBrutMensuel = charges < 100 ? (salaire + frais) / (1 - charges / 100) : 0;
     const revenuBrutAnnuel = revenuBrutMensuel * 12;
     const joursFacturablesAn = joursMois * 12 - conges;
     const tjm = joursFacturablesAn > 0 ? revenuBrutAnnuel / joursFacturablesAn : 0;
@@ -77,7 +79,7 @@ export default function CalculateurTJMFreelance() {
             Calculateur <span style={{ color: "var(--primary)" }}>TJM Freelance</span>
           </h1>
           <p className="animate-fade-up stagger-2 mt-3 max-w-xl text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-            Determinez votre Taux Journalier Moyen ideal en fonction de votre salaire net souhaite, vos charges et vos frais professionnels.
+            Déterminez votre Taux Journalier Moyen idéal en fonction de votre salaire net souhaité, vos charges et vos frais professionnels.
           </p>
         </div>
       </section>
@@ -87,10 +89,10 @@ export default function CalculateurTJMFreelance() {
           <div className="lg:col-span-2 space-y-6">
             {/* Inputs */}
             <div className="rounded-2xl border p-6" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-              <h2 className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--accent)" }}>Vos parametres</h2>
+              <h2 className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--accent)" }}>Vos paramètres</h2>
               <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="sm:col-span-2">
-                  <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>Activite / statut</label>
+                  <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>Activité / statut</label>
                   <select value={activite} onChange={(e) => handleActiviteChange(e.target.value as ActiviteMicro)}
                     className="mt-2 w-full rounded-xl border px-4 py-3 text-sm font-semibold" style={{ borderColor: "var(--border)", background: "var(--surface)" }}>
                     {(Object.entries(BAREME_MICRO) as [ActiviteMicro, typeof BAREME_MICRO[ActiviteMicro]][]).map(([key, v]) => (
@@ -98,11 +100,11 @@ export default function CalculateurTJMFreelance() {
                     ))}
                   </select>
                   <p className="mt-1 text-xs" style={{ color: "var(--muted)" }}>
-                    Bareme URSSAF 2026 incluant CFP. Hausse progressive BNC liberal hors CIPAV : 24,6% (2025) puis 26,1% (2026), decret 2024-484.
+                    Barème URSSAF 2026 incluant CFP. BNC libéral hors CIPAV : 24,6% (2025) puis 25,6% (2026). CFP services BIC : 0,3% pour un artisan (0,1% si activité commerciale).
                   </p>
                 </div>
                 <div>
-                  <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>Salaire net mensuel souhaite</label>
+                  <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>Salaire net mensuel souhaité</label>
                   <div className="relative mt-2">
                     <input type="number" value={salaireNet} onChange={(e) => setSalaireNet(e.target.value)}
                       className="w-full rounded-xl border px-4 py-4 text-2xl font-bold" style={{ borderColor: "var(--border)", fontFamily: "var(--font-display)" }} />
@@ -118,17 +120,17 @@ export default function CalculateurTJMFreelance() {
                   </div>
                 </div>
                 <div>
-                  <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>Jours travailles / mois</label>
+                  <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>Jours travaillés / mois</label>
                   <input type="number" value={joursTravaillesMois} onChange={(e) => setJoursTravaillesMois(e.target.value)}
                     className="mt-2 w-full rounded-xl border px-4 py-4 text-2xl font-bold" style={{ borderColor: "var(--border)", fontFamily: "var(--font-display)" }} />
                 </div>
                 <div>
-                  <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>Jours de conge / an</label>
+                  <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>Jours de congé / an</label>
                   <input type="number" value={joursConge} onChange={(e) => setJoursConge(e.target.value)}
                     className="mt-2 w-full rounded-xl border px-4 py-4 text-2xl font-bold" style={{ borderColor: "var(--border)", fontFamily: "var(--font-display)" }} />
                 </div>
                 <div className="sm:col-span-2">
-                  <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>Frais mensuels (mutuelle, coworking, materiel...)</label>
+                  <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>Frais mensuels (mutuelle, coworking, matériel...)</label>
                   <div className="relative mt-2">
                     <input type="number" value={fraisMensuels} onChange={(e) => setFraisMensuels(e.target.value)}
                       className="w-full rounded-xl border px-4 py-4 text-2xl font-bold" style={{ borderColor: "var(--border)", fontFamily: "var(--font-display)" }} />
@@ -140,7 +142,7 @@ export default function CalculateurTJMFreelance() {
 
             {/* Result principal */}
             <div className="rounded-2xl border p-8 text-center" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-              <p className="text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: "var(--muted)" }}>TJM recommande</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: "var(--muted)" }}>TJM recommandé</p>
               <p className="mt-3 text-6xl font-bold" style={{ fontFamily: "var(--font-display)", color: "var(--primary)" }}>
                 {fmt(resultats.tjm)} &euro;
               </p>
@@ -148,13 +150,13 @@ export default function CalculateurTJMFreelance() {
                 soit {fmtDec(resultats.thm)} &euro; / heure
               </p>
               <p className="mt-4 text-sm" style={{ color: "var(--muted)" }}>
-                Base sur <strong className="text-[var(--foreground)]">{resultats.joursFacturablesAn} jours facturables</strong> par an
+                Basé sur <strong className="text-[var(--foreground)]">{resultats.joursFacturablesAn} jours facturables</strong> par an
               </p>
             </div>
 
             {/* Details */}
             <div className="rounded-2xl border p-6" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-              <h2 className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--accent)" }}>Detail annuel</h2>
+              <h2 className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--accent)" }}>Détail annuel</h2>
               <div className="mt-4 space-y-3">
                 {[
                   { label: "Revenu brut annuel", value: `${fmt(resultats.revenuBrutAnnuel)} \u20AC`, color: "var(--foreground)" },
@@ -172,22 +174,22 @@ export default function CalculateurTJMFreelance() {
 
             <ToolHowToSection
               title="Comment calculer votre TJM freelance"
-              description="Trois etapes pour fixer un Taux Journalier Moyen qui couvre vos charges, vos frais et votre niveau de vie cible."
+              description="Trois étapes pour fixer un Taux Journalier Moyen qui couvre vos charges, vos frais et votre niveau de vie cible."
               steps={[
                 {
                   name: "Estimer votre salaire net cible",
                   text:
-                    "Definissez le revenu net mensuel que vous souhaitez vous verser. Pour un repere, un cadre confirme du prive en CDI gagne 3 000 a 4 500 EUR net en region, 4 500 a 7 000 EUR en Ile-de-France. Pensez a viser au moins 20 a 30 pourcent de plus en freelance pour compenser le risque (inter-contrats, maladie, perte de client).",
+                    "Définissez le revenu net mensuel que vous souhaitez vous verser. Pour un repère, un cadre confirmé du privé en CDI gagne 3 000 à 4 500 € net en région, 4 500 à 7 000 € en Île-de-France. Pensez à viser au moins 20 à 30 pourcent de plus en freelance pour compenser le risque (inter-contrats, maladie, perte de client).",
                 },
                 {
                   name: "Renseigner vos charges sociales et frais",
                   text:
-                    "Bareme micro 2026 : BIC vente 12,3 pourcent, BIC services / artisanal 21,2 pourcent, BNC liberal hors CIPAV 26,1 pourcent (apres hausse progressive du decret 2024-484), BNC liberal CIPAV 23,2 pourcent. Ajoutez la CFP (0,1 pourcent vente / 0,2 pourcent services et liberaux / 0,3 pourcent artisans) et la CFE (annuelle, variable selon commune). En EURL ou SASU IS : entre 30 et 45 pourcent selon le statut TNS ou assimile salarie. Ajoutez vos frais reels mensuels : mutuelle (50-150 EUR), assurance RC Pro (15-50 EUR), comptable (100-300 EUR), logiciels, coworking, materiel.",
+                    "Barème micro 2026 : BIC vente 12,3 pourcent, BIC services / artisanal 21,2 pourcent, BNC libéral hors CIPAV 25,6 pourcent (depuis le 1er janvier 2026), BNC libéral CIPAV 23,2 pourcent. Ajoutez la CFP (0,1 pourcent vente et services commerciaux / 0,2 pourcent libéraux / 0,3 pourcent artisans) et la CFE (annuelle, variable selon commune). En EURL ou SASU IS : entre 30 et 45 pourcent selon le statut TNS ou assimilé salarié. Ajoutez vos frais réels mensuels : mutuelle (50-150 €), assurance RC Pro (15-50 €), comptable (100-300 €), logiciels, coworking, matériel.",
                 },
                 {
-                  name: "Calculer vos jours facturables reels",
+                  name: "Calculer vos jours facturables réels",
                   text:
-                    "Sur 252 jours ouvres par an, retirez 25 jours de conges, 5 jours feries (en moyenne tombent en semaine), 5 jours de maladie, et 15 a 25 jours d&apos;administratif/prospection/formation. Resultat realiste : 180 a 200 jours facturables. C&apos;est sur cette base que se calcule un TJM viable.",
+                    "Sur 252 jours ouvrés par an, retirez 25 jours de congés, 5 jours fériés (en moyenne tombent en semaine), 5 jours de maladie, et 15 à 25 jours d'administratif/prospection/formation. Résultat réaliste : 180 à 200 jours facturables. C'est sur cette base que se calcule un TJM viable.",
                 },
               ]}
             />
@@ -206,12 +208,12 @@ export default function CalculateurTJMFreelance() {
               <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
                   <h3 className="font-semibold" style={{ color: "var(--foreground)" }}>
-                    Developpeur fullstack senior
+                    Développeur fullstack senior
                   </h3>
                   <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                    Objectif 4 500 EUR net/mois en SASU, 45 pourcent de charges, 400 EUR de frais
-                    mensuels, 200 jours facturables : TJM cible autour de 700 EUR. Marche francais
-                    senior fullstack 2026 : entre 600 et 800 EUR. Au-dela de 800, mieux vaut viser
+                    Objectif 4 500 € net/mois en SASU, 45 pourcent de charges, 400 € de frais
+                    mensuels, 200 jours facturables : TJM cible autour de 700 €. Marché français
+                    senior fullstack 2026 : entre 600 et 800 €. Au-delà de 800, mieux vaut viser
                     des missions ESN ou freelance plateforme grand compte.
                   </p>
                 </div>
@@ -220,9 +222,9 @@ export default function CalculateurTJMFreelance() {
                     Designer UX/UI freelance
                   </h3>
                   <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                    Objectif 3 200 EUR net en micro-BNC liberal hors CIPAV (26,1 pourcent en 2026),
-                    250 EUR de frais, 180 jours facturables (clients PME plus chronophages) : TJM cible 350-450 EUR.
-                    Marche reel 2026 : 350-550 EUR selon seniorite et niche (UX research, design
+                    Objectif 3 200 € net en micro-BNC libéral hors CIPAV (25,6 pourcent en 2026),
+                    250 € de frais, 180 jours facturables (clients PME plus chronophages) : TJM cible 350-450 €.
+                    Marché réel 2026 : 350-550 € selon séniorité et niche (UX research, design
                     system, branding).
                   </p>
                 </div>
@@ -231,21 +233,21 @@ export default function CalculateurTJMFreelance() {
                     Consultant data / IA
                   </h3>
                   <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                    Profils data scientist, MLops, IA generative : 750 a 1 200 EUR / jour pour les
-                    seniors avec 5+ annees d&apos;experience. Sur des missions strategiques court
-                    terme (audit, POC), un TJM &gt; 1 000 EUR est commun. Chaque jour d&apos;inter-contrat
-                    coute 500 a 800 EUR de manque a gagner : la prospection est cruciale.
+                    Profils data scientist, MLops, IA générative : 750 à 1 200 € / jour pour les
+                    seniors avec 5+ années d&apos;expérience. Sur des missions stratégiques court
+                    terme (audit, POC), un TJM &gt; 1 000 € est commun. Chaque jour d&apos;inter-contrat
+                    coûte 500 à 800 € de manque à gagner : la prospection est cruciale.
                   </p>
                 </div>
                 <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
                   <h3 className="font-semibold" style={{ color: "var(--foreground)" }}>
-                    Equivalence salaire-TJM
+                    Équivalence salaire-TJM
                   </h3>
                   <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                    Regle empirique du portage salarial : un TJM divise par 2 donne approximativement
-                    le salaire brut mensuel CDI equivalent. TJM 500 EUR = environ 250 EUR brut/jour
-                    en CDI = 5 250 EUR brut/mois (sur 21 jours). C&apos;est utile pour savoir si une
-                    mission longue (12 mois +) merite mieux qu&apos;un retour au salariat.
+                    Règle empirique du portage salarial : un TJM divisé par 2 donne approximativement
+                    le salaire brut mensuel CDI équivalent. TJM 500 € = environ 250 € brut/jour
+                    en CDI = 5 250 € brut/mois (sur 21 jours). C&apos;est utile pour savoir si une
+                    mission longue (12 mois +) mérite mieux qu&apos;un retour au salariat.
                   </p>
                 </div>
               </div>
@@ -259,84 +261,84 @@ export default function CalculateurTJMFreelance() {
                 className="text-2xl md:text-3xl font-extrabold"
                 style={{ fontFamily: "var(--font-display)", color: "var(--foreground)" }}
               >
-                Pieges classiques du calcul de TJM
+                Pièges classiques du calcul de TJM
               </h2>
 
               <div className="mt-4 space-y-4 leading-relaxed" style={{ color: "var(--foreground)" }}>
                 <p>
-                  <strong>TJM n&apos;egale pas salaire.</strong> Un TJM de 500 EUR n&apos;est pas
-                  equivalent a 500 EUR de salaire journalier. Sur ces 500 EUR de chiffre
-                  d&apos;affaires, il faut deduire 21 a 45 pourcent de charges sociales, les frais
-                  professionnels (200-500 EUR/mois), la TVA si vous etes assujetti (art. 256 CGI),
-                  et les jours non factures (conges, feries, prospection). Le net dans la poche
-                  est rarement plus de 50 a 60 pourcent du TJM brut.
+                  <strong>TJM n&apos;égale pas salaire.</strong> Un TJM de 500 € n&apos;est pas
+                  équivalent à 500 € de salaire journalier. Sur ces 500 € de chiffre
+                  d&apos;affaires, il faut déduire 21 à 45 pourcent de charges sociales, les frais
+                  professionnels (200-500 €/mois), la TVA si vous êtes assujetti (art. 256 CGI),
+                  et les jours non facturés (congés, fériés, prospection). Le net dans la poche
+                  est rarement plus de 50 à 60 pourcent du TJM brut.
                 </p>
                 <p>
-                  <strong>Sous-estimer les jours non factures.</strong> Sur 252 jours ouvres,
-                  comptez 25 jours de conges, 5-7 feries en semaine, 5-10 jours de maladie ou
-                  imprevus, et 15 a 30 jours d&apos;administratif/prospection/formation. Resultat
-                  realiste : 180 a 200 jours factures, jamais 220+. Diviser le revenu cible par
-                  220 sous-estime systematiquement le TJM necessaire de 10 a 15 pourcent.
+                  <strong>Sous-estimer les jours non facturés.</strong> Sur 252 jours ouvrés,
+                  comptez 25 jours de congés, 5-7 fériés en semaine, 5-10 jours de maladie ou
+                  imprévus, et 15 à 30 jours d&apos;administratif/prospection/formation. Résultat
+                  réaliste : 180 à 200 jours facturés, jamais 220+. Diviser le revenu cible par
+                  220 sous-estime systématiquement le TJM nécessaire de 10 à 15 pourcent.
                 </p>
                 <p>
-                  <strong>Charges sociales : statut compte enormement.</strong> Bareme micro 2026 :
+                  <strong>Charges sociales : statut compte énormément.</strong> Barème micro 2026 :
                   BIC vente 12,3 pourcent (CFP 0,1 pourcent), BIC services / artisanal 21,2 pourcent
-                  (CFP 0,2 pourcent / 0,3 pourcent), BNC liberal hors CIPAV 26,1 pourcent (CFP 0,2
-                  pourcent) apres hausse progressive du decret 2024-484, BNC liberal CIPAV 23,2
-                  pourcent. La CFE est annuelle et varie selon la commune. EURL avec gerant
-                  majoritaire TNS : environ 30-35 pourcent sur la remuneration. SASU avec president
-                  assimile salarie : 75-80 pourcent en charges patronales + salariales additionnees,
-                  soit l&apos;equivalent de 45 pourcent du brut total. La SASU est confortable
-                  socialement mais lourde fiscalement sous 80-100 KEUR de CA.
+                  (CFP 0,1 pourcent commerçant / 0,3 pourcent artisan), BNC libéral hors CIPAV 25,6
+                  pourcent en 2026 (CFP 0,2 pourcent), BNC libéral CIPAV 23,2
+                  pourcent. La CFE est annuelle et varie selon la commune. EURL avec gérant
+                  majoritaire TNS : environ 30-35 pourcent sur la rémunération. SASU avec président
+                  assimilé salarié : 75-80 pourcent en charges patronales + salariales additionnées,
+                  soit l&apos;équivalent de 45 pourcent du brut total. La SASU est confortable
+                  socialement mais lourde fiscalement sous 80-100 k€ de CA.
                 </p>
                 <p>
                   <strong>TVA et franchise en base.</strong> En 2026, la franchise en base TVA
-                  s&apos;applique en dessous des seuils fixes par l&apos;art. 293 B du CGI (a
-                  verifier sur impots.gouv.fr car ils evoluent). Un TJM HT de 500 EUR = 600 EUR
-                  TTC pour le client si vous etes assujetti. Pour des clients particuliers ou
-                  associations non recuperatrices de TVA, restez sous le seuil le plus longtemps
-                  possible : c&apos;est 20 pourcent de competitivite tarifaire en plus.
+                  s&apos;applique en dessous des seuils fixés par l&apos;art. 293 B du CGI (à
+                  vérifier sur impots.gouv.fr car ils évoluent). Un TJM HT de 500 € = 600 €
+                  TTC pour le client si vous êtes assujetti. Pour des clients particuliers ou
+                  associations non récupératrices de TVA, restez sous le seuil le plus longtemps
+                  possible : c&apos;est 20 pourcent de compétitivité tarifaire en plus.
                 </p>
               </div>
             </section>
 
             <ToolFaqSection
-              intro="Les questions les plus frequentes sur le calcul du Taux Journalier Moyen freelance en France."
+              intro="Les questions les plus fréquentes sur le calcul du Taux Journalier Moyen freelance en France."
               items={[
                 {
-                  question: "Quel TJM pour un developpeur freelance en France en 2026 ?",
+                  question: "Quel TJM pour un développeur freelance en France en 2026 ?",
                   answer:
-                    "TJM moyen marche 2026 : 400-550 EUR pour un junior (1-3 ans), 550-750 EUR pour un senior (5+ ans), 750-1 000 EUR pour un expert / lead / architecte. Les technos rares (Rust, Elixir, IA gen, data engineering Snowflake) tirent les TJM vers le haut. Paris et grandes plateformes ESN type Malt premium permettent +10 a 20 pourcent par rapport aux regions.",
+                    "TJM moyen marché 2026 : 400-550 € pour un junior (1-3 ans), 550-750 € pour un senior (5+ ans), 750-1 000 € pour un expert / lead / architecte. Les technos rares (Rust, Elixir, IA gen, data engineering Snowflake) tirent les TJM vers le haut. Paris et grandes plateformes ESN type Malt premium permettent +10 à 20 pourcent par rapport aux régions.",
                 },
                 {
-                  question: "Quelle difference entre TJM et THM ?",
+                  question: "Quelle différence entre TJM et THM ?",
                   answer:
-                    "TJM = Taux Journalier Moyen, base sur une journee de 8 heures. THM = Taux Horaire Moyen, soit TJM / 8. Le THM est utile pour facturer des prestations courtes ou ponctuelles (consulting 2h, formation 4h). Pour des missions longues, restez sur le TJM : c&apos;est plus lisible commercialement et evite les debats sur le decompte horaire.",
+                    "TJM = Taux Journalier Moyen, basé sur une journée de 8 heures. THM = Taux Horaire Moyen, soit TJM / 8. Le THM est utile pour facturer des prestations courtes ou ponctuelles (consulting 2h, formation 4h). Pour des missions longues, restez sur le TJM : c'est plus lisible commercialement et évite les débats sur le décompte horaire.",
                 },
                 {
                   question: "Combien de jours un freelance facture-t-il par an ?",
                   answer:
-                    "Realiste : 180 a 200 jours facturables / an. Sur 365 jours, retirez 104 week-ends, 25 conges, 5-7 feries en semaine, 5-10 jours de maladie/imprevus, et 15-30 jours d&apos;administratif (prospection, devis, formation, comptabilite, factures impayees a relancer). Tabler sur plus de 220 jours est irrealiste sauf en regie longue duree (mission ESN +12 mois).",
+                    "Réaliste : 180 à 200 jours facturables / an. Sur 365 jours, retirez 104 week-ends, 25 congés, 5-7 fériés en semaine, 5-10 jours de maladie/imprévus, et 15-30 jours d'administratif (prospection, devis, formation, comptabilité, factures impayées à relancer). Tabler sur plus de 220 jours est irréaliste sauf en régie longue durée (mission ESN +12 mois).",
                 },
                 {
-                  question: "Comment negocier son TJM avec un client ?",
+                  question: "Comment négocier son TJM avec un client ?",
                   answer:
-                    "Basez la negociation sur la valeur apportee (gain client mesurable, expertise rare), pas sur vos couts internes. Connaissez votre TJM plancher (la limite sous laquelle vous perdez de l&apos;argent compte tenu de vos charges et de votre objectif net). Annoncez 10 a 15 pourcent au-dessus de votre cible pour laisser de la marge. Refusez les missions sous votre plancher meme en periode creuse : un mauvais client coute toujours plus cher qu&apos;un mois sans CA.",
+                    "Basez la négociation sur la valeur apportée (gain client mesurable, expertise rare), pas sur vos coûts internes. Connaissez votre TJM plancher (la limite sous laquelle vous perdez de l'argent compte tenu de vos charges et de votre objectif net). Annoncez 10 à 15 pourcent au-dessus de votre cible pour laisser de la marge. Refusez les missions sous votre plancher même en période creuse : un mauvais client coûte toujours plus cher qu'un mois sans CA.",
                 },
                 {
                   question: "Quel statut juridique choisir pour optimiser son TJM ?",
                   answer:
-                    "Micro-entreprise jusqu&apos;a 50-70 KEUR de CA : simplicite, charges legeres mais protection sociale faible. EURL au-dela de 70 KEUR : meilleur compromis charges/protection pour beaucoup de freelances. SASU si vous voulez le statut salarie (chomage non couvert mais retraite et indemnites journalieres meilleures) ou pour preparer une levee de fonds. Au-dela de 100 KEUR de benefice, l&apos;optimisation IS + dividendes via SASU/SAS est generalement preferable.",
+                    "Micro-entreprise jusqu'à 50-70 k€ de CA : simplicité, charges légères mais protection sociale faible. EURL au-delà de 70 k€ : meilleur compromis charges/protection pour beaucoup de freelances. SASU si vous voulez le statut salarié (chômage non couvert mais retraite et indemnités journalières meilleures) ou pour préparer une levée de fonds. Au-delà de 100 k€ de bénéfice, l'optimisation IS + dividendes via SASU/SAS est généralement préférable.",
                 },
                 {
-                  question: "Comment integrer la TVA dans son TJM ?",
+                  question: "Comment intégrer la TVA dans son TJM ?",
                   answer:
-                    "Le TJM est toujours exprime en HT entre professionnels. Si vous etes assujetti TVA, ajoutez 20 pourcent au moment de facturer (ex : TJM 500 EUR HT = 600 EUR TTC). Sous franchise en base TVA (art. 293 B du CGI), vous facturez sans TVA mais ne pouvez pas la recuperer sur vos achats. Pour un client B2B qui recupere la TVA, c&apos;est neutre. Pour un particulier, etre en franchise = 20 pourcent moins cher en visuel.",
+                    "Le TJM est toujours exprimé en HT entre professionnels. Si vous êtes assujetti TVA, ajoutez 20 pourcent au moment de facturer (ex : TJM 500 € HT = 600 € TTC). Sous franchise en base TVA (art. 293 B du CGI), vous facturez sans TVA mais ne pouvez pas la récupérer sur vos achats. Pour un client B2B qui récupère la TVA, c'est neutre. Pour un particulier, être en franchise = 20 pourcent moins cher en visuel.",
                 },
                 {
-                  question: "Mon TJM est-il competitif sur le marche ?",
+                  question: "Mon TJM est-il compétitif sur le marché ?",
                   answer:
-                    "Comparez via les baromètres Malt, Free-Work (ex Freelance-Info), Comet, Hopwork, ou les CCI regionales. Pour un meme profil, ecart courant : +10 a 20 pourcent en Ile-de-France vs province. +15 a 25 pourcent en mission grand compte vs PME. Si votre TJM est tres en dessous de la fourchette : sous-evaluation, vous perdez de l&apos;argent. Si tres au-dessus : positionnement haut de gamme avec moins de missions mais plus rentables.",
+                    "Comparez via les baromètres Malt, Free-Work (ex Freelance-Info), Comet, Hopwork, ou les CCI régionales. Pour un même profil, écart courant : +10 à 20 pourcent en Île-de-France vs province. +15 à 25 pourcent en mission grand compte vs PME. Si votre TJM est très en dessous de la fourchette : sous-évaluation, vous perdez de l'argent. Si très au-dessus : positionnement haut de gamme avec moins de missions mais plus rentables.",
                 },
               ]}
             />

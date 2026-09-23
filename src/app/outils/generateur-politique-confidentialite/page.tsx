@@ -1,10 +1,36 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 import AdPlaceholder from "@/components/AdPlaceholder";
 
+interface PolicyForm {
+  siteName: string;
+  siteUrl: string;
+  company: string;
+  email: string;
+  address: string;
+  collectsEmail: boolean;
+  collectsName: boolean;
+  collectsPhone: boolean;
+  collectsAddress: boolean;
+  collectsPayment: boolean;
+  usesContactForm: boolean;
+  usesAccounts: boolean;
+  usesOrders: boolean;
+  usesAnalytics: boolean;
+  analyticsName: string;
+  usesAds: boolean;
+  usesNewsletter: boolean;
+  usesThirdParty: boolean;
+  thirdPartyNames: string;
+  transfersOutsideEU: boolean;
+  retentionPeriod: string;
+  dpoName: string;
+  dpoEmail: string;
+}
+
 export default function GenerateurPolitiqueConfidentialite() {
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<PolicyForm>({
     siteName: "",
     siteUrl: "",
     company: "",
@@ -15,37 +41,52 @@ export default function GenerateurPolitiqueConfidentialite() {
     collectsPhone: false,
     collectsAddress: false,
     collectsPayment: false,
-    usesCookies: true,
+    usesContactForm: true,
+    usesAccounts: false,
+    usesOrders: false,
     usesAnalytics: true,
+    analyticsName: "Google Analytics",
+    usesAds: false,
     usesNewsletter: false,
     usesThirdParty: false,
     thirdPartyNames: "",
-    retentionPeriod: "12",
+    transfersOutsideEU: true,
+    retentionPeriod: "36",
     dpoName: "",
     dpoEmail: "",
   });
   const [copied, setCopied] = useState(false);
 
-  const update = (key: string, value: string | boolean) => setForm({ ...form, [key]: value });
+  const update = <K extends keyof PolicyForm>(key: K, value: PolicyForm[K]) => setForm({ ...form, [key]: value });
 
-  const text = generatePolicy(form);
+  // Date calculée côté client uniquement (évite un écart avec le HTML statique généré au build).
+  const today = useSyncExternalStore(
+    () => () => {},
+    () => new Date().toLocaleDateString("fr-FR"),
+    () => "",
+  );
+  const text = generatePolicy(form, today);
 
   const copy = async () => {
-    await navigator.clipboard.writeText(text);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // Presse-papiers indisponible (contexte non sécurisé ou permission refusée)
+    }
   };
 
   return (
     <>
       <section className="relative py-14" style={{ borderBottom: "1px solid var(--border)" }}>
         <div className="mx-auto max-w-7xl px-6 2xl:max-w-[1400px]">
-          <p className="animate-fade-up text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: "var(--accent)" }}>Legal</p>
+          <p className="animate-fade-up text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: "var(--accent)" }}>Légal</p>
           <h1 className="animate-fade-up stagger-1 mt-3 text-4xl tracking-tight md:text-5xl" style={{ fontFamily: "var(--font-display)" }}>
-            Generateur de <span style={{ color: "var(--primary)" }}>politique de confidentialite</span>
+            Générateur de <span style={{ color: "var(--primary)" }}>politique de confidentialité</span>
           </h1>
           <p className="animate-fade-up stagger-2 mt-3 max-w-xl text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-            Creez une politique de confidentialite conforme au RGPD pour votre site web.
+            Créez une politique de confidentialité reprenant les informations exigées par l&apos;article 13 du RGPD et les règles de la CNIL sur les cookies.
           </p>
         </div>
       </section>
@@ -55,54 +96,72 @@ export default function GenerateurPolitiqueConfidentialite() {
           <div className="lg:col-span-2 space-y-6">
             {/* Site Info */}
             <div className="rounded-2xl border p-6" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-              <h2 className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--accent)" }}>Informations du site</h2>
-              <div className="mt-4 grid grid-cols-2 gap-3">
+              <h2 className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--accent)" }}>Responsable du traitement</h2>
+              <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <Input label="Nom du site" value={form.siteName} onChange={(v) => update("siteName", v)} />
                 <Input label="URL du site" value={form.siteUrl} onChange={(v) => update("siteUrl", v)} placeholder="https://" />
-                <Input label="Societe / Editeur" value={form.company} onChange={(v) => update("company", v)} />
+                <Input label="Société / Éditeur" value={form.company} onChange={(v) => update("company", v)} />
                 <Input label="Email de contact" value={form.email} onChange={(v) => update("email", v)} />
-                <Input label="Adresse" value={form.address} onChange={(v) => update("address", v)} className="col-span-2" />
+                <Input label="Adresse" value={form.address} onChange={(v) => update("address", v)} className="sm:col-span-2" />
               </div>
             </div>
 
             {/* Data Collected */}
             <div className="rounded-2xl border p-6" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-              <h2 className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--accent)" }}>Donnees collectees</h2>
-              <div className="mt-4 grid grid-cols-2 gap-3">
+              <h2 className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--accent)" }}>Données collectées</h2>
+              <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <Toggle label="Adresse email" checked={form.collectsEmail} onChange={(v) => update("collectsEmail", v)} />
-                <Toggle label="Nom / Prenom" checked={form.collectsName} onChange={(v) => update("collectsName", v)} />
-                <Toggle label="Telephone" checked={form.collectsPhone} onChange={(v) => update("collectsPhone", v)} />
+                <Toggle label="Nom / Prénom" checked={form.collectsName} onChange={(v) => update("collectsName", v)} />
+                <Toggle label="Téléphone" checked={form.collectsPhone} onChange={(v) => update("collectsPhone", v)} />
                 <Toggle label="Adresse postale" checked={form.collectsAddress} onChange={(v) => update("collectsAddress", v)} />
-                <Toggle label="Donnees de paiement" checked={form.collectsPayment} onChange={(v) => update("collectsPayment", v)} />
+                <Toggle label="Données de paiement" checked={form.collectsPayment} onChange={(v) => update("collectsPayment", v)} />
+              </div>
+              <h3 className="mt-5 text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>Collectées via</h3>
+              <div className="mt-2 grid grid-cols-1 gap-3 sm:grid-cols-3">
+                <Toggle label="Formulaire de contact" checked={form.usesContactForm} onChange={(v) => update("usesContactForm", v)} />
+                <Toggle label="Compte utilisateur" checked={form.usesAccounts} onChange={(v) => update("usesAccounts", v)} />
+                <Toggle label="Commandes / achats" checked={form.usesOrders} onChange={(v) => update("usesOrders", v)} />
               </div>
             </div>
 
             {/* Features */}
             <div className="rounded-2xl border p-6" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-              <h2 className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--accent)" }}>Services utilises</h2>
-              <div className="mt-4 grid grid-cols-2 gap-3">
-                <Toggle label="Cookies" checked={form.usesCookies} onChange={(v) => update("usesCookies", v)} />
-                <Toggle label="Analytics (Google, Matomo...)" checked={form.usesAnalytics} onChange={(v) => update("usesAnalytics", v)} />
+              <h2 className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--accent)" }}>Services utilisés</h2>
+              <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <Toggle label="Mesure d'audience" checked={form.usesAnalytics} onChange={(v) => update("usesAnalytics", v)} />
+                <Toggle label="Publicité (AdSense...)" checked={form.usesAds} onChange={(v) => update("usesAds", v)} />
                 <Toggle label="Newsletter" checked={form.usesNewsletter} onChange={(v) => update("usesNewsletter", v)} />
-                <Toggle label="Services tiers" checked={form.usesThirdParty} onChange={(v) => update("usesThirdParty", v)} />
+                <Toggle label="Autres services tiers" checked={form.usesThirdParty} onChange={(v) => update("usesThirdParty", v)} />
+                <Toggle label="Transferts hors Union européenne" checked={form.transfersOutsideEU} onChange={(v) => update("transfersOutsideEU", v)} />
               </div>
-              {form.usesThirdParty && (
+              {form.usesAnalytics && (
                 <div className="mt-3">
-                  <Input label="Noms des services tiers" value={form.thirdPartyNames} onChange={(v) => update("thirdPartyNames", v)} placeholder="Ex: Stripe, Mailchimp, Google Maps..." />
+                  <Input label="Outil de mesure d'audience" value={form.analyticsName} onChange={(v) => update("analyticsName", v)} placeholder="Ex : Google Analytics, Matomo..." />
                 </div>
               )}
+              {form.usesThirdParty && (
+                <div className="mt-3">
+                  <Input label="Noms des services tiers" value={form.thirdPartyNames} onChange={(v) => update("thirdPartyNames", v)} placeholder="Ex : Stripe, Brevo, Google Maps..." />
+                </div>
+              )}
+              <p className="mt-3 text-xs" style={{ color: "var(--muted)" }}>
+                Google Analytics, AdSense et la plupart des outils américains impliquent un transfert de données hors UE : cochez « Transferts hors Union européenne » si vous les utilisez.
+              </p>
             </div>
 
             {/* DPO & Retention */}
             <div className="rounded-2xl border p-6" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
               <h2 className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--accent)" }}>DPO et conservation</h2>
-              <div className="mt-4 grid grid-cols-2 gap-3">
+              <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <Input label="Nom du DPO (optionnel)" value={form.dpoName} onChange={(v) => update("dpoName", v)} />
                 <Input label="Email du DPO (optionnel)" value={form.dpoEmail} onChange={(v) => update("dpoEmail", v)} />
                 <div>
-                  <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>Duree de conservation (mois)</label>
+                  <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>Conservation des données de contact (mois)</label>
                   <input type="number" value={form.retentionPeriod} onChange={(e) => update("retentionPeriod", e.target.value)} min="1"
                     className="mt-1 w-full rounded-xl border px-3 py-2.5 text-sm" style={{ borderColor: "var(--border)" }} />
+                  <p className="mt-1 text-xs" style={{ color: "var(--muted)" }}>
+                    La CNIL retient 3 ans après le dernier contact pour les données de prospects.
+                  </p>
                 </div>
               </div>
             </div>
@@ -110,17 +169,22 @@ export default function GenerateurPolitiqueConfidentialite() {
             {/* Generated Text */}
             <div className="rounded-2xl border p-6" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
               <div className="flex items-center justify-between">
-                <h2 className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--accent)" }}>Politique generee</h2>
-                <button onClick={copy}
+                <h2 className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--accent)" }}>Politique générée</h2>
+                <button type="button" onClick={copy}
                   className="rounded-lg px-4 py-2 text-sm font-semibold text-white transition-all hover:opacity-90"
                   style={{ background: copied ? "var(--primary-light)" : "var(--primary)" }}>
-                  {copied ? "Copie !" : "Copier"}
+                  {copied ? "Copié !" : "Copier"}
                 </button>
               </div>
               <div className="mt-4 max-h-96 overflow-y-auto whitespace-pre-wrap rounded-xl p-4 text-sm leading-relaxed"
                 style={{ background: "var(--surface-alt)", color: "var(--muted)" }}>
                 {text}
               </div>
+              <p className="mt-3 text-xs" style={{ color: "var(--muted)" }}>
+                Ce modèle couvre les traitements courants d&apos;un site vitrine ou d&apos;un blog. Adaptez-le à vos traitements réels ; il ne remplace ni un bandeau de consentement aux cookies conforme, ni un conseil juridique. Sources :{" "}
+                <a href="https://www.cnil.fr/fr/reglement-europeen-protection-donnees/chapitre3#Article13" target="_blank" rel="noopener noreferrer" className="underline">article 13 du RGPD (CNIL)</a>,{" "}
+                <a href="https://www.cnil.fr/fr/cookies-et-autres-traceurs/regles/cookies/que-dit-la-loi" target="_blank" rel="noopener noreferrer" className="underline">règles CNIL sur les cookies</a>.
+              </p>
             </div>
           </div>
           <aside className="space-y-6">
@@ -155,123 +219,158 @@ function Toggle({ label, checked, onChange }: { label: string; checked: boolean;
   );
 }
 
-function generatePolicy(f: Record<string, unknown>): string {
-  const siteName = (f.siteName as string) || "[Nom du site]";
-  const siteUrl = (f.siteUrl as string) || "[URL du site]";
-  const company = (f.company as string) || "[Nom de la societe]";
-  const email = (f.email as string) || "[Email de contact]";
-  const address = (f.address as string) || "[Adresse]";
-  const retention = (f.retentionPeriod as string) || "12";
-  const dpoName = (f.dpoName as string) || "";
-  const dpoEmail = (f.dpoEmail as string) || email;
+function generatePolicy(f: PolicyForm, today: string): string {
+  const or = (v: string, fallback: string) => v.trim() || fallback;
+  const siteName = or(f.siteName, "[Nom du site]");
+  const siteUrl = or(f.siteUrl, "[URL du site]");
+  const company = or(f.company, "[Nom de la société ou de l'éditeur]");
+  const email = or(f.email, "[Email de contact]");
+  const address = or(f.address, "[Adresse]");
+  const retention = parseInt(f.retentionPeriod, 10) > 0 ? parseInt(f.retentionPeriod, 10) : 36;
+  const analyticsName = or(f.analyticsName, "[Outil de mesure d'audience]");
 
   const dataTypes: string[] = [];
-  if (f.collectsName) dataTypes.push("Nom et prenom");
+  if (f.collectsName) dataTypes.push("Nom et prénom");
   if (f.collectsEmail) dataTypes.push("Adresse email");
-  if (f.collectsPhone) dataTypes.push("Numero de telephone");
+  if (f.collectsPhone) dataTypes.push("Numéro de téléphone");
   if (f.collectsAddress) dataTypes.push("Adresse postale");
-  if (f.collectsPayment) dataTypes.push("Donnees de paiement (traitees par un prestataire securise)");
+  if (f.collectsPayment) dataTypes.push("Données de paiement (traitées directement par notre prestataire de paiement ; nous ne conservons pas vos numéros de carte)");
+  if (f.usesAnalytics || f.usesAds) dataTypes.push("Données de navigation (adresse IP, identifiants de cookies, pages consultées, type d'appareil)");
+  const dataList = dataTypes.length > 0 ? dataTypes.map((d) => `- ${d}`).join("\n") : "- Aucune donnée personnelle n'est collectée directement";
 
-  const dataList = dataTypes.length > 0 ? dataTypes.map((d) => `- ${d}`).join("\n") : "- Aucune donnee personnelle collectee";
+  const sources: string[] = [];
+  if (f.usesContactForm) sources.push("vous remplissez le formulaire de contact ou nous écrivez");
+  if (f.usesAccounts) sources.push("vous créez un compte utilisateur");
+  if (f.usesOrders) sources.push("vous passez une commande");
+  if (f.usesNewsletter) sources.push("vous vous inscrivez à la newsletter");
+  if (f.usesAnalytics || f.usesAds) sources.push("vous naviguez sur le site, via des cookies, si vous y avez consenti");
 
-  let cookieSection = "";
-  if (f.usesCookies) {
-    cookieSection = `\n5. COOKIES
+  // Finalités et bases légales (art. 13.1.c RGPD)
+  const purposes: string[] = [];
+  if (f.usesContactForm) purposes.push("- Répondre à vos demandes de contact : intérêt légitime à répondre aux sollicitations (art. 6.1.f du RGPD)");
+  if (f.usesAccounts) purposes.push("- Créer et gérer votre compte : exécution du contrat ou des conditions d'utilisation (art. 6.1.b)");
+  if (f.usesOrders) purposes.push("- Traiter vos commandes, paiements et livraisons : exécution du contrat (art. 6.1.b)\n- Tenir la comptabilité et conserver les factures : obligation légale (art. 6.1.c)");
+  if (f.usesNewsletter) purposes.push("- Vous envoyer la newsletter : votre consentement (art. 6.1.a), que vous pouvez retirer à tout moment");
+  if (f.usesAnalytics) purposes.push(`- Mesurer l'audience du site avec ${analyticsName} : votre consentement (art. 6.1.a et art. 82 de la loi Informatique et Libertés), sauf mesure d'audience exemptée de consentement au sens des lignes directrices de la CNIL`);
+  if (f.usesAds) purposes.push("- Afficher des publicités, personnalisées ou non : votre consentement pour le dépôt des cookies publicitaires (art. 6.1.a)");
+  purposes.push("- Assurer la sécurité du site et prévenir les abus : intérêt légitime (art. 6.1.f)");
 
-Ce site utilise des cookies pour ameliorer votre experience de navigation. Les cookies sont de petits fichiers texte stockes sur votre appareil.
+  const recipients: string[] = ["- Les personnes habilitées de " + company];
+  recipients.push("- Notre hébergeur, en qualité de sous-traitant");
+  if (f.usesAnalytics) recipients.push(`- ${analyticsName} (mesure d'audience)`);
+  if (f.usesAds) recipients.push("- Nos partenaires publicitaires (par exemple Google AdSense), pour les cookies publicitaires auxquels vous avez consenti");
+  if (f.usesNewsletter) recipients.push("- Notre prestataire d'envoi d'emails");
+  if (f.collectsPayment) recipients.push("- Notre prestataire de paiement");
+  if (f.usesThirdParty) recipients.push(`- Les services tiers suivants : ${or(f.thirdPartyNames, "[Services tiers]")}`);
 
-Types de cookies utilises :
-- Cookies essentiels : necessaires au fonctionnement du site
-- Cookies de performance : pour analyser l'utilisation du site${f.usesAnalytics ? "\n- Cookies analytiques : Google Analytics ou equivalent, pour des statistiques anonymisees" : ""}
+  const sections: { title: string; body: string }[] = [];
 
-Vous pouvez a tout moment desactiver les cookies dans les parametres de votre navigateur. La desactivation de certains cookies peut affecter votre experience sur le site.`;
-  }
-
-  let newsletterSection = "";
-  if (f.usesNewsletter) {
-    newsletterSection = `\n\n6. NEWSLETTER
-
-Si vous vous inscrivez a notre newsletter, votre adresse email sera utilisee pour vous envoyer des communications. Vous pouvez vous desinscrire a tout moment en cliquant sur le lien de desinscription present dans chaque email.`;
-  }
-
-  let thirdPartySection = "";
-  if (f.usesThirdParty) {
-    const names = (f.thirdPartyNames as string) || "[Services tiers]";
-    thirdPartySection = `\n\n${f.usesNewsletter ? "7" : "6"}. SERVICES TIERS
-
-Nous utilisons les services tiers suivants : ${names}
-
-Ces services peuvent collecter des donnees conformement a leurs propres politiques de confidentialite. Nous vous invitons a consulter leurs conditions respectives.`;
-  }
-
-  let dpoSection = "";
-  if (dpoName) {
-    dpoSection = `\n\nDelegue a la protection des donnees (DPO) :
-Nom : ${dpoName}
-Email : ${dpoEmail}`;
-  }
-
-  return `POLITIQUE DE CONFIDENTIALITE
-
-Derniere mise a jour : ${new Date().toLocaleDateString("fr-FR")}
-
-La presente politique de confidentialite decrit comment ${company} (ci-apres "${siteName}") collecte, utilise et protege vos donnees personnelles lorsque vous visitez ${siteUrl}, conformement au Reglement General sur la Protection des Donnees (RGPD) et a la loi Informatique et Libertes.
-
-1. RESPONSABLE DU TRAITEMENT
-
-${company}
+  sections.push({
+    title: "RESPONSABLE DU TRAITEMENT",
+    body: `${company}
 Adresse : ${address}
-Email : ${email}${dpoSection}
+Email : ${email}${f.dpoName.trim() ? `\n\nDélégué à la protection des données (DPO) : ${f.dpoName.trim()}\nEmail : ${or(f.dpoEmail, email)}` : ""}`,
+  });
 
-2. DONNEES PERSONNELLES COLLECTEES
+  sections.push({
+    title: "DONNÉES PERSONNELLES COLLECTÉES",
+    body: `Nous traitons les données suivantes :
+${dataList}${sources.length > 0 ? `\n\nCes données sont collectées lorsque :\n${sources.map((s) => `- ${s}`).join("\n")}` : ""}
 
-Nous collectons les donnees suivantes :
-${dataList}
+Les champs signalés comme obligatoires dans nos formulaires sont nécessaires pour traiter votre demande ; à défaut, nous ne pourrons pas y donner suite.`,
+  });
 
-Ces donnees sont collectees lorsque vous :
-- Remplissez un formulaire sur le site
-- Creez un compte utilisateur
-- Effectuez un achat
-- Nous contactez directement
+  sections.push({
+    title: "FINALITÉS ET BASES LÉGALES",
+    body: `Vos données sont traitées pour les finalités suivantes, sur les bases légales indiquées :
+${purposes.join("\n")}`,
+  });
 
-3. FINALITES DU TRAITEMENT
+  sections.push({
+    title: "DESTINATAIRES",
+    body: `Vos données sont destinées à :
+${recipients.join("\n")}
 
-Vos donnees personnelles sont traitees pour les finalites suivantes :
-- Gestion de la relation client
-- Fourniture et amelioration de nos services
-- Communication et reponse a vos demandes
-${f.usesNewsletter ? "- Envoi de newsletters (avec votre consentement)\n" : ""}- Respect de nos obligations legales
+Nous ne vendons pas vos données personnelles.`,
+  });
 
-La base juridique du traitement est :
-- Votre consentement (article 6.1.a du RGPD)
-- L'execution d'un contrat (article 6.1.b du RGPD)
-- Le respect d'une obligation legale (article 6.1.c du RGPD)
+  if (f.transfersOutsideEU) {
+    sections.push({
+      title: "TRANSFERTS HORS DE L'UNION EUROPÉENNE",
+      body: `Certains de nos prestataires peuvent traiter des données en dehors de l'Union européenne, notamment aux États-Unis. Ces transferts sont encadrés par une décision d'adéquation de la Commission européenne (par exemple le cadre de protection des données UE–États-Unis, pour les entreprises certifiées) ou, à défaut, par les clauses contractuelles types de la Commission européenne. Vous pouvez obtenir une copie de ces garanties en nous écrivant à ${email}.`,
+    });
+  }
 
-4. DUREE DE CONSERVATION
+  sections.push({
+    title: "DURÉE DE CONSERVATION",
+    body: `- Données de contact et de prospection : ${retention} mois à compter du dernier contact de votre part${f.usesAccounts ? "\n- Données de compte : pendant la durée d'utilisation du compte, puis suppression après une période d'inactivité" : ""}${f.usesOrders ? "\n- Données de commande et factures : 10 ans (obligation comptable, art. L123-22 du Code de commerce)" : ""}${f.usesNewsletter ? "\n- Newsletter : jusqu'à votre désinscription" : ""}${f.usesAnalytics || f.usesAds ? "\n- Cookies et traceurs soumis à consentement : 13 mois maximum ; votre choix (acceptation ou refus) est conservé pour une durée limitée avant de vous être redemandé" : ""}
 
-Vos donnees personnelles sont conservees pendant une duree maximale de ${retention} mois a compter de votre derniere interaction avec ${siteName}, sauf obligation legale de conservation plus longue.${cookieSection}${newsletterSection}${thirdPartySection}
+Au-delà, les données sont supprimées ou anonymisées, sauf obligation légale de conservation plus longue.`,
+  });
 
-${!f.usesNewsletter && !f.usesThirdParty ? "6" : f.usesNewsletter && f.usesThirdParty ? "8" : "7"}. VOS DROITS
+  if (f.usesAnalytics || f.usesAds) {
+    sections.push({
+      title: "COOKIES ET TRACEURS",
+      body: `Un cookie est un petit fichier déposé sur votre terminal lors de la consultation du site.
 
-Conformement au RGPD, vous disposez des droits suivants :
-- Droit d'acces : obtenir une copie de vos donnees
-- Droit de rectification : corriger vos donnees inexactes
-- Droit a l'effacement : demander la suppression de vos donnees
-- Droit a la limitation : restreindre le traitement de vos donnees
-- Droit a la portabilite : recevoir vos donnees dans un format structure
-- Droit d'opposition : vous opposer au traitement de vos donnees
+- Cookies strictement nécessaires : indispensables au fonctionnement du site, ils ne nécessitent pas votre consentement.${f.usesAnalytics ? `\n- Cookies de mesure d'audience (${analyticsName}) : déposés uniquement avec votre consentement, sauf s'ils remplissent les conditions d'exemption fixées par la CNIL.` : ""}${f.usesAds ? "\n- Cookies publicitaires : déposés uniquement avec votre consentement." : ""}
 
-Pour exercer ces droits, contactez-nous a : ${email}
+Lors de votre première visite, un bandeau vous permet d'accepter ou de refuser ces cookies, avec la même simplicité. Vous pouvez modifier votre choix à tout moment via le lien de gestion des cookies présent sur le site, ainsi que dans les paramètres de votre navigateur.`,
+    });
+  }
 
-Vous disposez egalement du droit d'introduire une reclamation aupres de la CNIL (www.cnil.fr).
+  if (f.usesNewsletter) {
+    sections.push({
+      title: "NEWSLETTER",
+      body: "Si vous vous inscrivez à notre newsletter, votre adresse email est utilisée pour vous envoyer nos communications. Vous pouvez vous désinscrire à tout moment grâce au lien présent dans chaque email.",
+    });
+  }
 
-${!f.usesNewsletter && !f.usesThirdParty ? "7" : f.usesNewsletter && f.usesThirdParty ? "9" : "8"}. SECURITE
+  if (f.usesThirdParty) {
+    sections.push({
+      title: "SERVICES TIERS",
+      body: `Nous utilisons les services tiers suivants : ${or(f.thirdPartyNames, "[Services tiers]")}.
 
-Nous mettons en oeuvre des mesures techniques et organisationnelles appropriees pour proteger vos donnees personnelles contre tout acces non autorise, modification, divulgation ou destruction.
+Lorsqu'ils agissent pour leur propre compte, ces services traitent les données conformément à leurs propres politiques de confidentialité, que nous vous invitons à consulter.`,
+    });
+  }
 
-${!f.usesNewsletter && !f.usesThirdParty ? "8" : f.usesNewsletter && f.usesThirdParty ? "10" : "9"}. MODIFICATIONS
+  sections.push({
+    title: "VOS DROITS",
+    body: `Conformément au RGPD et à la loi Informatique et Libertés, vous disposez des droits suivants :
+- Droit d'accès : obtenir une copie de vos données
+- Droit de rectification : corriger vos données inexactes
+- Droit à l'effacement : demander la suppression de vos données
+- Droit à la limitation : restreindre le traitement de vos données
+- Droit à la portabilité : recevoir vos données dans un format structuré
+- Droit d'opposition : vous opposer au traitement fondé sur notre intérêt légitime, et à tout moment à la prospection
+- Droit de retirer votre consentement à tout moment, sans remettre en cause la licéité du traitement effectué avant ce retrait
+- Droit de définir des directives relatives au sort de vos données après votre décès (art. 85 de la loi Informatique et Libertés)
 
-Nous nous reservons le droit de modifier cette politique de confidentialite a tout moment. Toute modification sera publiee sur cette page avec une date de mise a jour actualisee.
+Pour exercer ces droits, contactez-nous à : ${or(f.dpoEmail, email)}. Nous répondons dans un délai d'un mois.
 
-Pour toute question, contactez-nous a : ${email}`;
+Si vous estimez, après nous avoir contactés, que vos droits ne sont pas respectés, vous pouvez adresser une réclamation à la CNIL (www.cnil.fr).`,
+  });
+
+  sections.push({
+    title: "SÉCURITÉ",
+    body: "Nous mettons en œuvre des mesures techniques et organisationnelles appropriées pour protéger vos données personnelles contre tout accès non autorisé, modification, divulgation ou destruction.",
+  });
+
+  sections.push({
+    title: "MODIFICATIONS",
+    body: `Nous pouvons modifier cette politique de confidentialité pour tenir compte de l'évolution de nos traitements ou de la réglementation. Toute modification est publiée sur cette page avec une date de mise à jour.
+
+Pour toute question, contactez-nous à : ${email}`,
+  });
+
+  const numbered = sections.map((s, i) => `${i + 1}. ${s.title}\n\n${s.body}`).join("\n\n");
+
+  return `POLITIQUE DE CONFIDENTIALITÉ
+
+Dernière mise à jour : ${today || "[date]"}
+
+La présente politique de confidentialité décrit comment ${company} collecte, utilise et protège vos données personnelles lorsque vous utilisez le site ${siteName} (${siteUrl}), conformément au Règlement général sur la protection des données (RGPD) et à la loi Informatique et Libertés.
+
+${numbered}`;
 }

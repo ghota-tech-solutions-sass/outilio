@@ -73,22 +73,39 @@ for (let i = 0; i < 26; i++) {
   squareMap[lower[i]] = String.fromCodePoint(0x1f130 + i);
 }
 
-// Script (mathematical): U+1D49C (upper), U+1D4B6 (lower)
+// Script (mathematical): U+1D49C (upper), U+1D4B6 (lower).
+// Some letters are "holes" in this block (reserved code points): they were
+// encoded earlier in Letterlike Symbols and must be taken from there.
 for (let i = 0; i < 26; i++) {
   scriptMap[upper[i]] = String.fromCodePoint(0x1d49c + i);
   scriptMap[lower[i]] = String.fromCodePoint(0x1d4b6 + i);
 }
+Object.assign(scriptMap, {
+  B: "\u212C", E: "\u2130", F: "\u2131", H: "\u210B", I: "\u2110", L: "\u2112", M: "\u2133", R: "\u211B",
+  e: "\u212F", g: "\u210A", o: "\u2134",
+});
 
+// Accented letters have no styled version in Unicode. After NFD normalization,
+// "é" becomes "e" + combining acute accent: the base letter is styled and the
+// accent is kept as a combining mark (rendering depends on the font/app).
 function applyMap(text: string, map: Record<string, string>): string {
-  return Array.from(text).map((ch) => map[ch] || ch).join("");
+  return Array.from(text.normalize("NFD")).map((ch) => map[ch] || ch).join("");
+}
+
+// Splits into user-perceived characters (base + combining marks, emoji sequences)
+function graphemes(text: string): string[] {
+  if (typeof Intl !== "undefined" && typeof Intl.Segmenter === "function") {
+    return Array.from(new Intl.Segmenter("fr", { granularity: "grapheme" }).segment(text), (s) => s.segment);
+  }
+  return Array.from(text);
 }
 
 function strikethrough(text: string): string {
-  return Array.from(text).map((ch) => ch + "\u0336").join("");
+  return graphemes(text).map((ch) => ch + "\u0336").join("");
 }
 
 function underline(text: string): string {
-  return Array.from(text).map((ch) => ch + "\u0332").join("");
+  return graphemes(text).map((ch) => ch + "\u0332").join("");
 }
 
 function upsideDown(text: string): string {
@@ -108,7 +125,12 @@ function upsideDown(text: string): string {
     ".": "\u02D9", ",": "\u02BB", "?": "\u00BF", "!": "\u00A1",
     "'": ",", '"': "\u201E",
   };
-  return Array.from(text).reverse().map((ch) => map[ch] || ch).join("");
+  // Accents are dropped (no upside-down accented letters); graphemes are reversed
+  // as a whole so that emojis and combining marks are not broken apart.
+  return graphemes(text.normalize("NFD").replace(/[\u0300-\u036f]/g, ""))
+    .reverse()
+    .map((ch) => map[ch] || ch)
+    .join("");
 }
 
 function smallCaps(text: string): string {
@@ -116,10 +138,10 @@ function smallCaps(text: string): string {
     a: "\u1D00", b: "\u0299", c: "\u1D04", d: "\u1D05", e: "\u1D07", f: "\uA730",
     g: "\u0262", h: "\u029C", i: "\u026A", j: "\u1D0A", k: "\u1D0B", l: "\u029F",
     m: "\u1D0D", n: "\u0274", o: "\u1D0F", p: "\u1D18", q: "\u0071", r: "\u0280",
-    s: "\u0455", t: "\u1D1B", u: "\u1D1C", v: "\u1D20", w: "\u1D21", x: "\u0078",
+    s: "\uA731", t: "\u1D1B", u: "\u1D1C", v: "\u1D20", w: "\u1D21", x: "\u0078",
     y: "\u028F", z: "\u1D22",
   };
-  return Array.from(text).map((ch) => map[ch] || ch).join("");
+  return Array.from(text.normalize("NFD")).map((ch) => map[ch] || ch).join("");
 }
 
 const STYLES: Style[] = [
@@ -127,13 +149,13 @@ const STYLES: Style[] = [
   { label: "Italique", icon: "\u{1D448}", transform: (t) => applyMap(t, italicMap) },
   { label: "Gras italique", icon: "\u{1D46E}", transform: (t) => applyMap(t, boldItalicMap) },
   { label: "Monospace", icon: "\u{1D688}", transform: (t) => applyMap(t, monoMap) },
-  { label: "Barre", icon: "a\u0336b\u0336", transform: strikethrough },
-  { label: "Souligne", icon: "a\u0332b\u0332", transform: underline },
+  { label: "Barré", icon: "a\u0336b\u0336", transform: strikethrough },
+  { label: "Souligné", icon: "a\u0332b\u0332", transform: underline },
   { label: "Bulle", icon: "\u24B6", transform: (t) => applyMap(t, bubbleMap) },
   { label: "Bulle pleine", icon: "\u{1F150}", transform: (t) => applyMap(t, bubbleFilledMap) },
-  { label: "Carre", icon: "\u{1F130}", transform: (t) => applyMap(t, squareMap) },
+  { label: "Carré", icon: "\u{1F130}", transform: (t) => applyMap(t, squareMap) },
   { label: "Script", icon: "\u{1D49C}", transform: (t) => applyMap(t, scriptMap) },
-  { label: "A l'envers", icon: "\u0250", transform: upsideDown },
+  { label: "À l'envers", icon: "\u0250", transform: upsideDown },
   { label: "Petites capitales", icon: "\u1D00", transform: smallCaps },
 ];
 
@@ -160,10 +182,10 @@ export default function GenerateurTexteStylise() {
         <div className="mx-auto max-w-7xl px-6 2xl:max-w-[1400px]">
           <p className="animate-fade-up text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: "var(--accent)" }}>Texte</p>
           <h1 className="animate-fade-up stagger-1 mt-3 text-4xl tracking-tight md:text-5xl" style={{ fontFamily: "var(--font-display)" }}>
-            Generateur de <span style={{ color: "var(--primary)" }}>texte stylise</span>
+            Générateur de <span style={{ color: "var(--primary)" }}>texte stylisé</span>
           </h1>
           <p className="animate-fade-up stagger-2 mt-3 max-w-xl text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-            Convertissez votre texte en caracteres Unicode stylises. Copiez et collez sur les reseaux sociaux, bios, messages.
+            Convertissez votre texte en caractères Unicode stylisés. Copiez et collez sur les réseaux sociaux, bios, messages.
           </p>
         </div>
       </section>
@@ -200,30 +222,30 @@ export default function GenerateurTexteStylise() {
                       background: copiedIndex === i ? "var(--primary)" : "var(--surface-alt)",
                       color: copiedIndex === i ? "white" : "var(--muted)",
                     }}>
-                    {copiedIndex === i ? "Copie !" : "Copier"}
+                    {copiedIndex === i ? "Copié !" : "Copier"}
                   </button>
                 </div>
               ))}
             </div>
 
             <ToolHowToSection
-              title="Comment utiliser le generateur de texte stylise"
-              description="Trois etapes pour obtenir un texte avec des polices Unicode et le coller partout."
+              title="Comment utiliser le générateur de texte stylisé"
+              description="Trois étapes pour obtenir un texte avec des polices Unicode et le coller partout."
               steps={[
                 {
                   name: "Tapez ou collez votre texte",
                   text:
-                    "Saisissez le texte a transformer dans la zone de saisie : votre nom, une bio Instagram, un titre de tweet, un slogan. La transformation s'effectue en temps reel, vous voyez immediatement les 12 styles disponibles dans la liste juste en dessous.",
+                    "Saisissez le texte à transformer dans la zone de saisie : votre nom, une bio Instagram, un titre de tweet, un slogan. La transformation s'effectue en temps réel, vous voyez immédiatement les 12 styles disponibles dans la liste juste en dessous.",
                 },
                 {
                   name: "Comparez les 12 styles disponibles",
                   text:
-                    "L'outil propose : gras, italique, gras italique, monospace, barre, souligne, bulle, bulle pleine, carre, script, a l'envers et petites capitales. Chaque style utilise un bloc Unicode different (Mathematical Alphanumeric Symbols, Enclosed Alphanumerics, etc.) qui s'affiche sur la plupart des plateformes modernes.",
+                    "L'outil propose : gras, italique, gras italique, monospace, barré, souligné, bulle, bulle pleine, carré, script, à l'envers et petites capitales. Chaque style utilise un bloc Unicode différent (Mathematical Alphanumeric Symbols, Enclosed Alphanumerics, etc.) qui s'affiche sur la plupart des plateformes modernes.",
                 },
                 {
                   name: "Copiez et collez sur la plateforme cible",
                   text:
-                    "Cliquez sur Copier a cote du style choisi. Le texte stylise est dans le presse-papier, pret a coller dans une bio Instagram, Twitter, TikTok, Discord, WhatsApp ou un email. Pas besoin d'application, l'effet visuel est porte par les caracteres Unicode eux-memes.",
+                    "Cliquez sur Copier à côté du style choisi. Le texte stylisé est dans le presse-papier, prêt à coller dans une bio Instagram, Twitter, TikTok, Discord, WhatsApp ou un email. Pas besoin d'application, l'effet visuel est porté par les caractères Unicode eux-mêmes.",
                 },
               ]}
             />
@@ -236,19 +258,19 @@ export default function GenerateurTexteStylise() {
                 className="text-2xl md:text-3xl font-extrabold"
                 style={{ fontFamily: "var(--font-display)", color: "var(--foreground)" }}
               >
-                Cas d&apos;usage du texte stylise Unicode
+                Cas d&apos;usage du texte stylisé Unicode
               </h2>
 
               <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
                   <h3 className="font-semibold" style={{ color: "var(--foreground)" }}>
-                    Createur de contenu Instagram
+                    Créateur de contenu Instagram
                   </h3>
                   <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                    Personnaliser sa bio Instagram avec des polices stylisees attire l&apos;oeil et
-                    distingue le profil. Particulierement utile pour les comptes lifestyle, mode,
-                    creators et coachs : un titre en gras italique ou en script attire 3 a 5 fois
-                    plus de clics sur le profil.
+                    Personnaliser sa bio Instagram avec des polices stylisées attire l&apos;œil et
+                    distingue le profil. Particulièrement utile pour les comptes lifestyle, mode,
+                    creators et coachs : un nom ou un titre en gras italique ou en script se
+                    remarque davantage dans une liste de profils.
                   </p>
                 </div>
                 <div className="rounded-lg border p-4" style={{ borderColor: "var(--border)" }}>
@@ -256,9 +278,9 @@ export default function GenerateurTexteStylise() {
                     Marketeur Twitter/X
                   </h3>
                   <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                    Twitter ne supporte pas le markdown, donc impossible de mettre du gras. Les
-                    caracteres Unicode contournent cette limite : un mot en gras ou en italique au
-                    milieu d&apos;un thread booste la lisibilite et le taux d&apos;engagement,
+                    Un post X classique n&apos;accepte ni markdown ni mise en forme : impossible d&apos;y mettre du gras. Les
+                    caractères Unicode contournent cette limite : un mot en gras ou en italique au
+                    milieu d&apos;un thread booste la lisibilité et le taux d&apos;engagement,
                     surtout sur mobile.
                   </p>
                 </div>
@@ -267,9 +289,9 @@ export default function GenerateurTexteStylise() {
                     Discord et serveurs gaming
                   </h3>
                   <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                    Personnaliser un pseudo, decorer un nom de role ou ajouter un titre stylise
-                    dans un message texte. Les bulles, carres et small caps sont tres populaires
-                    sur les communautes Roblox, Minecraft, Fortnite et Among Us pour identifier
+                    Personnaliser un pseudo, décorer un nom de rôle ou ajouter un titre stylisé
+                    dans un message texte. Les bulles, carrés et small caps sont très populaires
+                    sur les communautés Roblox, Minecraft, Fortnite et Among Us pour identifier
                     les rangs.
                   </p>
                 </div>
@@ -279,9 +301,9 @@ export default function GenerateurTexteStylise() {
                   </h3>
                   <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
                     Ajouter un nom en gras Unicode dans une signature email Gmail ou Outlook quand
-                    le HTML rich-text est filtre. Mettre un titre attractif dans l&apos;objet
-                    d&apos;un newsletter. Attention au taux de spam : les caracteres exotiques
-                    peuvent declencher des filtres anti-phishing.
+                    le HTML rich-text est filtré. Mettre un titre attractif dans l&apos;objet
+                    d&apos;une newsletter. Attention au taux de spam : les caractères exotiques
+                    peuvent déclencher des filtres anti-phishing.
                   </p>
                 </div>
               </div>
@@ -295,75 +317,77 @@ export default function GenerateurTexteStylise() {
                 className="text-2xl md:text-3xl font-extrabold"
                 style={{ fontFamily: "var(--font-display)" }}
               >
-                A savoir avant d&apos;utiliser du texte Unicode
+                À savoir avant d&apos;utiliser du texte Unicode
               </h2>
 
               <div className="mt-4 space-y-4 leading-relaxed" style={{ color: "var(--foreground)" }}>
                 <p>
-                  <strong>Ce ne sont pas des polices, mais des caracteres differents.</strong> Le
-                  &laquo; A &raquo; gras Unicode (U+1D400) est techniquement un caractere distinct
-                  du &laquo; A &raquo; classique (U+0041). Resultat : un screen reader lira parfois
-                  &laquo; lettre A en latin gras mathematique &raquo; au lieu de juste
-                  &laquo; A &raquo;. Mauvais pour l&apos;accessibilite.
+                  <strong>Ce ne sont pas des polices, mais des caractères différents.</strong> Le
+                  &laquo; A &raquo; gras Unicode (U+1D400) est techniquement un caractère distinct
+                  du &laquo; A &raquo; classique (U+0041). Résultat : un screen reader lira parfois
+                  &laquo; lettre A en latin gras mathématique &raquo; au lieu de juste
+                  &laquo; A &raquo;. Mauvais pour l&apos;accessibilité.
                 </p>
                 <p>
-                  <strong>SEO et recherche : zero match.</strong> Si votre nom de boutique est
-                  ecrit en script Unicode, Google ne le matche pas avec une recherche en lettres
-                  classiques. Tres mauvais pour la decouverte. Reservez les caracteres stylises
-                  aux contextes ou les utilisateurs ne tapent pas votre nom au clavier.
+                  <strong>SEO et recherche : zéro match.</strong> Si votre nom de boutique est
+                  écrit en script Unicode, Google ne le matche pas avec une recherche en lettres
+                  classiques. Très mauvais pour la découverte. Réservez les caractères stylisés
+                  aux contextes où les utilisateurs ne tapent pas votre nom au clavier.
                 </p>
                 <p>
-                  <strong>Compatibilite mobile imparfaite.</strong> Les iPhone, Android Pixel et
+                  <strong>Compatibilité mobile imparfaite.</strong> Les iPhone, Android Pixel et
                   Samsung modernes affichent bien la plupart des blocs Unicode. Mais sur de vieux
                   Android, certains feature phones ou certaines applications professionnelles
-                  (Slack, Microsoft Teams), les glyphes peuvent apparaitre comme des carres vides.
+                  (Slack, Microsoft Teams), les glyphes peuvent apparaître comme des carrés vides.
                 </p>
                 <p>
-                  <strong>Caracteres accentues non transformes.</strong> Les blocs Unicode stylises
-                  ne couvrent que les 26 lettres latines de base (A-Z) et les chiffres. Les lettres
-                  accentuees (e, a, o, etc.) restent en typographie normale. Le rendu mixte peut
-                  surprendre, surtout en francais.
+                  <strong>Lettres accentuées : un compromis.</strong> Les blocs Unicode stylisés
+                  ne couvrent que les 26 lettres latines de base (A-Z) et, selon le style, les
+                  chiffres. Pour les lettres accentuées (é, à, ô, ç…), l&apos;outil stylise la lettre de
+                  base et lui ajoute l&apos;accent sous forme de caractère combinant. Selon la police
+                  et l&apos;application, l&apos;accent peut être légèrement décalé. Le style « À l&apos;envers »
+                  retire les accents, et les lettres comme œ ou æ restent inchangées.
                 </p>
               </div>
             </section>
 
             <ToolFaqSection
-              intro="Tout savoir sur la generation de texte Unicode stylise."
+              intro="Tout savoir sur la génération de texte Unicode stylisé."
               items={[
                 {
-                  question: "Comment fonctionne le texte stylise Unicode ?",
+                  question: "Comment fonctionne le texte stylisé Unicode ?",
                   answer:
-                    "Les caracteres stylises ne sont pas des polices, mais des caracteres Unicode distincts qui ressemblent aux lettres latines (blocs Mathematical Alphanumeric Symbols, Enclosed Alphanumerics, etc.). Ils s'affichent dans n'importe quel contexte qui supporte Unicode, sans CSS ni police installee.",
+                    "Les caractères stylisés ne sont pas des polices, mais des caractères Unicode distincts qui ressemblent aux lettres latines (blocs Mathematical Alphanumeric Symbols, Enclosed Alphanumerics, etc.). Ils s'affichent dans n'importe quel contexte qui supporte Unicode, sans CSS ni police installée.",
                 },
                 {
-                  question: "Ou puis-je utiliser ces textes stylises ?",
+                  question: "Où puis-je utiliser ces textes stylisés ?",
                   answer:
-                    "Partout ou Unicode est supporte : Instagram (bio et captions), Twitter/X, Facebook, TikTok, Discord, Telegram, WhatsApp, LinkedIn, emails Gmail ou Outlook, Notion, Slack. Quelques applications anciennes ou tres specialisees peuvent afficher des carres vides a la place.",
+                    "Partout où Unicode est pris en charge : Instagram (bio et captions), Twitter/X, Facebook, TikTok, Discord, Telegram, WhatsApp, LinkedIn, emails Gmail ou Outlook, Notion, Slack. Quelques applications anciennes ou très spécialisées peuvent afficher des carrés vides à la place.",
                 },
                 {
-                  question: "Le texte stylise est-il accessible aux personnes handicapees ?",
+                  question: "Le texte stylisé est-il accessible aux personnes handicapées ?",
                   answer:
-                    "Non, c'est sa principale limite. Les lecteurs d'ecran (NVDA, JAWS, VoiceOver) lisent souvent les caracteres stylises comme des entites mathematiques (lettre A en gras mathematique latin) au lieu de simplement A. Pour un contenu accessible, utilisez le HTML strong et em.",
+                    "Non, c'est sa principale limite. Les lecteurs d'écran (NVDA, JAWS, VoiceOver) lisent souvent les caractères stylisés comme des entités mathématiques (lettre A en gras mathématique latin) au lieu de simplement A. Pour un contenu accessible, utilisez le HTML strong et em.",
                 },
                 {
-                  question: "Pourquoi mes accents ne sont-ils pas convertis ?",
+                  question: "Comment sont traités les accents ?",
                   answer:
-                    "Les blocs Unicode de styles ne couvrent que les 26 lettres latines de base et les chiffres. Les lettres accentuees francaises (e, a, c, etc.) n'existent pas en version stylisee, donc elles restent en typographie normale. Le mix peut donner un rendu visuel hybride.",
+                    "Les blocs Unicode de styles ne couvrent que les 26 lettres latines de base et les chiffres : les lettres accentuées françaises (é, à, ç, etc.) n'existent pas en version stylisée. L'outil décompose donc chaque lettre accentuée en lettre de base stylisée + accent combinant (é devient 𝐞 + ◌́). Le résultat s'affiche correctement dans la plupart des applications, mais l'accent peut être mal placé avec certaines polices. Le style « À l'envers » supprime les accents.",
                 },
                 {
-                  question: "Le texte stylise est-il bon pour le SEO ?",
+                  question: "Le texte stylisé est-il bon pour le SEO ?",
                   answer:
-                    "Non, c'est mauvais pour le SEO. Google indexe les caracteres exactement, donc une boutique Etsy ecrite en script Unicode ne sera pas trouvee si l'utilisateur tape le nom en lettres normales. Reservez aux bios de profil, signatures, titres decoratifs et jamais au contenu principal.",
+                    "Non, c'est mauvais pour le SEO. Google indexe les caractères exactement, donc une boutique Etsy écrite en script Unicode ne sera pas trouvée si l'utilisateur tape le nom en lettres normales. Réservez aux bios de profil, signatures, titres décoratifs et jamais au contenu principal.",
                 },
                 {
                   question: "Y a-t-il un risque de spam ou de blocage ?",
                   answer:
-                    "Sur certaines plateformes (LinkedIn, Microsoft Teams), un usage excessif de caracteres Unicode exotiques peut declencher des filtres anti-spam ou anti-phishing. Utilisez avec parcimonie : 1 a 2 mots stylises par paragraphe, jamais des phrases entieres.",
+                    "Sur certaines plateformes (LinkedIn, Microsoft Teams), un usage excessif de caractères Unicode exotiques peut déclencher des filtres anti-spam ou anti-phishing. Utilisez avec parcimonie : 1 à 2 mots stylisés par paragraphe, jamais des phrases entières.",
                 },
                 {
                   question: "L'outil envoie-t-il mon texte sur un serveur ?",
                   answer:
-                    "Non, la conversion est entierement effectuee dans votre navigateur via JavaScript. Aucun texte n'est envoye, stocke ou journalise. Vous pouvez styliser des contenus personnels ou professionnels en toute confidentialite.",
+                    "Non, la conversion est entièrement effectuée dans votre navigateur via JavaScript. Le texte saisi n'est ni envoyé, ni stocké, ni journalisé. Vous pouvez styliser des contenus personnels ou professionnels en toute confidentialité.",
                 },
               ]}
             />
@@ -374,9 +398,10 @@ export default function GenerateurTexteStylise() {
             <div className="rounded-2xl border p-6" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
               <h3 className="text-sm font-semibold" style={{ fontFamily: "var(--font-display)" }}>Astuces</h3>
               <ul className="mt-3 space-y-2 text-xs leading-relaxed" style={{ color: "var(--muted)" }}>
-                <li>Ideal pour les bios Instagram et Twitter</li>
+                <li>Idéal pour les bios Instagram et Twitter</li>
                 <li>Fonctionne aussi dans WhatsApp et Telegram</li>
-                <li>Les accents et emojis restent inchanges</li>
+                <li>Accents conservés (lettre stylisée + accent combinant)</li>
+                <li>Les emojis restent inchangés</li>
                 <li>Compatible avec tous les navigateurs modernes</li>
               </ul>
             </div>

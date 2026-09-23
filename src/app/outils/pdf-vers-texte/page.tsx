@@ -17,6 +17,21 @@ interface PDFInfo {
   modificationDate: Date | undefined;
   pagesSizes: { width: number; height: number }[];
   bytes: Uint8Array;
+  encrypted: boolean;
+}
+
+function downloadBlob(blob: Blob, name: string) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = name;
+  a.click();
+  // Revoking immediately can cancel the download in some browsers
+  setTimeout(() => URL.revokeObjectURL(url), 10_000);
+}
+
+function baseName(name: string): string {
+  return name.replace(/\.pdf$/i, "");
 }
 
 function formatSize(bytes: number): string {
@@ -55,21 +70,31 @@ export default function PdfVersTexte() {
     try {
       const pdfjs = await import("pdfjs-dist");
       pdfjs.GlobalWorkerOptions.workerSrc = `https://cdn.jsdelivr.net/npm/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
-      const loadingTask = pdfjs.getDocument({ data: info.bytes });
+      // pdf.js transfers (detaches) the buffer it receives: give it a copy so page extraction keeps working
+      const loadingTask = pdfjs.getDocument({ data: info.bytes.slice() });
       const pdf = await loadingTask.promise;
       let fullText = "";
       for (let i = 1; i <= pdf.numPages; i++) {
         const page = await pdf.getPage(i);
         const content = await page.getTextContent();
+        // Keep the line breaks of the document (hasEOL) instead of one long line per page
         const pageText = content.items
-          .map((it) => ("str" in it ? it.str : ""))
-          .join(" ");
+          .map((it) => ("str" in it ? it.str + (it.hasEOL ? "\n" : "") : ""))
+          .join("")
+          .replace(/[ \t]+\n/g, "\n")
+          .trim();
         fullText += `\n\n--- Page ${i} ---\n\n${pageText}`;
       }
+      await loadingTask.destroy();
       const trimmed = fullText.trim();
-      setExtractedText(trimmed || "(Aucun texte extractible. Le PDF contient probablement uniquement des images scannees — un OCR serait necessaire.)");
+      setExtractedText(trimmed || "(Aucun texte extractible. Le PDF contient probablement uniquement des images scannées — un OCR serait nécessaire.)");
     } catch (e) {
-      setError("Erreur lors de l'extraction du texte : " + (e instanceof Error ? e.message : "inconnue"));
+      const isPassword = e instanceof Error && e.name === "PasswordException";
+      setError(
+        isPassword
+          ? "Ce PDF est protégé par un mot de passe d'ouverture : le texte ne peut pas être extrait."
+          : "Erreur lors de l'extraction du texte : " + (e instanceof Error ? e.message : "inconnue")
+      );
     } finally {
       setExtractingText(false);
     }
@@ -77,28 +102,28 @@ export default function PdfVersTexte() {
 
   const copyExtractedText = () => {
     if (!extractedText) return;
-    navigator.clipboard.writeText(extractedText).then(() => {
-      setTextCopied(true);
-      setTimeout(() => setTextCopied(false), 2000);
-    });
+    navigator.clipboard.writeText(extractedText).then(
+      () => {
+        setTextCopied(true);
+        setTimeout(() => setTextCopied(false), 2000);
+      },
+      () => setError("Copie impossible : sélectionnez le texte et copiez-le manuellement.")
+    );
   };
 
   const downloadExtractedText = () => {
     if (!extractedText || !info) return;
     const blob = new Blob([extractedText], { type: "text/plain;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `${info.name.replace(/\.pdf$/i, "")}.txt`;
-    a.click();
-    URL.revokeObjectURL(url);
+    downloadBlob(blob, `${baseName(info.name)}.txt`);
   };
 
   const loadPdf = useCallback(async (file: File) => {
     setError("");
     setInfo(null);
-    if (file.type !== "application/pdf") {
-      setError("Seuls les fichiers PDF sont acceptes.");
+    setExtractedText("");
+    // Some systems give an empty MIME type: also accept the .pdf extension
+    if (file.type !== "application/pdf" && !/\.pdf$/i.test(file.name)) {
+      setError("Seuls les fichiers PDF sont acceptés.");
       return;
     }
     try {
@@ -118,9 +143,10 @@ export default function PdfVersTexte() {
         modificationDate: doc.getModificationDate(),
         pagesSizes: pages.map((p) => ({ width: Math.round(p.getWidth()), height: Math.round(p.getHeight()) })),
         bytes,
+        encrypted: doc.isEncrypted,
       });
     } catch {
-      setError("Impossible de lire ce fichier PDF. Il est peut-etre corrompu ou protege.");
+      setError("Impossible de lire ce fichier PDF. Il est peut-être corrompu ou protégé.");
     }
   }, []);
 
@@ -144,12 +170,7 @@ export default function PdfVersTexte() {
       newDoc.addPage(copiedPage);
       const pdfBytes = await newDoc.save();
       const blob = new Blob([pdfBytes as BlobPart], { type: "application/pdf" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `${info.name.replace(".pdf", "")}_page_${pageIndex + 1}.pdf`;
-      a.click();
-      URL.revokeObjectURL(url);
+      downloadBlob(blob, `${baseName(info.name)}_page_${pageIndex + 1}.pdf`);
     } catch {
       setError("Erreur lors de l'extraction de la page.");
     }
@@ -168,12 +189,7 @@ export default function PdfVersTexte() {
       copiedPages.forEach((p) => newDoc.addPage(p));
       const pdfBytes = await newDoc.save();
       const blob = new Blob([pdfBytes as BlobPart], { type: "application/pdf" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `${info.name.replace(".pdf", "")}_pages_${start + 1}-${end + 1}.pdf`;
-      a.click();
-      URL.revokeObjectURL(url);
+      downloadBlob(blob, `${baseName(info.name)}_pages_${start + 1}-${end + 1}.pdf`);
     } catch {
       setError("Erreur lors de l'extraction des pages.");
     }
@@ -189,18 +205,21 @@ export default function PdfVersTexte() {
       `Titre : ${info.title || "Non disponible"}`,
       `Auteur : ${info.author || "Non disponible"}`,
       `Sujet : ${info.subject || "Non disponible"}`,
-      `Createur : ${info.creator || "Non disponible"}`,
+      `Créateur : ${info.creator || "Non disponible"}`,
       `Producteur : ${info.producer || "Non disponible"}`,
-      `Date de creation : ${formatDate(info.creationDate)}`,
+      `Date de création : ${formatDate(info.creationDate)}`,
       `Date de modification : ${formatDate(info.modificationDate)}`,
       "",
       "Pages :",
       ...info.pagesSizes.map((p, i) => `  Page ${i + 1} : ${p.width} x ${p.height} pts`),
     ];
-    navigator.clipboard.writeText(lines.join("\n")).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    });
+    navigator.clipboard.writeText(lines.join("\n")).then(
+      () => {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      },
+      () => setError("Copie impossible dans le presse-papiers.")
+    );
   };
 
   return (
@@ -217,7 +236,7 @@ export default function PdfVersTexte() {
             PDF vers <span style={{ color: "var(--primary)" }}>Texte</span>
           </h1>
           <p className="animate-fade-up stagger-2 mt-3 max-w-xl text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-            Analysez vos fichiers PDF : metadonnees, nombre de pages, dimensions. Extrayez et telechargez des pages individuelles.
+            Extrayez le texte de vos fichiers PDF, consultez leurs métadonnées (pages, auteur, dates) et téléchargez des pages individuelles. Vos fichiers restent sur votre appareil.
           </p>
         </div>
       </section>
@@ -234,6 +253,15 @@ export default function PdfVersTexte() {
               onDragLeave={() => setDragOver(false)}
               onDrop={handleDrop}
               onClick={() => inputRef.current?.click()}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  inputRef.current?.click();
+                }
+              }}
+              role="button"
+              tabIndex={0}
+              aria-label="Choisir un fichier PDF"
               className="rounded-2xl border-2 border-dashed p-10 text-center cursor-pointer transition-all"
               style={{
                 borderColor: dragOver ? "var(--primary)" : "var(--border)",
@@ -245,7 +273,11 @@ export default function PdfVersTexte() {
                 type="file"
                 accept=".pdf,application/pdf"
                 className="hidden"
-                onChange={(e) => e.target.files?.[0] && loadPdf(e.target.files[0])}
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  e.target.value = "";
+                  if (f) loadPdf(f);
+                }}
               />
               <p className="text-4xl">&#128196;</p>
               <p className="mt-3 text-sm font-semibold" style={{ fontFamily: "var(--font-display)" }}>
@@ -268,14 +300,14 @@ export default function PdfVersTexte() {
                 <div className="rounded-2xl border overflow-hidden" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
                   <div className="px-5 py-3 border-b flex items-center justify-between" style={{ borderColor: "var(--border)", background: "var(--surface-alt)" }}>
                     <h2 className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--accent)" }}>
-                      Metadonnees du PDF
+                      Métadonnées du PDF
                     </h2>
                     <button
                       onClick={copyMetadata}
                       className="text-xs font-semibold transition-colors hover:opacity-70"
                       style={{ color: "var(--primary)" }}
                     >
-                      {copied ? "Copie !" : "Copier tout"}
+                      {copied ? "Copié !" : "Copier tout"}
                     </button>
                   </div>
                   <div className="p-5 space-y-3">
@@ -286,9 +318,9 @@ export default function PdfVersTexte() {
                       { label: "Titre", value: info.title || "Non disponible" },
                       { label: "Auteur", value: info.author || "Non disponible" },
                       { label: "Sujet", value: info.subject || "Non disponible" },
-                      { label: "Createur", value: info.creator || "Non disponible" },
+                      { label: "Créateur", value: info.creator || "Non disponible" },
                       { label: "Producteur", value: info.producer || "Non disponible" },
-                      { label: "Date de creation", value: formatDate(info.creationDate) },
+                      { label: "Date de création", value: formatDate(info.creationDate) },
                       { label: "Date de modification", value: formatDate(info.modificationDate) },
                     ].map((row) => (
                       <div key={row.label} className="flex items-start gap-4">
@@ -325,14 +357,14 @@ export default function PdfVersTexte() {
                             className="text-xs font-semibold transition-colors hover:opacity-70"
                             style={{ color: "var(--primary)" }}
                           >
-                            {textCopied ? "Copie !" : "Copier"}
+                            {textCopied ? "Copié !" : "Copier"}
                           </button>
                           <button
                             onClick={downloadExtractedText}
                             className="text-xs font-semibold transition-colors hover:opacity-70"
                             style={{ color: "var(--primary)" }}
                           >
-                            Telecharger .txt
+                            Télécharger .txt
                           </button>
                         </>
                       )}
@@ -341,7 +373,7 @@ export default function PdfVersTexte() {
                   <div className="p-5">
                     {!extractedText && !extractingText && (
                       <p className="text-sm" style={{ color: "var(--muted)" }}>
-                        Cliquez sur &laquo;&nbsp;Extraire le texte&nbsp;&raquo; pour recuperer le contenu textuel de toutes les pages du PDF (compatible texte numerique uniquement, pas les scans/images).
+                        Cliquez sur &laquo;&nbsp;Extraire le texte&nbsp;&raquo; pour récupérer le contenu textuel de toutes les pages du PDF (compatible texte numérique uniquement, pas les scans/images).
                       </p>
                     )}
                     {extractingText && (
@@ -352,6 +384,7 @@ export default function PdfVersTexte() {
                     {extractedText && (
                       <textarea
                         readOnly
+                        aria-label="Texte extrait du PDF"
                         value={extractedText}
                         className="w-full h-80 rounded-lg border p-3 text-xs font-mono resize-y"
                         style={{ borderColor: "var(--border)", background: "var(--background)" }}
@@ -366,17 +399,22 @@ export default function PdfVersTexte() {
                     <h2 className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--accent)" }}>
                       Pages ({info.pageCount})
                     </h2>
-                    {info.pageCount > 1 && (
+                    {info.pageCount > 1 && !info.encrypted && (
                       <button
                         onClick={() => downloadPageRange(0, info.pageCount - 1)}
                         disabled={extracting}
                         className="text-xs font-semibold transition-colors hover:opacity-70 disabled:opacity-50"
                         style={{ color: "var(--primary)" }}
                       >
-                        Tout telecharger
+                        Tout télécharger
                       </button>
                     )}
                   </div>
+                  {info.encrypted && (
+                    <p className="px-5 pt-3 text-xs" style={{ color: "var(--accent)" }}>
+                      Ce PDF est chiffré : l&apos;extraction de pages n&apos;est pas possible (elle produirait des pages vides).
+                    </p>
+                  )}
                   <div className="divide-y max-h-[500px] overflow-y-auto" style={{ borderColor: "var(--border)" }}>
                     {info.pagesSizes.map((p, i) => (
                       <div key={i} className="flex items-center gap-3 px-5 py-3">
@@ -396,7 +434,8 @@ export default function PdfVersTexte() {
                         </div>
                         <button
                           onClick={() => downloadPage(i)}
-                          disabled={extracting}
+                          disabled={extracting || info.encrypted}
+                          aria-label={`Extraire la page ${i + 1} en PDF`}
                           className="rounded-lg border px-3 py-1.5 text-xs font-semibold transition-all hover:bg-[var(--surface-alt)] disabled:opacity-50"
                           style={{ borderColor: "var(--border)" }}
                         >
@@ -413,21 +452,22 @@ export default function PdfVersTexte() {
               <div className="rounded-2xl border p-8 text-center" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
                 <p className="text-4xl">&#128269;</p>
                 <p className="mt-3 text-sm font-semibold" style={{ fontFamily: "var(--font-display)" }}>
-                  Deposez un PDF pour l&apos;analyser
+                  Déposez un PDF pour l&apos;analyser
                 </p>
                 <p className="mt-1 text-xs" style={{ color: "var(--muted)" }}>
-                  Metadonnees, nombre de pages et extraction de pages individuelles.
+                  Texte, métadonnées, nombre de pages et extraction de pages individuelles.
                 </p>
               </div>
             )}
 
             {/* About */}
             <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>A propos de l&apos;extracteur</h2>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>À propos de l&apos;extracteur</h2>
               <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                <p><strong className="text-[var(--foreground)]">Metadonnees</strong> : Titre, auteur, dates, producteur et dimensions de chaque page.</p>
-                <p><strong className="text-[var(--foreground)]">Extraction de pages</strong> : Telechargez n&apos;importe quelle page comme un PDF individuel.</p>
-                <p><strong className="text-[var(--foreground)]">100% local</strong> : Tout le traitement se fait dans votre navigateur. Aucun fichier n&apos;est envoye.</p>
+                <p><strong className="text-[var(--foreground)]">Extraction de texte</strong> : récupérez le texte de toutes les pages (PDF numériques ; les scans nécessitent un OCR).</p>
+                <p><strong className="text-[var(--foreground)]">Métadonnées</strong> : Titre, auteur, dates, producteur et dimensions de chaque page.</p>
+                <p><strong className="text-[var(--foreground)]">Extraction de pages</strong> : Téléchargez n&apos;importe quelle page comme un PDF individuel.</p>
+                <p><strong className="text-[var(--foreground)]">100% local</strong> : Tout le traitement se fait dans votre navigateur. Aucun fichier n&apos;est envoyé.</p>
               </div>
             </div>
 
@@ -438,33 +478,34 @@ export default function PdfVersTexte() {
               </h2>
               <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
                 <p>
-                  Notre outil d&apos;analyse PDF vous permet de consulter les metadonnees d&apos;un fichier PDF et d&apos;extraire des pages individuelles.
-                  Tout le traitement se fait localement dans votre navigateur grace a la bibliotheque pdf-lib.
+                  Notre outil PDF vous permet d&apos;extraire le texte d&apos;un fichier PDF, de consulter ses métadonnées et d&apos;extraire des pages individuelles.
+                  Tout le traitement se fait localement dans votre navigateur grâce aux bibliotheques pdf.js et pdf-lib.
                 </p>
                 <ul className="ml-4 list-disc space-y-1">
-                  <li><strong className="text-[var(--foreground)]">Importez votre PDF</strong> : glissez-deposez ou cliquez pour parcourir vos fichiers</li>
-                  <li><strong className="text-[var(--foreground)]">Consultez les metadonnees</strong> : titre, auteur, dates de creation/modification, producteur</li>
+                  <li><strong className="text-[var(--foreground)]">Importez votre PDF</strong> : glissez-déposez ou cliquez pour parcourir vos fichiers</li>
+                  <li><strong className="text-[var(--foreground)]">Extrayez le texte</strong> : cliquez sur « Extraire le texte », puis copiez-le ou téléchargez-le en .txt</li>
+                  <li><strong className="text-[var(--foreground)]">Consultez les métadonnées</strong> : titre, auteur, dates de creation/modification, producteur</li>
                   <li><strong className="text-[var(--foreground)]">Visualisez les pages</strong> : nombre de pages et dimensions (A4, Letter, etc.)</li>
-                  <li><strong className="text-[var(--foreground)]">Extrayez des pages</strong> : telechargez une page individuelle ou toutes les pages en PDF separe</li>
+                  <li><strong className="text-[var(--foreground)]">Extrayez des pages</strong> : téléchargez une page individuelle au format PDF</li>
                 </ul>
               </div>
             </div>
 
             {/* FAQ */}
             <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Questions frequentes</h2>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Questions fréquentes</h2>
               <div className="mt-6 space-y-5">
                 <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
-                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>L&apos;outil fonctionne-t-il avec les PDF proteges ?</h3>
-                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>L&apos;outil tente de lire les PDF proteges par mot de passe en ignorant le chiffrement. Cela fonctionne pour les PDF avec restrictions d&apos;edition, mais pas pour ceux qui necessitent un mot de passe d&apos;ouverture.</p>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>L&apos;outil fonctionne-t-il avec les PDF protégés ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Les PDF avec de simples restrictions (impression, copie) peuvent être analysés et leur texte extrait, mais l&apos;extraction de pages n&apos;est pas possible sur un PDF chiffré. Les PDF qui demandent un mot de passe d&apos;ouverture ne peuvent pas être lus.</p>
                 </div>
                 <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
-                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Mon fichier PDF est-il envoye sur un serveur ?</h3>
-                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Non, absolument pas. L&apos;analyse et l&apos;extraction se font entierement dans votre navigateur via JavaScript. Votre fichier PDF ne quitte jamais votre ordinateur, ce qui garantit la confidentialite de vos documents.</p>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Mon fichier PDF est-il envoyé sur un serveur ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Non, absolument pas. L&apos;analyse et l&apos;extraction se font entièrement dans votre navigateur via JavaScript. Votre fichier PDF ne quitte jamais votre ordinateur, ce qui garantit la confidentialité de vos documents.</p>
                 </div>
                 <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
                   <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Puis-je extraire le texte d&apos;un PDF ?</h3>
-                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Cet outil se concentre sur l&apos;analyse des metadonnees et l&apos;extraction de pages individuelles en PDF. L&apos;extraction de texte brut depend de la facon dont le PDF a ete cree : les PDF generes depuis un traitement de texte sont extractibles, mais les PDF scannes necessitent un outil OCR.</p>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Oui : cliquez sur « Extraire le texte » pour récupérer le contenu de toutes les pages, puis copiez-le ou téléchargez-le en fichier .txt. Cela fonctionne pour les PDF créés depuis un traitement de texte ou un logiciel ; les PDF scannés (images) nécessitent un outil OCR. La mise en page (colonnes, tableaux) n&apos;est pas conservée.</p>
                 </div>
               </div>
             </div>
@@ -473,11 +514,15 @@ export default function PdfVersTexte() {
           <aside className="space-y-6">
             <AdPlaceholder className="h-[250px]" />
             <div className="rounded-2xl border p-6" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-              <h3 className="text-sm font-semibold" style={{ fontFamily: "var(--font-display)" }}>Fonctionnalites</h3>
+              <h3 className="text-sm font-semibold" style={{ fontFamily: "var(--font-display)" }}>Fonctionnalités</h3>
               <ul className="mt-3 space-y-2 text-xs" style={{ color: "var(--muted)" }}>
                 <li className="flex gap-2">
                   <span style={{ color: "var(--primary)" }}>&#10003;</span>
-                  <span>Metadonnees completes</span>
+                  <span>Extraction du texte (.txt)</span>
+                </li>
+                <li className="flex gap-2">
+                  <span style={{ color: "var(--primary)" }}>&#10003;</span>
+                  <span>Métadonnées complètes</span>
                 </li>
                 <li className="flex gap-2">
                   <span style={{ color: "var(--primary)" }}>&#10003;</span>
@@ -489,7 +534,7 @@ export default function PdfVersTexte() {
                 </li>
                 <li className="flex gap-2">
                   <span style={{ color: "var(--primary)" }}>&#10003;</span>
-                  <span>Copier les metadonnees</span>
+                  <span>Copier les métadonnées</span>
                 </li>
                 <li className="flex gap-2">
                   <span style={{ color: "var(--primary)" }}>&#10003;</span>

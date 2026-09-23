@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Salaire Brut en Net 2026 - Convertisseur Gratuit",
   description:
-    "Convertissez votre salaire brut en net en 1 clic. Cadre, non-cadre, fonction publique. Cotisations detaillees et impot sur le revenu inclus. Gratuit, sans inscription.",
+    "Convertissez votre salaire brut en net en 1 clic. Cadre, non-cadre, fonction publique. Cotisations détaillées et impôt sur le revenu inclus. Gratuit, sans inscription.",
   keywords: [
     "brut en net",
     "salaire brut net",

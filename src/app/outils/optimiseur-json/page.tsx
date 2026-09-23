@@ -83,16 +83,121 @@ const TOKEN_COLORS: Record<TokenType, string> = {
   colon: "#64748b",
 };
 
-function sortKeysDeep(obj: unknown): unknown {
-  if (Array.isArray(obj)) return obj.map(sortKeysDeep);
-  if (obj !== null && typeof obj === "object") {
-    const sorted: Record<string, unknown> = {};
-    for (const key of Object.keys(obj as Record<string, unknown>).sort()) {
-      sorted[key] = sortKeysDeep((obj as Record<string, unknown>)[key]);
+/* ─── Lossless JSON model ───
+ * JSON.parse + JSON.stringify silently alters data: integers above 2^53
+ * (IDs such as 12345678901234567890) lose precision, 1.0 becomes 1 and
+ * duplicate keys are dropped. The input is first validated with JSON.parse,
+ * then re-read into this small tree that keeps every number / string exactly
+ * as written. */
+type JNode =
+  | { t: "obj"; entries: [string, JNode][] }
+  | { t: "arr"; items: JNode[] }
+  | { t: "lit"; raw: string };
+
+function parseLossless(src: string): JNode {
+  let i = 0;
+  const ws = () => {
+    while (i < src.length && (src[i] === " " || src[i] === "\n" || src[i] === "\t" || src[i] === "\r")) i++;
+  };
+  const str = (): string => {
+    const start = i;
+    i++; // opening quote
+    while (src[i] !== '"') i += src[i] === "\\" ? 2 : 1;
+    i++; // closing quote
+    return src.slice(start, i);
+  };
+  const value = (): JNode => {
+    ws();
+    const ch = src[i];
+    if (ch === "{") {
+      i++;
+      const entries: [string, JNode][] = [];
+      ws();
+      if (src[i] === "}") { i++; return { t: "obj", entries }; }
+      for (;;) {
+        ws();
+        const key = str();
+        ws();
+        i++; // colon
+        entries.push([key, value()]);
+        ws();
+        if (src[i++] === "}") return { t: "obj", entries };
+      }
     }
-    return sorted;
+    if (ch === "[") {
+      i++;
+      const items: JNode[] = [];
+      ws();
+      if (src[i] === "]") { i++; return { t: "arr", items }; }
+      for (;;) {
+        items.push(value());
+        ws();
+        if (src[i++] === "]") return { t: "arr", items };
+      }
+    }
+    if (ch === '"') return { t: "lit", raw: str() };
+    const start = i;
+    while (i < src.length && !/[\s,\]}]/.test(src[i])) i++;
+    return { t: "lit", raw: src.slice(start, i) };
+  };
+  return value();
+}
+
+function printLossless(node: JNode, indent: string, level = 0): string {
+  const nl = indent ? "\n" : "";
+  const pad = indent.repeat(level + 1);
+  const end = indent.repeat(level);
+  const sep = indent ? ": " : ":";
+  if (node.t === "lit") return node.raw;
+  if (node.t === "arr") {
+    if (node.items.length === 0) return "[]";
+    return `[${nl}${node.items.map((v) => pad + printLossless(v, indent, level + 1)).join("," + nl)}${nl}${end}]`;
   }
-  return obj;
+  if (node.entries.length === 0) return "{}";
+  return `{${nl}${node.entries.map(([k, v]) => pad + k + sep + printLossless(v, indent, level + 1)).join("," + nl)}${nl}${end}}`;
+}
+
+function sortLossless(node: JNode): JNode {
+  if (node.t === "arr") return { t: "arr", items: node.items.map(sortLossless) };
+  if (node.t === "obj") {
+    const entries = node.entries.map(([k, v]) => [k, sortLossless(v)] as [string, JNode]);
+    entries.sort(([a], [b]) => {
+      const ka = JSON.parse(a) as string;
+      const kb = JSON.parse(b) as string;
+      return ka < kb ? -1 : ka > kb ? 1 : 0;
+    });
+    return { t: "obj", entries };
+  }
+  return node;
+}
+
+function countKeys(node: JNode): number {
+  if (node.t === "arr") return node.items.reduce((acc, v) => acc + countKeys(v), 0);
+  if (node.t === "obj") return node.entries.reduce((acc, [, v]) => acc + 1 + countKeys(v), 0);
+  return 0;
+}
+
+// Adds "ligne X, colonne Y" when the engine only gives a character offset.
+function describeJsonError(e: unknown, source: string): string {
+  const msg = e instanceof Error ? e.message : String(e);
+  const m = msg.match(/position (\d+)/);
+  if (m && !/line \d+/i.test(msg)) {
+    const before = source.slice(0, Number(m[1]));
+    const line = before.split("\n").length;
+    const col = before.length - before.lastIndexOf("\n");
+    return `JSON invalide (ligne ${line}, colonne ${col}) : ${msg}`;
+  }
+  return `JSON invalide : ${msg}`;
+}
+
+// Validates with the native parser (precise error messages), then builds the lossless tree.
+function readJson(input: string): JNode {
+  try {
+    JSON.parse(input);
+  } catch (e) {
+    throw new Error(describeJsonError(e, input));
+  }
+  return parseLossless(input);
 }
 
 export default function OptimiseurJson() {
@@ -103,75 +208,32 @@ export default function OptimiseurJson() {
   const [copied, setCopied] = useState(false);
   const [stats, setStats] = useState({ lines: 0, size: 0, keys: 0 });
 
-  const updateStats = useCallback((text: string) => {
-    const lines = text.split("\n").length;
-    const size = new Blob([text]).size;
-    let keys = 0;
-    try {
-      const countKeys = (obj: unknown): number => {
-        if (Array.isArray(obj)) return obj.reduce((acc, v) => acc + countKeys(v), 0);
-        if (obj !== null && typeof obj === "object") {
-          return Object.keys(obj as Record<string, unknown>).length + Object.values(obj as Record<string, unknown>).reduce((acc: number, v) => acc + countKeys(v), 0);
-        }
-        return 0;
-      };
-      keys = countKeys(JSON.parse(text));
-    } catch { /* ignore */ }
-    setStats({ lines, size, keys });
+  const showResult = useCallback((text: string, tree: JNode) => {
+    setOutput(text);
+    setStats({ lines: text.split("\n").length, size: new Blob([text]).size, keys: countKeys(tree) });
   }, []);
 
-  const format = useCallback(() => {
+  const run = useCallback((transform: (tree: JNode) => string | null) => {
     setError("");
     try {
-      const parsed = JSON.parse(input);
-      const indentValue: string | number = indent === 0 ? "\t" : indent;
-      const formatted = JSON.stringify(parsed, null, indentValue);
-      setOutput(formatted);
-      updateStats(formatted);
+      const tree = readJson(input);
+      const text = transform(tree);
+      if (text === null) {
+        setOutput("JSON valide !");
+      } else {
+        showResult(text, tree);
+      }
     } catch (e) {
-      setError(`JSON invalide : ${(e as Error).message}`);
+      setError((e as Error).message);
       setOutput("");
     }
-  }, [input, indent, updateStats]);
+  }, [input, showResult]);
 
-  const minify = useCallback(() => {
-    setError("");
-    try {
-      const parsed = JSON.parse(input);
-      const minified = JSON.stringify(parsed);
-      setOutput(minified);
-      updateStats(minified);
-    } catch (e) {
-      setError(`JSON invalide : ${(e as Error).message}`);
-      setOutput("");
-    }
-  }, [input, updateStats]);
-
-  const sortKeys = useCallback(() => {
-    setError("");
-    try {
-      const parsed = JSON.parse(input);
-      const sorted = sortKeysDeep(parsed);
-      const indentValue: string | number = indent === 0 ? "\t" : indent;
-      const formatted = JSON.stringify(sorted, null, indentValue);
-      setOutput(formatted);
-      updateStats(formatted);
-    } catch (e) {
-      setError(`JSON invalide : ${(e as Error).message}`);
-      setOutput("");
-    }
-  }, [input, indent, updateStats]);
-
-  const validate = useCallback(() => {
-    try {
-      JSON.parse(input);
-      setError("");
-      setOutput("JSON valide !");
-    } catch (e) {
-      setError(`JSON invalide : ${(e as Error).message}`);
-      setOutput("");
-    }
-  }, [input]);
+  const indentString = indent === 0 ? "\t" : " ".repeat(indent);
+  const format = () => run((tree) => printLossless(tree, indentString));
+  const minify = () => run((tree) => printLossless(tree, ""));
+  const sortKeys = () => run((tree) => printLossless(sortLossless(tree), indentString));
+  const validate = () => run(() => null);
 
   const copyOutput = async () => {
     if (output) {
@@ -212,7 +274,7 @@ export default function OptimiseurJson() {
             Optimiseur <span style={{ color: "var(--primary)" }}>JSON</span>
           </h1>
           <p className="animate-fade-up stagger-2 mt-3 max-w-xl text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-            Formatez, validez, minifiez et triez vos donnees JSON. Coloration syntaxique incluse.
+            Formatez, validez, minifiez et triez vos données JSON. Coloration syntaxique incluse.
           </p>
         </div>
       </section>
@@ -223,7 +285,7 @@ export default function OptimiseurJson() {
             {/* Input */}
             <div className="rounded-2xl border p-6" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
               <div className="flex items-center justify-between">
-                <h2 className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--accent)" }}>JSON en entree</h2>
+                <h2 className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--accent)" }}>JSON en entrée</h2>
                 <button onClick={loadExample} className="text-xs font-semibold px-3 py-1 rounded-lg transition-all hover:bg-[var(--surface-alt)]" style={{ color: "var(--primary)" }}>
                   Charger un exemple
                 </button>
@@ -234,9 +296,9 @@ export default function OptimiseurJson() {
                 rows={10}
                 className="mt-4 w-full rounded-xl border px-4 py-3 text-sm"
                 style={{ borderColor: "var(--border)", fontFamily: "monospace", resize: "vertical" }}
-                placeholder='{"cle": "valeur", ...}'
+                placeholder='{"clé": "valeur", ...}'
               />
-              <p className="mt-2 text-xs" style={{ color: "var(--muted)" }}>{input.length} caracteres &middot; {input.split("\n").length} lignes</p>
+              <p className="mt-2 text-xs" style={{ color: "var(--muted)" }}>{input.length} caractères &middot; {input.split("\n").length} lignes</p>
             </div>
 
             {/* Options */}
@@ -281,7 +343,7 @@ export default function OptimiseurJson() {
                 Minifier
               </button>
               <button onClick={sortKeys} className="rounded-xl border py-3 text-sm font-semibold transition-all hover:bg-[var(--surface-alt)]" style={{ borderColor: "var(--border)" }}>
-                Trier les cles
+                Trier les clés
               </button>
               <button onClick={validate} className="rounded-xl border py-3 text-sm font-semibold transition-all hover:bg-[var(--surface-alt)]" style={{ borderColor: "var(--border)" }}>
                 Valider
@@ -299,15 +361,15 @@ export default function OptimiseurJson() {
             {output && (
               <div className="rounded-2xl border overflow-hidden" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
                 <div className="px-5 py-3 border-b flex items-center justify-between" style={{ borderColor: "var(--border)", background: "var(--surface-alt)" }}>
-                  <h2 className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--accent)" }}>Resultat</h2>
+                  <h2 className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--accent)" }}>Résultat</h2>
                   <div className="flex items-center gap-3">
                     {output !== "JSON valide !" && (
                       <span className="text-xs" style={{ color: "var(--muted)" }}>
-                        {stats.lines} lignes &middot; {stats.size} octets &middot; {stats.keys} cles
+                        {stats.lines} lignes &middot; {stats.size} octets &middot; {stats.keys} clés
                       </span>
                     )}
                     <button onClick={copyOutput} className="rounded-lg px-4 py-1.5 text-xs font-semibold text-white transition-all hover:opacity-90" style={{ background: copied ? "var(--accent)" : "var(--primary)" }}>
-                      {copied ? "Copie !" : "Copier"}
+                      {copied ? "Copié !" : "Copier"}
                     </button>
                   </div>
                 </div>
@@ -328,12 +390,13 @@ export default function OptimiseurJson() {
 
             {/* About */}
             <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>A propos</h2>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>À propos</h2>
               <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                <p><strong className="text-[var(--foreground)]">Formater</strong> : Ajoute l&apos;indentation et les retours a la ligne pour rendre le JSON lisible.</p>
-                <p><strong className="text-[var(--foreground)]">Minifier</strong> : Supprime tous les espaces et retours a la ligne pour reduire la taille.</p>
-                <p><strong className="text-[var(--foreground)]">Trier les cles</strong> : Ordonne toutes les cles par ordre alphabetique, recurssivement.</p>
-                <p><strong className="text-[var(--foreground)]">Coloration</strong> : <span style={{ color: "#0d4f3c" }}>cles</span>, <span style={{ color: "#e8963e" }}>texte</span>, <span style={{ color: "#2563eb" }}>nombres</span>, <span style={{ color: "#9333ea" }}>booleens</span>, <span style={{ color: "#dc2626" }}>null</span>.</p>
+                <p><strong className="text-[var(--foreground)]">Formater</strong> : Ajoute l&apos;indentation et les retours à la ligne pour rendre le JSON lisible.</p>
+                <p><strong className="text-[var(--foreground)]">Minifier</strong> : Supprime tous les espaces et retours à la ligne pour réduire la taille.</p>
+                <p><strong className="text-[var(--foreground)]">Trier les clés</strong> : Ordonne toutes les clés par ordre alphabétique, récursivement.</p>
+                <p><strong className="text-[var(--foreground)]">Sans perte</strong> : les nombres et les chaînes sont recopiés exactement tels qu&apos;ils sont écrits. Les grands identifiants (au-delà de 2<sup>53</sup>, par exemple 12345678901234567890) ne sont pas arrondis et 1.0 reste 1.0, contrairement à un simple JSON.parse / JSON.stringify.</p>
+                <p><strong className="text-[var(--foreground)]">Coloration</strong> : <span style={{ color: "#0d4f3c" }}>clés</span>, <span style={{ color: "#e8963e" }}>texte</span>, <span style={{ color: "#2563eb" }}>nombres</span>, <span style={{ color: "#9333ea" }}>booléens</span>, <span style={{ color: "#dc2626" }}>null</span>.</p>
               </div>
             </div>
 
@@ -344,33 +407,33 @@ export default function OptimiseurJson() {
               </h2>
               <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
                 <p>
-                  Notre optimiseur JSON est un outil complet pour les developpeurs : formatage, minification, validation et tri des cles.
+                  Notre optimiseur JSON est un outil complet pour les développeurs : formatage, minification, validation et tri des clés.
                   Collez votre JSON brut et transformez-le en un clic.
                 </p>
                 <ul className="ml-4 list-disc space-y-1">
                   <li><strong className="text-[var(--foreground)]">Collez votre JSON</strong> : dans la zone de saisie ou chargez l&apos;exemple</li>
-                  <li><strong className="text-[var(--foreground)]">Choisissez l&apos;indentation</strong> : 2, 4 ou 8 espaces selon vos preferences</li>
-                  <li><strong className="text-[var(--foreground)]">Formatez ou minifiez</strong> : rendez le JSON lisible ou compactez-le pour reduire sa taille</li>
-                  <li><strong className="text-[var(--foreground)]">Validez et triez</strong> : verifiez la syntaxe et ordonnez les cles alphabetiquement</li>
+                  <li><strong className="text-[var(--foreground)]">Choisissez l&apos;indentation</strong> : 2, 4 ou 8 espaces selon vos préférences</li>
+                  <li><strong className="text-[var(--foreground)]">Formatez ou minifiez</strong> : rendez le JSON lisible ou compactez-le pour réduire sa taille</li>
+                  <li><strong className="text-[var(--foreground)]">Validez et triez</strong> : vérifiez la syntaxe et ordonnez les clés alphabétiquement</li>
                 </ul>
               </div>
             </div>
 
             {/* FAQ */}
             <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Questions frequentes</h2>
+              <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Questions fréquentes</h2>
               <div className="mt-6 space-y-5">
                 <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
                   <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Qu&apos;est-ce que le format JSON ?</h3>
-                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>JSON (JavaScript Object Notation) est un format de donnees textuel leger utilise pour l&apos;echange de donnees entre un serveur et un client. Il est lisible par les humains et facile a parser par les machines. C&apos;est le format standard des APIs REST modernes.</p>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>JSON (JavaScript Object Notation) est un format de données textuel léger utilisé pour l&apos;échange de données entre un serveur et un client. Il est lisible par les humains et facile à parser par les machines. C&apos;est le format standard des APIs REST modernes.</p>
                 </div>
                 <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
                   <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Pourquoi minifier du JSON ?</h3>
-                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>La minification supprime les espaces, tabulations et retours a la ligne superflus. Cela reduit la taille du fichier de 30 a 50%, ce qui accelere les transferts reseau et reduit la bande passante utilisee par vos APIs.</p>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>La minification supprime les espaces, tabulations et retours à la ligne superflus. Cela réduit la taille du fichier de 30 à 50%, ce qui accélère les transferts réseau et réduit la bande passante utilisée par vos APIs.</p>
                 </div>
                 <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
-                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>A quoi sert le tri des cles ?</h3>
-                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Trier les cles alphabetiquement facilite la lecture et la comparaison de fichiers JSON. C&apos;est utile pour les fichiers de configuration, les schemas d&apos;API et le versionnage avec Git (les diffs sont plus lisibles).</p>
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>À quoi sert le tri des clés ?</h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Trier les clés alphabétiquement facilite la lecture et la comparaison de fichiers JSON. C&apos;est utile pour les fichiers de configuration, les schémas d&apos;API et le versionnage avec Git (les diffs sont plus lisibles).</p>
                 </div>
               </div>
             </div>
@@ -381,10 +444,10 @@ export default function OptimiseurJson() {
             <div className="rounded-2xl border p-6" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
               <h3 className="text-sm font-semibold" style={{ fontFamily: "var(--font-display)" }}>Raccourcis JSON</h3>
               <ul className="mt-3 space-y-2 text-xs leading-relaxed" style={{ color: "var(--muted)" }}>
-                <li><strong className="text-[var(--foreground)]">Objet</strong> : {`{ "cle": "valeur" }`}</li>
+                <li><strong className="text-[var(--foreground)]">Objet</strong> : {`{ "clé": "valeur" }`}</li>
                 <li><strong className="text-[var(--foreground)]">Tableau</strong> : {`[1, 2, 3]`}</li>
                 <li><strong className="text-[var(--foreground)]">Types</strong> : string, number, boolean, null, object, array</li>
-                <li><strong className="text-[var(--foreground)]">Echappement</strong> : {"\\n, \\t, \\\\, \\\""}</li>
+                <li><strong className="text-[var(--foreground)]">Échappement</strong> : {"\\n, \\t, \\\\, \\\""}</li>
               </ul>
             </div>
             <AdPlaceholder className="h-[600px]" />

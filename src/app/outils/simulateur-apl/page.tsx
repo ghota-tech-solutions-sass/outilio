@@ -7,7 +7,7 @@ import ToolFaqSection from "@/components/ToolFaqSection";
 import ToolHowToSection from "@/components/ToolHowToSection";
 
 const PRESETS_LOYER = [
-  { label: "Studio etudiant", value: 450 },
+  { label: "Studio étudiant", value: 450 },
   { label: "T2 province", value: 650 },
   { label: "T2 Lyon/Bordeaux", value: 800 },
   { label: "T2 Paris", value: 1100 },
@@ -22,34 +22,48 @@ const PRESETS_LOYER = [
 type Zone = "1" | "2" | "3";
 type TypeLogement = "location" | "colocation" | "foyer";
 type Situation = "celibataire" | "couple";
+type StatutEtudiant = "non" | "etudiant" | "boursier";
+
+// Forfait de ressources des étudiants (art. R822-20 et suivants du CCH, réforme 2021) :
+// la CAF retient le plus élevé des ressources réelles et du forfait. Montants 2026, non revalorisés.
+const FORFAIT_ETUDIANT: Record<Exclude<StatutEtudiant, "non">, { location: number; foyer: number }> = {
+  etudiant: { location: 8600, foyer: 6600 },
+  boursier: { location: 6900, foyer: 5400 },
+};
 
 interface AplParams {
   label: string;
-  // Plafonds de loyer mensuels : [personne seule, couple, +1 enfant, par pers. supp.]
+  // Plafonds de loyer mensuels : [personne seule, couple, 1 pers. a charge, par pers. a charge supp.]
   plafondLoyer: Record<Zone, [number, number, number, number]>;
-  // Plafonds colocation (60% du plafond location)
+  // Plafonds colocation (75% du plafond location, art. 16 arrete 27/09/2019)
   colocationRatio: number;
   // Plafonds foyer : montant unique par zone
   plafondFoyer: Record<Zone, number>;
-  // Forfait charges : [isolé/couple sans enfant, par personne supplementaire]
+  // Forfait charges : [isole ou couple sans pers. a charge, par personne a charge]
   forfaitCharges: [number, number];
+  // Forfait charges colocation : [isole, couple, par personne a charge]
+  forfaitChargesColocation: [number, number, number];
   // Forfait charges foyer (montant unique)
   forfaitChargesFoyer: number;
-  // Participation minimale P0
+  // Participation minimale P0 = max(tauxP0 x (L + C), P0)
   P0: number;
-  // Abattement forfaitaire de 5 euros
+  tauxP0: number;
+  // Minoration forfaitaire de 5 euros
   abattement: number;
+  // Seuil de non-versement (allocations de logement)
+  seuilVersement: number;
   // R0 : plancher de ressources sous lequel l'APL est maximale
-  // [seul, couple, +1enf, +2enf, +3enf, +4enf, +5enf, +6enf, par pers. supp.]
+  // [seul, couple, 1 pers. a charge, 2, 3, 4, 5, 6, par pers. a charge supp.]
   R0: number[];
-  // Taux de participation TF selon le nombre de personnes au foyer
-  // index 0 = 1 pers, 1 = 2 pers, 2 = 3 pers, etc.
+  // Taux famille TF selon la composition
+  // [seul, couple, 1 pers. a charge, 2, 3, 4, 5, 6] puis reduction par pers. supp.
   TF: number[];
-  // Loyer de reference LR par zone
-  LR: Record<Zone, number>;
-  // Coefficients pour TL (taux loyer) : tranches de RL
-  // TL = somme des (taux * min(part dans la tranche, largeur tranche))
-  // Tranches de RL : [0, 0.45], [0.45, 0.75], [0.75, +inf]
+  TF_reduction_supp: number;
+  // Loyer de reference LR selon la composition (= plafonds zone 2)
+  // [seul, couple, 1 pers. a charge, par pers. a charge supp.]
+  LR: [number, number, number, number];
+  // Taux loyer TL : tranches de RL [0, 45%], [45%, 75%], [75%, +inf]
+  // TL = somme des (taux * part de RL dans la tranche)
   TL_bornes: number[];
   TL_taux: number[];
 }
@@ -62,26 +76,27 @@ const PARAMS: Record<number, AplParams> = {
       "2": [290.34, 355.38, 399.89, 58.21],
       "3": [272.12, 329.88, 369.88, 53.01],
     },
-    colocationRatio: 0.6,
+    colocationRatio: 0.75,
     plafondFoyer: {
       "1": 298.07,
       "2": 260.15,
       "3": 243.82,
     },
     forfaitCharges: [60.59, 13.74],
+    forfaitChargesColocation: [30.29, 60.59, 13.74],
     forfaitChargesFoyer: 30.30,
     P0: 39.56,
+    tauxP0: 0.085,
     abattement: 5,
+    seuilVersement: 10,
     R0: [5235, 7501, 8947, 9148, 9498, 9851, 10202, 10554, 346],
-    // TF en % (exprime en decimal) : 1 pers = 2.83%, 2 = 3.15%, 3 = 2.70%, 4+ = 2.50%, 5+ = 2.29%, 6+ = 2.06%
-    TF: [0.0283, 0.0315, 0.0270, 0.0250, 0.0229, 0.0206],
-    LR: {
-      "1": 268.86,
-      "2": 233.07,
-      "3": 217.38,
-    },
+    // TF (art. 14) : seul 2,83%, couple 3,15%, 1 pers. a charge 2,70%, 2 : 2,38%, 3 : 2,01%,
+    // 4 : 1,85%, 5 : 1,79%, 6 : 1,73%, puis -0,06% par pers. a charge supp.
+    TF: [0.0283, 0.0315, 0.0270, 0.0238, 0.0201, 0.0185, 0.0179, 0.0173],
+    TF_reduction_supp: 0.0006,
+    LR: [290.34, 355.38, 399.89, 58.21],
     TL_bornes: [0, 0.45, 0.75],
-    TL_taux: [0.0045, 0.0068, 0.0098],
+    TL_taux: [0, 0.0045, 0.0068],
   },
 };
 
@@ -94,10 +109,6 @@ function getDefaultParamYear(): number {
 /* ==========================================================================
    FONCTIONS DE CALCUL
    ========================================================================== */
-
-function getNbPersonnes(situation: Situation, nbEnfants: number): number {
-  return (situation === "couple" ? 2 : 1) + nbEnfants;
-}
 
 function getPlafondLoyer(
   params: AplParams,
@@ -113,15 +124,13 @@ function getPlafondLoyer(
   const z = params.plafondLoyer[zone];
   let plafond: number;
 
-  if (situation === "celibataire" && nbEnfants === 0) {
-    plafond = z[0]; // personne seule
-  } else if (situation === "couple" && nbEnfants === 0) {
-    plafond = z[1]; // couple sans enfant
-  } else if (nbEnfants >= 1) {
-    // Couple ou seul + enfants : base = plafond 3e colonne + supp par enfant au-dela de 1
+  if (nbEnfants >= 1) {
+    // Seul ou couple avec personnes a charge : base 1 pers. a charge + supp par pers. au-dela
     plafond = z[2] + Math.max(0, nbEnfants - 1) * z[3];
+  } else if (situation === "couple") {
+    plafond = z[1]; // couple sans personne a charge
   } else {
-    plafond = z[0];
+    plafond = z[0]; // personne seule
   }
 
   if (typeLogement === "colocation") {
@@ -140,30 +149,47 @@ function getForfaitCharges(
   if (typeLogement === "foyer") {
     return params.forfaitChargesFoyer;
   }
-  const nbPersonnes = getNbPersonnes(situation, nbEnfants);
-  return params.forfaitCharges[0] + Math.max(0, nbPersonnes - 1) * params.forfaitCharges[1];
+  if (typeLogement === "colocation") {
+    const [seul, couple, supp] = params.forfaitChargesColocation;
+    if (nbEnfants >= 1) return couple + nbEnfants * supp;
+    return situation === "couple" ? couple : seul;
+  }
+  // Forfait majore par personne a charge (pas pour le conjoint)
+  return params.forfaitCharges[0] + Math.max(0, nbEnfants) * params.forfaitCharges[1];
 }
 
 function getR0(params: AplParams, situation: Situation, nbEnfants: number): number {
-  const nbPersonnes = getNbPersonnes(situation, nbEnfants);
-  // R0 array: index 0 = 1 pers, 1 = 2 pers, ..., 7 = 8 pers, 8 = supp par pers
-  if (nbPersonnes <= 8) {
-    return params.R0[nbPersonnes - 1];
+  // R0 array: 0 = seul, 1 = couple, 2..7 = 1 a 6 pers. a charge, 8 = supp par pers. a charge
+  if (nbEnfants === 0) {
+    return situation === "couple" ? params.R0[1] : params.R0[0];
   }
-  return params.R0[7] + (nbPersonnes - 8) * params.R0[8];
+  if (nbEnfants <= 6) {
+    return params.R0[nbEnfants + 1];
+  }
+  return params.R0[7] + (nbEnfants - 6) * params.R0[8];
 }
 
 function getTF(params: AplParams, situation: Situation, nbEnfants: number): number {
-  const nbPersonnes = getNbPersonnes(situation, nbEnfants);
-  const idx = Math.min(nbPersonnes - 1, params.TF.length - 1);
-  return params.TF[idx];
+  if (nbEnfants === 0) {
+    return situation === "couple" ? params.TF[1] : params.TF[0];
+  }
+  if (nbEnfants <= 6) {
+    return params.TF[nbEnfants + 1];
+  }
+  return Math.max(0, params.TF[7] - (nbEnfants - 6) * params.TF_reduction_supp);
+}
+
+function getLoyerReference(params: AplParams, situation: Situation, nbEnfants: number): number {
+  const lr = params.LR;
+  if (nbEnfants >= 1) return lr[2] + (nbEnfants - 1) * lr[3];
+  return situation === "couple" ? lr[1] : lr[0];
 }
 
 function calculerTL(params: AplParams, RL: number): number {
   // TL est calcule par tranches progressives de RL
-  // Tranche 1: 0 a 0.45 -> taux 0.45%
-  // Tranche 2: 0.45 a 0.75 -> taux 0.68%
-  // Tranche 3: au-dela de 0.75 -> taux 0.98%
+  // Tranche 1: 0 a 45% -> taux 0%
+  // Tranche 2: 45% a 75% -> taux 0.45%
+  // Tranche 3: au-dela de 75% -> taux 0.68%
   const bornes = params.TL_bornes;
   const taux = params.TL_taux;
   let tl = 0;
@@ -218,9 +244,9 @@ function calculerAPL(
   details.push(`Forfait charges : ${charges.toFixed(2)} euros`);
 
   // 3. Loyer de reference et RL
-  const LR = params.LR[zone];
+  const LR = getLoyerReference(params, situation, nbEnfants);
   const RL = LR > 0 ? loyerRetenu / LR : 0;
-  details.push(`Loyer de reference (LR) : ${LR.toFixed(2)} euros`);
+  details.push(`Loyer de référence (LR) : ${LR.toFixed(2)} euros`);
   details.push(`Rapport RL = loyer retenu / LR = ${RL.toFixed(4)}`);
 
   // 4. Taux TF et TL
@@ -231,26 +257,30 @@ function calculerAPL(
   details.push(`TL (taux loyer) : ${(tl * 100).toFixed(3)}%`);
   details.push(`TP = TF + TL = ${(tp * 100).toFixed(3)}%`);
 
-  // 5. R0 et RP
+  // 5. R0 et RP (ressources arrondies a la centaine d'euros superieure, art. D823-17 CCH)
   const r0 = getR0(params, situation, nbEnfants);
-  const rp = Math.max(0, ressourcesAnnuelles - r0);
+  const ressourcesArrondies = Math.ceil(Math.max(0, ressourcesAnnuelles) / 100) * 100;
+  const rp = Math.max(0, ressourcesArrondies - r0);
   details.push(`R0 (plancher ressources) : ${r0.toLocaleString("fr-FR")} euros/an`);
-  details.push(`RP = max(0, ${ressourcesAnnuelles.toLocaleString("fr-FR")} - ${r0.toLocaleString("fr-FR")}) = ${rp.toLocaleString("fr-FR")} euros`);
+  details.push(`RP = max(0, ${ressourcesArrondies.toLocaleString("fr-FR")} - ${r0.toLocaleString("fr-FR")}) = ${rp.toLocaleString("fr-FR")} euros`);
 
-  // 6. Participation personnelle PP = max(P0, P0 + TP * RP)
-  const pp = params.P0 + tp * (rp / 12);
-  const participationPersonnelle = Math.max(params.P0, pp);
-  details.push(`PP = P0 + TP x (RP/12) = ${params.P0.toFixed(2)} + ${(tp * 100).toFixed(3)}% x ${(rp / 12).toFixed(2)} = ${pp.toFixed(2)} euros`);
+  // 6. Participation personnelle PP = P0 + TP x RP (RP annuel, PP mensuelle)
+  // P0 = max(8,5% x (L + C), 39,56 euros)
+  const p0 = Math.max(params.tauxP0 * (loyerRetenu + charges), params.P0);
+  const pp = p0 + tp * rp;
+  const participationPersonnelle = pp;
+  details.push(`P0 = max(8,5% x (L + C), ${params.P0.toFixed(2)}) = ${p0.toFixed(2)} euros`);
+  details.push(`PP = P0 + TP x RP = ${p0.toFixed(2)} + ${(tp * 100).toFixed(3)}% x ${rp.toLocaleString("fr-FR")} = ${pp.toFixed(2)} euros`);
 
   // 7. Montant APL = L + C - PP - abattement
   const aplBrut = loyerRetenu + charges - participationPersonnelle - params.abattement;
   const montantAPL = Math.max(0, Math.round(aplBrut * 100) / 100);
   details.push(`APL = ${loyerRetenu.toFixed(2)} + ${charges.toFixed(2)} - ${participationPersonnelle.toFixed(2)} - ${params.abattement.toFixed(2)} = ${aplBrut.toFixed(2)} euros`);
 
-  // Seuil de versement : pas d'APL si < 15 euros
-  const eligible = montantAPL >= 15;
+  // Seuil de versement : aide non versee si < 10 euros
+  const eligible = montantAPL >= params.seuilVersement;
   if (!eligible && montantAPL > 0) {
-    details.push("Montant inferieur a 15 euros : l'APL n'est pas versee.");
+    details.push(`Montant inférieur à ${params.seuilVersement} euros : l'aide n'est pas versée.`);
   }
 
   return {
@@ -259,7 +289,7 @@ function calculerAPL(
     plafondLoyer: plafond,
     forfaitCharges: charges,
     participationPersonnelle,
-    P0: params.P0,
+    P0: p0,
     TP: tp,
     TF: tf,
     TL: tl,
@@ -282,7 +312,8 @@ export default function SimulateurAPL() {
   const [situation, setSituation] = useState<Situation>("celibataire");
   const [nbEnfants, setNbEnfants] = useState("0");
   const [typeLogement, setTypeLogement] = useState<TypeLogement>("location");
-  const [ressources, setRessources] = useState("15000");
+  const [ressources, setRessources] = useState("8000");
+  const [statutEtudiant, setStatutEtudiant] = useState<StatutEtudiant>("non");
   const [showDetails, setShowDetails] = useState(false);
 
   const paramYear = getDefaultParamYear();
@@ -291,9 +322,19 @@ export default function SimulateurAPL() {
   const result = useMemo(() => {
     const loyerNum = parseFloat(loyer) || 0;
     const enfantsNum = parseInt(nbEnfants) || 0;
-    const ressourcesNum = parseFloat(ressources) || 0;
+    const ressourcesSaisies = parseFloat(ressources) || 0;
+    const forfait =
+      statutEtudiant === "non"
+        ? 0
+        : FORFAIT_ETUDIANT[statutEtudiant][typeLogement === "foyer" ? "foyer" : "location"];
+    const ressourcesNum = Math.max(ressourcesSaisies, forfait);
     return calculerAPL(loyerNum, zone, situation, enfantsNum, typeLogement, ressourcesNum, params);
-  }, [loyer, zone, situation, nbEnfants, typeLogement, ressources, params]);
+  }, [loyer, zone, situation, nbEnfants, typeLogement, ressources, statutEtudiant, params]);
+
+  const forfaitEtudiant =
+    statutEtudiant === "non"
+      ? 0
+      : FORFAIT_ETUDIANT[statutEtudiant][typeLogement === "foyer" ? "foyer" : "location"];
 
   const fmt = (n: number) =>
     n.toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -322,7 +363,7 @@ export default function SimulateurAPL() {
             className="animate-fade-up stagger-2 mt-3 max-w-xl text-sm leading-relaxed"
             style={{ color: "var(--muted)" }}
           >
-            Estimez votre aide personnalisee au logement selon les baremes officiels {paramYear}-{paramYear + 1}. Calcul instantane et detaille.
+            Estimez votre aide personnalisée au logement selon les barèmes officiels {paramYear}-{paramYear + 1}. Calcul instantané et détaillé.
           </p>
         </div>
       </section>
@@ -402,7 +443,7 @@ export default function SimulateurAPL() {
                       className="text-xs font-semibold uppercase tracking-wider"
                       style={{ color: "var(--muted)" }}
                     >
-                      Zone geographique
+                      Zone géographique
                     </label>
                     <select
                       value={zone}
@@ -410,7 +451,7 @@ export default function SimulateurAPL() {
                       className="mt-2 w-full rounded-xl border px-4 py-3 text-sm"
                       style={{ borderColor: "var(--border)" }}
                     >
-                      <option value="1">Zone 1 - Ile-de-France</option>
+                      <option value="1">Zone 1 - Île-de-France</option>
                       <option value="2">Zone 2 - Grandes villes</option>
                       <option value="3">Zone 3 - Reste de la France</option>
                     </select>
@@ -430,7 +471,7 @@ export default function SimulateurAPL() {
                     >
                       <option value="location">Location classique</option>
                       <option value="colocation">Colocation</option>
-                      <option value="foyer">Foyer / Residence</option>
+                      <option value="foyer">Foyer / Résidence</option>
                     </select>
                   </div>
                 </div>
@@ -450,7 +491,7 @@ export default function SimulateurAPL() {
                       className="mt-2 w-full rounded-xl border px-4 py-3 text-sm"
                       style={{ borderColor: "var(--border)" }}
                     >
-                      <option value="celibataire">Celibataire</option>
+                      <option value="celibataire">Célibataire</option>
                       <option value="couple">Couple</option>
                     </select>
                   </div>
@@ -459,7 +500,7 @@ export default function SimulateurAPL() {
                       className="text-xs font-semibold uppercase tracking-wider"
                       style={{ color: "var(--muted)" }}
                     >
-                      Nombre d&apos;enfants a charge
+                      Nombre d&apos;enfants à charge
                     </label>
                     <input
                       type="number"
@@ -498,8 +539,34 @@ export default function SimulateurAPL() {
                     </span>
                   </div>
                   <p className="mt-1 text-xs" style={{ color: "var(--muted)" }}>
-                    Salaires, allocations chomage, pensions, revenus du patrimoine...
+                    Salaires, allocations chômage, pensions, revenus du patrimoine...
                   </p>
+                </div>
+
+                {/* Statut étudiant */}
+                <div>
+                  <label
+                    className="text-xs font-semibold uppercase tracking-wider"
+                    style={{ color: "var(--muted)" }}
+                  >
+                    Étudiant ?
+                  </label>
+                  <select
+                    value={statutEtudiant}
+                    onChange={(e) => setStatutEtudiant(e.target.value as StatutEtudiant)}
+                    className="mt-2 w-full rounded-xl border px-4 py-3 text-sm"
+                    style={{ borderColor: "var(--border)" }}
+                  >
+                    <option value="non">Non</option>
+                    <option value="etudiant">Oui, non boursier</option>
+                    <option value="boursier">Oui, boursier</option>
+                  </select>
+                  {forfaitEtudiant > 0 && (
+                    <p className="mt-1 text-xs" style={{ color: "var(--muted)" }}>
+                      Forfait étudiant : la CAF retient au moins {forfaitEtudiant.toLocaleString("fr-FR")} €/an de ressources
+                      {typeLogement === "foyer" ? " (résidence ou foyer)" : ""}, même si vous gagnez moins.
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
@@ -507,11 +574,11 @@ export default function SimulateurAPL() {
             {/* Resultat principal */}
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
               <StatBox
-                label="APL estimee"
+                label="APL estimée"
                 value={result.montantAPL > 0 ? `${fmt(result.montantAPL)} \u20AC` : "0 \u20AC"}
                 primary
               />
-              <StatBox label="Reste a charge" value={`${fmt(resteACharge)} \u20AC`} />
+              <StatBox label="Reste à charge" value={`${fmt(resteACharge)} \u20AC`} />
               <StatBox
                 label="Loyer retenu"
                 value={`${fmt(result.loyerRetenu)} \u20AC`}
@@ -545,7 +612,7 @@ export default function SimulateurAPL() {
                   ? `soit ${fmt(result.montantAPL * 12)} \u20AC/an`
                   : result.eligible
                   ? ""
-                  : "Montant trop faible pour etre verse (seuil : 15 \u20AC)"}
+                  : "Montant trop faible pour être versé (seuil : 10 \u20AC)"}
               </p>
               {result.montantAPL > 0 && (
                 <div className="mt-4 flex items-center justify-center gap-8">
@@ -562,7 +629,7 @@ export default function SimulateurAPL() {
                   </div>
                   <div className="text-2xl" style={{ color: "var(--accent)" }}>=</div>
                   <div>
-                    <p className="text-xs" style={{ color: "var(--muted)" }}>Reste a charge</p>
+                    <p className="text-xs" style={{ color: "var(--muted)" }}>Reste à charge</p>
                     <p className="text-lg font-bold" style={{ color: "var(--accent)" }}>
                       {fmt(resteACharge)} &euro;
                     </p>
@@ -581,7 +648,7 @@ export default function SimulateurAPL() {
                   className="text-xs font-semibold uppercase tracking-[0.15em]"
                   style={{ color: "var(--accent)" }}
                 >
-                  Repartition du loyer
+                  Répartition du loyer
                 </h2>
                 <div className="mt-4 grid gap-6 sm:grid-cols-[180px_1fr] sm:items-center">
                   <div className="flex justify-center">
@@ -603,12 +670,12 @@ export default function SimulateurAPL() {
                         {fmt(result.montantAPL)} &euro;
                       </p>
                       <p className="mt-1 text-[11px]" style={{ color: "var(--muted)" }}>
-                        soit {fmt(result.montantAPL * 12)} &euro;/an verses par la CAF.
+                        soit {fmt(result.montantAPL * 12)} &euro;/an versés par la CAF.
                       </p>
                     </div>
                     <div className="rounded-xl border p-4" style={{ borderColor: "var(--border)", background: "var(--surface-alt)" }}>
                       <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>
-                        Loyer net apres APL
+                        Loyer net après APL
                       </p>
                       <p
                         className="mt-1 text-3xl font-bold"
@@ -621,7 +688,7 @@ export default function SimulateurAPL() {
                       </p>
                       <p className="mt-1 text-[11px]" style={{ color: "var(--muted)" }}>
                         {((result.montantAPL / loyerNum) * 100).toFixed(0)}% du loyer pris en charge par l&apos;APL.
-                        {resteACharge / loyerNum < 0.5 && " Tres bonne couverture."}
+                        {resteACharge / loyerNum < 0.5 && " Très bonne couverture."}
                       </p>
                     </div>
                   </div>
@@ -638,19 +705,19 @@ export default function SimulateurAPL() {
                 <CrossLinkCard
                   href="/outils/simulateur-prime-activite"
                   emoji="💰"
-                  title="Prime activite"
-                  desc="Estimer votre complement de revenu"
+                  title="Prime activité"
+                  desc="Estimer votre complément de revenu"
                 />
                 <CrossLinkCard
                   href="/outils/calculateur-salaire"
                   emoji="💼"
                   title="Salaire net"
-                  desc="Brut, net, impot apres PAS"
+                  desc="Brut, net, impôt après PAS"
                 />
                 <CrossLinkCard
                   href="/outils/simulateur-allocation-chomage"
                   emoji="📊"
-                  title="Allocation chomage"
+                  title="Allocation chômage"
                   desc="ARE selon France Travail"
                 />
               </div>
@@ -669,7 +736,7 @@ export default function SimulateurAPL() {
                   className="text-xs font-semibold uppercase tracking-[0.15em]"
                   style={{ color: "var(--accent)" }}
                 >
-                  Detail du calcul
+                  Détail du calcul
                 </h2>
                 <span
                   className="text-sm transition-transform duration-200"
@@ -688,7 +755,7 @@ export default function SimulateurAPL() {
                     <table className="w-full text-sm">
                       <thead>
                         <tr style={{ color: "var(--muted)" }}>
-                          <th className="pb-3 text-left font-medium">Parametre</th>
+                          <th className="pb-3 text-left font-medium">Paramètre</th>
                           <th className="pb-3 text-right font-medium">Valeur</th>
                         </tr>
                       </thead>
@@ -697,7 +764,7 @@ export default function SimulateurAPL() {
                         <ParamRow label="Plafond de loyer (zone)" value={`${fmt(result.plafondLoyer)} \u20AC`} />
                         <ParamRow label="Loyer retenu (L)" value={`${fmt(result.loyerRetenu)} \u20AC`} highlight />
                         <ParamRow label="Forfait charges (C)" value={`${fmt(result.forfaitCharges)} \u20AC`} />
-                        <ParamRow label="Loyer de reference (LR)" value={`${fmt(result.loyerReference)} \u20AC`} />
+                        <ParamRow label="Loyer de référence (LR)" value={`${fmt(result.loyerReference)} \u20AC`} />
                         <ParamRow label="Rapport RL = L / LR" value={result.RL.toFixed(4)} />
                         <ParamRow label="TF (taux famille)" value={`${(result.TF * 100).toFixed(3)}%`} />
                         <ParamRow label="TL (taux loyer)" value={`${(result.TL * 100).toFixed(3)}%`} />
@@ -781,7 +848,7 @@ export default function SimulateurAPL() {
             >
               <p>
                 <strong style={{ color: "var(--foreground)" }}>Estimation indicative.</strong>{" "}
-                Le calcul officiel est realise par la CAF et peut differer selon votre situation precise (patrimoine, abattements specifiques, statut etudiant, etc.).
+                Le calcul officiel est réalisé par la CAF et peut différer selon votre situation précise (patrimoine, abattements spécifiques, statut étudiant, etc.).
                 Consultez{" "}
                 <a
                   href="https://www.caf.fr/allocataires/mes-services-en-ligne/faire-une-simulation"
@@ -791,33 +858,33 @@ export default function SimulateurAPL() {
                 >
                   le simulateur officiel de la CAF
                 </a>{" "}
-                pour un resultat definitif.
+                pour un résultat définitif.
               </p>
             </div>
 
             <ToolHowToSection
-              title="Comment estimer votre APL en 4 etapes"
-              description="Le simulateur applique la formule officielle CAF avec parametres revaloricies au 1er octobre 2025 (decret n2025-1401)."
+              title="Comment estimer votre APL en 4 étapes"
+              description="Le simulateur applique la formule officielle CAF avec paramètres revalorisés au 1er octobre 2025 (arrêté du 5 septembre 2025, +1,04%) et R0 gelé pour 2026 (décret n2025-1401)."
               steps={[
                 {
-                  name: "Identifier votre zone geographique",
+                  name: "Identifier votre zone géographique",
                   text:
-                    "Zone 1 : Ile-de-France. Zone 2 : agglomerations de plus de 100 000 habitants, Corse, DOM. Zone 3 : reste du territoire (zones rurales et petites villes). Vous pouvez verifier votre zone exacte avec votre code postal sur le site de la CAF.",
+                    "Zone 1 : Île-de-France. Zone 2 : agglomérations de plus de 100 000 habitants, Corse, DOM. Zone 3 : reste du territoire (zones rurales et petites villes). Vous pouvez vérifier votre zone exacte avec votre code postal sur le site de la CAF.",
                 },
                 {
                   name: "Saisir le loyer hors charges",
                   text:
-                    "Indiquez votre loyer mensuel HORS charges. Si votre bail mentionne un loyer global, deduisez les charges locatives (eau, ordures, ascenseur, chauffage collectif). Le loyer retenu pour l'APL est plafonne : tout depassement du plafond ne genere pas d'APL supplementaire.",
+                    "Indiquez votre loyer mensuel HORS charges. Si votre bail mentionne un loyer global, déduisez les charges locatives (eau, ordures, ascenseur, chauffage collectif). Le loyer retenu pour l'APL est plafonné : tout dépassement du plafond ne génère pas d'APL supplémentaire.",
                 },
                 {
                   name: "Renseigner la composition du foyer",
                   text:
-                    "Personne seule, couple, presence d'enfants ou de personnes a charge. Le forfait charges (C) augmente avec la taille du foyer. Pour un couple sans enfant, comptez environ 64 EUR de forfait charges en 2026 ; pour un couple avec 2 enfants, environ 102 EUR.",
+                    "Personne seule, couple, présence d'enfants ou de personnes à charge. Le forfait charges (C) augmente avec le nombre de personnes à charge. Pour une personne seule ou un couple sans enfant, le forfait charges est de 60,59 € ; pour un couple avec 2 enfants, 88,07 €.",
                 },
                 {
                   name: "Indiquer vos ressources annuelles",
                   text:
-                    "La CAF retient les ressources des 12 derniers mois glissants : salaires, allocations chomage, pensions, revenus du patrimoine. Un plancher R0 est applique : si vos ressources sont en dessous, vous percevez l'APL maximale. R0 varie selon la composition du foyer.",
+                    "La CAF retient les ressources des 12 derniers mois glissants : salaires, allocations chômage, pensions, revenus du patrimoine. Un plancher R0 est appliqué : si vos ressources sont en dessous, vous percevez l'APL maximale. R0 varie selon la composition du foyer.",
                 },
               ]}
             />
@@ -834,73 +901,73 @@ export default function SimulateurAPL() {
               </h2>
               <div className="mt-4 space-y-3 leading-relaxed" style={{ color: "var(--foreground)" }}>
                 <p>
-                  L&apos;aide personnalisee au logement (APL) est calculee selon la formule :{" "}
-                  <strong>APL = L + C - PP - 5 EUR</strong>, ou L est le loyer retenu dans la
+                  L&apos;aide personnalisée au logement (APL) est calculée selon la formule :{" "}
+                  <strong>APL = L + C - PP - 5 €</strong>, où L est le loyer retenu dans la
                   limite d&apos;un plafond, C le forfait charges et PP votre participation
                   personnelle.
                 </p>
                 <p>
-                  <strong>La participation personnelle</strong> depend de vos ressources et de la
-                  taille de votre foyer. Elle est calculee avec la formule PP = P0 + TP x RP, ou P0
-                  est un minimum incompressible ({fmt(params.P0)} EUR), TP un taux progressif et RP
-                  vos ressources au-dela du plancher R0.
+                  <strong>La participation personnelle</strong> dépend de vos ressources et de la
+                  taille de votre foyer. Elle est calculée avec la formule PP = P0 + TP x RP, où P0
+                  est un minimum incompressible (8,5% de L + C, au moins {fmt(params.P0)} €), TP un taux progressif et RP
+                  vos ressources au-delà du plancher R0.
                 </p>
                 <p>
-                  <strong>Les zones geographiques</strong> : la zone 1 correspond a
-                  l&apos;Ile-de-France, la zone 2 aux agglomerations de plus de 100 000 habitants et
-                  a la Corse, la zone 3 au reste du territoire.
+                  <strong>Les zones géographiques</strong> : la zone 1 correspond à
+                  l&apos;Île-de-France, la zone 2 aux agglomérations de plus de 100 000 habitants et
+                  à la Corse, la zone 3 au reste du territoire.
                 </p>
                 <p>
                   <strong>Les ressources</strong> prises en compte sont celles des 12 derniers mois
-                  glissants : salaires, allocations chomage, pensions, revenus du patrimoine. Un
-                  plancher R0 est applique : en dessous de ce seuil, vous percevez l&apos;APL
+                  glissants : salaires, allocations chômage, pensions, revenus du patrimoine. Un
+                  plancher R0 est appliqué : en dessous de ce seuil, vous percevez l&apos;APL
                   maximale.
                 </p>
                 <p>
-                  <strong>Source.</strong> Arrete du 5 septembre 2025, decret n2025-1401 du
-                  28 decembre 2025. Reglementation : articles L823-1 et suivants du Code de la
+                  <strong>Source.</strong> Arrêté du 5 septembre 2025, décret n2025-1401 du
+                  28 décembre 2025. Réglementation : articles L823-1 et suivants du Code de la
                   construction et de l&apos;habitation.
                 </p>
               </div>
             </section>
 
             <ToolFaqSection
-              intro="Les questions les plus posees sur l'APL et l'aide au logement en France."
+              intro="Les questions les plus posées sur l'APL et l'aide au logement en France."
               items={[
                 {
-                  question: "Qui peut beneficier de l'APL en 2026 ?",
+                  question: "Qui peut bénéficier de l'APL en 2026 ?",
                   answer:
-                    "L'APL est versee aux locataires (logement conventionne) ou accedants (pret conventionne, pret a l'accession sociale). Conditions : etre Francais ou en sejour regulier, occuper le logement comme residence principale au moins 8 mois par an, avoir des ressources sous certains plafonds. Etudiants, salaries, retraites, demandeurs d'emploi sont eligibles.",
+                    "L'APL est versée aux locataires (logement conventionné) ou accédants (prêt conventionné, prêt à l'accession sociale). Conditions : être Français ou en séjour régulier, occuper le logement comme résidence principale au moins 8 mois par an, avoir des ressources sous certains plafonds. Étudiants, salariés, retraites, demandeurs d'emploi sont éligibles.",
                 },
                 {
                   question: "Comment faire une demande d'APL ?",
                   answer:
-                    "La demande se fait en ligne sur caf.fr (creer son espace si vous n'etes pas allocataire). Documents necessaires : bail signe ou attestation de loyer du proprietaire, RIB, justificatif d'identite. Le versement debute le mois suivant celui de la demande. Pas de retroactivite : faites la demande des l'entree dans les lieux.",
+                    "La demande se fait en ligne sur caf.fr (créer son espace si vous n'êtes pas allocataire). Documents nécessaires : bail signé ou attestation de loyer du propriétaire, RIB, justificatif d'identité. Le versement débute le mois suivant celui de la demande. Pas de rétroactivité : faites la demande dès l'entrée dans les lieux.",
                 },
                 {
-                  question: "Quelle difference entre APL, ALF et ALS ?",
+                  question: "Quelle différence entre APL, ALF et ALS ?",
                   answer:
-                    "L'APL concerne les logements conventionnes (HLM, accession sociale, certains parcs prives). L'ALF (Allocation de Logement Familiale) concerne les familles avec enfants ou jeunes maries dans logements non conventionnes. L'ALS (Allocation de Logement Sociale) concerne les autres cas (etudiants, isoles). Le calculateur estime principalement l'APL : pour une situation precise, le simulateur officiel CAF est definitif.",
+                    "L'APL concerne les logements conventionnés (HLM, accession sociale, certains parcs privés). L'ALF (Allocation de Logement Familiale) concerne les familles avec enfants ou jeunes mariés dans logements non conventionnés. L'ALS (Allocation de Logement Sociale) concerne les autres cas (étudiants, isolés). Le calculateur estime principalement l'APL : pour une situation précise, le simulateur officiel CAF est définitif.",
                 },
                 {
                   question: "L'APL est-elle compatible avec d'autres aides ?",
                   answer:
-                    "L'APL n'est pas cumulable avec l'ALF ou l'ALS pour le meme logement (une seule aide a la fois selon votre situation). Elle est compatible avec le RSA, la prime d'activite, les bourses etudiantes. En revanche, percevoir l'APL exclut une dependance fiscale a un parent imposable (rattachement fiscal).",
+                    "L'APL n'est pas cumulable avec l'ALF ou l'ALS pour le même logement (une seule aide à la fois selon votre situation). Elle est compatible avec le RSA, la prime d'activité, les bourses étudiantes. En revanche, percevoir l'APL exclut une dépendance fiscale à un parent imposable (rattachement fiscal).",
                 },
                 {
-                  question: "L'APL est-elle calculee sur les revenus N-2 ou les revenus actuels ?",
+                  question: "L'APL est-elle calculée sur les revenus N-2 ou les revenus actuels ?",
                   answer:
-                    "Depuis janvier 2021, l'APL est calculee sur les revenus des 12 derniers mois glissants (et non plus N-2 comme avant). Cette reforme appelee 'APL contemporaine' permet une adaptation rapide aux variations de ressources. La CAF revise vos droits chaque trimestre.",
+                    "Depuis janvier 2021, l'APL est calculée sur les revenus des 12 derniers mois glissants (et non plus N-2 comme avant). Cette réforme appelée 'APL contemporaine' permet une adaptation rapide aux variations de ressources. La CAF révise vos droits chaque trimestre.",
                 },
                 {
-                  question: "Est-ce qu'un proprietaire peut beneficier de l'APL ?",
+                  question: "Est-ce qu'un propriétaire peut bénéficier de l'APL ?",
                   answer:
-                    "Oui, dans le cadre d'une accession a la propriete avec un Pret Conventionne (PC) ou un Pret a l'Accession Sociale (PAS). Cette aide est appelee 'APL accession'. Conditions : achat de la residence principale, pret signe avant 2018 pour le neuf ou avant 2020 pour l'ancien (la mesure ayant ete supprimee depuis pour le neuf et l'ancien standard).",
+                    "Oui, dans le cadre d'une accession à la propriété avec un Prêt Conventionné (PC) ou un Prêt à l'Accession Sociale (PAS). Cette aide est appelée 'APL accession'. Conditions : achat de la résidence principale, prêt signé avant 2018 pour le neuf ou avant 2020 pour l'ancien (la mesure ayant été supprimée depuis pour le neuf et l'ancien standard).",
                 },
                 {
-                  question: "Le simulateur garde-t-il mes donnees ?",
+                  question: "Le simulateur garde-t-il mes données ?",
                   answer:
-                    "Non. Tous les calculs sont effectues localement dans votre navigateur. Aucune donnee saisie (loyer, ressources, composition du foyer) n'est envoyee a un serveur ni stockee. L'outil fonctionne sans inscription.",
+                    "Non. Tous les calculs sont effectués localement dans votre navigateur. Aucune donnée saisie (loyer, ressources, composition du foyer) n'est envoyée à un serveur ni stockée. L'outil fonctionne sans inscription.",
                 },
               ]}
             />
@@ -946,7 +1013,7 @@ export default function SimulateurAPL() {
                 </li>
               </ul>
               <p className="mt-3 text-xs" style={{ color: "var(--muted)" }}>
-                Si vos ressources sont inferieures au R0, vous percevez l&apos;APL maximale.
+                Si vos ressources sont inférieures au R0, vous percevez l&apos;APL maximale.
               </p>
             </div>
 
@@ -962,7 +1029,7 @@ export default function SimulateurAPL() {
               </h3>
               <ul className="mt-3 space-y-2 text-sm" style={{ color: "var(--muted)" }}>
                 <li>
-                  <strong className="text-[var(--foreground)]">Zone 1</strong> : Ile-de-France
+                  <strong className="text-[var(--foreground)]">Zone 1</strong> : Île-de-France
                 </li>
                 <li>
                   <strong className="text-[var(--foreground)]">Zone 2</strong> : Agglo. &gt; 100 000 hab., Corse, DOM
@@ -981,13 +1048,13 @@ export default function SimulateurAPL() {
                 className="text-xs font-semibold uppercase tracking-[0.15em]"
                 style={{ color: "var(--accent)" }}
               >
-                Bon a savoir
+                Bon à savoir
               </h3>
               <ul className="mt-3 space-y-2 text-sm" style={{ color: "var(--muted)" }}>
-                <li>L&apos;APL n&apos;est pas versee si le montant est inferieur a <strong className="text-[var(--foreground)]">15 &euro;/mois</strong>.</li>
-                <li>La CAF revise vos droits <strong className="text-[var(--foreground)]">tous les trimestres</strong>.</li>
-                <li>Un abattement de <strong className="text-[var(--foreground)]">5 &euro;</strong> est systematiquement applique.</li>
-                <li>La participation minimale est de <strong className="text-[var(--foreground)]">{fmt(params.P0)} &euro;</strong>.</li>
+                <li>L&apos;aide au logement n&apos;est pas versée si le montant est inférieur à <strong className="text-[var(--foreground)]">10 &euro;/mois</strong>.</li>
+                <li>La CAF révise vos droits <strong className="text-[var(--foreground)]">tous les trimestres</strong>.</li>
+                <li>Un abattement de <strong className="text-[var(--foreground)]">5 &euro;</strong> est systématiquement appliqué.</li>
+                <li>La participation minimale est de <strong className="text-[var(--foreground)]">8,5% du loyer retenu + charges</strong>, avec un minimum de {fmt(params.P0)} &euro;.</li>
               </ul>
             </div>
             <AdPlaceholder className="h-[600px]" />
@@ -1103,7 +1170,7 @@ function DonutChart({
   const resteLen = restePct * c;
   const couverturePct = Math.round(aplPct * 100);
   return (
-    <svg width="160" height="160" viewBox="-80 -80 160 160" role="img" aria-label="Repartition APL et reste a charge">
+    <svg width="160" height="160" viewBox="-80 -80 160 160" role="img" aria-label="Répartition APL et reste à charge">
       <circle cx="0" cy="0" r={r} fill="none" stroke="var(--border)" strokeWidth={stroke} />
       <g transform="rotate(-90)">
         <circle

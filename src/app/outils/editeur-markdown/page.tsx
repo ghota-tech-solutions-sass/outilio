@@ -33,41 +33,59 @@ function sanitizeUrl(url: string): string {
   return trimmed;
 }
 
-function parseInline(text: string): string {
-  let result = text;
-
-  // Images ![alt](url)
-  result = result.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (_m, alt: string, url: string) => {
-    const safeUrl = escapeHtml(sanitizeUrl(url));
-    const safeAlt = escapeHtml(alt);
-    return `<img src="${safeUrl}" alt="${safeAlt}" style="max-width:100%;border-radius:8px;margin:8px 0" />`;
-  });
-
-  // Links [text](url)
-  result = result.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_m, label: string, url: string) => {
-    const safeUrl = escapeHtml(sanitizeUrl(url));
-    return `<a href="${safeUrl}" target="_blank" rel="noopener noreferrer" style="color:var(--primary);text-decoration:underline">${label}</a>`;
-  });
+// Emphasis on already-escaped text. Underscore emphasis is not applied inside
+// words (snake_case stays intact), as in CommonMark.
+function applyEmphasis(escaped: string): string {
+  let result = escaped;
+  const wordChar = "[\\w\\u00C0-\\u024F]";
 
   // Bold + Italic ***text*** or ___text___
   result = result.replace(/\*\*\*(.+?)\*\*\*/g, "<strong><em>$1</em></strong>");
-  result = result.replace(/___(.+?)___/g, "<strong><em>$1</em></strong>");
+  result = result.replace(new RegExp(`(^|[^\\w\\u00C0-\\u024F])___(.+?)___(?!${wordChar})`, "g"), "$1<strong><em>$2</em></strong>");
 
   // Bold **text** or __text__
   result = result.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
-  result = result.replace(/__(.+?)__/g, "<strong>$1</strong>");
+  result = result.replace(new RegExp(`(^|[^\\w\\u00C0-\\u024F])__(.+?)__(?!${wordChar})`, "g"), "$1<strong>$2</strong>");
 
   // Italic *text* or _text_
-  result = result.replace(/\*(.+?)\*/g, "<em>$1</em>");
-  result = result.replace(/_(.+?)_/g, "<em>$1</em>");
+  result = result.replace(/\*(?!\s)(.+?)\*/g, "<em>$1</em>");
+  result = result.replace(new RegExp(`(^|[^\\w\\u00C0-\\u024F])_(?!\\s)(.+?)_(?!${wordChar})`, "g"), "$1<em>$2</em>");
 
   // Strikethrough ~~text~~
   result = result.replace(/~~(.+?)~~/g, "<del>$1</del>");
 
+  return result;
+}
+
+// Parses inline Markdown from RAW text (not yet escaped). Code spans, images and
+// links are rendered first and swapped for placeholders, so emphasis never
+// touches URLs or code, and every piece of user text is escaped exactly once.
+function parseInline(raw: string): string {
+  const slots: string[] = [];
+  const hold = (html: string) => `\u0000${slots.push(html) - 1}\u0000`;
+  let result = raw.replace(/\u0000/g, "");
+
   // Inline code `code`
-  result = result.replace(/`([^`]+)`/g,
-    '<code style="background:var(--surface-alt);padding:2px 6px;border-radius:4px;font-size:0.875em;font-family:monospace">$1</code>'
+  result = result.replace(/`([^`]+)`/g, (_m, code: string) =>
+    hold(`<code style="background:var(--surface-alt);padding:2px 6px;border-radius:4px;font-size:0.875em;font-family:monospace">${escapeHtml(code)}</code>`)
   );
+
+  // Images ![alt](url)
+  result = result.replace(/!\[([^\]]*)\]\(([^)\s]+)(?:\s+"[^"]*")?\)/g, (_m, alt: string, url: string) =>
+    hold(`<img src="${escapeHtml(sanitizeUrl(url))}" alt="${escapeHtml(alt)}" style="max-width:100%;border-radius:8px;margin:8px 0" />`)
+  );
+
+  // Links [text](url)
+  result = result.replace(/\[([^\]]+)\]\(([^)\s]+)(?:\s+"[^"]*")?\)/g, (_m, label: string, url: string) =>
+    hold(`<a href="${escapeHtml(sanitizeUrl(url))}" target="_blank" rel="noopener noreferrer" style="color:var(--primary);text-decoration:underline">${applyEmphasis(escapeHtml(label))}</a>`)
+  );
+
+  result = applyEmphasis(escapeHtml(result));
+
+  // Restore placeholders (a link label may itself contain a code placeholder)
+  for (let depth = 0; depth < 3 && result.includes("\u0000"); depth++) {
+    result = result.replace(/\u0000(\d+)\u0000/g, (_m, idx: string) => slots[Number(idx)] ?? "");
+  }
 
   return result;
 }
@@ -128,7 +146,7 @@ function parseMarkdown(md: string): string {
         1: "24px 0 12px", 2: "20px 0 10px", 3: "16px 0 8px", 4: "14px 0 6px", 5: "12px 0 4px", 6: "10px 0 4px",
       };
       html.push(
-        `<h${level} style="font-size:${sizes[level]};font-weight:700;margin:${margins[level]};font-family:var(--font-display);line-height:1.3">${parseInline(escapeHtml(headingMatch[2]))}</h${level}>`
+        `<h${level} style="font-size:${sizes[level]};font-weight:700;margin:${margins[level]};font-family:var(--font-display);line-height:1.3">${parseInline(headingMatch[2])}</h${level}>`
       );
       i++;
       continue;
@@ -142,7 +160,7 @@ function parseMarkdown(md: string): string {
         i++;
       }
       html.push(
-        `<blockquote style="border-left:4px solid var(--accent);padding:8px 16px;margin:12px 0;color:var(--muted);background:var(--surface-alt);border-radius:0 8px 8px 0;font-style:italic">${quoteLines.map((l) => parseInline(escapeHtml(l))).join("<br/>")}</blockquote>`
+        `<blockquote style="border-left:4px solid var(--accent);padding:8px 16px;margin:12px 0;color:var(--muted);background:var(--surface-alt);border-radius:0 8px 8px 0;font-style:italic">${quoteLines.map((l) => parseInline(l)).join("<br/>")}</blockquote>`
       );
       continue;
     }
@@ -155,7 +173,7 @@ function parseMarkdown(md: string): string {
         i++;
       }
       html.push(
-        `<ul style="margin:12px 0;padding-left:24px;list-style:disc">${listItems.map((item) => `<li style="margin:4px 0;line-height:1.6">${parseInline(escapeHtml(item))}</li>`).join("")}</ul>`
+        `<ul style="margin:12px 0;padding-left:24px;list-style:disc">${listItems.map((item) => `<li style="margin:4px 0;line-height:1.6">${parseInline(item)}</li>`).join("")}</ul>`
       );
       continue;
     }
@@ -168,7 +186,7 @@ function parseMarkdown(md: string): string {
         i++;
       }
       html.push(
-        `<ol style="margin:12px 0;padding-left:24px;list-style:decimal">${listItems.map((item) => `<li style="margin:4px 0;line-height:1.6">${parseInline(escapeHtml(item))}</li>`).join("")}</ol>`
+        `<ol style="margin:12px 0;padding-left:24px;list-style:decimal">${listItems.map((item) => `<li style="margin:4px 0;line-height:1.6">${parseInline(item)}</li>`).join("")}</ol>`
       );
       continue;
     }
@@ -179,14 +197,16 @@ function parseMarkdown(md: string): string {
       continue;
     }
 
-    // Paragraph (collect consecutive non-empty lines)
-    const paraLines: string[] = [];
+    // Paragraph: the first line is always consumed (even "#tag" or a lone "#"),
+    // then consecutive lines until a blank line or a real block start.
+    const paraLines: string[] = [line];
+    i++;
     while (
       i < lines.length &&
       lines[i].trim() !== "" &&
-      !lines[i].startsWith("#") &&
+      !/^#{1,6}\s+\S/.test(lines[i]) &&
       !lines[i].startsWith(">") &&
-      !lines[i].startsWith("```") &&
+      !lines[i].trimStart().startsWith("```") &&
       !/^[\s]*[-*+]\s+/.test(lines[i]) &&
       !/^[\s]*\d+[.)]\s+/.test(lines[i]) &&
       !/^(\s*[-*_]\s*){3,}$/.test(lines[i])
@@ -194,11 +214,9 @@ function parseMarkdown(md: string): string {
       paraLines.push(lines[i]);
       i++;
     }
-    if (paraLines.length > 0) {
-      html.push(
-        `<p style="margin:10px 0;line-height:1.7">${paraLines.map((l) => parseInline(escapeHtml(l))).join("<br/>")}</p>`
-      );
-    }
+    html.push(
+      `<p style="margin:10px 0;line-height:1.7">${paraLines.map((l) => parseInline(l)).join("<br/>")}</p>`
+    );
   }
 
   // Close unclosed code block
@@ -224,16 +242,16 @@ function computeStats(text: string) {
 
 /* ─── Example markdown ─── */
 
-const EXAMPLE_MD = `# Bienvenue dans l'Editeur Markdown
+const EXAMPLE_MD = `# Bienvenue dans l'Éditeur Markdown
 
-Cet outil vous permet d'ecrire du **Markdown** et de voir le rendu **HTML en temps reel**.
+Cet outil vous permet d'écrire du **Markdown** et de voir le rendu **HTML en temps réel**.
 
-## Fonctionnalites
+## Fonctionnalités
 
 - **Gras** et *italique* et ~~barre~~
 - [Liens](https://outilis.fr) cliquables
-- Listes a puces et numerotees
-- Blocs de code avec coloration
+- Listes à puces et numérotées
+- Blocs de code
 
 ### Exemple de code
 
@@ -244,20 +262,20 @@ function bonjour(nom) {
 bonjour("Outilis");
 \`\`\`
 
-> Les citations sont aussi supportees.
+> Les citations sont aussi supportées.
 > Elles peuvent tenir sur plusieurs lignes.
 
-### Liste numerotee
+### Liste numérotée
 
-1. Premier element
-2. Deuxieme element
-3. Troisieme element
+1. Premier élément
+2. Deuxième élément
+3. Troisième élément
 
 ---
 
 Du texte avec du \`code inline\` et une image :
 
-![Logo](https://via.placeholder.com/200x60?text=Outilis.fr)
+![Aperçu Outilis.fr](/og-image.png)
 
 *100% gratuit, 100% local.*`;
 
@@ -273,8 +291,8 @@ const TOOLBAR_ACTIONS = [
   { label: "\"", title: "Citation", before: "> ", after: "", placeholder: "Citation" },
   { label: "Lien", title: "Lien", before: "[", after: "](https://)", placeholder: "texte du lien" },
   { label: "Img", title: "Image", before: "![", after: "](https://)", placeholder: "alt text" },
-  { label: "*", title: "Liste a puces", before: "- ", after: "", placeholder: "element" },
-  { label: "1.", title: "Liste numerotee", before: "1. ", after: "", placeholder: "element" },
+  { label: "*", title: "Liste à puces", before: "- ", after: "", placeholder: "élément" },
+  { label: "1.", title: "Liste numérotée", before: "1. ", after: "", placeholder: "élément" },
 ];
 
 /* ─── Component ─── */
@@ -364,7 +382,7 @@ export default function EditeurMarkdown() {
     a.href = url;
     a.download = "document.md";
     a.click();
-    URL.revokeObjectURL(url);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
   }, [markdown]);
 
   /* ─── Clear ─── */
@@ -389,13 +407,13 @@ export default function EditeurMarkdown() {
             className="animate-fade-up stagger-1 mt-3 text-4xl tracking-tight md:text-5xl"
             style={{ fontFamily: "var(--font-display)" }}
           >
-            Editeur <span style={{ color: "var(--primary)" }}>Markdown</span>
+            Éditeur <span style={{ color: "var(--primary)" }}>Markdown</span>
           </h1>
           <p
             className="animate-fade-up stagger-2 mt-3 max-w-xl text-sm leading-relaxed"
             style={{ color: "var(--muted)" }}
           >
-            Ecrivez en Markdown, visualisez le rendu HTML en temps reel. Toolbar de formatage, export HTML et .md. 100% local.
+            Écrivez en Markdown, visualisez le rendu HTML en temps réel. Toolbar de formatage, export HTML et .md. 100% local.
           </p>
         </div>
       </section>
@@ -410,7 +428,7 @@ export default function EditeurMarkdown() {
             <strong style={{ color: "var(--foreground)" }}>{stats.words}</strong> mot{stats.words !== 1 ? "s" : ""}
           </span>
           <span>
-            <strong style={{ color: "var(--foreground)" }}>{stats.chars}</strong> caractere{stats.chars !== 1 ? "s" : ""}
+            <strong style={{ color: "var(--foreground)" }}>{stats.chars}</strong> caractère{stats.chars !== 1 ? "s" : ""}
           </span>
           <span>
             <strong style={{ color: "var(--foreground)" }}>{stats.charsNoSpaces}</strong> sans espaces
@@ -424,14 +442,14 @@ export default function EditeurMarkdown() {
               className="rounded-lg border px-3 py-1.5 text-xs font-semibold transition-all hover:bg-[var(--surface)]"
               style={{ borderColor: "var(--border)", color: copied === "html" ? "var(--primary)" : undefined }}
             >
-              {copied === "html" ? "Copie !" : "Copier HTML"}
+              {copied === "html" ? "Copié !" : "Copier HTML"}
             </button>
             <button
               onClick={downloadMd}
               className="rounded-lg border px-3 py-1.5 text-xs font-semibold transition-all hover:bg-[var(--surface)]"
               style={{ borderColor: "var(--border)" }}
             >
-              Telecharger .md
+              Télécharger .md
             </button>
             <button
               onClick={clearAll}
@@ -482,7 +500,7 @@ export default function EditeurMarkdown() {
                 <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
                 <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
               </svg>
-              Editeur Markdown
+              Éditeur Markdown
             </div>
             <textarea
               ref={textareaRef}
@@ -497,7 +515,7 @@ export default function EditeurMarkdown() {
                 color: "var(--foreground)",
                 minHeight: "400px",
               }}
-              placeholder="Ecrivez votre Markdown ici..."
+              placeholder="Écrivez votre Markdown ici..."
               spellCheck={false}
             />
           </div>
@@ -532,35 +550,35 @@ export default function EditeurMarkdown() {
       <div className="mx-auto max-w-7xl px-5 pb-12">
         <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
           <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
-            A propos de l&apos;editeur
+            À propos de l&apos;éditeur
           </h2>
           <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
             <p>
-              <strong className="text-[var(--foreground)]">Preview en temps reel</strong> : Le rendu HTML se met a jour instantanement a chaque frappe, sans delai.
+              <strong className="text-[var(--foreground)]">Preview en temps réel</strong> : Le rendu HTML se met à jour instantanément à chaque frappe, sans délai.
             </p>
             <p>
-              <strong className="text-[var(--foreground)]">Syntaxe complete</strong> : Titres, gras, italique, liens, images, listes, blocs de code, citations, lignes horizontales et code inline.
+              <strong className="text-[var(--foreground)]">Syntaxe essentielle</strong> : titres, gras, italique, barré, liens, images, listes, blocs de code, citations, lignes horizontales et code inline. Les tableaux, listes imbriquées et le HTML brut ne sont pas interprétés (le HTML saisi est affiché tel quel, par sécurité).
             </p>
             <p>
               <strong className="text-[var(--foreground)]">Raccourcis clavier</strong> : Ctrl+B pour le gras, Ctrl+I pour l&apos;italique, Ctrl+K pour un lien. Tab pour indenter.
             </p>
             <p>
-              <strong className="text-[var(--foreground)]">Export</strong> : Copiez le HTML genere ou telechargez votre document au format .md en un clic.
+              <strong className="text-[var(--foreground)]">Export</strong> : Copiez le HTML généré ou téléchargez votre document au format .md en un clic.
             </p>
             <p>
-              <strong className="text-[var(--foreground)]">100% local</strong> : Tout le traitement se fait dans votre navigateur. Aucune donnee n&apos;est envoyee a un serveur.
+              <strong className="text-[var(--foreground)]">100% local</strong> : Le rendu se fait dans votre navigateur : le texte que vous saisissez n&apos;est envoyé à aucun serveur.
             </p>
           </div>
 
           <h3 className="mt-8 text-lg tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
-            Syntaxe Markdown supportee
+            Syntaxe Markdown supportée
           </h3>
           <div className="mt-4 overflow-x-auto">
             <table className="w-full text-sm" style={{ borderCollapse: "collapse" }}>
               <thead>
                 <tr style={{ borderBottom: "2px solid var(--border)" }}>
                   <th className="text-left py-2 pr-4 font-semibold">Syntaxe</th>
-                  <th className="text-left py-2 font-semibold">Resultat</th>
+                  <th className="text-left py-2 font-semibold">Résultat</th>
                 </tr>
               </thead>
               <tbody style={{ color: "var(--muted)" }}>
@@ -569,13 +587,13 @@ export default function EditeurMarkdown() {
                   ["## Sous-titre", "Titre niveau 2"],
                   ["**gras**", "Texte en gras"],
                   ["*italique*", "Texte en italique"],
-                  ["~~barre~~", "Texte barre"],
+                  ["~~barre~~", "Texte barré"],
                   ["`code`", "Code inline"],
                   ["```bloc```", "Bloc de code"],
                   ["[texte](url)", "Lien cliquable"],
                   ["![alt](url)", "Image"],
-                  ["- element", "Liste a puces"],
-                  ["1. element", "Liste numerotee"],
+                  ["- élément", "Liste à puces"],
+                  ["1. élément", "Liste numérotée"],
                   ["> citation", "Bloc de citation"],
                   ["---", "Ligne horizontale"],
                 ].map(([syntax, result]) => (
@@ -604,37 +622,37 @@ export default function EditeurMarkdown() {
         {/* SEO Content */}
         <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
           <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
-            Comment utiliser l&apos;editeur Markdown en ligne
+            Comment utiliser l&apos;éditeur Markdown en ligne
           </h2>
           <div className="mt-4 space-y-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
             <p>
-              Notre editeur Markdown vous permet d&apos;ecrire du contenu formate et de visualiser le rendu HTML en temps reel.
-              Ideal pour rediger de la documentation, des articles de blog ou des README pour vos projets GitHub.
+              Notre éditeur Markdown vous permet d&apos;écrire du contenu formaté et de visualiser le rendu HTML en temps réel.
+              Idéal pour rédiger de la documentation, des articles de blog ou des README pour vos projets GitHub.
             </p>
             <ul className="ml-4 list-disc space-y-1">
-              <li><strong className="text-[var(--foreground)]">Ecrivez dans le panneau gauche</strong> : utilisez la syntaxe Markdown standard (titres, gras, listes, code...)</li>
-              <li><strong className="text-[var(--foreground)]">Visualisez en temps reel</strong> : le panneau droit affiche instantanement le rendu HTML</li>
-              <li><strong className="text-[var(--foreground)]">Utilisez la barre d&apos;outils</strong> : pour inserer rapidement du formatage sans connaitre la syntaxe</li>
-              <li><strong className="text-[var(--foreground)]">Exportez votre travail</strong> : copiez le HTML genere ou telechargez le fichier .md</li>
+              <li><strong className="text-[var(--foreground)]">Écrivez dans le panneau gauche</strong> : utilisez la syntaxe Markdown standard (titres, gras, listes, code...)</li>
+              <li><strong className="text-[var(--foreground)]">Visualisez en temps réel</strong> : le panneau droit affiche instantanément le rendu HTML</li>
+              <li><strong className="text-[var(--foreground)]">Utilisez la barre d&apos;outils</strong> : pour insérer rapidement du formatage sans connaître la syntaxe</li>
+              <li><strong className="text-[var(--foreground)]">Exportez votre travail</strong> : copiez le HTML généré ou téléchargez le fichier .md</li>
             </ul>
           </div>
         </div>
 
         {/* FAQ */}
         <div className="rounded-2xl border p-8" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-          <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Questions frequentes</h2>
+          <h2 className="text-2xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Questions fréquentes</h2>
           <div className="mt-6 space-y-5">
             <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
               <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Qu&apos;est-ce que le Markdown ?</h3>
-              <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Markdown est un langage de balisage leger cree par John Gruber en 2004. Il permet de formater du texte (titres, gras, listes, liens) avec une syntaxe simple et lisible, qui se convertit facilement en HTML. Il est tres utilise sur GitHub, les blogs techniques et les outils de documentation.</p>
+              <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Markdown est un langage de balisage léger créé par John Gruber en 2004. Il permet de formater du texte (titres, gras, listes, liens) avec une syntaxe simple et lisible, qui se convertit facilement en HTML. Il est très utilisé sur GitHub, les blogs techniques et les outils de documentation.</p>
             </div>
             <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
               <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Quels raccourcis clavier sont disponibles ?</h3>
-              <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>L&apos;editeur supporte Ctrl+B pour le gras, Ctrl+I pour l&apos;italique, Ctrl+K pour inserer un lien et Tab pour l&apos;indentation. Ces raccourcis fonctionnent aussi avec la touche Cmd sur Mac.</p>
+              <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>L&apos;éditeur supporte Ctrl+B pour le gras, Ctrl+I pour l&apos;italique, Ctrl+K pour insérer un lien et Tab pour l&apos;indentation. Ces raccourcis fonctionnent aussi avec la touche Cmd sur Mac.</p>
             </div>
             <div className="rounded-xl p-5" style={{ background: "var(--surface-alt)" }}>
-              <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Puis-je utiliser le HTML genere dans mon site web ?</h3>
-              <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Oui, cliquez sur &laquo; Copier HTML &raquo; pour recuperer le code HTML genere. Vous pouvez l&apos;integrer directement dans votre site, votre CMS ou votre newsletter. Le HTML est propre et bien structure.</p>
+              <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Puis-je utiliser le HTML généré dans mon site web ?</h3>
+              <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Oui, cliquez sur &laquo; Copier HTML &raquo; pour récupérer le code HTML généré. Vous pouvez l&apos;intégrer dans votre site, votre CMS ou votre newsletter. Notez que les éléments portent des styles en ligne qui s&apos;appuient sur les variables CSS d&apos;Outilis.fr (var(--primary), etc.) : adaptez-les ou supprimez-les pour qu&apos;ils suivent votre propre charte.</p>
             </div>
           </div>
         </div>

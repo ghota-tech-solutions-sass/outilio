@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Calculateur TDEE / Calories Journalieres - Gratuit",
+  title: "Calculateur TDEE / Calories Journalières - Gratuit",
   description:
-    "Calculez votre depense energetique totale (TDEE) et vos besoins caloriques journaliers. Formule Mifflin-St Jeor, repartition macros. Outil gratuit.",
+    "Calculez votre dépense énergétique totale (TDEE) et vos besoins caloriques journaliers. Formule Mifflin-St Jeor, répartition macros. Outil gratuit.",
   keywords: ["calculateur TDEE", "calories journalieres", "depense energetique", "BMR", "metabolisme de base", "macros", "Mifflin-St Jeor"],
   alternates: { canonical: "https://outilis.fr/outils/calculateur-tdee-calories" },
 };
