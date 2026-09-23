@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.3.0](https://github.com/ghota-tech-solutions-sass/outilio/compare/v0.2.0...v0.3.0) (2026-09-23)
+
+
+### Features
+
+* **outils:** capacité d'emprunt, assurance emprunteur, MaPrimeRénov', statut juridique ([9a6bc18](https://github.com/ghota-tech-solutions-sass/outilio/commit/9a6bc1841eea5c5f005ceb3dff3446bcfd3bb40e))
+* **seo:** regroupement des catégories et refonte du blog ([3289cb8](https://github.com/ghota-tech-solutions-sass/outilio/commit/3289cb8de9c6150f235538099491832139205872))
+* **site:** accents, maillage interne, image de partage et textes de confidentialité ([a0a7ab7](https://github.com/ghota-tech-solutions-sass/outilio/commit/a0a7ab73dc6133858bf5c5ee745cd0806d1ce01a))
+* suivi tool_use et infrastructure d'affiliation ([22e1bd0](https://github.com/ghota-tech-solutions-sass/outilio/commit/22e1bd08e907bb85bcd938158b5438b0d299dc34))
+
+
+### Bug Fixes
+
+* désinstaller l'ancien service worker d'isolation cross-origin ([ece2466](https://github.com/ghota-tech-solutions-sass/outilio/commit/ece24662c97e224102e00de6f378f3a92f88fe51))
+* make lint pass with eslint 10 ([14faae2](https://github.com/ghota-tech-solutions-sass/outilio/commit/14faae2d0669ba3ba262d660ebba47ebeabd6615))
+* **outils:** audit et correction de tous les outils ([a507e78](https://github.com/ghota-tech-solutions-sass/outilio/commit/a507e78252e4566f14bdcf3974bfd9a0799398b3))
+
 ## [0.2.0](https://github.com/ghota-tech-solutions-sass/outilio/compare/v0.1.0...v0.2.0) (2026-05-22)
 
 
