@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { tools } from "@/data/tools";
+import { ARTICLES } from "@/app/blog/_data/articles";
 
 export const dynamic = "force-static";
 
@@ -12,6 +13,10 @@ const HIGH_PRIORITY_TOOLS = new Set([
   "/outils/calculateur-imc",
   "/outils/comparateur-texte",
   "/outils/simulateur-auto-entrepreneur",
+  "/outils/capacite-emprunt",
+  "/outils/assurance-emprunteur",
+  "/outils/simulateur-maprimerenov",
+  "/outils/choisir-statut-juridique",
 ]);
 
 const MEDIUM_PRIORITY_TOOLS = new Set([
@@ -58,29 +63,12 @@ function getUniqueCategories(): string[] {
 }
 
 // Date of last major update (used as lastmod for all pages)
-const LAST_UPDATE = new Date("2026-04-30").toISOString();
+const LAST_UPDATE = new Date("2026-09-23").toISOString();
 
-const BLOG_ARTICLES: { slug: string; date: string }[] = [
-  { slug: "declaration-impots-2026", date: "2026-02-03" },
-  { slug: "freelance-sasu-micro-2026", date: "2026-02-06" },
-  { slug: "calculer-salaire-net-2026", date: "2026-02-10" },
-  { slug: "simulateur-impot-societes-2026", date: "2026-02-13" },
-  { slug: "simulateur-auto-entrepreneur-2026", date: "2026-02-17" },
-  { slug: "simulateur-apl-2026", date: "2026-02-20" },
-  { slug: "guide-securite-numerique", date: "2026-02-24" },
-  { slug: "guide-outils-image-video", date: "2026-02-27" },
-  { slug: "guide-sante-bien-etre", date: "2026-03-03" },
-  { slug: "guide-outils-developpeur", date: "2026-03-06" },
-  { slug: "guide-budget-quotidien", date: "2026-03-10" },
-  { slug: "guide-epargne-investissement-2026", date: "2026-03-13" },
-  { slug: "guide-impots-revenus-2026", date: "2026-03-17" },
-  { slug: "guide-creation-entreprise-2026", date: "2026-03-20" },
-  { slug: "guide-freelance-2026", date: "2026-03-24" },
-  { slug: "guide-immobilier-2026", date: "2026-03-27" },
-  { slug: "ptz-2026-nouveautes", date: "2026-04-15" },
-  { slug: "dpe-f-g-logement-energivore", date: "2026-04-22" },
-  { slug: "rachat-credit-immo-2026", date: "2026-04-28" },
-];
+const BLOG_ARTICLES: { slug: string; date: string }[] = ARTICLES.map((a) => ({
+  slug: a.slug,
+  date: a.dateModified,
+}));
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const staticPages: MetadataRoute.Sitemap = [

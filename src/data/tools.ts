@@ -11,42 +11,42 @@ export const tools: Tool[] = [
   {
     title: "Calculateur salaire net / brut",
     description:
-      "Convertissez votre salaire brut en net et inversement. Cadre, non-cadre, fonction publique. Estimation impot incluse.",
+      "Convertissez votre salaire brut en net et inversement. Cadre, non-cadre, fonction publique. Estimation impôt incluse.",
     href: "/outils/calculateur-salaire",
     icon: "\u{1F4B0}",
     badge: "Populaire",
-    category: "Finance",
+    category: "Emploi",
   },
   {
-    title: "Simulateur pret immobilier",
+    title: "Simulateur prêt immobilier",
     description:
-      "Calculez vos mensualites, le cout total du credit et visualisez le tableau d'amortissement complet.",
+      "Calculez vos mensualités, le coût total du crédit et visualisez le tableau d'amortissement complet.",
     href: "/outils/calculateur-pret-immobilier",
     icon: "\u{1F3E0}",
     badge: "Populaire",
     category: "Immobilier",
   },
   {
-    title: "Generateur de factures",
+    title: "Générateur de factures",
     description:
-      "Creez des factures conformes en PDF gratuitement. TVA, multi-lignes, impression directe.",
+      "Créez des factures conformes en PDF gratuitement. TVA, multi-lignes, impression directe.",
     href: "/outils/generateur-facture",
     icon: "\u{1F4C4}",
     badge: "Pro",
     category: "Business",
   },
   {
-    title: "Generateur de QR Code",
+    title: "Générateur de QR Code",
     description:
-      "QR codes personnalises : couleurs, taille. Pour vos liens, textes, emails ou Wi-Fi.",
+      "QR codes personnalisés : couleurs, taille. Pour vos liens, textes, emails ou Wi-Fi.",
     href: "/outils/generateur-qr-code",
     icon: "\u{1F4F1}",
     category: "Outils",
   },
   {
-    title: "Generateur de mot de passe",
+    title: "Générateur de mot de passe",
     description:
-      "Mots de passe securises et personnalisables. Indicateur de force. 100% local.",
+      "Mots de passe sécurisés et personnalisables. Indicateur de force. 100% local.",
     href: "/outils/generateur-mot-de-passe",
     icon: "\u{1F512}",
     category: "Securite",
@@ -54,7 +54,7 @@ export const tools: Tool[] = [
   {
     title: "Compteur de mots",
     description:
-      "Mots, caracteres, phrases, paragraphes. Temps de lecture et de parole estimes.",
+      "Mots, caractères, phrases, paragraphes. Temps de lecture et de parole estimés.",
     href: "/outils/compteur-mots",
     icon: "\u{1F4DD}",
     category: "Texte",
@@ -62,7 +62,7 @@ export const tools: Tool[] = [
   {
     title: "Convertisseur JSON / CSV",
     description:
-      "Convertissez vos donnees entre JSON et CSV instantanement. Telechargement inclus.",
+      "Convertissez vos données entre JSON et CSV instantanément. Téléchargement inclus.",
     href: "/outils/convertisseur-json-csv",
     icon: "\u{1F504}",
     category: "Dev",
@@ -70,11 +70,11 @@ export const tools: Tool[] = [
   {
     title: "Calculateur de TVA",
     description:
-      "HT vers TTC et inversement. Tous les taux francais : 20%, 10%, 5,5%, 2,1%.",
+      "HT vers TTC et inversement. Tous les taux français : 20%, 10%, 5,5%, 2,1%.",
     href: "/outils/calculateur-tva",
     icon: "\u{1F4B1}",
     badge: "Nouveau",
-    category: "Finance",
+    category: "Business",
   },
   {
     title: "Calculateur de pourcentage",
@@ -82,18 +82,18 @@ export const tools: Tool[] = [
       "X% de Y, variation en %, part d'un total. Trois modes de calcul.",
     href: "/outils/calculateur-pourcentage",
     icon: "\u{1F4CA}",
-    category: "Maths",
+    category: "Conversion",
   },
   {
     title: "Calculateur IMC",
     description:
-      "Indice de Masse Corporelle selon les normes OMS. Poids ideal inclus.",
+      "Indice de Masse Corporelle selon les normes OMS. Poids idéal inclus.",
     href: "/outils/calculateur-imc",
     icon: "\u{2696}\uFE0F",
     category: "Sante",
   },
   {
-    title: "Generateur Lorem Ipsum",
+    title: "Générateur Lorem Ipsum",
     description:
       "Texte factice pour vos maquettes. Paragraphes, phrases ou mots.",
     href: "/outils/generateur-lorem-ipsum",
@@ -101,18 +101,18 @@ export const tools: Tool[] = [
     category: "Texte",
   },
   {
-    title: "Mentions legales",
+    title: "Mentions légales",
     description:
-      "Generez des mentions legales conformes RGPD pour votre site web.",
+      "Générez des mentions légales conformes RGPD pour votre site web.",
     href: "/outils/generateur-mentions-legales",
     icon: "\u{2696}\uFE0F",
     badge: "Pro",
-    category: "Legal",
+    category: "Business",
   },
   {
-    title: "Simulateur impot sur le revenu",
+    title: "Simulateur impôt sur le revenu",
     description:
-      "Bareme mis a jour, quotient familial, taux marginal. Detail par tranche d'imposition.",
+      "Barème mis à jour, quotient familial, taux marginal. Détail par tranche d'imposition.",
     href: "/outils/simulateur-impot",
     icon: "\u{1F4CB}",
     badge: "Populaire",
@@ -121,27 +121,27 @@ export const tools: Tool[] = [
   {
     title: "Freelance vs CDI",
     description:
-      "Comparez revenus nets : TJM, charges, impots. Micro, EURL, SASU vs salarie.",
+      "Comparez revenus nets : TJM, charges, impôts. Micro, EURL, SASU vs salarié.",
     href: "/outils/freelance-vs-cdi",
     icon: "\u{1F4BC}",
     badge: "Nouveau",
-    category: "Carriere",
+    category: "Business",
   },
   {
-    title: "Rentabilite locative",
+    title: "Rentabilité locative",
     description:
-      "Rendement brut/net, cashflow, effort d'epargne. Simulateur investissement immobilier.",
+      "Rendement brut/net, cashflow, effort d'épargne. Simulateur investissement immobilier.",
     href: "/outils/calculateur-rentabilite-locative",
     icon: "\u{1F3D8}\uFE0F",
     category: "Immobilier",
   },
   {
-    title: "Age depart retraite",
+    title: "Âge de départ à la retraite",
     description:
-      "Reforme 2023 : age legal, trimestres requis selon votre annee de naissance.",
+      "Âge légal et trimestres requis selon votre année de naissance, après la suspension de la réforme (LFSS 2026).",
     href: "/outils/calculateur-retraite",
     icon: "\u{1F9D3}",
-    category: "Retraite",
+    category: "Finance",
   },
   {
     title: "Convertisseur couleurs",
@@ -149,55 +149,55 @@ export const tools: Tool[] = [
       "HEX, RGB, HSL. Color picker, sliders, copie en un clic. Pour designers et devs.",
     href: "/outils/convertisseur-couleurs",
     icon: "\u{1F3A8}",
-    category: "Design",
+    category: "Dev",
   },
   {
     title: "Calculateur de dates",
     description:
-      "Jours entre deux dates, ajout/soustraction de jours. Echeances et delais.",
+      "Jours entre deux dates, ajout/soustraction de jours. Échéances et délais.",
     href: "/outils/calculateur-date",
     icon: "\u{1F4C5}",
     badge: "Nouveau",
-    category: "Outils",
+    category: "Conversion",
   },
   {
-    title: "Politique de confidentialite",
+    title: "Politique de confidentialité",
     description:
-      "Generez une politique de confidentialite conforme RGPD pour votre site web.",
+      "Générez une politique de confidentialité conforme RGPD pour votre site web.",
     href: "/outils/generateur-politique-confidentialite",
     icon: "\u{1F6E1}\uFE0F",
     badge: "Pro",
-    category: "Legal",
+    category: "Business",
   },
   {
     title: "Calculateur heures de travail",
     description:
-      "Heures travaillees, pauses, heures sup. et totaux hebdomadaires.",
+      "Heures travaillées, pauses, heures sup. et totaux hebdomadaires.",
     href: "/outils/calculateur-heures-travail",
     icon: "\u{23F0}",
-    category: "Travail",
+    category: "Emploi",
   },
   {
-    title: "Convertisseur d'unites",
+    title: "Convertisseur d'unités",
     description:
-      "Longueur, poids, temperature, surface, volume. Conversion instantanee.",
+      "Longueur, poids, température, surface, volume. Conversion instantanée.",
     href: "/outils/convertisseur-unites",
     icon: "\u{1F4CF}",
     badge: "Nouveau",
     category: "Conversion",
   },
   {
-    title: "Calculateur d'age",
+    title: "Calculateur d'âge",
     description:
-      "Age exact en annees/mois/jours. Decompte prochain anniversaire.",
+      "Âge exact en années/mois/jours. Décompte prochain anniversaire.",
     href: "/outils/calculateur-age",
     icon: "\u{1F382}",
-    category: "Outils",
+    category: "Conversion",
   },
   {
-    title: "Calculateur pret auto",
+    title: "Calculateur prêt auto",
     description:
-      "Mensualites, cout total et tableau d'amortissement pour votre credit automobile.",
+      "Mensualités, coût total et tableau d'amortissement pour votre crédit automobile.",
     href: "/outils/calculateur-pret-auto",
     icon: "\u{1F697}",
     badge: "Nouveau",
@@ -206,34 +206,34 @@ export const tools: Tool[] = [
   {
     title: "Consommation essence",
     description:
-      "L/100km, cout par kilometre et estimation du budget carburant de vos trajets.",
+      "L/100km, coût par kilomètre et estimation du budget carburant de vos trajets.",
     href: "/outils/calculateur-consommation-essence",
     icon: "\u{26FD}",
     badge: "Nouveau",
-    category: "Auto",
+    category: "Outils",
   },
   {
-    title: "Calories brulees",
+    title: "Calories brûlées",
     description:
-      "Estimez les calories depensees par activite : course, velo, natation, marche et plus.",
+      "Estimez les calories dépensées par activité : course, vélo, natation, marche et plus.",
     href: "/outils/calculateur-calories",
     icon: "\u{1F525}",
     badge: "Nouveau",
     category: "Sante",
   },
   {
-    title: "Texte stylise Unicode",
+    title: "Texte stylisé Unicode",
     description:
-      "Convertissez en gras, italique, barre, monospace, bulle. Copiez-collez partout.",
+      "Convertissez en gras, italique, barré, monospace, bulle. Copiez-collez partout.",
     href: "/outils/generateur-texte-stylise",
     icon: "\u{2728}",
     badge: "Nouveau",
     category: "Texte",
   },
   {
-    title: "Minuteur et chronometre",
+    title: "Minuteur et chronomètre",
     description:
-      "Compte a rebours avec alarme sonore et chronometre avec tours. 100% en ligne.",
+      "Compte à rebours avec alarme sonore et chronomètre avec tours. 100% en ligne.",
     href: "/outils/minuteur",
     icon: "\u{23F1}\uFE0F",
     badge: "Nouveau",
@@ -242,34 +242,34 @@ export const tools: Tool[] = [
   {
     title: "Calculateur de remise",
     description:
-      "Prix apres reduction, montant economise. Cumulez plusieurs remises en cascade.",
+      "Prix après réduction, montant économisé. Cumulez plusieurs remises en cascade.",
     href: "/outils/calculateur-remise",
     icon: "\u{1F3F7}\uFE0F",
     badge: "Nouveau",
-    category: "Shopping",
+    category: "Outils",
   },
   {
     title: "Email professionnel",
     description:
-      "Generez des emails pro : relance, remerciement, prise de contact, reunion, demission.",
+      "Générez des emails pro : relance, remerciement, prise de contact, réunion, démission.",
     href: "/outils/generateur-email-professionnel",
     icon: "\u{1F4E7}",
     badge: "Nouveau",
-    category: "Business",
+    category: "Emploi",
   },
   {
     title: "Convertisseur de devises",
     description:
-      "EUR, USD, GBP, CHF, CAD, JPY, MAD, XOF. Conversion instantanee entre devises.",
+      "EUR, USD, GBP, CHF, CAD, JPY, MAD, XOF. Conversion instantanée entre devises.",
     href: "/outils/calculateur-taux-change",
     icon: "\u{1F4B1}",
     badge: "Nouveau",
     category: "Finance",
   },
   {
-    title: "Calculateur d'epargne",
+    title: "Calculateur d'épargne",
     description:
-      "Simulez la croissance de votre epargne avec les interets composes. Graphique de projection.",
+      "Simulez la croissance de votre épargne avec les intérêts composés. Graphique de projection.",
     href: "/outils/calculateur-epargne",
     icon: "\u{1F4B0}",
     badge: "Nouveau",
@@ -278,7 +278,7 @@ export const tools: Tool[] = [
   {
     title: "Mot de passe WiFi",
     description:
-      "Generez des mots de passe WiFi securises et lisibles. QR code pour partager facilement.",
+      "Générez des mots de passe WiFi sécurisés et lisibles. QR code pour partager facilement.",
     href: "/outils/generateur-mot-de-passe-wifi",
     icon: "\u{1F4F6}",
     badge: "Nouveau",
@@ -287,16 +287,16 @@ export const tools: Tool[] = [
   {
     title: "Calculateur de surface",
     description:
-      "Rectangle, cercle, triangle, trapeze. Aire en m2 et conversion en autres unites.",
+      "Rectangle, cercle, triangle, trapèze. Aire en m² et conversion en autres unités.",
     href: "/outils/calculateur-surface",
     icon: "\u{1F4D0}",
     badge: "Nouveau",
-    category: "Maths",
+    category: "Immobilier",
   },
   {
     title: "Convertisseur de temps",
     description:
-      "Secondes, minutes, heures, jours, semaines, mois, annees. Conversion bidirectionnelle.",
+      "Secondes, minutes, heures, jours, semaines, mois, années. Conversion bidirectionnelle.",
     href: "/outils/convertisseur-temps",
     icon: "\u{231A}",
     badge: "Nouveau",
@@ -309,12 +309,12 @@ export const tools: Tool[] = [
     href: "/outils/calculateur-vitesse",
     icon: "\u{1F3CE}\uFE0F",
     badge: "Nouveau",
-    category: "Outils",
+    category: "Conversion",
   },
   {
-    title: "Generateur de slug URL",
+    title: "Générateur de slug URL",
     description:
-      "Transformez n'importe quel texte en slug SEO-friendly. Accents, espaces, caracteres speciaux.",
+      "Transformez n'importe quel texte en slug SEO-friendly. Accents, espaces, caractères spéciaux.",
     href: "/outils/generateur-slug",
     icon: "\u{1F517}",
     badge: "Nouveau",
@@ -323,7 +323,7 @@ export const tools: Tool[] = [
   {
     title: "Calculateur de marge",
     description:
-      "Marge commerciale, taux de marge, markup et benefice. Calcul direct et inverse.",
+      "Marge commerciale, taux de marge, markup et bénéfice. Calcul direct et inverse.",
     href: "/outils/calculateur-marge",
     icon: "\u{1F4C8}",
     badge: "Nouveau",
@@ -332,7 +332,7 @@ export const tools: Tool[] = [
   {
     title: "Encodeur Base64",
     description:
-      "Encodez du texte en Base64 et decodez du Base64 en texte. Copie en un clic.",
+      "Encodez du texte en Base64 et décodez du Base64 en texte. Copie en un clic.",
     href: "/outils/encodeur-base64",
     icon: "\u{1F510}",
     badge: "Nouveau",
@@ -341,88 +341,88 @@ export const tools: Tool[] = [
   {
     title: "Calculateur d'inflation",
     description:
-      "Pouvoir d'achat dans le temps. Donnees IPC francaises de 1970 a 2025.",
+      "Pouvoir d'achat dans le temps. Données IPC françaises de 1970 à 2025.",
     href: "/outils/calculateur-inflation",
     icon: "\u{1F4C9}",
     badge: "Nouveau",
     category: "Finance",
   },
   {
-    title: "Generateur robots.txt",
+    title: "Générateur robots.txt",
     description:
-      "Creez un fichier robots.txt valide. Presets, chemins bloques, sitemap. Pour le SEO.",
+      "Créez un fichier robots.txt valide. Préréglages, chemins bloqués, sitemap. Pour le SEO.",
     href: "/outils/generateur-robots-txt",
     icon: "\u{1F916}",
     badge: "Nouveau",
-    category: "SEO",
+    category: "Dev",
   },
   {
     title: "Empreinte carbone CO2",
     description:
-      "Estimez vos emissions CO2 : voiture, avion, train, energie. Equivalences et conseils.",
+      "Estimez vos émissions CO2 : voiture, avion, train, énergie. Équivalences et conseils.",
     href: "/outils/calculateur-co2",
     icon: "\u{1F331}",
     badge: "Nouveau",
-    category: "Environnement",
+    category: "Outils",
   },
   {
-    title: "Generateur d'avatar",
+    title: "Générateur d'avatar",
     description:
-      "Creez un avatar avec vos initiales. Cercle colore, styles varies. Telechargez en PNG.",
+      "Créez un avatar avec vos initiales. Cercle coloré, styles variés. Téléchargez en PNG.",
     href: "/outils/generateur-avatar",
     icon: "\u{1F464}",
     badge: "Nouveau",
-    category: "Design",
+    category: "Image",
   },
   {
     title: "Calculateur grossesse",
     description:
-      "Date prevue d'accouchement, semaine, trimestre et etapes cles de la grossesse.",
+      "Date prévue d'accouchement, semaine, trimestre et étapes clés de la grossesse.",
     href: "/outils/calculateur-grossesse",
     icon: "\u{1F930}",
     badge: "Nouveau",
     category: "Sante",
   },
   {
-    title: "Convertisseur numeration",
+    title: "Convertisseur numération",
     description:
-      "Decimal, binaire, octal, hexadecimal. Conversion bidirectionnelle instantanee.",
+      "Décimal, binaire, octal, hexadécimal. Conversion bidirectionnelle instantanée.",
     href: "/outils/convertisseur-numeration",
     icon: "\u{1F522}",
     badge: "Nouveau",
     category: "Dev",
   },
   {
-    title: "Calculateur beton",
+    title: "Calculateur béton",
     description:
-      "Volume en m3, nombre de sacs 25kg/35kg. Dalle, fondation, poteau. Pour vos travaux.",
+      "Volume en m³, nombre de sacs 25kg/35kg. Dalle, fondation, poteau. Pour vos travaux.",
     href: "/outils/calculateur-beton",
     icon: "\u{1F3D7}\uFE0F",
     badge: "Nouveau",
-    category: "Construction",
+    category: "Immobilier",
   },
   {
     title: "Signature email HTML",
     description:
-      "Creez une signature email pro : nom, poste, reseaux sociaux. Copiez le HTML en un clic.",
+      "Créez une signature email pro : nom, poste, réseaux sociaux. Copiez le HTML en un clic.",
     href: "/outils/generateur-signature-email",
     icon: "\u{270D}\uFE0F",
     badge: "Nouveau",
     category: "Business",
   },
   {
-    title: "Calculateur alcoolemie",
+    title: "Calculateur alcoolémie",
     description:
-      "Taux d'alcoolemie estime, temps de retour a zero. Outil educatif base sur Widmark.",
+      "Taux d'alcoolémie estimé, temps de retour à zéro. Outil éducatif basé sur Widmark.",
     href: "/outils/calculateur-alcoolemie",
     icon: "\u{1F37B}",
     badge: "Nouveau",
     category: "Sante",
   },
   {
-    title: "Convertisseur temperature",
+    title: "Convertisseur température",
     description:
-      "Celsius, Fahrenheit, Kelvin. Thermometre visuel et formules de conversion.",
+      "Celsius, Fahrenheit, Kelvin. Thermomètre visuel et formules de conversion.",
     href: "/outils/convertisseur-temperature",
     icon: "\u{1F321}\uFE0F",
     badge: "Nouveau",
@@ -431,16 +431,16 @@ export const tools: Tool[] = [
   {
     title: "Calculateur pourboire",
     description:
-      "Pourboire ideal, partage de l'addition. Comparaison des taux et arrondi.",
+      "Pourboire idéal, partage de l'addition. Comparaison des taux et arrondi.",
     href: "/outils/calculateur-pourboire",
     icon: "\u{1F4B5}",
     badge: "Nouveau",
-    category: "Restaurant",
+    category: "Outils",
   },
   {
-    title: "Mot de passe prononcable",
+    title: "Mot de passe prononçable",
     description:
-      "Mots de passe faciles a prononcer et retenir. Syllabes, force et options.",
+      "Mots de passe faciles à prononcer et retenir. Syllabes, force et options.",
     href: "/outils/generateur-mdp-prononcable",
     icon: "\u{1F5E3}\uFE0F",
     badge: "Nouveau",
@@ -449,11 +449,11 @@ export const tools: Tool[] = [
   {
     title: "Comparateur de texte",
     description:
-      "Comparez deux textes et visualisez les differences ligne par ligne. Ajouts en vert, suppressions en rouge.",
+      "Comparez deux textes et visualisez les différences ligne par ligne. Ajouts en vert, suppressions en rouge.",
     href: "/outils/comparateur-texte",
     icon: "\u{1F50D}",
     badge: "Nouveau",
-    category: "Dev",
+    category: "Texte",
   },
   {
     title: "Optimiseur JSON",
@@ -474,18 +474,18 @@ export const tools: Tool[] = [
     category: "Dev",
   },
   {
-    title: "Generateur de gradient",
+    title: "Générateur de gradient",
     description:
-      "Creez des degrades CSS : lineaire, radial, couleurs, angle. Apercu et code CSS pret a copier.",
+      "Créez des dégradés CSS : linéaire, radial, couleurs, angle. Aperçu et code CSS prêt à copier.",
     href: "/outils/generateur-gradient",
     icon: "\u{1F308}",
     badge: "Nouveau",
-    category: "Design",
+    category: "Dev",
   },
   {
     title: "Testeur de Regex",
     description:
-      "Testez vos expressions regulieres en temps reel. Groupes, drapeaux, bibliotheque de patterns.",
+      "Testez vos expressions régulières en temps réel. Groupes, drapeaux, bibliothèque de patterns.",
     href: "/outils/generateur-regex",
     icon: "\u{1F9EA}",
     badge: "Nouveau",
@@ -494,7 +494,7 @@ export const tools: Tool[] = [
   {
     title: "Compresseur d'image",
     description:
-      "Reduisez la taille de vos images JPEG/WebP. Curseur de qualite, comparaison avant/apres, ratio de compression.",
+      "Réduisez la taille de vos images JPEG/WebP. Curseur de qualité, comparaison avant/après, ratio de compression.",
     href: "/outils/compresseur-image",
     icon: "\u{1F5DC}\uFE0F",
     badge: "Nouveau",
@@ -503,7 +503,7 @@ export const tools: Tool[] = [
   {
     title: "Redimensionneur d'image",
     description:
-      "Changez les dimensions de vos images en pixels ou pourcentage. Ratio d'aspect verrouillable, apercu en direct.",
+      "Changez les dimensions de vos images en pixels ou pourcentage. Ratio d'aspect verrouillable, aperçu en direct.",
     href: "/outils/redimensionneur-image",
     icon: "\u{1F4D0}",
     badge: "Nouveau",
@@ -512,16 +512,16 @@ export const tools: Tool[] = [
   {
     title: "Convertisseur format image",
     description:
-      "Convertissez entre PNG, JPEG, WebP et BMP. Comparaison des tailles avant/apres conversion.",
+      "Convertissez entre PNG, JPEG, WebP et BMP. Comparaison des tailles avant/après conversion.",
     href: "/outils/convertisseur-image",
     icon: "\u{1F504}",
     badge: "Nouveau",
     category: "Image",
   },
   {
-    title: "Editeur photo",
+    title: "Éditeur photo",
     description:
-      "Retouche IA : suppression fond, bokeh, super resolution. Courbes, calques, 15 filtres VSCO, histogramme.",
+      "Retouche IA : suppression fond, bokeh, super-résolution. Courbes, calques, 15 filtres VSCO, histogramme.",
     href: "/outils/editeur-photo",
     icon: "\u{1F3A8}",
     badge: "Nouveau",
@@ -530,43 +530,43 @@ export const tools: Tool[] = [
   {
     title: "Fusionneur PDF",
     description:
-      "Fusionnez plusieurs fichiers PDF en un seul document. Glissez-deposez, reordonnez par drag & drop.",
+      "Fusionnez plusieurs fichiers PDF en un seul document. Glissez-déposez, réordonnez par drag & drop.",
     href: "/outils/fusionneur-pdf",
     icon: "\u{1F4C4}",
     badge: "Nouveau",
-    category: "PDF",
+    category: "Image",
   },
   {
     title: "PDF vers Texte",
     description:
-      "Analysez vos PDF : metadonnees, pages, dimensions. Extrayez et telechargez des pages individuelles.",
+      "Analysez vos PDF : métadonnées, pages, dimensions. Extrayez et téléchargez des pages individuelles.",
     href: "/outils/pdf-vers-texte",
     icon: "\u{1F4D1}",
     badge: "Nouveau",
-    category: "PDF",
+    category: "Image",
   },
   {
-    title: "Compresseur Video",
+    title: "Compresseur Vidéo",
     description:
-      "Compressez vos videos dans le navigateur. 3 niveaux de qualite, barre de progression, telechargement.",
+      "Compressez vos vidéos en MP4 (H.264) dans le navigateur : 3 niveaux de qualité, réduction en 1080p, 720p ou 480p, taille avant/après.",
     href: "/outils/compresseur-video",
     icon: "\u{1F3AC}",
     badge: "Nouveau",
-    category: "Video",
+    category: "Image",
   },
   {
     title: "Extracteur Audio",
     description:
-      "Extrayez la piste audio de vos videos. Forme d'onde, telechargement WebM. 100% local.",
+      "Extrayez la piste audio de vos vidéos sans réencodage (M4A, MP3, OGG...) ou convertissez-la en MP3 ou WAV. Forme d'onde incluse.",
     href: "/outils/extracteur-audio",
     icon: "\u{1F3B5}",
     badge: "Nouveau",
-    category: "Audio",
+    category: "Image",
   },
   {
     title: "Frais de notaire",
     description:
-      "Estimez les frais de notaire pour votre achat immobilier. Ancien, neuf, 101 departements. Detail complet.",
+      "Estimez les frais de notaire pour votre achat immobilier. Ancien, neuf, 101 départements. Détail complet.",
     href: "/outils/calculateur-frais-notaire",
     icon: "\u{1F3E0}",
     badge: "Nouveau",
@@ -575,34 +575,34 @@ export const tools: Tool[] = [
   {
     title: "Simulateur auto-entrepreneur",
     description:
-      "Cotisations, IR, CFE, revenu net. Taux 2025-2026 par activite. ACRE et versement liberatoire.",
+      "Cotisations, IR, CFE, revenu net. Taux 2025-2026 par activité. ACRE et versement libératoire.",
     href: "/outils/simulateur-auto-entrepreneur",
     icon: "\u{1F4BC}",
     badge: "Nouveau",
     category: "Business",
   },
   {
-    title: "Frais kilometriques",
+    title: "Frais kilométriques",
     description:
-      "Bareme fiscal officiel. Voiture, moto, cyclomoteur. Majoration vehicule electrique +20%.",
+      "Barème fiscal officiel. Voiture, moto, cyclomoteur. Majoration véhicule électrique +20%.",
     href: "/outils/calculateur-frais-kilometriques",
     icon: "\u{1F697}",
     badge: "Nouveau",
-    category: "Auto",
+    category: "Finance",
   },
   {
-    title: "Generateur de CV",
+    title: "Générateur de CV",
     description:
-      "Creez votre CV en ligne. 2 templates (classique, moderne), preview live, export PDF gratuit.",
+      "Créez votre CV en ligne. 2 templates (classique, moderne), preview live, export PDF gratuit.",
     href: "/outils/generateur-cv",
     icon: "\u{1F4C4}",
     badge: "Nouveau",
-    category: "Business",
+    category: "Emploi",
   },
   {
-    title: "Convertisseur tailles vetements",
+    title: "Convertisseur tailles vêtements",
     description:
-      "Correspondance EU, US, UK. Vetements et chaussures, homme et femme. Tableau complet.",
+      "Correspondance EU, US, UK. Vêtements et chaussures, homme et femme. Tableau complet.",
     href: "/outils/convertisseur-tailles",
     icon: "\u{1F455}",
     badge: "Nouveau",
@@ -611,7 +611,7 @@ export const tools: Tool[] = [
   {
     title: "Test vitesse de frappe",
     description:
-      "Mesurez votre vitesse de frappe en WPM. Textes francais, precision, 30s/60s/120s.",
+      "Mesurez votre vitesse de frappe en WPM. Textes français, précision, 30s/60s/120s.",
     href: "/outils/testeur-vitesse-frappe",
     icon: "\u{2328}\uFE0F",
     badge: "Nouveau",
@@ -620,7 +620,7 @@ export const tools: Tool[] = [
   {
     title: "Scanner QR Code",
     description:
-      "Scannez un QR code via camera ou image. Detection automatique, historique des scans.",
+      "Scannez un QR code via caméra ou image. Détection automatique, historique des scans.",
     href: "/outils/scanner-qr-code",
     icon: "\u{1F4F7}",
     badge: "Nouveau",
@@ -633,21 +633,21 @@ export const tools: Tool[] = [
     href: "/outils/simulateur-apl",
     icon: "\u{1F3E0}",
     badge: "Nouveau",
-    category: "Finance",
+    category: "Immobilier",
   },
   {
     title: "Calculateur DPE",
     description:
-      "Estimez la classe energetique de votre logement. Jauge A-G, emissions CO2, cout annuel.",
+      "Estimez la classe énergétique de votre logement. Jauge A-G, émissions CO2, coût annuel.",
     href: "/outils/calculateur-dpe",
     icon: "\u{1F3E0}",
     badge: "Nouveau",
     category: "Immobilier",
   },
   {
-    title: "Editeur Markdown",
+    title: "Éditeur Markdown",
     description:
-      "Editez du Markdown avec preview temps reel. Toolbar, raccourcis clavier, export HTML et .md.",
+      "Éditez du Markdown avec preview temps réel. Toolbar, raccourcis clavier, export HTML et .md.",
     href: "/outils/editeur-markdown",
     icon: "\u{1F4DD}",
     badge: "Nouveau",
@@ -660,48 +660,48 @@ export const tools: Tool[] = [
     href: "/outils/convertisseur-audio",
     icon: "\u{1F3B5}",
     badge: "Nouveau",
-    category: "Audio",
+    category: "Image",
   },
   {
     title: "Calculateur de peinture",
     description:
-      "Surface murs, ouvertures, couches, rendement. Litres et pots necessaires pour votre piece.",
+      "Surface murs, ouvertures, couches, rendement. Litres et pots nécessaires pour votre pièce.",
     href: "/outils/calculateur-peinture",
     icon: "\u{1F3A8}",
     badge: "Nouveau",
-    category: "Construction",
+    category: "Immobilier",
   },
   {
-    title: "Rachat de credit",
+    title: "Rachat de crédit",
     description:
-      "Comparez vos credits actuels vs un rachat unique. Economie mensuelle, cout total, verdict.",
+      "Comparez vos crédits actuels vs un rachat unique. Économie mensuelle, coût total, verdict.",
     href: "/outils/calculateur-rachat-credit",
     icon: "\u{1F4B3}",
     badge: "Nouveau",
-    category: "Finance",
+    category: "Immobilier",
   },
   {
     title: "Timer Pomodoro",
     description:
-      "Methode Pomodoro : 25min travail, 5min pause. Timer circulaire, notifications, statistiques.",
+      "Méthode Pomodoro : 25min travail, 5min pause. Timer circulaire, notifications, statistiques.",
     href: "/outils/pomodoro",
     icon: "\u{1F345}",
     badge: "Nouveau",
     category: "Outils",
   },
   {
-    title: "Editeur Video",
+    title: "Éditeur Vidéo",
     description:
       "Couper, convertir, redimensionner, GIF, capturer image, vitesse, rotation. 8 operations, 100% navigateur.",
     href: "/outils/editeur-video",
     icon: "\u{1F3AC}",
     badge: "Nouveau",
-    category: "Video",
+    category: "Image",
   },
   {
     title: "Calculateur TJM Freelance",
     description:
-      "Calculez votre Taux Journalier Moyen ideal. Salaire net, charges, conges, frais pro. TJM et taux horaire.",
+      "Calculez votre Taux Journalier Moyen idéal. Salaire net, charges, congés, frais pro. TJM et taux horaire.",
     href: "/outils/calculateur-tjm-freelance",
     icon: "\u{1F4B8}",
     badge: "Nouveau",
@@ -710,16 +710,16 @@ export const tools: Tool[] = [
   {
     title: "Partage de frais",
     description:
-      "Qui doit combien a qui ? Ajoutez les depenses du groupe, l'outil calcule les remboursements optimaux.",
+      "Qui doit combien à qui ? Ajoutez les dépenses du groupe, l'outil calcule les remboursements optimaux.",
     href: "/outils/calculateur-partage-frais",
     icon: "\u{1F91D}",
     badge: "Nouveau",
-    category: "Quotidien",
+    category: "Outils",
   },
   {
     title: "Calculateur TDEE / Calories",
     description:
-      "Depense energetique totale, metabolisme de base (Mifflin-St Jeor), objectifs perte/prise de poids, repartition macros.",
+      "Dépense énergétique totale, métabolisme de base (Mifflin-St Jeor), objectifs perte/prise de poids, répartition macros.",
     href: "/outils/calculateur-tdee-calories",
     icon: "\u{1F525}",
     badge: "Nouveau",
@@ -728,16 +728,16 @@ export const tools: Tool[] = [
   {
     title: "Simulateur Flat Tax Crypto",
     description:
-      "Plus-values crypto, flat tax 30% (IR 12,8% + PS 17,2%), seuil 305\u20AC. Fiscalite crypto France 2026.",
+      "Plus-values crypto, flat tax 31,4% (IR 12,8% + PS 18,6%), seuil 305\u20AC. Fiscalité crypto France 2026.",
     href: "/outils/simulateur-flat-tax-crypto",
     icon: "\u{1FA99}",
     badge: "Nouveau",
     category: "Finance",
   },
   {
-    title: "Simulateur allocation chomage (ARE)",
+    title: "Simulateur allocation chômage (ARE)",
     description:
-      "Estimez votre ARE : salaire journalier de reference, duree d'indemnisation, montant mensuel et total.",
+      "Estimez votre ARE : salaire journalier de référence, durée d'indemnisation, montant mensuel et total.",
     href: "/outils/simulateur-allocation-chomage",
     icon: "\u{1F4BC}",
     badge: "Nouveau",
@@ -746,34 +746,34 @@ export const tools: Tool[] = [
   {
     title: "Simulateur droits de succession",
     description:
-      "Calculez les droits de succession : abattements par lien de parente, bareme progressif, net herite.",
+      "Calculez les droits de succession : abattements par lien de parenté, barème progressif, net hérité.",
     href: "/outils/simulateur-droits-succession",
     icon: "\u{1F4DC}",
     badge: "Nouveau",
     category: "Finance",
   },
   {
-    title: "Simulateur plus-value immobiliere",
+    title: "Simulateur plus-value immobilière",
     description:
-      "Calculez l'impot sur la plus-value de votre bien : abattements IR/PS par duree de detention, surtaxe, impot total et plus-value nette.",
+      "Calculez l'impôt sur la plus-value de votre bien : abattements IR/PS par durée de détention, surtaxe, impôt total et plus-value nette.",
     href: "/outils/simulateur-plus-value-immobiliere",
     icon: "\u{1F3E0}",
     badge: "Nouveau",
     category: "Immobilier",
   },
   {
-    title: "Simulateur prime d'activite",
+    title: "Simulateur prime d'activité",
     description:
-      "Estimez votre prime d'activite 2026. Montant forfaitaire, majorations, bonification, forfait logement. Calcul selon votre situation.",
+      "Estimez votre prime d'activité 2026. Montant forfaitaire, majorations, bonification, forfait logement. Calcul selon votre situation.",
     href: "/outils/simulateur-prime-activite",
     icon: "\u{1F4B6}",
     badge: "Nouveau",
     category: "Emploi",
   },
   {
-    title: "Indemnite rupture conventionnelle",
+    title: "Indemnité rupture conventionnelle",
     description:
-      "Calculez votre indemnite de rupture conventionnelle. Indemnite legale, fiscalite, CSG/CRDS, montant net estime.",
+      "Calculez votre indemnité de rupture conventionnelle. Indemnité légale, fiscalité, CSG/CRDS, montant net estimé.",
     href: "/outils/simulateur-rupture-conventionnelle",
     icon: "\u{1F4CB}",
     badge: "Nouveau",
@@ -782,10 +782,46 @@ export const tools: Tool[] = [
   {
     title: "Simulateur PTZ 2026",
     description:
-      "Eligibilite au Pret a Taux Zero 2026. Montant PTZ, duree, differe, mensualites par zone et revenus.",
+      "Éligibilité au Prêt à Taux Zéro 2026. Montant PTZ, durée, différé, mensualités par zone et revenus.",
     href: "/outils/simulateur-ptz-2026",
     icon: "\u{1F3E0}",
     badge: "Nouveau",
     category: "Immobilier",
+  },
+  {
+    title: "Simulateur MaPrimeRénov' 2026",
+    description:
+      "Catégorie de revenus, prime par geste (pompe à chaleur) ou rénovation d'ampleur, écrêtement et reste à charge. Règles au 1er septembre 2026.",
+    href: "/outils/simulateur-maprimerenov",
+    icon: "\u{1F3E1}",
+    badge: "Nouveau",
+    category: "Immobilier",
+  },
+  {
+    title: "Capacité d'emprunt 2026",
+    description:
+      "Combien pouvez-vous emprunter ? Mensualité max à 35 % (HCSF), capital, budget total avec apport, reste à vivre et sensibilité taux/durée.",
+    href: "/outils/capacite-emprunt",
+    icon: "\u{1F4CA}",
+    badge: "Nouveau",
+    category: "Immobilier",
+  },
+  {
+    title: "Économie assurance emprunteur (loi Lemoine)",
+    description:
+      "Changez d'assurance de prêt à tout moment : coût restant de votre contrat, coût d'une délégation, économie totale et mensuelle.",
+    href: "/outils/assurance-emprunteur",
+    icon: "\u{1F6E1}\u{FE0F}",
+    badge: "Nouveau",
+    category: "Immobilier",
+  },
+  {
+    title: "Quel statut juridique choisir ?",
+    description:
+      "Micro, EI, EURL ou SASU : cotisations, impôts, net, protection sociale et coûts 2026. Recommandation personnalisée.",
+    href: "/outils/choisir-statut-juridique",
+    icon: "\u{1F3DB}\u{FE0F}",
+    badge: "Nouveau",
+    category: "Business",
   },
 ];
